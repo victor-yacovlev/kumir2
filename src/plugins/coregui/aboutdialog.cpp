@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtGui>
 #include "extensionsystem/pluginmanager.h"
+#include "extensionsystem/kplugin.h"
+#include "interfaces/analizerinterface.h"
 
 namespace CoreGUI {
 
@@ -30,12 +32,28 @@ AboutDialog::AboutDialog(QWidget *parent) :
 
     connect(ui->btnCopyEnvironmentAndVersion,
             SIGNAL(clicked()), this, SLOT(copySystemInformationToClipboard()));
+
+    using namespace ExtensionSystem;
+    using namespace Shared;
+    KPlugin * guiPlugin = PluginManager::instance()->loadedPlugin("CoreGUI");
+//    const QString lang = QLocale::languageToString(QLocale::system().language()).left(2).toLower();
+    const QString lang = "ru";
+    AnalizerInterface * analizerPlugin =
+            PluginManager::instance()->findPlugin<AnalizerInterface>();
+    QString fileBase = lang;
+    if (analizerPlugin)
+        fileBase = analizerPlugin->defaultDocumentFileNameSuffix() + "_" + lang;
+    const QString indexHtml =
+            guiPlugin->myResourcesDir().absoluteFilePath("about/" + fileBase + ".html");
+    ui->aboutTextBrowser->setSource(QUrl::fromLocalFile(indexHtml));
+
 }
 
 void AboutDialog::copySystemInformationToClipboard()
 {
     QString textToCopy;
     textToCopy += "Version: "+ui->version->text()+"\n";
+    textToCopy += "Last Modified: "+ui->lastModified->text()+"\n";
     for (int i=0; i<ui->tableWidget->rowCount(); i++) {
         const QString key = ui->tableWidget->item(i, 0)->text();
         const QString value = ui->tableWidget->item(i, 1)->text();

@@ -1086,12 +1086,10 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
             nextCallInto_ = false;
             valuesStack_.pop(); // current implementation doesn't requere args count
             currentLocals_ = &(contextsStack_.top().locals);
-            ModuleContext & currentModuleContext = moduleContexts_[c.moduleContextNo];
-            currentConstants_ = &currentModuleContext.constants;
-            const size_t globalTablesCount = currentModuleContext.globals.size();
-            currentGlobals_ = c.moduleId < globalTablesCount
-                    ? &currentModuleContext.globals[c.moduleId]
-                    : nullptr;
+            currentGlobals_ =
+                    &(moduleContexts_[c.moduleContextNo].globals[c.moduleId]);
+            currentConstants_ =
+                    &(moduleContexts_[c.moduleContextNo].constants);
             if (stacksMutex_)
                 stacksMutex_->unlock();
         }
@@ -1117,13 +1115,8 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                 c.moduleContextNo = reference.moduleContext;
                 contextsStack_.push(c);
                 currentLocals_ = &(contextsStack_.top().locals);
-
-                ModuleContext & currentModuleContext = moduleContexts_[c.moduleContextNo];
-                const size_t globalTablesCount = currentModuleContext.globals.size();
-                currentGlobals_ = c.moduleId < globalTablesCount
-                        ? &currentModuleContext.globals[c.moduleId]
-                        : nullptr;
-
+                currentGlobals_ =
+                        &(moduleContexts_[c.moduleContextNo].globals[c.moduleId]);
                 currentConstants_ =
                         &(moduleContexts_[reference.moduleContext].constants);
                 nextCallInto_ = false;
@@ -1492,6 +1485,30 @@ void KumirVM::do_stdcall(uint16_t alg)
         int y = Kumir::StringUtils::unicode(x);
         valuesStack_.push(Variable(y));
         error_ = Kumir::Core::getError();
+        break;
+    }
+    /* алг цел Цел(лит строка, цел по умолчанию) */
+    case 0x0027: {
+        int def = valuesStack_.pop().toInt();
+        String sv = valuesStack_.pop().toString();
+        int v = Kumir::Converter::stringToIntDef(sv, def);
+        valuesStack_.push(Variable(v));
+        break;
+    }
+    /* алг вещ Вещ(лит строка, вещ по умолчанию) */
+    case 0x0028: {
+        Kumir::real def = valuesStack_.pop().toReal();
+        String sv = valuesStack_.pop().toString();
+        Kumir::real v = Kumir::Converter::stringToRealDef(sv, def);
+        valuesStack_.push(Variable(v));
+        break;
+    }
+    /* алг лог Лог(лит строка, лог по умолчанию) */
+    case 0x0029: {
+        bool def = valuesStack_.pop().toBool();
+        String sv = valuesStack_.pop().toString();
+        bool v = Kumir::Converter::stringToBoolDef(sv, def);
+        valuesStack_.push(Variable(v));
         break;
     }
     default: {

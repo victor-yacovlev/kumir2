@@ -106,8 +106,15 @@ ActorInterface* findActor(const QByteArray & qModuleName)
     ActorInterface * actor = nullptr;
     foreach ( KPlugin * p, actorPlugins ) {
         actor = qobject_cast<ActorInterface*>(p);
-        if (actor && actor->asciiModuleName()==qModuleName) {
-            break;
+        if (actor) {
+            QByteArray canonicalName = actor->asciiModuleName();
+            const int end = canonicalName.indexOf("%");
+            if (-1 != end) {
+                canonicalName = canonicalName.left(end).trimmed();
+            }
+            if (qModuleName == canonicalName) {
+                break;
+            }
         }
         actor = nullptr;
     }

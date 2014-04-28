@@ -17,9 +17,11 @@ set(SOURCES
     aboutdialog.cpp
     statusbar.cpp
     debuggerview.cpp
-    row.cpp
+    side.cpp
     switchworkspacedialog.cpp
     systemopenfilesettings.cpp
+    guisettingspage.cpp
+    toolbarcontextmenu.cpp
 )
 
 set(EXTRA_LIBS
@@ -46,9 +48,11 @@ set(MOC_HEADERS
     tabwidgetelement.h
     statusbar.h
     debuggerview.h
-    row.h
+    side.h
     switchworkspacedialog.h
     systemopenfilesettings.h
+    guisettingspage.h
+    toolbarcontextmenu.h
 )
 
 set(FORMS
@@ -56,6 +60,7 @@ set(FORMS
     aboutdialog.ui
     switchworkspacedialog.ui
     systemopenfilesettings.ui
+    guisettingspage.ui
 )
 
 set(RESOURCES

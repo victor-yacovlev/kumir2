@@ -69,6 +69,19 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
     return result;
 }
 
+void SecondaryWindow::changeDockPlace(DockWindowPlace *dockPlace)
+{
+    Q_ASSERT(dockContainer_);
+    SecondaryWindowImplementationInterface * dock =
+            createDockContainer(dockContainer_->title(), dockPlace);
+    dock->setPairedContainer(windowContainer_);
+    dockPlace->registerWindowHere(this);
+    windowContainer_->setPairedContainer(dock);
+    QObject* old = dynamic_cast<QObject*>(dockContainer_);
+    old->deleteLater();
+    dockContainer_ = dock;
+}
+
 SecondaryWindowImplementationInterface *
 SecondaryWindow::createWindowContainer(const QString &title,
                                        const QIcon & icon,
@@ -193,7 +206,7 @@ void SecondaryWindow::restoreState()
         window->resize(sz);
         window->move(ps);
     }    
-    bool docked = settings_->value(settingsKey_ + IsDocked, false).toBool();
+    bool docked = settings_->value(settingsKey_ + IsDocked, true).toBool();
     if (dockContainer_ && docked) {
         QWidget * w = currentContainer()->releaseWidgetOwnership();
         dockContainer_->getWidgetOwnership(w);

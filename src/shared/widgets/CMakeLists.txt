@@ -8,6 +8,7 @@ include(../../kumir2_library.cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(SOURCES
+    actionproxy.cpp
     groupbox.cpp
     cyrillicmenu.cpp
     secondarywindow.cpp
@@ -19,9 +20,11 @@ set(SOURCES
     declarativesettingspage.cpp
     declarativesettingspage_impl.cpp
     secondarywindow_generic.cpp
+    utf8textbrowser.cpp
 )
 
 set(MOC_HEADERS
+    actionproxy.h
     groupbox.h
     cyrillicmenu.h
     secondarywindow.h

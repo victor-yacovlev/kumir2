@@ -1,0 +1,91 @@
+{
+    "name": { "ascii": "Draw", "ru_RU": "Чертежник" },
+    "uses": [ "_Colorer" ],
+    "methods": [
+        {
+            "name": {"ascii": "setup pen", "ru_RU": "опустить перо"},
+            "async": false
+        },
+        {
+            "name": {"ascii": "release pen", "ru_RU": "поднять перо"},
+            "async": false
+        },
+        {
+            "name": {"ascii": "set pen color", "ru_RU": "выбрать чернила"},
+            "async": false,
+            "arguments": [
+                {"baseType": "color", "name": "color"}
+            ]
+        },
+        {
+            "name": {"ascii": "move to", "ru_RU": "сместиться в точку"},
+            "arguments": [
+                {"baseType": "double", "name": "x"},
+                {"baseType": "double", "name": "y"}
+            ]
+        },
+        {
+            "name": {"ascii": "move by", "ru_RU": "сместиться на вектор"},
+            "arguments": [
+                {"baseType": "double", "name": "dX"},
+                {"baseType": "double", "name": "dY"}
+            ]
+        },
+        {
+            "name": {"ascii": "add caption", "ru_RU": "написать"},
+            "arguments": [
+                {"baseType": "double", "name": "width"},
+                {"baseType": "string", "name": "text"}
+            ]
+        }, 
+           {
+            "name": {"ascii": "@is line at circle", "ru_RU": "@есть отрезок в области"},
+            "returnType": "bool",
+            "arguments": [
+                {"baseType": "double", "name": "x"},
+                {"baseType": "double", "name": "y"},
+                {"baseType": "double", "name": "radius"}
+            ]
+        } 
+               
+        
+    ],
+    "gui": {
+        "windows": [
+            {"role": "main", "icon": "draw"}
+        ],
+        "menus": [
+            {
+                "title": {"ascii": "Draw", "ru_RU": "Чертежник"},
+                "items": [
+                    {
+                        "title": {"ascii": "Load Drawing...", "ru_RU": "Загрузить чертеж..."},
+                        "icon": "file-open"
+                    },
+                    {
+                        "title": {"ascii": "Save Drawing...", "ru_RU": "Сохранить чертеж..."},
+                        "icon": "file-save-as"
+                    }
+                ]
+            }
+        ]
+    },
+            "settings": {
+                "BackColor": {
+                        "type": "color",
+                        "default": "#FFFFFF",
+                        "title": {"ascii": "Background color", "ru_RU": "Цвет фона"}
+                },
+                "LineColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
+                },
+                "AxisColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Axis color", "ru_RU": "Цвет осей"}
+                }
+
+        }  
+}

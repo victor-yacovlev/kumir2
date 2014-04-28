@@ -63,6 +63,8 @@ public:
     bool isFreeCursorMovement() const;
     bool modifiesProtectedLiines() const;
 
+    static void normalizePlainText(QString & s);
+
 public slots:
     void toggleComment();
     void undo();

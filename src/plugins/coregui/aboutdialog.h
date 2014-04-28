@@ -2,6 +2,7 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
+#include <QTextBrowser>
 
 namespace CoreGUI {
 
@@ -27,7 +28,6 @@ private:
     void addLoadedModules();
     Ui::AboutDialog *ui;
 };
-
 
 } // namespace CoreGUI
 #endif // ABOUTDIALOG_H

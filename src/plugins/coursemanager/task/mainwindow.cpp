@@ -19,6 +19,7 @@ cursFile="";
  {
        course=NULL;
      ui->setupUi(this);
+     isReadOnly=false;
      ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
      ui->treeView->setIconSize(QSize(25,25));
      ui->treeView->setStyleSheet("icon-size: 25px;font-size: 14px;");
@@ -133,12 +134,20 @@ void MainWindowTask::loadMarks(const QString fileName)
 {
     QDomDocument workXml;
     QFile f(fileName);
+    
     if  (!f.open(QIODevice::ReadOnly))
     {
         QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
         return;
 
     };
+    QFileInfo fi(f);
+    if(!fi.isWritable())
+    {
+       QMessageBox::information( 0, "", trUtf8("Файл загружен только для чтения, изменение не будут сохранены: ") + fileName, 0,0,0);
+        isReadOnly=true;
+    }else
+     isReadOnly=false;   
 if(f.atEnd())
     {
     QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла ,файл пуст: ") + fileName, 0,0,0);
@@ -287,12 +296,14 @@ void MainWindowTask::loadCourse()
      progChange.clear();
      if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
      {
+         isReadOnly=false;
          loadMarks(fileName);
          this->show();
          return;
      }else
      cursWorkFile.setFileName("");
      loadCourseData(fileName);
+     isReadOnly=false;
      interface->setPreProgram(QVariant(""));
      QString cText=course->courceDescr();
 
@@ -572,6 +583,7 @@ void MainWindowTask::saveCourse()
 };
 void MainWindowTask::saveCourseFile()
 {
+    if(isReadOnly)return;
     qDebug()<<"Save cource file";
     QDomDocument saveXml;
 

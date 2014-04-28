@@ -29,6 +29,7 @@ namespace CoreGUI {
 
 using namespace Terminal;
 using namespace Shared;
+class GUISettingsPage;
 
 class Plugin
         : public ExtensionSystem::KPlugin
@@ -76,6 +77,7 @@ public slots:
 protected slots:
     void prepareKumirProgramToRun();
     void handleExternalProcessCommand(const QString & command);
+    void updateSettings(const QStringList & keys);
 
 
 
@@ -88,7 +90,7 @@ protected:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
-    void updateSettings(const QStringList & keys);
+    QWidget* settingsEditorPage();
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     static void handleSIGUSR1(int, siginfo_t *, void *);
@@ -120,6 +122,7 @@ protected:
     bool sessionsDisableFlag_;
     static Plugin * instance_;
     QString fileNameToOpenOnReady_;
+    GUISettingsPage * guiSettingsPage_;
 
 signals:
     void externalProcessCommandReceived(const QString & command);

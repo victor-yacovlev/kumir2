@@ -8,6 +8,9 @@
 #include "ui_mainwindow.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+
+#include "guisettingspage.h"
+
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
@@ -37,6 +40,7 @@ Plugin::Plugin() :
     helpViewer_ = 0;
     courseManager_ = 0;
     helpWindow_ = 0;
+    guiSettingsPage_ = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -108,11 +112,15 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     QApplication::setWindowIcon(QIcon(myResourcesDir().absoluteFilePath("kumir2-icon"+iconSuffix+".png")));
 
 
+
     sessionsDisableFlag_ = parameters.contains("nosessions",Qt::CaseInsensitive);
 
     m_kumirStateLabel = new QLabel();
     m_genericCounterLabel = new QLabel();
     mainWindow_ = new MainWindow(this);
+
+
+
 #ifdef Q_OS_MACX
    // void * mac_mainWindow = (class NSView*)(m_mainWindow->winId());
     //MacFixes::setLionFullscreenButton(mac_mainWindow);
@@ -127,13 +135,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (!plugin_editor)
         return "Can't load editor plugin!";
     terminal_ = new Term(mainWindow_);
-    mainWindow_->consoleAndCourcesPlace_->addPersistentWidget(terminal_,
+    mainWindow_->consolePlace_->addPersistentWidget(terminal_,
                                                               tr("Input/Output"));
 
     connect(terminal_, SIGNAL(showWindowRequest()),
             mainWindow_, SLOT(ensureBottomVisible()));
-
-
+    connect(terminal_, SIGNAL(message(QString)),
+            mainWindow_, SLOT(showMessage(QString)));
 
     const QString qtcreatorIconsPath =
             ExtensionSystem::PluginManager::instance()->sharePath()
@@ -222,7 +230,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 tr("Help"),
                 QIcon(), // TODO help window icon
                 mainWindow_,
-                mainWindow_->helpPlace_,
+                mainWindow_->helpAndCoursesPlace_,
                 "HelpViewerWindow",
                 true
                 );
@@ -245,7 +253,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     tr("Courses"),
                     QIcon(), // TODO courses icon
                     mainWindow_,
-                    mainWindow_->consoleAndCourcesPlace_,
+                    mainWindow_->helpAndCoursesPlace_,
                     "CoursesWindow",
                     true
                     );
@@ -255,6 +263,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                     tr("Courses"),
                     coursesWindow_, SLOT(activate())
                     );
+        showCourses->setObjectName("window-courses");
 
         const QString courseIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/course.png";
         QIcon courseIcon(courseIconFileName);
@@ -272,6 +281,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     actors += loadedPlugins("st_funct");
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        const QString actorName = Shared::actorCanonicalName(actor->localizedModuleName(QLocale::Russian));
+        const QString actorObjectName = Shared::actorCanonicalName(actor->asciiModuleName()).replace(" ", "-").toLower();
         l_plugin_actors << actor;
         QWidget * w = 0;
         const QString actorHelpFile = helpPath + o->pluginSpec().name + ".xml";
@@ -297,7 +308,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
-                        actor->localizedModuleName(QLocale::Russian),
+                        actorName,
                         mainIcon,
                         mainWindow_,
                         mainWindow_->actorsPlace_,
@@ -309,11 +320,11 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
             QAction * showActor =
                     mainWindow_->ui->menuWindow->addAction(
-                        actor->localizedModuleName(QLocale::Russian),
+                        actorName,
                         actorWindow,
                         SLOT(activate())
                         );
-
+            showActor->setObjectName("window-actor-" + actorObjectName);
             mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
                 showActor->setIcon(mainIcon);
@@ -333,7 +344,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 Widgets::SecondaryWindow * pultWindow =
                         Widgets::SecondaryWindow::createSecondaryWindow(
                             actor->pultWidget(),
-                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
+                            actorName + " - " + tr("Remote Control"),
                             pultIcon,
                             mainWindow_,
                             nullptr,
@@ -344,10 +355,11 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
                 QAction * showPult =
                         mainWindow_->ui->menuWindow->addAction(
-                            actor->localizedModuleName(QLocale::Russian) + " - " + tr("Remote Control"),
+                            actorName + " - " + tr("Remote Control"),
                             pultWindow,
                             SLOT(activate())
                             );
+                showPult->setObjectName("window-control-" + actorObjectName);
 
                 mainWindow_->gr_otherActions->addAction(showPult);
 
@@ -381,7 +393,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         QList<QMenu*>() << editMenu << insertMenu,
                         MainWindow::WWW
                         );
-            twe->browserInstance = startPage_;
+            twe->setBrowser(startPage_);
             const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
             startPage_->go(browserEntryPoint);
         }
@@ -405,10 +417,20 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 "DebuggerWindow",
                 true
                 );
+    mainWindow_->debuggerWindow_ = debuggerWindow;
     secondaryWindows_ << debuggerWindow;
 
     connect(mainWindow_->ui->actionVariables, SIGNAL(triggered()),
             debuggerWindow, SLOT(activate()));
+
+    const QString layoutChoice =
+            mySettings()->value(GUISettingsPage::LayoutKey, GUISettingsPage::ColumnsFirstValue).toString();
+    if (layoutChoice == GUISettingsPage::ColumnsFirstValue) {
+        mainWindow_->switchToColumnFirstLayout();
+    }
+    else {
+        mainWindow_->switchToRowFirstLayout();
+    }
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
     struct sigaction act;
@@ -518,6 +540,15 @@ void Plugin::updateSettings(const QStringList & keys)
         mainWindow_->updateSettings(mySettings(), keys);
 }
 
+QWidget* Plugin::settingsEditorPage()
+{
+    if (!guiSettingsPage_) {
+        guiSettingsPage_ = new GUISettingsPage(mySettings(), 0);
+        connect(guiSettingsPage_, SIGNAL(settingsChanged(QStringList)),
+                this, SLOT(updateSettings(QStringList)));
+    }
+    return guiSettingsPage_;
+}
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
@@ -532,9 +563,10 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     }
     else if (state==PluginInterface::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
-        mainWindow_->showMessage(kumirProgram_->endStatus());
+        mainWindow_->showMessage(kumirProgram_->endStatusText());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
+        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
     }
     else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
@@ -560,7 +592,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
 void Plugin::prepareKumirProgramToRun()
 {
     TabWidgetElement * twe = mainWindow_->currentTab();
-    kumirProgram_->setEditorInstance(twe->editorInstance);
+    kumirProgram_->setEditorInstance(twe->editor());
 }
 
 bool Plugin::showWorkspaceChooseDialog()

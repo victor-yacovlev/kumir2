@@ -22,7 +22,7 @@ static const uint LEFT_MARGIN_SIZE = 5u /*symbols*/;
 static const uint HIGHTLIGHT_LINE_VERTICAL_PADDING = 5u /*px*/;
 static const QColor PROTECTED_LINE_BACKGROUND(0x15, 0x79, 0x63, 0x40);
 static const QColor HIDDEN_LINE_BACKGROUND(0x00, 0x00, 0x00, 0x40);
-static const uint MARGIN_LINE_WIDTH = 4u /*px*/;
+static const uint MARGIN_LINE_WIDTH = 3u /*px*/;
 
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
@@ -256,6 +256,12 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
  */
 void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
 {
+#ifdef Q_OS_WIN32
+    if (Qt::RightButton == e->button()) {
+        e->ignore();
+        return;
+    }
+#endif
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
     emit requestAutoScrollX(0);
@@ -309,6 +315,7 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         // If not selection in progress, remove all selections
         editor_->cursor()->removeSelection();
         editor_->cursor()->removeRectSelection();
+        updateScrollBars();
     }
 
     // Restore cursor blink behaviour, changed while mousePressEvent
@@ -848,7 +855,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     QPainter p(this);
 
 //    // Paint a plain background
-//    paintBackground(&p, e->rect());
+    paintBackground(&p, e->rect());
 
     // Save state before translating scroll offsets
     p.save();
@@ -1006,11 +1013,12 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     p.setBrush(Qt::NoBrush);
     const QBrush br = hasFocus()
             ? palette().brush(QPalette::Highlight)
-            : palette().brush(QPalette::Window);
+            : palette().brush(QPalette::Mid);
     p.setPen(QPen(br, 3));
     p.drawLine(0, 0, width()-1, 0);
     p.drawLine(0, height()-1, width()-1, height()-1);
     p.drawLine(0, 0, 0, height()-1);
+    p.drawLine(width()-1, 0, width()-1, height());
 
 
     // Draw a delimeter ruler between visible/hidden text if need
@@ -1964,7 +1972,19 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     p->drawRect(marginBackgroundRect().intersected(rect));
 
     // Draw margin line
-    QColor marginLineColor(0xFF, 0x80, 0x80);
+    unsigned errorsCount = editor_->analizer() ? editor_->analizer()->errors().size() : 0u;
+    QColor marginLineColor = palette().color(hasFocus()? QPalette::Highlight : QPalette::Mid);
+    if (errorsCount) {
+        const QColor bgColor = palette().color(QPalette::Base);
+        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+        if (darkness / 3 <= 127) {
+            // Invert color for dark backround
+            marginLineColor = QColor("orangered");
+        }
+        else {
+            marginLineColor = QColor("red");
+        }
+    }
     marginLineColor.setAlpha(marginBackgroundAlpha_);
     p->setBrush(marginLineColor);
     p->drawRect(marginLineRect().intersected(rect));
@@ -1977,7 +1997,7 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
 void EditorPlane::paintBackground(QPainter *p, const QRect &rect)
 {
     p->setPen(Qt::NoPen);
-    p->setBrush(palette().brush(QPalette::Base).color());
+    p->setBrush(palette().brush(QPalette::Base));
     p->drawRect(rect);
 }
 
@@ -2092,7 +2112,8 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                   // If line exists, draw number using regular fg color
                 ? QColor(palette().brush(QPalette::WindowText).color())
                   // else draw using lighter color
-                : QColor(Qt::lightGray);
+                : QColor(palette().brush(QPalette::Disabled, QPalette::WindowText).color());
+//                : QColor(Qt::lightGray);
 
         p->setPen(textColor);
         const QColor bgColor = palette().color(QPalette::Base);
@@ -2460,7 +2481,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             if (curType==LxTypeComment && text[j]=='|') {
                 // A comment symbol '|' must be drawn as accessible as possible
                 p->setPen(QPen(p->pen().brush(), 2));
-                p->drawLine(offset, y, offset, y-lineHeight()+2);
+                p->drawLine(offset+charWidth()/2, y, offset+charWidth()/2, y-lineHeight()+2);
             }
             else {
                 // Draw a symbol using obtained format

@@ -307,11 +307,12 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
             AST::VariablePtr var;
             AST::AlgorithmPtr alg;
             AST::Type type;
+            QVariantList templateParameters;
             if (findVariable(name, contextModule, contextAlgorithm, var))
             {
                 type = var->baseType;
             }
-            else if (findAlgorhitm(name, contextModule, contextAlgorithm, alg)) {
+            else if (findAlgorithm(name, contextModule, contextAlgorithm, alg, templateParameters)) {
                 type = alg->header.returnType;
             }
             if (type.kind!=AST::TypeUser && type.kind!=AST::TypeNone) {
@@ -735,7 +736,8 @@ QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplet
                 }
                 algorithmName = algorithmName.simplified();
                 AST::AlgorithmPtr alg;
-                if (findAlgorhitm(algorithmName, contextModule, contextAlgorithm, alg)) {
+                QVariantList templateParameters;
+                if (findAlgorithm(algorithmName, contextModule, contextAlgorithm, alg, templateParameters)) {
                     int argumentIndex = comasBefore;
                     if (argumentIndex<alg->header.arguments.size()) {
                         // Suggest a corresponding argument type value
@@ -1304,6 +1306,31 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
         }
     }
 
+    checkForEmitImportsSignal();
+}
+
+void SyntaxAnalizer::checkForEmitImportsSignal()
+{
+    QStringList imports;
+    AST::ModulePtr mainModule;
+    for (int i=0; i<ast_->modules.size(); i++) {
+        const AST::ModulePtr module = ast_->modules[i];
+        if (AST::ModTypeUserMain == module->header.type ||
+                AST::ModTypeTeacherMain == module->header.type)
+        {
+            mainModule = module;
+            break;
+        }
+    }
+    if (mainModule) {
+        for (int i=0; i<ast_->modules.size(); i++) {
+            const AST::ModulePtr module = ast_->modules[i];
+            if (module->isEnabledFor(mainModule) && module->header.name.length() > 0) {
+                imports << Shared::actorCanonicalName(module->header.name);
+            }
+        }
+    }
+    emit importsChanged(imports);
 }
 
 void SyntaxAnalizer::processAnalisys()
@@ -1527,18 +1554,18 @@ void SyntaxAnalizer::parseImport(int str)
         st.data[0]->error = _("No module name");
         return;
     }
-    if (st.data.size()>2) {
-        for (int i=2; i<st.data.size(); i++) {
-            st.data[i]->error = _("Garbage afrer module name");
-        }
-        return;
-    }
     if (st.data[1]->data.isEmpty()) {
         st.data[1]->error = _("No module name");
         return;
     }
     QString name;
     if (st.data[1]->type==LxConstLiteral) {
+        if (st.data.size()>2) {
+            for (int i=2; i<st.data.size(); i++) {
+                st.data[i]->error = _("Garbage afrer module name");
+            }
+            return;
+        }
         name = st.data[1]->data.trimmed();
         if (name.isEmpty()) {
             st.data[1]->error = _("Must be Kumir program file name");
@@ -1593,16 +1620,51 @@ void SyntaxAnalizer::parseImport(int str)
             return;
     }
     else {
-        QString localError = lexer_->testName(st.data[1]->data);
+        bool isTemplateName = false;
+        foreach (const LexemPtr lexem, st.data.mid(1)) {
+            name += " " + lexem->data;
+        }
+        QString localError = lexer_->testName(name);
         if (localError.size()>0) {
-            st.data[1]->error = localError;
+            foreach (LexemPtr lexem, st.data.mid(1)) {
+                lexem->error = localError;
+            }
             return;
         }
-        name = st.data[1]->data.simplified();
+        name = name.simplified();
         foreach (AST::ModulePtr module, ast_->modules) {
-            if (module->header.name == name && !module->header.name.startsWith("_")) {
-                moduleToImport = module;
-                break;
+            if (module->header.nameTemplate.length() == 0) {
+                // Regular module name
+                if (module->header.name == name && !module->header.name.startsWith("_")) {
+                    moduleToImport = module;
+                    break;
+                }
+            }
+            else {
+                QString namePattern = module->header.nameTemplate;
+                namePattern.replace("%d", "(\\d+)");
+                namePattern.replace("%s", "(\\w+)");
+                QRegExp moduleRx(namePattern);
+                if (-1 != moduleRx.indexIn(name)) {
+                    const QStringList caps = moduleRx.capturedTexts().mid(1);
+                    if (caps.size() == module->header.templateTypes.size()) {
+                        for (int k=0; k<caps.size(); k++) {
+                            QVariant param = QVariant(caps[k]);
+                            param.convert(module->header.templateTypes[k]);
+                            module->header.templateParameters[k] = param;
+                        }
+                        moduleToImport = module;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!isTemplateName) {
+            if (st.data.size()>2) {
+                for (int i=2; i<st.data.size(); i++) {
+                    st.data[i]->error = _("Garbage afrer module name");
+                }
+                return;
             }
         }
     }
@@ -1625,9 +1687,102 @@ void SyntaxAnalizer::parseImport(int str)
         }
     }
     else {
-        st.data[1]->error = _("No such module");
+        // Check if valid but uncomplete name
+        bool incompleteName = false;
+        foreach (AST::ModulePtr module, ast_->modules) {
+            if (module->header.nameTemplate.length() > 0) {
+                if (name == module->header.name) {
+                    moduleToImport = module;
+                    incompleteName = true;
+                    break;
+                }
+            }
+        }        
+        if (incompleteName) {
+            // Try to use default template parameters
+            if (moduleToImport->impl.actor) {
+                const ActorInterface * actor = moduleToImport->impl.actor;
+                if (actor->defaultTemplateParameters().size() > 0) {
+                    incompleteName = false;
+                    moduleToImport->header.templateParameters = actor->defaultTemplateParameters();
+                }
+            }
+            if (incompleteName) {
+                for (int i=1; i<st.data.size(); i++) {
+                    st.data[i]->error = _("Incomplete module name");
+                }
+                return;
+            }
+            else {
+                moduleToImport->header.usedBy.append(st.mod.toWeakRef());
+                if (moduleToImport->impl.actor) {
+                    QList<Shared::ActorInterface*> deps =
+                            moduleToImport->impl.actor->usesList();
+                    Q_FOREACH (Shared::ActorInterface * actor, deps) {
+                        AST::ModulePtr actorMod = findModuleByActor(ast_, actor);
+                        actorMod->header.usedBy.append(st.mod.toWeakRef());
+                    }
+                }
+                for (int i=1; i<st.data.size(); i++) {
+                    st.data[i]->type = LxNameModule;
+                }
+            }
+        }
+        else {
+            for (int i=1; i<st.data.size(); i++) {
+                st.data[i]->error = _("No such module");
+            }
+            return;
+        }
+    }
+    const QStringList conflictNames = checkForConflictingNames(moduleToImport, st.mod);
+    if (conflictNames.size() > 0) {
+        st.data[1]->error = _("Name conflict with modules: %1",
+                    conflictNames.join(", ")
+                    );
+        moduleToImport->header.usedBy.removeAll(st.mod.toWeakRef());
         return;
     }
+}
+
+QStringList SyntaxAnalizer::checkForConflictingNames(const ModulePtr &moduleToCheck, const ModulePtr & parentModule) const
+{
+    QSet<QString> result;
+
+    QStringList thisModuleNames;
+    Q_FOREACH(const AST::AlgorithmPtr & alg, moduleToCheck->header.algorhitms) {
+        thisModuleNames << alg->header.name;
+    }
+    Q_FOREACH(const AST::Type & type, moduleToCheck->header.types) {
+        thisModuleNames << type.name;
+    }
+
+    Q_FOREACH(const QString & nameToCheck, thisModuleNames) {
+        Q_FOREACH(const AST::ModulePtr & module, ast_->modules) {
+            bool moduleAvailable =
+                    module->builtInID == 0xF0 ||
+                    module->isEnabledFor(parentModule) ||
+                    alwaysEnabledModules_.contains(module->header.name)
+                    ;
+            if (moduleAvailable && module != moduleToCheck) {
+                Q_FOREACH(const AST::AlgorithmPtr & alg, module->header.algorhitms) {
+                    const QString & algName = alg->header.name;
+                    if (algName == nameToCheck) {
+                        result.insert(module->header.name);
+                        break;
+                    }
+                }
+                Q_FOREACH(const AST::Type & type, module->header.types) {
+                    const QString & typeName = type.name;
+                    if (typeName == nameToCheck) {
+                        result.insert(module->header.name);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return result.toList();
 }
 
 AST::ModulePtr SyntaxAnalizer::loadKodFile(const QString &name, QString &error)
@@ -2300,6 +2455,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
         }
         QString name;
         AST::AlgorithmPtr  dummyAlg;
+        QVariantList templateParameters;
         for (int i=0; i<forr.size(); i++) {
             if (i>0) name += " "; name += forr[i]->data;
         }
@@ -2309,7 +2465,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
         else if (findGlobalVariable(name, st.mod, st.statement->loop.forVariable)) {
 
         }
-        else if (findAlgorhitm(name, st.mod, st.alg, dummyAlg)) {
+        else if (findAlgorithm(name, st.mod, st.alg, dummyAlg, templateParameters)) {
             foreach (LexemPtr l, forr) l->error = _("Algorithm can't be a loop variable");
             return;
         }
@@ -2747,7 +2903,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
 
     }
     for (int i=nameStartLexem; i<st.data.size(); i++) {
-        if (st.data[i]->type==LxNameClass) {
+        if (st.data[i]->type==LxNameClass || st.data[i]->type==LxConstBoolFalse || st.data[i]->type==LxConstBoolTrue) {
             st.data[i]->error = _("Name contains keyword");
             return;
         }
@@ -2756,6 +2912,25 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
                 name += " ";
             name += st.data[i]->data;
             st.data[i]->type=LxNameAlg;
+        }
+        else if (LxConstInteger == st.data[i]->type || LxConstReal == st.data[i]->type) {
+            if (i==nameStartLexem) {
+                st.data[i]->error = _("Name starts with digit");
+                return;
+            }
+            if (st.data[i]->data.contains('.') ||
+                     st.data[i]->data.contains('+') ||
+                     st.data[i]->data.contains('-')
+                     )
+            {
+                st.data[i]->error = _("Bad symbol in name");
+                return;
+            }
+            if (i>nameStartLexem) {
+                name += " ";
+                name += st.data[i]->data;
+                st.data[i]->type=LxNameAlg;
+            }
         }
         else if (st.data[i]->type == LxOperLeftBr ) {
             argsStartLexem = i+1;
@@ -2774,7 +2949,7 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
             st.data[i]->error = _("Keyword in name");
             return;
         }
-        else {
+        else if (st.data[i]->type & LxTypeOperator) {
             st.data[i]->error = _("Operator in name");
             return;
         }
@@ -2810,13 +2985,28 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
         }
     }
 
+    if (name.length() > 0) {
+        // process generic name test
+        const QString error = lexer_->testName(name);
+        if (error.length() > 0) {
+            const int start = nameStartLexem;
+            const int end = argsStartLexem == -1
+                    ? st.data.length() : argsStartLexem-1;
+            for (int i=start; i<end; i++) {
+                st.data[i]->error = error;
+            }
+            return;
+        }
+    }
+
     // Заносим алгоритм в таблицу функций
     alg->header.name = name;
     bool nameHasError = false;
 
     // Проверяем на повторное описание алгоритма
     AST::AlgorithmPtr  aa;
-    if (!isOperator && findAlgorhitm(name,st.mod, AST::AlgorithmPtr(), aa) && aa!=alg)
+    QVariantList aaTemplateParameters;
+    if (!isOperator && findAlgorithm(name,st.mod, AST::AlgorithmPtr(), aa, aaTemplateParameters) && aa!=alg)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
@@ -3336,7 +3526,8 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 }
 
                 AST::AlgorithmPtr  aa;
-                if (findAlgorhitm(cName, mod, alg, aa)) {
+                QVariantList aaTemplateParameters;
+                if (findAlgorithm(cName, mod, alg, aa, aaTemplateParameters)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
                     return result;
                 }
@@ -3683,7 +3874,52 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                                                     var->baseType.kind,
                                                     maxDim);
                 if (constValue==QVariant::Invalid) {
-                    return result;
+                    // Try to parse constant of custom typee
+                    AST::Type userConstType;
+                    QVariant userConstValue;
+                    QString longLexem;
+                    foreach (const LexemPtr lx, initValue) {
+                        if (longLexem.length() > 0) longLexem += " ";
+                        longLexem += lx->data;
+                    }
+                    if (tryInputOperatorAlgorithm(longLexem, userConstType, userConstValue, mod) &&
+                            userConstType == cType
+                            ) {
+                        constValue = userConstValue;
+                        foreach (LexemPtr lx, initValue) {
+                            lx->type = Shared::LxTypeConstant;
+                            lx->error.clear();
+                        }
+                    }
+                    else {
+                        return result;
+                    }
+                }
+                if (QVariant::Double == constValue.type()
+                        && AST::TypeInteger == cType.kind)
+                {
+                    static const QString realSpecificSymbols =
+                            QString::fromUtf8("еЕeE.");
+                    bool isRealConstant = false;
+                    QString strValue;
+                    foreach (const AST::LexemPtr clx, initValue) {
+                        if (strValue.length()>0)
+                            strValue.append(' ');
+                        strValue += clx->data;
+                    }
+
+                    for (int ss=0; ss<realSpecificSymbols.length(); ss++) {
+                        if (strValue.contains(realSpecificSymbols[ss])) {
+                            isRealConstant = true;
+                            break;
+                        }
+                    }
+                    if (!isRealConstant) {
+                        foreach (AST::LexemPtr clx, initValue) {
+                            clx->error = _("Integer constant too big");
+                        }
+                        return result;
+                    }
                 }
                 if (var->dimension==0 && lexer_->isArrayClassName(group.lexems[typePos]->data)) {
                     if (maxDim>3) {
@@ -4067,14 +4303,15 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
     return result;
 }
 
-bool SyntaxAnalizer::findAlgorhitm(
+bool SyntaxAnalizer::findAlgorithm(
         const QString &name,
         const AST::ModulePtr currentModule,
         const AST::AlgorithmPtr currentAlgorithm,
-        AST::AlgorithmPtr &algorhitm
+        AST::AlgorithmPtr &algorithm,
+        QVariantList & templateParameters
         ) const
 {
-    algorhitm.clear();
+    algorithm.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr module = ast_->modules[i];
         bool moduleAvailable =
@@ -4096,27 +4333,60 @@ bool SyntaxAnalizer::findAlgorhitm(
                     )
             {
                 // The same module - find includes private members
-                for (int j=0; j<ast_->modules[i]->impl.algorhitms.size(); j++) {
-                    AST::AlgorithmPtr alg = ast_->modules[i]->impl.algorhitms[j];
-                    if (alg->header.name==name) {
-                        algorhitm = alg;
-                        return true;
-                    }
-                }
+                if (findAlgorithmInModule(name, ast_->modules[i], true, true, algorithm, templateParameters))
+                    return true;
             }
             else {
                 // Find only public algorhitm
-                for (int j=0; j<ast_->modules[i]->header.algorhitms.size(); j++) {
-                    AST::AlgorithmPtr alg = ast_->modules[i]->header.algorhitms[j];
-                    if (alg->header.name==name && !alg->header.broken) {
-                        algorhitm = alg;
-                        return true;
-                    }
-                }
+                if (findAlgorithmInModule(name, ast_->modules[i], false, false, algorithm, templateParameters))
+                    return true;
             }
         }
     }
 
+    return false;
+}
+
+bool SyntaxAnalizer::findAlgorithmInModule(const QString &name,
+                                           const ModulePtr &module,
+                                           const bool allowPrivate,
+                                           const bool allowBroken,
+                                           AlgorithmPtr &algorithm,
+                                           QVariantList &templateParameters) const
+{
+    algorithm = AlgorithmPtr();
+    templateParameters = QVariantList();
+    const QList<AlgorithmPtr> & algList = allowPrivate
+            ? module->impl.algorhitms : module->header.algorhitms;
+    Q_FOREACH(AlgorithmPtr a, algList) {
+        bool skip = !allowBroken && a->header.broken;
+        if (skip) continue;
+
+        if (module->header.nameTemplate.length() > 0) {
+            // construct fully-qualified name and search by regexp
+            QString pattern = a->header.name;
+            QVariantList params;
+            for (int t=0; t<module->header.templateParameters.size(); t++) {
+                if (-1 != pattern.indexOf("%" + QString::number(t+1))) {
+                    pattern.replace("%" + QString::number(t+1), module->header.templateParameters[t].toString());
+                    params.append(module->header.templateParameters[t]);
+                }
+            }
+            pattern = pattern.simplified();
+            if (name == pattern) {
+                templateParameters = params;
+                algorithm = a;
+                return true;
+            }
+        }
+        else {
+            // check plaint name match
+            if (name == a->header.name) {
+                algorithm = a;
+                return true;
+            }
+        }
+    }
     return false;
 }
 
@@ -5073,7 +5343,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
     QList<LexemPtr> comas;
 
     AST::AlgorithmPtr  function;
-    if (!findAlgorhitm(name, mod, alg, function)) {
+    QVariantList functionTemplateParameters;
+    if (!findAlgorithm(name, mod, alg, function, functionTemplateParameters)) {
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
@@ -5270,7 +5541,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
     result->baseType = function->header.returnType;
     result->dimension = 0;
     result->function = function;
-    result->operands = realArguments;
+    addTemplateParametersToFunctionCall(result, functionTemplateParameters);
+    result->operands.append(realArguments);
     result->lexems = lexems;
     return result;
 }
@@ -5279,8 +5551,9 @@ void SyntaxAnalizer::updateSliceDSCall(AST::ExpressionPtr  expr, AST::VariablePt
 {
     static AST::AlgorithmPtr  strlenAlg;
     static AST::ModulePtr  stdlibMod;
+    static QVariantList functionTemplateParameters;
     if (!strlenAlg)
-        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg);
+        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg, functionTemplateParameters);
     if (expr->kind==AST::ExprFunctionCall
             && expr->function==strlenAlg
             && expr->operands.size()==0)
@@ -5301,9 +5574,10 @@ bool SyntaxAnalizer::checkWrongDSUsage(ExpressionPtr expression)
 {
     static AST::AlgorithmPtr  strlenAlg;
     static AST::ModulePtr  stdlibMod;
+    static QVariantList functionTemplateParameters;
     bool hasError = false;
     if (!strlenAlg)
-        findAlgorhitm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg);
+        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg, functionTemplateParameters);
     if (expression->kind==AST::ExprFunctionCall
             && expression->function==strlenAlg
             && expression->operands.size()==0)
@@ -5380,7 +5654,8 @@ AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<LexemPtr> &le
         }
         else {
             AST::AlgorithmPtr  a ;
-            if (findAlgorhitm(name, mod, alg, a)) {
+            QVariantList aTemplateParameters;
+            if (findAlgorithm(name, mod, alg, a, aTemplateParameters)) {
                 int a = qMax(0, openBracketIndex);
                 for (int i=a; i<lexems.size(); i++) {
                     lexems[i]->error = _("'[...]' instead of '(...)'");
@@ -5624,8 +5899,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
         result->baseType = AST::TypeInteger;
         result->dimension = 0;
         result->lexems = QList<LexemPtr>::fromStdList(lexems);
-        const AST::ModulePtr  dummy;
-        findAlgorhitm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function);
+        const AST::ModulePtr  dummy;        
+        QVariantList dummyTemplateParameters;
+        findAlgorithm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function, dummyTemplateParameters);
         return result;
     }
     if (lexems.size()>=1 &&
@@ -5774,6 +6050,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
 
         AST::AlgorithmPtr  a;
         AST::VariablePtr  v;
+        QVariantList aTemplateParameters;
 
         err = "";
         if (retval) {
@@ -5797,10 +6074,10 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
                 return result;
             }
         }
-        else {
-            if (findAlgorhitm(name, mod, alg, a)) {
+        else {            
+            if (findAlgorithm(name, mod, alg, a, aTemplateParameters)) {
                 foreach (LexemPtr lx, lexems) lx->type = LxNameAlg;
-                if (a->header.arguments.size()>0) {
+                if (a->header.arguments.size() - aTemplateParameters.size() > 0) {
                     err = _("No arguments");
                 }
                 else {
@@ -5808,6 +6085,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
                     result->kind = AST::ExprFunctionCall;
                     result->function = a;
                     result->baseType = a->header.returnType;
+                    addTemplateParametersToFunctionCall(result, aTemplateParameters);
                     return result;
                 }
             }
@@ -5844,7 +6122,21 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
     return result;
 }
 
-
+void SyntaxAnalizer::addTemplateParametersToFunctionCall(ExpressionPtr &callNode, const QVariantList &parameters)
+{
+    const AST::AlgorithmPtr & func = callNode->function;
+    Q_ASSERT(func);
+    Q_ASSERT(func->header.arguments.size() >= parameters.size());
+    Q_ASSERT(callNode->operands.isEmpty());
+    for (int i=0; i<parameters.size(); i++) {
+        AST::ExpressionPtr paramConst = AST::ExpressionPtr(new AST::Expression());
+        paramConst->kind = AST::ExprConst;
+        paramConst->baseType = func->header.arguments[i]->baseType;
+        paramConst->dimension = func->header.arguments[i]->dimension;
+        paramConst->constant = parameters[i];
+        callNode->operands.append(paramConst);
+    }
+}
 
 int findOperatorByPriority(const QList<SubexpressionElement> & s)
 {

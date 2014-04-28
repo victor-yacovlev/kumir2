@@ -35,21 +35,27 @@
       <widget class="QTreeView" name="treeView">
        <property name="minimumSize">
         <size>
-         <width>200</width>
+         <width>50</width>
          <height>100</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+         <kerning>false</kerning>
+        </font>
        </property>
        <property name="showDropIndicator" stdset="0">
         <bool>false</bool>
        </property>
        <property name="iconSize">
         <size>
-         <width>32</width>
-         <height>32</height>
+         <width>20</width>
+         <height>20</height>
         </size>
        </property>
        <property name="indentation">
-        <number>20</number>
+        <number>15</number>
        </property>
        <property name="uniformRowHeights">
         <bool>true</bool>

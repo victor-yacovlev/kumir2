@@ -797,7 +797,7 @@ public:
         }
         word = word.substr(pos, word.length()-pos);
         if (word.length()==0) {
-            error = WrongHex;
+            error = pos>0 ? EmptyWord : WrongHex;
             return 0;
         }
         int result = 0;
@@ -1104,6 +1104,40 @@ public:
         ok = error == NoError;
         return result;
     }
+    inline static int stringToIntDef(const String & str, int def)
+    {
+        bool ok;
+        int val = stringToInt(str, ok);
+        if (ok) return val; else return def;
+    }
+    inline static real stringToRealDef(const String & str, real def)
+    {
+        bool ok;
+        real val = stringToReal(str, ok);
+        if (ok) return val; else return def;
+    }
+    inline static bool stringToBoolDef(const String & str, bool def)
+    {
+        String v = Core::toLowerCaseW(str);
+        static const String trues[5] = {
+            Core::fromAscii("true"), Core::fromAscii("yes"),
+            Core::fromAscii("1"), Core::fromUtf8("да"),
+            Core::fromUtf8("истина")
+        };
+        static const String falses[5] = {
+            Core::fromAscii("false"), Core::fromAscii("no"),
+            Core::fromAscii("0"), Core::fromUtf8("нет"),
+            Core::fromUtf8("ложь")
+        };
+        for (size_t i=0; i<5; i++) {
+            const String & t = trues[i];
+            const String & f = falses[i];
+            if (v == t) return true;
+            if (v == f) return false;
+        }
+        return def;
+    }
+
     inline static String realToString(real value)
     {
         return sprintfReal(value, '.', false, 0, 0, 'l');

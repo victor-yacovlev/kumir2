@@ -40,6 +40,7 @@ void DockWindowPlaceContainer::activate(const QPoint &, const QSize & sz)
     }
     setVisible(true);
     place_->setCurrentIndex(tabIndex);
+    place_->activate(sz);
     centralWidget_->setFocus();
 }
 

@@ -1107,7 +1107,7 @@ void popAlgBeginStatement(QList<LexemPtr> &lexems, TextStatement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
+//    popLexemsUntilPrimaryKeywordOrVarDecl(lexems, result);
 }
 
 void popAlgEndStatement(QList<LexemPtr> &lexems, TextStatement &result)
@@ -1212,7 +1212,27 @@ void popLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    bool isFreeLoop = true;
+    static const QList<LexemType> LoopKeywords = QList<LexemType>()
+            << LxSecFor << LxSecFrom << LxSecTo << LxSecTimes << LxSecStep << LxSecWhile;
+    Q_FOREACH(const LexemPtr lx, lexems) {
+        if (lx->type & LxTypePrimaryKwd) break;
+        if (LoopKeywords.contains(lx->type)) {
+            isFreeLoop = false;
+        }
+    }
+    if (isFreeLoop) {
+        return;
+    }
+    while (lexems.size()>0) {
+        LexemPtr lx = lexems[0];
+        if (lx->type==LxOperSemicolon || (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
+            break;
+        if (result.data.size() > 0 && LxSecTimes==result.data.last()->type)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
 }
 
 void popEndLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)

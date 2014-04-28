@@ -39,6 +39,7 @@ public:
       */
     static void setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language & language);
     static void setModuleAlwaysAvailable(const QString & moduleName);
+    void connectSignalImportsChanged(QObject *receiver, const char *slot);
 
 public slots:
 

@@ -23,26 +23,26 @@ Term::Term(QWidget *parent) :
     l->addWidget(m_plane, 1, 1, 1, 1);
     sb_vertical = new QScrollBar(Qt::Vertical, this);
 //    sb_vertical->setFixedWidth(qMin(10, sb_vertical->width()));
-    static const char * ScrollBarCSS = ""
-            "QScrollBar {"
-            "   width: 12px;"
-            "   background-color: transparent;"
-            "   padding-right: 4px;"
-            "   border: 0;"
-            "}"
-            "QScrollBar:handle {"
-            "   background-color: gray;"
-            "   border-radius: 4px;"
-            "}"
-            "QScrollBar:add-line {"
-            "   height: 0;"
-            "}"
-            "QScrollBar:sub-line {"
-            "   height: 0;"
-            "}"
-            ;
+//    static const char * ScrollBarCSS = ""
+//            "QScrollBar {"
+//            "   width: 12px;"
+//            "   background-color: transparent;"
+//            "   padding-right: 4px;"
+//            "   border: 0;"
+//            "}"
+//            "QScrollBar:handle {"
+//            "   background-color: gray;"
+//            "   border-radius: 4px;"
+//            "}"
+//            "QScrollBar:add-line {"
+//            "   height: 0;"
+//            "}"
+//            "QScrollBar:sub-line {"
+//            "   height: 0;"
+//            "}"
+//            ;
     l->addWidget(sb_vertical, 1, 2, 1, 1);
-    sb_vertical->setStyleSheet(ScrollBarCSS);
+//    sb_vertical->setStyleSheet(ScrollBarCSS);
     sb_vertical->installEventFilter(this);
     sb_horizontal = new QScrollBar(Qt::Horizontal, this);
     l->addWidget(sb_horizontal, 2, 1, 1, 1);
@@ -249,11 +249,11 @@ void Term::start(const QString & fileName)
                 fileName.isEmpty() ? tr("New Program") : QFileInfo(fileName).fileName(),
                 m_plane
                 );
-    session->relayout(m_plane->width());
+    session->relayout(m_plane->width(), 0, true);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;
     connect (sessions_.last(), SIGNAL(message(QString)),
-             this, SIGNAL(message(QString)));
+             this, SIGNAL(message(QString)), Qt::DirectConnection);
     connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
              this, SLOT(handleInputDone(QVariantList)));
     m_plane->updateScrollBars();

@@ -1,4 +1,3 @@
-set(QT_USE_QTMAIN 1)
 find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
 include (${QT_USE_FILE})
 
@@ -44,17 +43,12 @@ if(WIN32)
     add_definitions(-DPSAPI_VERSION=1)
     set(SOURCES ${SOURCES} procmanager_winapi.cpp messager_shm.cpp)
     set(HEADERS ${HEADERS} procmanager_winapi.h messager_shm.h)
-    set(USED_LIBS ${QT_QTMAIN_LIBRARY} ${USED_LIBS} psapi kernel32)
+    set(USED_LIBS ${USED_LIBS} psapi kernel32)
 endif()
 
 
 add_executable(kumir2-open ${UI_SOURCES} ${MOC_SOURCES} ${SOURCES})
 target_link_libraries(kumir2-open ${USED_LIBS} ${STDCXX_LIB})
-
-if(WIN32)
-    set_target_properties(kumir2-open PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
-endif(WIN32)
-
 if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-open PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)

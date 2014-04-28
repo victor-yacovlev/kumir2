@@ -58,6 +58,10 @@ struct ModuleHeader {
     /** Module name, may be empty (for program itself)*/
     QString name;
 
+    QString nameTemplate;
+    QVariantList templateParameters;
+    QList<QVariant::Type> templateTypes;
+
     QByteArray asciiName;
 
     /** Module source file name (might be used in case of name is empty) */

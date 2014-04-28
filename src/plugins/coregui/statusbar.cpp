@@ -382,7 +382,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
     const QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
                          counterItemSize() - QSize(2*ItemPadding, 0));
     QTextOption opt;
-    opt.setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    opt.setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     p.drawText(textRect, text, opt);
     p.restore();
 }
