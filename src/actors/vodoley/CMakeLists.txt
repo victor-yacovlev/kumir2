@@ -22,6 +22,9 @@ set(FORMS
     dialog.ui
     pult.ui
     )
+    
+qt4_wrap_ui(UI_SOURCES ${FORMS})
+    
 add_custom_command(
     OUTPUT
         ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.cpp
@@ -86,7 +89,7 @@ handleTranslation(ActorVodoley)
 add_library(
     ActorVodoley
     SHARED
-    ${MOC_SOURCES} ${SOURCES}
+    ${MOC_SOURCES} ${SOURCES} ${UI_SOURCES}
     ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
 )
 
