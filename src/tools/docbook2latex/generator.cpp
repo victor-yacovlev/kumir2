@@ -71,13 +71,13 @@ void generator::renderData(ModelPtr data)
     }
     if (profile.startsWith("a4")) {
         paper = "a4paper";
-        geometry = "tmargin=2cm,bmargin=2cm,imargin=2cm,omargin=3cm";
+        geometry = "tmargin=2cm,bmargin=2cm,%%LEFTMARGIN%%=2cm,%%RIGHTMARGIN%%=3cm";
         lmargin = "2cm";
         rmargin = "3cm";
     }
     else if (profile.startsWith("a5")) {
         paper = "a5paper";
-        geometry = "tmargin=2cm,bmargin=2cm,imargin=2cm,omargin=3cm";
+        geometry = "tmargin=2cm,bmargin=2cm,%%LEFTMARGIN%%=2cm,%%RIGHTMARGIN%%=3cm";
         lmargin = "2cm";
         rmargin = "3cm";
     }
@@ -87,16 +87,20 @@ void generator::renderData(ModelPtr data)
     }
     else {
         paper = "a5paper";
-        geometry = "tmargin=0.1cm,bmargin=0.1cm,imargin=0.5cm,omargin=0.5cm";
+        geometry = "tmargin=0.1cm,bmargin=0.1cm,%%LEFTMARGIN%%=0.5cm,%%RIGHTMARGIN%%=0.5cm";
         allowRasterImages_ = true;
         colorlinks = "true";
     }
     clazzparam = paper;
     if (profile.endsWith("ts")) {
-        clazzparam += ",twoside";        
+        clazzparam += ",twoside";
+        geometry = geometry.replace("%%LEFTMARGIN%%", "imargin");
+        geometry = geometry.replace("%%RIGHTMARGIN%%", "omargin");
     }
     else {
-        clazzparam += ",oneside";        
+        clazzparam += ",oneside";
+        geometry = geometry.replace("%%LEFTMARGIN%%", "lmargin");
+        geometry = geometry.replace("%%RIGHTMARGIN%%", "rmargin");
     }
     clazz = root_ == DocBookModel::Book ? "book" : "article";
 
