@@ -28,6 +28,9 @@ QSize Editor::minimumSizeHint() const
     }
     QFontMetrics fm(plane_->font());
     minH += fm.lineSpacing() + fm.height(); // at least 1 line of text
+    if (verticalScrollBar_->isVisible()) {
+        minH = qMax(minH, verticalScrollBar_->minimumSizeHint().height());
+    }
     return QSize(minW, minH);
 }
 

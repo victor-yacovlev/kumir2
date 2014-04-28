@@ -246,6 +246,5 @@ QString TabWidgetElement::title() const
     }
 }
 
-
 }
 

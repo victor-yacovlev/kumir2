@@ -10,6 +10,16 @@ TabWidget::TabWidget(QWidget *parent) :
     setTabBar(tb);
 }
 
+QSize TabWidget::minimumSizeHint() const
+{
+    QSize result(0, 0);
+    if (currentWidget())
+        result = currentWidget()->minimumSizeHint();
+    if (tabBar()->isVisible())
+        result += QSize(0, tabBar()->height());
+    return result;
+}
+
 void TabWidget::disableTabs()
 {
     tabBar()->setEnabled(false);
