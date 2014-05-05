@@ -15,6 +15,9 @@ else()
     endif(NOT APPLE)
 endif(MSVC)
 
+if(NOT CMAKE_BUILD_TYPE MATCHES Debug)
+    add_definitions(-DNDEBUG)
+endif(NOT CMAKE_BUILD_TYPE MATCHES Debug)
 
 # clear default CMake RPATH values
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)

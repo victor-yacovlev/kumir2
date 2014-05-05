@@ -23,7 +23,9 @@ PluginManager::PluginManager()
     for (int i=1; i<arguments.size(); i++) {
         const QString & arg = arguments[i];
         if (arg.startsWith("-")) {
-            pImpl_->namedProgramArguments.push_back(arg);
+            if (arg!="--debug" && !arg.startsWith("--log=")) {
+                pImpl_->namedProgramArguments.push_back(arg);
+            }
         }
         else {
             unnamedArgumentsIndexBegin = i;
@@ -34,7 +36,7 @@ PluginManager::PluginManager()
     if (unnamedArgumentsIndexBegin) {
         for (int i=unnamedArgumentsIndexBegin; i<arguments.size(); i++) {
             const QString & arg = arguments[i];
-            if (!arg.startsWith("["))
+            if (!arg.startsWith("[") && !arg.startsWith("-"))
                 pImpl_->unnamedProgramArguments.push_back(arg);
         }
     }
