@@ -2,6 +2,7 @@
 #include <QtGui>
 
 #include "extensionsystem/pluginmanager.h"
+#include "extensionsystem/logger.h"
 
 #ifdef Q_OS_MAC
 #  define PLUGINS_PATH QDir(QApplication::applicationDirPath()+"/../PlugIns").canonicalPath()
@@ -14,18 +15,19 @@
 
 void GuiMessageOutput(QtMsgType type, const char *msg)
 {
+    ExtensionSystem::Logger * logger = ExtensionSystem::Logger::instance();
     switch (type) {
     case QtDebugMsg:
-        fprintf(stderr, "Debug: %s\n", msg);
+        logger->debug(msg);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", msg);
+        logger->warning(msg);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", msg);
+        logger->critical(msg);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", msg);
+        logger->fatal(msg);
         abort();
     default:
         break;

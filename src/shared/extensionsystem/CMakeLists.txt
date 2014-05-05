@@ -13,6 +13,7 @@ set(MOC_HEADERS
 )
 
 set(SOURCES
+    logger.cpp
     kplugin.cpp
     pluginspec.cpp
     pluginmanager.cpp
