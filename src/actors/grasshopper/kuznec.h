@@ -143,7 +143,7 @@ public:
 		ClearZakr();
 		scene->update();
 
-                MV->show();
+             //   MV->show();
 		};
 		void ClearZakr()
 		{

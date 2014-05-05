@@ -350,6 +350,7 @@ scene->addItem(new QGraphicsLineItem(0,-ZOOMMULTIP*2,0,-ZOOMMULTIP*2+0.0005));
 
 fileName="";
 advancedTask=false;
+    MV->hide();
 } 
 
 
@@ -1011,7 +1012,7 @@ createFlags();
 ClearSledi();
 ClearZakr();
 ToDubl();
-MV->setWindowTitle ( QString::fromUtf8("Кузнечик - нет файла"));
+//MV->setWindowTitle ( QString::fromUtf8("Кузнечик - нет файла"));
 //kuznHeader->setWMTitle( QString::fromUtf8("Кузнечик - нет файла"));
 fileName="";
 }
