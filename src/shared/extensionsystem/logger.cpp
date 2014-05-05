@@ -34,10 +34,12 @@ Logger::Logger(const QString & filePath, LogLevel logLevel)
         loggerFile_ = new QFile(filePath);
         loggerFile_->open(QIODevice::WriteOnly|QIODevice::Text|QIODevice::Append);
     }
+    writeLog("STARTED", "");
 }
 
 Logger::~Logger()
 {
+    writeLog("EXITING", "");
     if (loggerFile_) {
         loggerFile_->close();
         delete loggerFile_;
