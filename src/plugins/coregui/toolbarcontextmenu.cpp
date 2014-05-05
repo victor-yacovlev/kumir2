@@ -147,9 +147,9 @@ void ToolbarContextMenu::setSettingsObject(ExtensionSystem::SettingsPtr settings
 
 float ToolbarContextMenu::cs2f(const Qt::CheckState state) {
     switch (state) {
-    case Qt::Unchecked:         return 0.0f;
     case Qt::PartiallyChecked:  return 0.5f;
     case Qt::Checked:           return 1.0f;
+    default:                    return 0.0f;
     }
 }
 
