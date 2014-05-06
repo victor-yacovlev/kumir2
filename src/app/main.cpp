@@ -90,6 +90,13 @@ public:
         try {
             result = QApplication::notify(receiver, event);
         }
+        catch (const std::exception & ex) {
+            const std::string message =
+                    std::string("Caught exception: ") + std::string(ex.what());
+            qDebug(message.c_str());
+            if (arguments().contains("--debug"))
+                abort();
+        }
         catch (...) {
             qDebug() << "Exception caught in QApplication::notify!!!";
             if (arguments().contains("--debug"))
@@ -104,6 +111,7 @@ public:
 
     inline void initialize() {
         const QStringList arguments = QCoreApplication::instance()->arguments();
+        qDebug() << "Arguments: " << arguments;
         bool mustShowHelpAndExit = false;
         bool mustShowVersionAndExit = false;
         for (int i=1; i<arguments.size(); i++) {
@@ -135,7 +143,7 @@ public:
                 installTranslator(tr);
             }
         }
-
+        qDebug() << "Loaded translator files";
         setProperty("sharePath", sharePath);
 
         QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -144,7 +152,7 @@ public:
         manager->setPluginPath(PLUGINS_PATH);
         manager->setSharePath(sharePath);
         QString error;
-
+        qDebug() << "Initialized plugin manager";
     #ifdef CONFIGURATION_TEMPLATE
         const QString defaultTemplate = CONFIGURATION_TEMPLATE;
     #else
@@ -157,6 +165,7 @@ public:
                 templ = arg.mid(1, arg.length()-2);
             }
         }
+        qDebug() << "Loading plugins by template: " << templ;
         error = manager->loadPluginsByTemplate(templ);
         if (!gui && manager->isGuiRequired()) {
             if (splashScreen_)
@@ -165,9 +174,9 @@ public:
             exit(1);
         }
 
-        qInstallMsgHandler(manager->isGuiRequired()
-                           ? GuiMessageOutput
-                           : ConsoleMessageOutput);
+//        qInstallMsgHandler(manager->isGuiRequired()
+//                           ? GuiMessageOutput
+//                           : ConsoleMessageOutput);
 
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -175,6 +184,8 @@ public:
             showErrorMessage(error);
             exit(1);
         }
+
+        qDebug() << "Done loading all plugins by template";
 
         if (mustShowHelpAndExit) {
             if (splashScreen_)
@@ -194,8 +205,8 @@ public:
             fprintf(stderr, "%s\n", qPrintable(applicationVersion()));
             exit(0);
             return;
-        }
-
+        }        
+        qDebug() << "Begin plugins initialization";
         error = manager->initializePlugins();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -206,6 +217,7 @@ public:
         }
         // GUI requirement may be changed as result of plugins initialization,
         // so check it again
+        qDebug() << "Plugins initialization done";
         if (!gui && manager->isGuiRequired()) {
             showErrorMessage("Requires X11 session to run this configuration");
             exit(property("returnCode").isValid()
@@ -213,6 +225,7 @@ public:
         }
         if (splashScreen_)
             splashScreen_->finish(0);
+        qDebug() << "Starting entry point plugin";
         error = manager->start();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -230,7 +243,9 @@ public:
         if (!started_) {
             started_ = true;
             killTimer(timerId_);
+            qDebug() << "Begin initialization";
             initialize();
+            qDebug() << "Initialization done";
         }
         event->accept();
     }
@@ -255,6 +270,7 @@ private:
 
 int main(int argc, char **argv)
 { 
+    qInstallMsgHandler(GuiMessageOutput);
     QString gitHash = QString::fromAscii(GIT_HASH);
     QString gitTag = QString::fromAscii(GIT_TAG);
     QString gitBranch = QString::fromAscii(GIT_BRANCH);
@@ -329,7 +345,19 @@ int main(int argc, char **argv)
         app->setSplashScreen(splashScreen);
     }
 #endif
-    int ret = app->main();
+    int ret = 0;
+    try {
+        ret = app->main();
+    }
+    catch (const std::exception & ex) {
+        const std::string message =
+                std::string("Caught exception: ") + std::string(ex.what());
+        qFatal(message.c_str());
+    }
+    catch (...) {
+        qFatal("Caught an exception");
+    }
+
     ExtensionSystem::PluginManager::destroy();
     delete app;
     return ret;

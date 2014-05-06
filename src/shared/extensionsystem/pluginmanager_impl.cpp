@@ -58,6 +58,7 @@ QString PluginManagerImpl::loadPlugins()
 {
     for (int i=0; i<specs.size(); i++) {
         QPluginLoader loader(specs[i].libraryFileName);
+        qDebug() << "Loading " << specs[i].libraryFileName << "...";
         //        qDebug()<<specs[i].libraryFileName;
         if (!loader.load()) {
             return QString("Can't load module %1: %2")
@@ -73,6 +74,7 @@ QString PluginManagerImpl::loadPlugins()
         states[i] = KPlugin::Loaded;
         settings[i] = SettingsPtr(new Settings(specs[i].name));
         plugin->updateSettings(QStringList());
+        qDebug() << "Loading done";
     }
     return "";
 }
