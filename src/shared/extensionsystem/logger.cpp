@@ -61,7 +61,7 @@ void Logger::writeLog(const char *type, const char *message)
         loggerFile_->flush();
     }
     else {
-        fprintf(stderr, buffer.data());
+        fprintf(stderr, "%s", buffer.data());
     }
 }
 
