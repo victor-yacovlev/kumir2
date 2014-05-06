@@ -4,9 +4,17 @@
 class QFile;
 class QString;
 
+#include <QtGlobal>
+
+#ifdef EXTENSIONSYSTEM_LIBRARY
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
+#else
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace ExtensionSystem {
 
-class Logger
+class EXTENSIONSYSTEM_EXPORT Logger
 {
 public:
     enum LogLevel {
