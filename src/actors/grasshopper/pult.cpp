@@ -361,7 +361,7 @@ QString text;
 for(int i=0;i<lines.count();i++)if(!lines[i].KumCommand().isEmpty())text+=lines[i].KumCommand()+"\n";
 cp->setText(text);
 };
-GrasshopperPult::GrasshopperPult ( QWidget* parent, Qt::WFlags fl )
+GrasshopperPult::GrasshopperPult ( QWidget* parent, Qt::WindowFlags fl )
 		: QWidget ( parent, fl ), Ui::TurtlePult()
 {
 //	setStyleSheet("background-color:#7EB676;");

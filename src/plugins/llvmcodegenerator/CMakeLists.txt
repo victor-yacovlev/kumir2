@@ -1,7 +1,23 @@
-set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
+project(LLVMCodeGenerator)
+cmake_minimum_required(VERSION 2.8.3)
+
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
+if(${USE_QT} GREATER 4)
+    # Find Qt5
+    find_package(Qt5 5.3.0 COMPONENTS Core REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES})
+else()
+    # Find Qt4
+    set(QT_USE_QTMAIN 1)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
+    include (${QT_USE_FILE})
+endif()
+
 find_package(LLVM REQUIRED)
-include (${QT_USE_FILE})
 
 add_definitions(${LLVM_DEFINITIONS})
 include_directories(${LLVM_INCLUDE_DIR})
@@ -61,7 +77,11 @@ set(EXLIB_SOURCES
     stdlib_c.cpp
 )
 
-qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+if(${USE_QT} GREATER 4)
+    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+else()
+    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+endif()
 copySpecFile(LLVMCodeGenerator)
 add_library(LLVMCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
 #handleTranslation(LLVMCodeGenerator)

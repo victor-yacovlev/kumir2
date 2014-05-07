@@ -4,6 +4,8 @@
 #include "extensionsystem/kplugin.h"
 #include "interfaces/generatorinterface.h"
 
+#include <QObject>
+#include <QtPlugin>
 
 using namespace Shared;
 
@@ -14,6 +16,9 @@ class KumirCodeGeneratorPlugin
         , public GeneratorInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.KumirCodeGenerator" FILE "")
+#endif
     Q_INTERFACES(Shared::GeneratorInterface)
 
 public:

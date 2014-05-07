@@ -7,7 +7,11 @@ You should change it corresponding to functionality.
 */
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include "paintermodule.h"
 #include "painterwindow.h"
 #include "paintertools.h"
@@ -77,49 +81,49 @@ static Color colorFromCss(const QString & css)
 
 Color PainterModule::runCMYK(const int c, const int m, const int y, const int k)
 {
-    return colorFromCss(QString::fromAscii("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k));
+    return colorFromCss(QString::fromLatin1("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k));
 }
 
 
 Color PainterModule::runCMYKA(const int c, const int m, const int y, const int k, const int a)
 {
-    return colorFromCss(QString::fromAscii("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a));
+    return colorFromCss(QString::fromLatin1("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a));
 }
 
 
 Color PainterModule::runHSL(const int h, const int s, const int l)
 {
-    return colorFromCss(QString::fromAscii("hsl(%1,%2,%3)").arg(h).arg(s).arg(l));
+    return colorFromCss(QString::fromLatin1("hsl(%1,%2,%3)").arg(h).arg(s).arg(l));
 }
 
 
 Color PainterModule::runHSLA(const int h, const int s, const int l, const int a)
 {
-    return colorFromCss(QString::fromAscii("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a));
+    return colorFromCss(QString::fromLatin1("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a));
 }
 
 
 Color PainterModule::runHSV(const int h, const int s, const int v)
 {
-    return colorFromCss(QString::fromAscii("hsv(%1,%2,%3)").arg(h).arg(s).arg(v));
+    return colorFromCss(QString::fromLatin1("hsv(%1,%2,%3)").arg(h).arg(s).arg(v));
 }
 
 
 Color PainterModule::runHSVA(const int h, const int s, const int v, const int a)
 {
-    return colorFromCss(QString::fromAscii("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a));
+    return colorFromCss(QString::fromLatin1("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a));
 }
 
 
 Color PainterModule::runRGB(const int r, const int g, const int b)
 {
-    return colorFromCss(QString::fromAscii("rgb(%1,%2,%3)").arg(r).arg(g).arg(b));
+    return colorFromCss(QString::fromLatin1("rgb(%1,%2,%3)").arg(r).arg(g).arg(b));
 }
 
 
 Color PainterModule::runRGBA(const int r, const int g, const int b, const int a)
 {
-    return colorFromCss(QString::fromAscii("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a));
+    return colorFromCss(QString::fromLatin1("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a));
 }
 
 

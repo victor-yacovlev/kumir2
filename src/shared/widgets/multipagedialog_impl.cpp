@@ -51,7 +51,11 @@ void MultiPageDialogImpl::acceptAllPages()
         QMetaMethod m;
         bool found = false;
         for (int j=0; j<mo->methodCount(); j++) {
+#if QT_VERSION >= 0x050000
+            const QString signature = mo->method(j).methodSignature();
+#else
             const QString signature = mo->method(j).signature();
+#endif
             if (signature=="accept()") {
                 m = mo->method(j);
                 found = true;
@@ -71,7 +75,11 @@ void MultiPageDialogImpl::resetAllPages()
         QMetaMethod m;
         bool found = false;
         for (int j=0; j<mo->methodCount(); j++) {
+#if QT_VERSION >= 0x050000
+            const QString signature = mo->method(j).methodSignature();
+#else
             const QString signature = mo->method(j).signature();
+#endif
             if (signature=="resetToDefaults()") {
                 m = mo->method(j);
                 found = true;
@@ -91,7 +99,11 @@ void MultiPageDialogImpl::init()
         QMetaMethod m;
         bool found = false;
         for (int j=0; j<mo->methodCount(); j++) {
+#if QT_VERSION >= 0x050000
+            const QString signature = mo->method(j).methodSignature();
+#else
             const QString signature = mo->method(j).signature();
+#endif
             if (signature=="init()") {
                 m = mo->method(j);
                 found = true;

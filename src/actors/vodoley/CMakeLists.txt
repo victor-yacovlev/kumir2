@@ -1,9 +1,25 @@
-set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
-find_package(PythonInterp 2.6 REQUIRED)
-include (${QT_USE_FILE})
-include(../../kumir2_plugin.cmake)
+project(ActorVodoley)
+cmake_minimum_required(VERSION 2.8.3)
 
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
+if(${USE_QT} GREATER 4)
+    # Find Qt5
+    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+    set(MOC_PARAMS "-I${_qt5Core_install_prefix}/include/QtCore")
+else()
+    # Find Qt4
+    set(QT_USE_QTMAIN 1)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
+    include (${QT_USE_FILE})
+endif()
+
+find_package(PythonInterp 2.6 REQUIRED)
+include(../../kumir2_plugin.cmake)
 set(SOURCES
     vodoleymodule.cpp
     vodoley.cpp
@@ -22,9 +38,8 @@ set(FORMS
     dialog.ui
     pult.ui
     )
-    
-qt4_wrap_ui(UI_SOURCES ${FORMS})
-    
+
+       
 add_custom_command(
     OUTPUT
         ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.cpp
@@ -52,6 +67,7 @@ add_custom_target(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
+        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.h
@@ -61,6 +77,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
+        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.h
@@ -77,7 +94,13 @@ set(MOC_SOURCES_GENERATED
     vodoleyplugin.moc.cpp
 )
 
-qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+if(${USE_QT} GREATER 4)
+    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt5_wrap_ui(UI_SOURCES ${FORMS})
+else()
+    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt4_wrap_ui(UI_SOURCES ${FORMS})
+endif()
 
 install(
     FILES ${PLUGIN_OUTPUT_PATH}/ActorVodoley.pluginspec

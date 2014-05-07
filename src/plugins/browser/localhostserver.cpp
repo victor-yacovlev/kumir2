@@ -60,7 +60,7 @@ NetworkReply::NetworkReply(const ServerResponse &response, const QNetworkRequest
     setHeader(QNetworkRequest::ContentTypeHeader, response.mimeType);
     setHeader(QNetworkRequest::LocationHeader, qualifedUrl);
     setRawHeader(QByteArray("Accept-Ranges"), QByteArray("bytes"));
-    setRawHeader(QByteArray("Server"), QByteArray("Kumir Localhost Server ")+qApp->applicationVersion().toAscii());
+    setRawHeader(QByteArray("Server"), QByteArray("Kumir Localhost Server ")+qApp->applicationVersion().toLatin1());
     setOperation(QNetworkAccessManager::GetOperation);
 
     QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);

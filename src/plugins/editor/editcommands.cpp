@@ -60,7 +60,7 @@ bool InsertCommand::mergeWith(const QUndoCommand *other)
     if (o->line!=line)
         return false;
     if (o->pos-pos==text.length() || o->pos+o->text.length()==pos) {
-        static const QString delimeters = QString::fromAscii(" |\n!@*()[],+-=:;/<>\"'{}");
+        static const QString delimeters = QString::fromLatin1(" |\n!@*()[],+-=:;/<>\"'{}");
         for (int i=0; i<text.length(); i++) {
             if (delimeters.contains(text[i]))
                 return false;
@@ -185,7 +185,7 @@ bool RemoveCommand::mergeWith(const QUndoCommand *other)
     if (o->line!=line || keepKursor!=o->keepKursor)
         return false;
     if (pos+count==o->pos || o->pos+o->count==pos) {
-        static const QString delimeters = QString::fromAscii(" |\n!@*()[],+-=:;/<>\"'{}");
+        static const QString delimeters = QString::fromLatin1(" |\n!@*()[],+-=:;/<>\"'{}");
         for (int i=0; i<removedText.length(); i++) {
             if (delimeters.contains(removedText[i]))
                 return false;

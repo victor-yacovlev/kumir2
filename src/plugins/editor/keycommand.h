@@ -56,7 +56,7 @@ struct KeyCommand
     inline KeyCommand(KeyCommand::Type t) { type = t; text = ""; }
     inline KeyCommand(KeyCommand::Type t, const QString & s) { type=t; text=s; }
     inline KeyCommand(const QString & t) { type = InsertText, text = t; }
-    inline KeyCommand(const char * s) { type = InsertText; text = QString::fromAscii(s); }
+    inline KeyCommand(const char * s) { type = InsertText; text = QString::fromLatin1(s); }
     static unsigned int CommandModifiesTextMask; // = 0x1000
     QString text;
 };

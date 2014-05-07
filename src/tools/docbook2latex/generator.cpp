@@ -273,7 +273,7 @@ QString generator::renderElement(ModelPtr data)
 QString generator::renderChapter(ModelPtr data)
 {
     QString result;
-    result = QString::fromAscii("\\chapter{%1}\n").arg(normalizeText(data->title()));
+    result = QString::fromLatin1("\\chapter{%1}\n").arg(normalizeText(data->title()));
     result += "\\thispagestyle{fancy}\n";
     result += "\\setcounter{Example}{0}\n";
     result += "\\setcounter{Figure}{0}\n";
@@ -295,10 +295,10 @@ QString generator::renderSection(ModelPtr data)
             ? "section" : "subsection";
 
 
-    result = QString::fromAscii("\\%1{%2}\n\n").arg(sec).arg(normalizeText(data->title()));
+    result = QString::fromLatin1("\\%1{%2}\n\n").arg(sec).arg(normalizeText(data->title()));
 
     if (sec == "section" && twoColumnLayout_) {
-        result = QString::fromAscii("\\begin{multicols}{2}[%1]\n").arg(result.trimmed());
+        result = QString::fromLatin1("\\begin{multicols}{2}[%1]\n").arg(result.trimmed());
     }
 
     Q_FOREACH(ModelPtr child, data->children()) {
@@ -306,7 +306,7 @@ QString generator::renderSection(ModelPtr data)
     }
 
     if (sec == "section" && twoColumnLayout_) {
-        result += QString::fromAscii("\\end{multicols}\n");
+        result += QString::fromLatin1("\\end{multicols}\n");
         result += sectionFloats_.join("\n");
         sectionFloats_.clear();
     }
@@ -566,7 +566,7 @@ QString generator::renderMFrac(ModelPtr data)
         above = renderElement(mrows[0]);
         below = renderElement(mrows[1]);
     }
-    return QString::fromAscii("\\frac{%1}{%2}").arg(above).arg(below);
+    return QString::fromLatin1("\\frac{%1}{%2}").arg(above).arg(below);
 }
 
 QString generator::renderMN(ModelPtr data)
@@ -702,11 +702,11 @@ QString generator::renderCode(ModelPtr data)
 QString generator::renderExample(ModelPtr data)
 {
     QString result;
-    result += QString::fromAscii("\\begin{Example}\n");
+    result += QString::fromLatin1("\\begin{Example}\n");
     Q_FOREACH(ModelPtr child, data->children()) {
         result += renderElement(child);
     }
-    result += QString::fromAscii("\\caption{%1}\n").arg(normalizeText(data->title()));
+    result += QString::fromLatin1("\\caption{%1}\n").arg(normalizeText(data->title()));
     result += "\\end{Example}\n";
     if (twoColumnLayout_) {
         sectionFloats_.push_back(result);
@@ -752,7 +752,7 @@ QString generator::renderMediaObject(ModelPtr data)
     }
     if (imageUrl.length() == 0)
         return "";
-    result += QString::fromAscii("\\begin{Figure}\n");
+    result += QString::fromLatin1("\\begin{Figure}\n");
     result += "\\centering\\includegraphics{" + imageUrl + "}\n";
     result += "\\caption{";
     if (caption) {
@@ -774,12 +774,12 @@ QString generator::renderMediaObject(ModelPtr data)
 QString generator::renderTable(ModelPtr data)
 {
     QString result;
-    result += QString::fromAscii("\\begin{Table}\n");
-    result += QString::fromAscii("\\caption{%1}\n").arg(normalizeText(data->title()));
+    result += QString::fromLatin1("\\begin{Table}\n");
+    result += QString::fromLatin1("\\caption{%1}\n").arg(normalizeText(data->title()));
     tableColumns_ = 0u;
     calculateTableColumnsCount(data);
     result += "\\begin{mdframed}\n";
-    result += QString::fromAscii("\\begin{tabularx}{\\linewidth}{");
+    result += QString::fromLatin1("\\begin{tabularx}{\\linewidth}{");
     for (size_t c=0u; c<tableColumns_; c++)
         result += "*{7}{>{\\centering\\arraybackslash}X}";
     result += "}\n\\hline\n";
@@ -877,14 +877,14 @@ QString generator::renderEmphasis(ModelPtr data)
 QString generator::renderBookTitle()
 {
     QString result;
-    result += QString::fromAscii("\\title{%1}\n").arg(root_->title());
+    result += QString::fromLatin1("\\title{%1}\n").arg(root_->title());
     result += "\\thispagestyle{empty}\n";
     result += "\\vspace*{\\fill}\n";
     result += "\\begin{center}\n";
-    result += QString::fromAscii("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
+    result += QString::fromLatin1("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
     if (root_->subtitle().length() > 0) {
         result += "\\vspace*{18pt}\n";
-        result += QString::fromAscii("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
+        result += QString::fromLatin1("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
     }
     result += "\\end{center}\n";
     result += "\\vspace*{\\fill}\n";
@@ -896,14 +896,14 @@ QString generator::renderBookTitle()
 QString generator::renderArticleTitle()
 {
     QString result;
-    result += QString::fromAscii("\\title{%1}\n").arg(root_->title());
+    result += QString::fromLatin1("\\title{%1}\n").arg(root_->title());
     result += "\\thispagestyle{fancy}\n";
 
     result += "\\begin{center}\n";
-    result += QString::fromAscii("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
+    result += QString::fromLatin1("\\Large\\textbf{\\MakeUppercase{%1}}\n\n").arg(normalizeText(root_->title()));
     if (root_->subtitle().length() > 0) {
         result += "\\vspace*{18pt}\n";
-        result += QString::fromAscii("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
+        result += QString::fromLatin1("\\Large\\textbf{%1}\n\n").arg(normalizeText(root_->subtitle()));
     }
     result += "\\end{center}\n";
 

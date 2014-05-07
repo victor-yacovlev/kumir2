@@ -10,7 +10,11 @@
 #include "guirun.h"
 #include "vm/vm_console_handlers.hpp"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace KumirCodeRun {
 
@@ -731,5 +735,6 @@ QAbstractItemModel * KumirRunPlugin::debuggerVariablesViewModel() const
 } // namespace KumirCodeRun
 
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCodeRun::KumirRunPlugin)
+#endif

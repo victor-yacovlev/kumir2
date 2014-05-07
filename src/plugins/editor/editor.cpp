@@ -335,8 +335,8 @@ void Editor::loadMacros()
 
     // User macros
     QString fileName = analizerName.length() > 0
-            ? QString::fromAscii(".user-macros-%1.xml").arg(analizerName)
-            : QString::fromAscii(".user-macros.xml");
+            ? QString::fromLatin1(".user-macros-%1.xml").arg(analizerName)
+            : QString::fromLatin1(".user-macros.xml");
 
     const QString dirName = mySettings()->locationDirectory();
     if (dirName.startsWith(QDir::homePath() + "/."))
@@ -968,7 +968,7 @@ QByteArray Editor::saveState() const
     QByteArray md5 = QCryptographicHash::hash(data, QCryptographicHash::Md5);
     QByteArray version =
             QCoreApplication::instance()->applicationVersion().leftJustified(20, ' ')
-            .toAscii();
+            .toLatin1();
     return md5 + version + data;
 }
 
@@ -976,7 +976,7 @@ void Editor::restoreState(const QByteArray &data)
 {
     if (data.size()>=36) {
         QByteArray checksum = data.mid(0,16);
-        QString version = QString::fromAscii(data.mid(16,20)).trimmed();
+        QString version = QString::fromLatin1(data.mid(16,20)).trimmed();
         QString myVersion = QCoreApplication::instance()->applicationVersion();
         QByteArray d = data.mid(36);
         QByteArray md5 = QCryptographicHash::hash(d, QCryptographicHash::Md5);

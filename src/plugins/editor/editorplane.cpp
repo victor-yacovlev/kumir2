@@ -1554,7 +1554,7 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     editor_->autocompleteWidget_->hide();
     QApplication::processEvents();
 #endif
-    static const QString Delimeters = QString::fromAscii(
+    static const QString Delimeters = QString::fromLatin1(
                 " ;:=()!,.@-+*/[]{}"
                 );
     QString before, after;
@@ -2650,7 +2650,7 @@ void EditorPlane::setProperFormat(
             !editor_->analizerPlugin_->primaryAlphabetIsLatin() &&  // italization possible
             ch!='\0' && // char is valid
             ch.isLetter() &&  // char is a letter
-            ch.toAscii()!='\0' //char is valid (see above), but its ASCII is not
+            ch.toLatin1()!='\0' //char is valid (see above), but its ASCII is not
             )
     {
         f.setItalic(true);

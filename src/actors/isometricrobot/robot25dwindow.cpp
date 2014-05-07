@@ -186,7 +186,7 @@ void Robot25DWindow::handleLoadAction()
     const QString fileName = QFileDialog::getOpenFileName(this
                                                           , tr("Load environment")
                                                           , lastDir
-                                                          , tr("Environments")+QString::fromAscii(" (*.env.json)")
+                                                          , tr("Environments")+QString::fromLatin1(" (*.env.json)")
                                                           );
     if (!fileName.isEmpty()) {
         s.setValue("Robot25D/LastDir", fileName);

@@ -47,14 +47,14 @@ Logger::~Logger()
     }
 }
 
-void Logger::writeLog(const char *type, const char *message)
+void Logger::writeLog(const char *type, const QString &message)
 {
     QByteArray buffer;
     buffer += QDateTime::currentDateTime().toString("hh:mm:ss");
     buffer += "\t";
     buffer += QByteArray(type);
     buffer += "\t";
-    buffer += QByteArray(message);
+    buffer += message.toUtf8();
     buffer += "\r\n";
     if (loggerFile_) {
         loggerFile_->write(buffer);
@@ -65,7 +65,7 @@ void Logger::writeLog(const char *type, const char *message)
     }
 }
 
-void Logger::debug(const char *message)
+void Logger::debug(const QString &message)
 {
 #ifdef NDEBUG
     bool process = Debug == logLevel_;
@@ -77,17 +77,17 @@ void Logger::debug(const char *message)
     }
 }
 
-void Logger::warning(const char *message)
+void Logger::warning(const QString &message)
 {
     writeLog("WARNING", message);
 }
 
-void Logger::critical(const char *message)
+void Logger::critical(const QString &message)
 {
     writeLog("CRITICAL", message);
 }
 
-void Logger::fatal(const char *message)
+void Logger::fatal(const QString &message)
 {
     writeLog("FATAL", message);
 }

@@ -1,5 +1,9 @@
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "extensionsystem/pluginmanager.h"
 #include "extensionsystem/logger.h"
@@ -13,7 +17,11 @@
 #endif
 
 
+#if QT_VERSION < 0x050000
 void GuiMessageOutput(QtMsgType type, const char *msg)
+#else
+void GuiMessageOutput(QtMsgType type, const QMessageLogContext &, const QString & msg)
+#endif
 {
     ExtensionSystem::Logger * logger = ExtensionSystem::Logger::instance();
     switch (type) {
@@ -159,8 +167,8 @@ public:
     #error No default configuration passed to GCC
     #endif
         QString templ = defaultTemplate;
-        for (int i=1; i<argc(); i++) {
-            QString arg = QString::fromLocal8Bit(argv()[i]);
+        for (int i=1; i<arguments.size(); i++) {
+            QString arg = arguments[i];
             if (arg.startsWith("[") && arg.endsWith("]")) {
                 templ = arg.mid(1, arg.length()-2);
             }
@@ -270,11 +278,15 @@ private:
 
 int main(int argc, char **argv)
 { 
+#if QT_VERSION < 0x050000
     qInstallMsgHandler(GuiMessageOutput);
-    QString gitHash = QString::fromAscii(GIT_HASH);
-    QString gitTag = QString::fromAscii(GIT_TAG);
-    QString gitBranch = QString::fromAscii(GIT_BRANCH);
-    QDateTime gitTimeStamp = QDateTime::fromTime_t(QString::fromAscii(GIT_TIMESTAMP).toUInt());
+#else
+    qInstallMessageHandler(GuiMessageOutput);
+#endif
+    QString gitHash = QString::fromLatin1(GIT_HASH);
+    QString gitTag = QString::fromLatin1(GIT_TAG);
+    QString gitBranch = QString::fromLatin1(GIT_BRANCH);
+    QDateTime gitTimeStamp = QDateTime::fromTime_t(QString::fromLatin1(GIT_TIMESTAMP).toUInt());
 
 
     bool gui = true;

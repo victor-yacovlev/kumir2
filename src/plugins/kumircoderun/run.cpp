@@ -1,4 +1,7 @@
-#include <cstdlib>
+extern "C" {
+#include <stdlib.h>
+#include <string.h>
+}
 #include "stdlib/kumirstdlib.hpp"
 #include "vm/variant.hpp"
 #include "vm/vm.hpp"
@@ -49,7 +52,7 @@ void Run::stop()
     stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1, 0u, 0u);
-        emit finished();
+//        emit finished();
     }
 }
 
@@ -160,7 +163,7 @@ void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * in
             ? QVector<int>()
             : QVector<int>(indeces[3]);
     if (ind.size() > 0)
-        qMemCopy(ind.data(), indeces, indeces[3] * sizeof(int));
+        ::memcpy(ind.data(), indeces, indeces[3] * sizeof(int));
     variablesModel_->emitValueChanged(variable, ind);
 }
 

@@ -2,7 +2,12 @@
 #define COREGUI_PLUGIN_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
+
 #include "extensionsystem/kplugin.h"
 #include "interfaces/editorinterface.h"
 #include "interfaces/browserinterface.h"
@@ -38,6 +43,9 @@ class Plugin
     friend class MessageReceiver;
     friend class MainWindow;
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.CoreGUI" FILE "")
+#endif
     Q_INTERFACES(Shared::GuiInterface)
 public:
     explicit Plugin();
