@@ -14,7 +14,7 @@ else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
     find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
-    include (${QT_USE_FILE})
+    include(${QT_USE_FILE})
     find_library(QCA_LIBRARY NAMES qca HINTS ${QCA_LIBDIR})
     find_path(QCA_INCLUDE_DIR QtCrypto/qca.h ${QCA_INCDIR})
 endif()

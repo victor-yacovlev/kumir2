@@ -13,8 +13,8 @@ if(${USE_QT} GREATER 4)
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
-    include (${QT_USE_FILE})
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg QtWebkit REQUIRED)
+    include(${QT_USE_FILE})
 endif()
 include(../../kumir2_plugin.cmake)
 

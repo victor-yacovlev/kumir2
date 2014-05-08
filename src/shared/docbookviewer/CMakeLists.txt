@@ -1,15 +1,6 @@
 project(DocBookViewer)
 cmake_minimum_required(VERSION 2.8.3)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../kumir2_library.cmake")
-    message(STATUS "DocBookViewer will be build as a part of Kumir")
-    include(../../kumir2_library.cmake)
-    set(BUILD_AS_PART_OF_KUMIR 1)
-    add_definitions(-DBUILD_AS_PART_OF_KUMIR)
-else()
-    set(BUILD_AS_PART_OF_KUMIR 0)
-endif()
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -26,7 +17,16 @@ else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
     find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
-    include (${QT_USE_FILE})
+    include(${QT_USE_FILE})
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../kumir2_library.cmake")
+    message(STATUS "DocBookViewer will be build as a part of Kumir")
+    include(../../kumir2_library.cmake)
+    set(BUILD_AS_PART_OF_KUMIR 1)
+    add_definitions(-DBUILD_AS_PART_OF_KUMIR)
+else()
+    set(BUILD_AS_PART_OF_KUMIR 0)
 endif()
 
 if(NOT MSVC)

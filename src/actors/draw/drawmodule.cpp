@@ -1107,7 +1107,7 @@ void DrawModule::drawNet()
 //        mPen->scale(0.5,0.5);
 //        mPen->scale(0.5,0.5);
 //        mPen->scale(0.5,0.5);
-        mPen->setScale(0.5);
+        mPen->setScale(0.5*5*mPen->scale());
         mPen->setZValue(100);
         
         
