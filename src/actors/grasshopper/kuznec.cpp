@@ -286,8 +286,7 @@ SetColorString(QString::fromUtf8("красный"));
 MinZoom = 0.5;
 MaxZoom = 2;
 
-//MV->setMinimumSize(SizeX+2-100,SizeY  + MenuHigth+2);
-//MV->setMaximumSize(SizeX+2+300,SizeY + MenuHigth+2);
+
 SetWindowSize(10,10,SizeX,SizeY);
 WindowZoom=BASEZOOM;
 WindowX0 =  - SizeX/(WindowZoom);
@@ -296,7 +295,7 @@ WindowY0 =  - SizeY/(WindowZoom*2)-1;
 connect(scene,SIGNAL(sceneRectChanged (QRectF)),view,SLOT(updateSceneRect(QRectF)));
 QRectF curentRect;
 curentRect.setRect(-3.5,-3,7,5);
-//scene->setSceneRect(-2048,-1800,4096,3600);
+
 
 
 view->scale(BASEZOOM,BASEZOOM);
@@ -1265,6 +1264,8 @@ void KumKuznec::DrawNet()
 	qreal zdvig=-0.2*ZOOMMULTIP;
 	 if((textX/ZOOMMULTIP>0.5)||(textX/ZOOMMULTIP<9.5))zdvig+=0.1*ZOOMMULTIP;
 	//if(textX<-9.5)zdvig+=0.1;
+        if(QString::number(textX/ZOOMMULTIP).length()>1)zdvig=zdvig-3;
+       if(QString::number(textX/ZOOMMULTIP).length()>2)zdvig=zdvig-2;
 	NetText.last()->setPos(textX+zdvig,0.2*ZOOMMULTIP);
 	int Zoom=Step;
 	

@@ -32,7 +32,7 @@ class GrasshopperPult;
 #define BUTTON_SIZE 20
 #define YCENTER -20
 #define BASEZOOM 2
-#define ZOOMMULTIP 16
+#define ZOOMMULTIP 20
 
 //--------------------------------------------------------
 class KuznSled:public QGraphicsItem
