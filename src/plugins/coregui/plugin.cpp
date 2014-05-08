@@ -276,6 +276,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     KPlugin * kumirRunner = ExtensionSystem::PluginManager::instance()
             ->findKPlugin<RunInterface>();
     plugin_kumirCodeRun = qobject_cast<RunInterface*>(kumirRunner);
+    connect(kumirRunner, SIGNAL(showActorWindowRequest(QByteArray)),
+            this, SLOT(showActorWindow(QByteArray)));
 
     QList<ExtensionSystem::KPlugin*> actors = loadedPlugins("Actor*");
     actors += loadedPlugins("st_funct");
@@ -324,6 +326,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         actorWindow,
                         SLOT(activate())
                         );
+
+            showActorActions_[actor->asciiModuleName()] = showActor;
+
             showActor->setObjectName("window-actor-" + actorObjectName);
             mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
@@ -548,6 +553,13 @@ QWidget* Plugin::settingsEditorPage()
                 this, SLOT(updateSettings(QStringList)));
     }
     return guiSettingsPage_;
+}
+
+void Plugin::showActorWindow(const QByteArray &asciiName)
+{
+    if (showActorActions_.contains(asciiName)) {
+        showActorActions_[asciiName]->trigger();
+    }
 }
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)

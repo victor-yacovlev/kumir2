@@ -101,6 +101,7 @@ signals:
     void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
+    void showActorWindowRequest(const QByteArray & asciiModuleName);
 
 private:
     class Run * pRun_;
