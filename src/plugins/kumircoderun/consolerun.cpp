@@ -27,7 +27,7 @@ ExternalModuleLoadFunctor::operator() (
         if (forceUpper) {
             forceUpper = false;
             qch = qch.toUpper();
-            ch = qch.toAscii();
+            ch = qch.toLatin1();
         }
         if (ch != ' ') {
             moduleCanonicalFileName.push_back(ch);

@@ -1,6 +1,11 @@
 project(Kumir2)
 
 cmake_minimum_required(VERSION 2.8)
+
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
 #if(APPLE)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")

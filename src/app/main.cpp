@@ -1,7 +1,12 @@
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "extensionsystem/pluginmanager.h"
+#include "extensionsystem/logger.h"
 
 #ifdef Q_OS_MAC
 #  define PLUGINS_PATH QDir(QApplication::applicationDirPath()+"/../PlugIns").canonicalPath()
@@ -12,20 +17,25 @@
 #endif
 
 
+#if QT_VERSION < 0x050000
 void GuiMessageOutput(QtMsgType type, const char *msg)
+#else
+void GuiMessageOutput(QtMsgType type, const QMessageLogContext &, const QString & msg)
+#endif
 {
+    ExtensionSystem::Logger * logger = ExtensionSystem::Logger::instance();
     switch (type) {
     case QtDebugMsg:
-        fprintf(stderr, "Debug: %s\n", msg);
+        logger->debug(msg);
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", msg);
+        logger->warning(msg);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", msg);
+        logger->critical(msg);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", msg);
+        logger->fatal(msg);
         abort();
     default:
         break;
@@ -88,6 +98,13 @@ public:
         try {
             result = QApplication::notify(receiver, event);
         }
+        catch (const std::exception & ex) {
+            const QString message =
+                    QString("Caught exception: ") + QString(ex.what());
+            qDebug() << message;
+            if (arguments().contains("--debug"))
+                abort();
+        }
         catch (...) {
             qDebug() << "Exception caught in QApplication::notify!!!";
             if (arguments().contains("--debug"))
@@ -102,6 +119,7 @@ public:
 
     inline void initialize() {
         const QStringList arguments = QCoreApplication::instance()->arguments();
+        qDebug() << "Arguments: " << arguments;
         bool mustShowHelpAndExit = false;
         bool mustShowVersionAndExit = false;
         for (int i=1; i<arguments.size(); i++) {
@@ -133,7 +151,7 @@ public:
                 installTranslator(tr);
             }
         }
-
+        qDebug() << "Loaded translator files";
         setProperty("sharePath", sharePath);
 
         QSettings::setDefaultFormat(QSettings::IniFormat);
@@ -142,19 +160,20 @@ public:
         manager->setPluginPath(PLUGINS_PATH);
         manager->setSharePath(sharePath);
         QString error;
-
+        qDebug() << "Initialized plugin manager";
     #ifdef CONFIGURATION_TEMPLATE
         const QString defaultTemplate = CONFIGURATION_TEMPLATE;
     #else
     #error No default configuration passed to GCC
     #endif
         QString templ = defaultTemplate;
-        for (int i=1; i<argc(); i++) {
-            QString arg = QString::fromLocal8Bit(argv()[i]);
+        for (int i=1; i<arguments.size(); i++) {
+            QString arg = arguments[i];
             if (arg.startsWith("[") && arg.endsWith("]")) {
                 templ = arg.mid(1, arg.length()-2);
             }
         }
+        qDebug() << "Loading plugins by template: " << templ;
         error = manager->loadPluginsByTemplate(templ);
         if (!gui && manager->isGuiRequired()) {
             if (splashScreen_)
@@ -163,9 +182,9 @@ public:
             exit(1);
         }
 
-        qInstallMsgHandler(manager->isGuiRequired()
-                           ? GuiMessageOutput
-                           : ConsoleMessageOutput);
+//        qInstallMsgHandler(manager->isGuiRequired()
+//                           ? GuiMessageOutput
+//                           : ConsoleMessageOutput);
 
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -173,6 +192,8 @@ public:
             showErrorMessage(error);
             exit(1);
         }
+
+        qDebug() << "Done loading all plugins by template";
 
         if (mustShowHelpAndExit) {
             if (splashScreen_)
@@ -192,8 +213,8 @@ public:
             fprintf(stderr, "%s\n", qPrintable(applicationVersion()));
             exit(0);
             return;
-        }
-
+        }        
+        qDebug() << "Begin plugins initialization";
         error = manager->initializePlugins();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -204,6 +225,7 @@ public:
         }
         // GUI requirement may be changed as result of plugins initialization,
         // so check it again
+        qDebug() << "Plugins initialization done";
         if (!gui && manager->isGuiRequired()) {
             showErrorMessage("Requires X11 session to run this configuration");
             exit(property("returnCode").isValid()
@@ -211,6 +233,7 @@ public:
         }
         if (splashScreen_)
             splashScreen_->finish(0);
+        qDebug() << "Starting entry point plugin";
         error = manager->start();
         if (!error.isEmpty()) {
             if (splashScreen_)
@@ -228,7 +251,9 @@ public:
         if (!started_) {
             started_ = true;
             killTimer(timerId_);
+            qDebug() << "Begin initialization";
             initialize();
+            qDebug() << "Initialization done";
         }
         event->accept();
     }
@@ -253,10 +278,15 @@ private:
 
 int main(int argc, char **argv)
 { 
-    QString gitHash = QString::fromAscii(GIT_HASH);
-    QString gitTag = QString::fromAscii(GIT_TAG);
-    QString gitBranch = QString::fromAscii(GIT_BRANCH);
-    QDateTime gitTimeStamp = QDateTime::fromTime_t(QString::fromAscii(GIT_TIMESTAMP).toUInt());
+#if QT_VERSION < 0x050000
+    qInstallMsgHandler(GuiMessageOutput);
+#else
+    qInstallMessageHandler(GuiMessageOutput);
+#endif
+    QString gitHash = QString::fromLatin1(GIT_HASH);
+    QString gitTag = QString::fromLatin1(GIT_TAG);
+    QString gitBranch = QString::fromLatin1(GIT_BRANCH);
+    QDateTime gitTimeStamp = QDateTime::fromTime_t(QString::fromLatin1(GIT_TIMESTAMP).toUInt());
 
 
     bool gui = true;
@@ -327,7 +357,17 @@ int main(int argc, char **argv)
         app->setSplashScreen(splashScreen);
     }
 #endif
-    int ret = app->main();
+    int ret = 0;
+    try {
+        ret = app->main();
+    }
+    catch (const std::exception & ex) {
+        qFatal("Caught exception: %s", ex.what());
+    }
+    catch (...) {
+        qFatal("Caught an exception");
+    }
+
     ExtensionSystem::PluginManager::destroy();
     delete app;
     return ret;

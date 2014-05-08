@@ -1,7 +1,11 @@
 #include "extensionsystem/pluginmanager.h"
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "editorplugin.h"
 #include "editor.h"
@@ -181,8 +185,8 @@ void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Ma
 {
     if (rewrite) {
         QString fileName = analizerName.length() > 0
-                ? QString::fromAscii(".user-macros-%1.xml").arg(analizerName)
-                : QString::fromAscii(".user-macros.xml");
+                ? QString::fromLatin1(".user-macros-%1.xml").arg(analizerName)
+                : QString::fromLatin1(".user-macros.xml");
 
         const QString dirName = mySettings()->locationDirectory();
         if (dirName.startsWith(QDir::homePath() + "/."))
@@ -206,5 +210,6 @@ void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Ma
 
 }
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(Editor::EditorPlugin)
+#endif

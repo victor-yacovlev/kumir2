@@ -1,6 +1,8 @@
 #include "printrenderer.h"
 
 #include <QFontDatabase>
+#include <QFontMetricsF>
+#include <QPainter>
 
 namespace DocBookViewer {
 

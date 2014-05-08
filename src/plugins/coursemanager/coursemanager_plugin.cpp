@@ -300,4 +300,6 @@ void Plugin::updateSettings(const QStringList & keys)
 
 } // namespace CourseManager
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(CourseManager, CourseManager::Plugin)
+#endif

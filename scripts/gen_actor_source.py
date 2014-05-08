@@ -535,8 +535,8 @@ $fields
                 typee = field_type.get_qt_name()
                 if typee[0].lower() == 'q':
                     typee = typee[1:]
-                typee = typee[0].upper() + typee[1:]
-                result += "    recordSpec.record.push_back(Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
+                typee = "Shared::ActorInterface::" + typee[0].upper() + typee[1:]
+                result += "    recordSpec.record.push_back(Shared::ActorInterface::Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
             result += "    recordSpec.asciiName = QByteArray(\"%s\");\n" % self._name.get_ascii_value()
             for key, value in self._name.data.items():
                 qlocale = None
@@ -920,7 +920,7 @@ class Module:
     A Kumir module.
     """
 
-    def __init__(self, module_dir, json_node):
+    def __init__(self, module_dir, json_file_name, json_node):
         """
         Initializes from JSON value
 
@@ -932,10 +932,12 @@ class Module:
         assert isinstance(json_node, dict)
         assert "name" in json_node
         assert "methods" in json_node
+        assert isinstance(json_file_name, str) or isinstance(json_file_name, unicode)
         self.name = Name(json_node["name"])
         self.types = []
         self.uses_list = []
         self.default_template_parameters = []
+        self.json_file_name = json_file_name
         if "templateDefaults" in json_node:
             self.default_template_parameters = json_node["templateDefaults"]
         if "types" in json_node:
@@ -983,7 +985,7 @@ class Module:
         f.close()
         absolute_path = os.path.abspath(file_name)
         module_dir = os.path.dirname(absolute_path)
-        result = Module(module_dir, data)
+        result = Module(module_dir, os.path.split(file_name)[1], data)
         return result
 
     def get_module_cpp_class_name(self):
@@ -1369,8 +1371,16 @@ class PluginCppClass(CppClassBase):
     friend class %s;
     friend class %s;
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.%s" FILE "%s")
+#endif
     Q_INTERFACES(Shared::ActorInterface)
-        """ % (self._module.get_run_thread_cpp_class_name(), self._module.get_base_cpp_class_name())
+        """ % (
+            self._module.get_run_thread_cpp_class_name(),
+            self._module.get_base_cpp_class_name(),
+            self._module.get_module_cpp_namespace(),
+            ""  # self._module.json_file_name
+        )
         self.class_declaration_suffix = """
 private:
     template <typename T> inline static QVector<T> toVector1(const QVariant & v)
@@ -1493,7 +1503,7 @@ private:
             if isinstance(value, unicode):
                 body += "QString::fromUtf8(\"" + value + "\")"
             elif isinstance(value, str):
-                body += "QString::fromAscii(\"" + value + "\")"
+                body += "QString::fromLatin1(\"" + value + "\")"
             else:
                 body += str(value)
             body += "));\n"
@@ -1512,12 +1522,12 @@ private:
         for method in methods:
             assert isinstance(method, Method)
             body += "\n/* " + method.get_kumir_declaration() + " */\n"
-            body += "result.push_back(Function());\n"
+            body += "result.push_back(Shared::ActorInterface::Function());\n"
             body += "result.last().id = result.size() - 1;\n"
             if method.name.get_kumir_value().startswith("@"):
-                body += "result.last().accessType = TeacherModeFunction;\n"
+                body += "result.last().accessType = Shared::ActorInterface::TeacherModeFunction;\n"
             else:
-                body += "result.last().accessType = PublicFunction;\n"
+                body += "result.last().accessType = Shared::ActorInterface::PublicFunction;\n"
             body += 'result.last().asciiName = QByteArray("%s");\n' % method.name.get_ascii_value().replace("\\",
                                                                                                             "\\\\")
             assert isinstance(method.name.data, dict)
@@ -1531,43 +1541,43 @@ private:
             if method.return_type:
                 assert isinstance(method.return_type, BaseType)
                 if method.return_type.get_ascii_name() == "int":
-                    body += "result.last().returnType = Int;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::Int;\n"
                 elif method.return_type.get_ascii_name() == "double":
-                    body += "result.last().returnType = Real;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::Real;\n"
                 elif method.return_type.get_ascii_name() == "bool":
-                    body += "result.last().returnType = Bool;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::Bool;\n"
                 elif method.return_type.get_ascii_name() == "char":
-                    body += "result.last().returnType = Char;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::Char;\n"
                 elif method.return_type.get_ascii_name() == "string":
-                    body += "result.last().returnType = String;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::String;\n"
                 else:
-                    body += "result.last().returnType = RecordType;\n"
+                    body += "result.last().returnType = Shared::ActorInterface::RecordType;\n"
                     body += method.return_type.get_cpp_record_spec_creation(None,
                                                                             "result.last().returnTypeSpecification")
             else:
-                body += "result.last().returnType = Void;\n"
+                body += "result.last().returnType = Shared::ActorInterface::Void;\n"
             for argument in method.arguments:
                 assert isinstance(argument, Argument)
                 assert isinstance(argument.base_type, BaseType)
-                body += "result.last().arguments.push_back(Argument());\n"
+                body += "result.last().arguments.push_back(Shared::ActorInterface::Argument());\n"
                 if argument.get_kumir_argument_declaration().startswith(u'аргрез '):
-                    body += "result.last().arguments.last().accessType = InOutArgument;\n"
+                    body += "result.last().arguments.last().accessType = Shared::ActorInterface::InOutArgument;\n"
                 elif argument.get_kumir_argument_declaration().startswith(u'рез '):
-                    body += "result.last().arguments.last().accessType = OutArgument;\n"
+                    body += "result.last().arguments.last().accessType = Shared::ActorInterface::OutArgument;\n"
                 else:
-                    body += "result.last().arguments.last().accessType = InArgument;\n"
+                    body += "result.last().arguments.last().accessType = Shared::ActorInterface::InArgument;\n"
                 if argument.base_type.get_ascii_name() == "int":
-                    body += "result.last().arguments.last().type = Int;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::Int;\n"
                 elif argument.base_type.get_ascii_name() == "double":
-                    body += "result.last().arguments.last().type = Real;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::Real;\n"
                 elif argument.base_type.get_ascii_name() == "bool":
-                    body += "result.last().arguments.last().type = Bool;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::Bool;\n"
                 elif argument.base_type.get_ascii_name() == "char":
-                    body += "result.last().arguments.last().type = Char;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::Char;\n"
                 elif argument.base_type.get_ascii_name() == "string":
-                    body += "result.last().arguments.last().type = String;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::String;\n"
                 else:
-                    body += "result.last().arguments.last().type = RecordType;\n"
+                    body += "result.last().arguments.last().type = Shared::ActorInterface::RecordType;\n"
                     body += argument.base_type.get_cpp_record_spec_creation(
                         None,
                         "result.last().arguments.last().typeSpecification"
@@ -1577,7 +1587,7 @@ private:
         return """
 /* public */ Shared::ActorInterface::FunctionList %s::functionList() const
 {
-    FunctionList result;
+    Shared::ActorInterface::FunctionList result;
 %s;
     return result;
 }
@@ -1699,7 +1709,7 @@ private:
         return """
 /* public */ QString %s::mainIconName() const
 {
-    return QString::fromAscii(\"%s\");
+    return QString::fromLatin1(\"%s\");
 }
         """ % (self.class_name, icon_name)
 
@@ -1719,7 +1729,7 @@ private:
         return """
 /* public */ QString %s::pultIconName() const
 {
-    return QString::fromAscii(\"%s\");
+    return QString::fromLatin1(\"%s\");
 }
         """ % (self.class_name, icon_name)
 
@@ -2221,7 +2231,7 @@ private:
             return """
 /* public */ QList<Shared::ActorInterface*> %s::usesList() const
 {
-    static const QList<ActorInterface*> empty = QList<ActorInterface*>();
+    static const QList<Shared::ActorInterface*> empty = QList<Shared::ActorInterface*>();
     return empty;
 }
             """ % self.class_name
@@ -2524,7 +2534,7 @@ class ModuleBaseCppClass(CppClassBase):
             result += "if (currentLocaleName==\"%s\") {\n" % key
             result += "    %s(QString::fromUtf8(\"%s\"));\n" % (set_title, value)
             result += "}\n"
-        default = "%s(QString::fromAscii(\"%s\"));\n" % (set_title, ascii_name)
+        default = "%s(QString::fromLatin1(\"%s\"));\n" % (set_title, ascii_name)
         if other_names:
             result += "else {\n    %s}\n" % default
         else:
@@ -3074,7 +3084,11 @@ every build time
 
 // Qt includes
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 
 namespace $namespace {
 
@@ -3123,8 +3137,14 @@ every build time
 #include "interfaces/actorinterface.h"
 
 // Qt includes
+#include <QObject>
+#include <QtPlugin>
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 
 namespace $namespace {
 
@@ -3190,8 +3210,9 @@ $pluginClassImplementation
 $threadClassImplementation
 
 } // namespace $namespace
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN($namespace::$pluginClassName)
+#endif
 
     """, substitutions).strip() + "\n"
     _update_file(file_base_name + ".cpp", target_dir, data)
@@ -3246,7 +3267,11 @@ $customTypeDeclarations
 
 // Qt includes
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 
 namespace $namespace {
 
@@ -3346,7 +3371,11 @@ You should change it corresponding to functionality.
 
 // Qt includes
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 
 namespace $namespace {
 
@@ -3443,6 +3472,7 @@ def create_cmakelists_txt(module, json_file_name, target_dir=""):
     :param  target_dir:     directory path to store (optional, by default uses current dir)
     """
     substitutions = {
+        "projectName": module.get_module_cpp_namespace(),
         "moduleFileName": module.get_module_cpp_class_name().lower(),
         "moduleBaseFileName": module.get_base_cpp_class_name().lower(),
         "pluginFileName": module.get_plugin_cpp_class_name().lower(),
@@ -3451,10 +3481,27 @@ def create_cmakelists_txt(module, json_file_name, target_dir=""):
         "actorDir": module.name.get_camel_case_cpp_value().lower()
     }
     data = _render_template(r"""
-set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
+project($projectName)
+cmake_minimum_required(VERSION 2.8.3)
+
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
+if(${USE_QT} GREATER 4)
+    # Find Qt5
+    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+    set(MOC_PARAMS "-I${_qt5Core_install_prefix}/include/QtCore")
+else()
+    # Find Qt4
+    set(QT_USE_QTMAIN 1)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
+    include(${QT_USE_FILE})
+endif()
+
 find_package(PythonInterp 2.6 REQUIRED)
-include (${QT_USE_FILE})
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
@@ -3492,6 +3539,7 @@ add_custom_target(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
+        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
@@ -3501,6 +3549,7 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
+        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
         -o${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
@@ -3517,7 +3566,11 @@ set(MOC_SOURCES_GENERATED
     $pluginFileName.moc.cpp
 )
 
-qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+if(${USE_QT} GREATER 4)
+    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+else()
+    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+endif()
 
 install(
     FILES ${PLUGIN_OUTPUT_PATH}/$specFileName.pluginspec

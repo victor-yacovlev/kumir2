@@ -39,7 +39,7 @@ TabBar::TabBar(QWidget *parent) :
             "}"
             ;
 #endif
-    setStyleSheet(QString::fromAscii(css).replace("$windowColor", palette().brush(QPalette::Window).color().name()));
+    setStyleSheet(QString::fromLatin1(css).replace("$windowColor", palette().brush(QPalette::Window).color().name()));
     connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
     v_activeIcons = QVector<QIcon>(10);
     v_normalIcons = QVector<QIcon>(10);

@@ -99,7 +99,7 @@ QString SyntaxAnalizer::suggestFileName() const
         if (ch == ' ') {
             result += "_";
         }
-        else if (ch.toAscii() != '\0') {
+        else if (ch.toLatin1() != '\0') {
             if (ch.isLetterOrNumber())
                 result += ch;
         }
@@ -3414,7 +3414,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                         : _("No coma before type");
                 return result;
             }
-            if (group.lexems[curPos]->data==QString::fromAscii("$") || group.lexems[curPos]->data==QString::fromAscii(".")) {
+            if (group.lexems[curPos]->data==QString::fromLatin1("$") || group.lexems[curPos]->data==QString::fromLatin1(".")) {
                 group.lexems[curPos]->type = LxTypeEmpty;
                 group.lexems[curPos]->error = _("Bad symbol in name");
                 return result;
@@ -4258,7 +4258,7 @@ AST::VariableBaseType SyntaxAnalizer::testConst(const std::list<LexemPtr> &lxs, 
         LexemPtr llx = *it;
         it++;
         lx = *it;
-        static const QString PlusMinus = QString::fromAscii("-+");
+        static const QString PlusMinus = QString::fromLatin1("-+");
         if (llx->data.length() == 1 && PlusMinus.contains(llx->data[0])) {
             if (lx->type==LxConstInteger)
                 return AST::TypeInteger;
@@ -4437,7 +4437,7 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
                         type.actor = AST::ActorPtr(actor);
                         type.name = clazz.localizedNames.contains(QLocale::Russian)
                                 ? clazz.localizedNames[QLocale::Russian]
-                                : QString::fromAscii(clazz.asciiName);
+                                : QString::fromLatin1(clazz.asciiName);
                         type.asciiName = clazz.asciiName;
                         for (int f=0; f<clazz.record.size(); f++) {
                             const Shared::ActorInterface::Field & field =

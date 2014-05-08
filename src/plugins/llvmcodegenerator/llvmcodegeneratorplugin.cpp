@@ -357,7 +357,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 
 void LLVMCodeGeneratorPlugin::fixMultipleTypeDeclarations(QByteArray &data)
 {
-    QStringList lines = QString::fromAscii(data).split('\n', QString::KeepEmptyParts);
+    QStringList lines = QString::fromLatin1(data).split('\n', QString::KeepEmptyParts);
     QRegExp rxTypeDecl("%((struct|union)\\.__kumir_(\\S+))\\s=\\stype.+");
     QSet<QString> kumTypes;
     for (int i=0; i<lines.size(); i++) {
@@ -375,7 +375,7 @@ void LLVMCodeGeneratorPlugin::fixMultipleTypeDeclarations(QByteArray &data)
             }
         }
     }
-    data = lines.join("\n").toAscii();
+    data = lines.join("\n").toLatin1();
 }
 
 QString LLVMCodeGeneratorPlugin::findUtil(const QString &name)
@@ -444,4 +444,6 @@ void LLVMCodeGeneratorPlugin::stop()
 
 }
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(LLVMCodeGenerator, LLVMCodeGenerator::LLVMCodeGeneratorPlugin)
+#endif

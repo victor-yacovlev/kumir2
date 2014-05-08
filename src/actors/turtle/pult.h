@@ -18,7 +18,11 @@
 #include "ui_pult.h"
 #include "turtle.h"
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #define SCROLL_STEP 10
 #define RESP_PANEL 50
 #define LOGGER_BUTTONS 140
@@ -285,7 +289,7 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-	TurtlePult (QDir resDir=QDir(), QWidget* parent = 0, Qt::WFlags fl = 0 );
+    TurtlePult (QDir resDir=QDir(), QWidget* parent = 0, Qt::WindowFlags fl = 0 );
 	/**
 		 * Деструктор
 		 */

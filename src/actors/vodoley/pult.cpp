@@ -516,7 +516,7 @@ void pultLogger::CopyLog()
     cp->setText(text);
 }
 
-VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
+VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	: QWidget ( parent, fl ), Ui::VodoleyPult()
 {
 	autoClose=false;

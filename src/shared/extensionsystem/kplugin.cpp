@@ -43,21 +43,21 @@ QByteArray KPlugin::pluginName() const
     if (separatorPos != -1) {
         result = className.left(separatorPos);
     }
-    const QString message = QString::fromAscii(
+    const QString message = QString::fromLatin1(
                 "KPlugin can't build name based on class %1 namespace. "
                 "You must explicitly implement virtual method 'pluginName()' "
                 "in this class."
-                ).arg(QString::fromAscii(className));
+                ).arg(QString::fromLatin1(className));
     Q_ASSERT_X(result.length() > 0,
                "KPlugin::pluginName()",
-               message.toAscii().constData()
+               message.toLatin1().constData()
                );
     return result;
 }
 
 void KPlugin::initialize(const QString & resourcesRootPath)
 {
-    settings_ = SettingsPtr(new Settings(QString::fromAscii(pluginName())));
+    settings_ = SettingsPtr(new Settings(QString::fromLatin1(pluginName())));
     resourcesDir_ = resourcesRootPath;
     initialize(QStringList(), CommandLine());
 }
@@ -78,7 +78,7 @@ QDir KPlugin::myResourcesDir() const
     }
     else {
         const QString sharePath = PluginManager::instance()->sharePath();
-        QString relPath = QString::fromAscii(pluginName()).toLower();
+        QString relPath = QString::fromLatin1(pluginName()).toLower();
         if (relPath.startsWith("actor")) {
             relPath = "actors/" + relPath.mid(5);
         }
@@ -86,7 +86,7 @@ QDir KPlugin::myResourcesDir() const
     }
     Q_ASSERT(! thisModulePath.isEmpty());
     QDir result = QDir(thisModulePath);
-    QString message = QString::fromAscii("The directory not exists or not readable: %1")
+    QString message = QString::fromLatin1("The directory not exists or not readable: %1")
             .arg(thisModulePath);
     Q_ASSERT_X(result.exists() && result.isReadable(), "KPlugin::myResourcesDir",
                message.toLocal8Bit().constData()

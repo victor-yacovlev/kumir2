@@ -135,7 +135,11 @@ void PDAutomata::matchScript(const QString &text, ScriptListPtr & scripts, const
         bool found = false;
         for (int i=0; i<metaObject()->methodCount(); i++) {
             QMetaMethod m = metaObject()->method(i);
-            QString m_signature = m.signature();
+#if QT_VERSION >= 0x050000
+            const QString m_signature = m.methodSignature();
+#else
+            const QString m_signature = m.signature();
+#endif
             int spacePos = m_signature.indexOf(" ");
             int brPos = m_signature.indexOf("(");
             QString m_name = m_signature.mid(spacePos+1, brPos);
@@ -465,7 +469,7 @@ int PDAutomata::process()
             currentTerminal = "end";
         }
         key = currentTerminal + "/" + currentStackElem.nonTerminal;
-//        logger.write(QString::fromAscii("Processing %1 -> %2 (%3): \n")
+//        logger.write(QString::fromLatin1("Processing %1 -> %2 (%3): \n")
 //                     .arg(currentStackElem.nonTerminal)
 //                     .arg(currentTerminal)
 //                     .arg(d->currentPosition)
@@ -474,7 +478,7 @@ int PDAutomata::process()
 //        logger.flush();
         if ( matrix_.contains(key) ) {
             Rules rulesList = matrix_[key];
-//            logger.write(QString::fromAscii("rules count = %1\n")
+//            logger.write(QString::fromLatin1("rules count = %1\n")
 //                         .arg(rulesList.size()).toUtf8()
 //                         );
 //            logger.flush();
@@ -482,7 +486,7 @@ int PDAutomata::process()
                 // Линейный случай, когда паре {ТЕРМИНАЛ,НЕТЕРМИНАЛ}
                 // соответствует только одно правило
                 RuleRightPart rule = rulesList[0];
-//                logger.write(QString::fromAscii("1:\t[%1] %2\n")
+//                logger.write(QString::fromLatin1("1:\t[%1] %2\n")
 //                             .arg(rule.priority)
 //                             .arg(rule.isEpsilon? "0" : rule.nonTerminals.join(" "))
 //                             .toUtf8()
@@ -490,7 +494,7 @@ int PDAutomata::process()
 //                logger.flush();
                 if ( !rule.isEpsilon && currentPosition_>=0 ) {
                     scripts_[currentPosition_] = rule.script;
-                    acceptedRules_[currentPosition_] = QString::fromAscii("[%1] %2 -> %3 %4")
+                    acceptedRules_[currentPosition_] = QString::fromLatin1("[%1] %2 -> %3 %4")
                             .arg(rule.priority)
                             .arg(currentStackElem.nonTerminal)
                             .arg(currentTerminal)
@@ -527,7 +531,7 @@ int PDAutomata::process()
                         errorsCount_ ++;
                     saveData();
                     RuleRightPart rule = rulesList[i];
-//                    logger.write(QString::fromAscii("%1:\t[%2] %3\n")
+//                    logger.write(QString::fromLatin1("%1:\t[%2] %3\n")
 //                                 .arg(i)
 //                                 .arg(rule.priority)
 //                                 .arg(rule.isEpsilon? "0" : rule.nonTerminals.join(" "))
@@ -537,7 +541,7 @@ int PDAutomata::process()
 
                     if ( !rule.isEpsilon && currentPosition_>=0 ) {
                         scripts_[currentPosition_] = rule.script;
-                        acceptedRules_[currentPosition_] = QString::fromAscii("[%1] %2 -> %3 %4")
+                        acceptedRules_[currentPosition_] = QString::fromLatin1("[%1] %2 -> %3 %4")
                                 .arg(rule.priority)
                                 .arg(currentStackElem.nonTerminal)
                                 .arg(currentTerminal)
@@ -698,14 +702,14 @@ static RulesLine parseRulesLine(const QString & line) {
         bool ok;
         result.priority = caps[1].toDouble(&ok);
         if (!ok)
-            throw QString::fromAscii("Wrong priority at line: %1").arg(line);
+            throw QString::fromLatin1("Wrong priority at line: %1").arg(line);
         result.leftPart = caps[2].simplified();
         result.rightPart = caps[3].simplified();
         if (caps.size()>4)
             result.data = caps[4].mid(1).simplified();
     }
     else {
-        throw QString::fromAscii("Wrong rule line: %1").arg(line);
+        throw QString::fromLatin1("Wrong rule line: %1").arg(line);
     }
     return result;
 }
@@ -764,7 +768,7 @@ void prepareRules(const QStringList &files, QString &out)
     QStringList pravila1;
 
     for (std::list<RulesLine>::iterator it=rules.begin(); it!=rules.end(); ++it) {
-        QString subochLine = QString::fromAscii("%1 -> %2 : %3 [%4]")
+        QString subochLine = QString::fromLatin1("%1 -> %2 : %3 [%4]")
                 .arg(it->leftPart)
                 .arg(it->rightPart)
                 .arg(it->data)
@@ -1645,12 +1649,16 @@ void PDAutomata::postProcess()
         if (scripts) {
             for (int j=0; j<scripts->size(); j++) {
                 QMetaMethod m = scripts->at(j).method;
-                const QString sign = m.signature();
+#if QT_VERSION >= 0x050000
+            const QString sign = m.methodSignature();
+#else
+            const QString sign = m.signature();
+#endif
                 Q_UNUSED(sign); // Used only for debug
                 const QList<QVariant> & arguments = scripts->at(j).arguments;
                 switch (arguments.size()) {
                 case 1:
-                    if (QString::fromAscii(m.parameterTypes()[0])=="int") {
+                    if (QString::fromLatin1(m.parameterTypes()[0])=="int") {
                         m.invoke(this, Qt::DirectConnection,
                                  Q_ARG(int, arguments[0].toInt())
                                  );
@@ -1662,7 +1670,7 @@ void PDAutomata::postProcess()
                     }
                     break;
                 case 2:
-                    if (QString::fromAscii(m.parameterTypes()[0])=="int") {
+                    if (QString::fromLatin1(m.parameterTypes()[0])=="int") {
                         m.invoke(this, Qt::DirectConnection,
                                  Q_ARG(int, arguments[0].toInt()),
                                  Q_ARG(int, arguments[1].toInt())

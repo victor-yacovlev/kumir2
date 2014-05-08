@@ -21,7 +21,11 @@
 #include "kuznec.h"
 //#include "network.h"
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #define SCROLL_STEP 10
 #define RESP_PANEL 50
 #define LOGGER_BUTTONS 140
@@ -256,7 +260,7 @@ class GrasshopperPult : public QWidget, public Ui::TurtlePult
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-		GrasshopperPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+        GrasshopperPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
 		/**
 		 * Деструктор
 		 */

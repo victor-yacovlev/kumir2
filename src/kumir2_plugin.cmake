@@ -1,3 +1,17 @@
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
+if(${USE_QT} GREATER 4)
+    # Find Qt5
+    find_package(Qt5 5.3.0 COMPONENTS Core REQUIRED)
+    set(QT_LRELEASE_EXECUTABLE "${_qt5Core_install_prefix}/bin/lrelease")
+else()
+    # Find Qt4
+    find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
+    include (${QT_USE_FILE})
+endif()
+
 # -- linux
 if(NOT APPLE AND NOT MSVC)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/..'")

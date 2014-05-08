@@ -66,7 +66,7 @@ void LLVMGenerator::initialize(const QDir &resourcesRoot)
 
     QFile StdLibFile(StdLibFileName);
     if (!StdLibFile.open(QIODevice::ReadOnly)) {
-        const QString message = QString::fromAscii("Can't open %1")
+        const QString message = QString::fromLatin1("Can't open %1")
                 .arg(StdLibFileName);
         qFatal("%s", message.toStdString().c_str());
     }

@@ -23,7 +23,9 @@ PluginManager::PluginManager()
     for (int i=1; i<arguments.size(); i++) {
         const QString & arg = arguments[i];
         if (arg.startsWith("-")) {
-            pImpl_->namedProgramArguments.push_back(arg);
+            if (arg!="--debug" && !arg.startsWith("--log=")) {
+                pImpl_->namedProgramArguments.push_back(arg);
+            }
         }
         else {
             unnamedArgumentsIndexBegin = i;
@@ -34,7 +36,7 @@ PluginManager::PluginManager()
     if (unnamedArgumentsIndexBegin) {
         for (int i=unnamedArgumentsIndexBegin; i<arguments.size(); i++) {
             const QString & arg = arguments[i];
-            if (!arg.startsWith("["))
+            if (!arg.startsWith("[") && !arg.startsWith("-"))
                 pImpl_->unnamedProgramArguments.push_back(arg);
         }
     }
@@ -112,10 +114,11 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     QString error = "";
     error = pImpl_->parsePluginsRequest(templ, requests, names);
     if (!error.isEmpty())
-        return error;
+        return error;    
     //QScriptEngine engine;
     //engine.evaluate("var data = null;\n");
     //error = d->loadSpecs(names, &engine);
+    qDebug() << "Loading plugin spec files for: " << names;
     error = pImpl_->loadSpecs(names);
     if (!error.isEmpty())
         return error;
@@ -153,7 +156,8 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     // orderedList will contain names in order of load and initialization
     QStringList orderedList;
     // make dependencies for entry point plugin first
-    error = pImpl_->makeDependencies(pImpl_->mainPluginName,orderedList);
+    qDebug() << "Reordering plugin load order and building dependencies...";
+    error = pImpl_->makeDependencies(pImpl_->mainPluginName,orderedList);    
     if (!error.isEmpty())
         return error;
     // make dependencies for other requests
@@ -165,9 +169,12 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
     error = pImpl_->reorderSpecsAndCreateStates(orderedList);
     if (!error.isEmpty())
         return error;
+    qDebug() << "New plugin load ordered list: " << orderedList;
+    qDebug() << "Begin loading plugins";
     error = pImpl_->loadPlugins();
     if (!error.isEmpty())
         return error;
+    qDebug() << "Done loading plugins";
     pImpl_->requests = requests;
     return "";
 }
@@ -358,12 +365,15 @@ QString PluginManager::initializePlugins()
             error += tr("Run with --help for more details.\n");
             return error;
         }
+        qDebug() << "Begin initialization of plugin " <<
+                    pImpl_->specs[i].name << " with parameters " << arguments;
         QString error = pImpl_->objects[i]->initialize(arguments, runtimeParameters);
         if (!error.isEmpty()) {
             return QString("Error initializing %1: %2")
                     .arg(name)
                     .arg(error);
         }
+        qDebug() << "Plugin initialization done";
         pImpl_->states[i] = KPlugin::Initialized;
     }
 

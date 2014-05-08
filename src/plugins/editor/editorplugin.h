@@ -14,6 +14,9 @@ class EditorPlugin
 
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.Editor" FILE "")
+#endif
     Q_INTERFACES(Shared::EditorInterface)
 public:
     friend class Editor;

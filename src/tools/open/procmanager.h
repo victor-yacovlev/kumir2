@@ -21,6 +21,7 @@ public:
     class ImplInterface {
     public:
         virtual Pid find(const QString &executable) = 0;
+        virtual ~ImplInterface() {}
     };
 
 private:
