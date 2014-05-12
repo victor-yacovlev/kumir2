@@ -171,7 +171,7 @@ void PainterModule::runFill(const int x, const int y)
             canvasLock->lock();
             canvas->setPixel(pnt, brush.color().rgb());
             canvasLock->unlock();
-            view->update();
+//            view->update();
             stack.push(QPoint(pnt.x()-1, pnt.y()));
             stack.push(QPoint(pnt.x()+1, pnt.y()));
             stack.push(QPoint(pnt.x(), pnt.y()-1));
