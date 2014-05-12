@@ -6,14 +6,14 @@ class QFile;
 #include <QString>
 
 #ifdef EXTENSIONSYSTEM_LIBRARY
-#define EXPORT Q_DECL_EXPORT
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_EXPORT
 #else
-#define EXPORT Q_DECL_IMPORT
+#define EXTENSIONSYSTEM_EXPORT Q_DECL_IMPORT
 #endif
 
 namespace ExtensionSystem {
 
-class Logger
+class EXTENSIONSYSTEM_EXPORT Logger
 {
 public:
     enum LogLevel {
