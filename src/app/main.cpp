@@ -91,9 +91,9 @@ public:
             result = QApplication::notify(receiver, event);
         }
         catch (const std::exception & ex) {
-            const std::string message =
-                    std::string("Caught exception: ") + std::string(ex.what());
-            qDebug(message.c_str());
+            const QString message =
+                    QString("Caught exception: ") + QString(ex.what());
+            qDebug() << message;
             if (arguments().contains("--debug"))
                 abort();
         }
@@ -350,9 +350,7 @@ int main(int argc, char **argv)
         ret = app->main();
     }
     catch (const std::exception & ex) {
-        const std::string message =
-                std::string("Caught exception: ") + std::string(ex.what());
-        qFatal(message.c_str());
+        qFatal("Caught exception: %s", ex.what());
     }
     catch (...) {
         qFatal("Caught an exception");
