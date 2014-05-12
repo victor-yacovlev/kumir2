@@ -10,7 +10,11 @@ You should change it corresponding to functionality.
 #define PAINTERMODULE_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include "extensionsystem/kplugin.h"
 #include "paintermodulebase.h"
 

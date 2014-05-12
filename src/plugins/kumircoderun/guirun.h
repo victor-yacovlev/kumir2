@@ -5,6 +5,7 @@
 #define DO_NOT_DECLARE_STATIC
 #include "vm/vm_abstract_handlers.h"
 #include "interfaces/actorinterface.h"
+#include "commonrun.h"
 
 namespace KumirCodeRun {
 
@@ -147,6 +148,18 @@ private:
     QScopedPointer<QMutex> stopMutex_;
 };
 
+class ExternalModuleResetFunctor
+        : public QObject
+        , public VM::ExternalModuleResetFunctor
+{
+    Q_OBJECT
+public:
+    ExternalModuleResetFunctor();
+    virtual void operator()(const std::string & moduleName, const String & localizedName)
+        /* throws std::string, Kumir::String */ ;
+signals:
+    void showActorWindow(const QByteArray & actorAsciiName);
+};
 
 }
 

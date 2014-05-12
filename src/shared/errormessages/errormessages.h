@@ -15,24 +15,24 @@
 namespace Shared {
 
 inline QString _(const char * x) {
-    return QString::fromAscii(x);
+    return QString::fromLatin1(x);
 }
 
 inline QString _(const char * x, const QString &a) {
-    QString result = QString::fromAscii(x);
+    QString result = QString::fromLatin1(x);
     result.replace("%1","\\1={%1}");
     return result.arg(a);
 }
 
 inline QString _(const char * x, const QString &a, const QString &b) {
-    QString result = QString::fromAscii(x);
+    QString result = QString::fromLatin1(x);
     result.replace("%1","\\1={%1}");
     result.replace("%2","\\2={%2}");
     return result.arg(a).arg(b);
 }
 
 inline QString _(const char * x, const QString &a, const QString &b, const QString &c) {
-    QString result = QString::fromAscii(x);
+    QString result = QString::fromLatin1(x);
     result.replace("%1","\\1={%1}");
     result.replace("%2","\\2={%2}");
     result.replace("%3","\\3={%3}");

@@ -33,7 +33,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
 {
     kumirProgram_ = nullptr;
     Q_CHECK_PTR(w);
-    Q_ASSERT(!QString::fromAscii(w->metaObject()->className()).isEmpty());
+    Q_ASSERT(!QString::fromLatin1(w->metaObject()->className()).isEmpty());
     setProperty("uncloseable", w->property("uncloseable"));
     if (type==MainWindow::WWW) {
         connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
@@ -69,7 +69,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
             static const char * css = ""
                     "QToolBar { border: 0px }";
 #endif
-            tb->setStyleSheet(QString::fromAscii(css).replace("$windowColor",palette().brush(QPalette::Window).color().name()));
+            tb->setStyleSheet(QString::fromLatin1(css).replace("$windowColor",palette().brush(QPalette::Window).color().name()));
             l->addWidget(tb);
             if (type!=MainWindow::WWW) {
                 Q_FOREACH(QAction * a, gr_fileActions->actions()) {

@@ -12,6 +12,9 @@ class KumirRunPlugin
         , public Shared::RunInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.KumirCodeRun" FILE "")
+#endif
     Q_INTERFACES(Shared::RunInterface)
 public:
     explicit KumirRunPlugin();
@@ -98,6 +101,7 @@ signals:
     void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
+    void showActorWindowRequest(const QByteArray & asciiModuleName);
 
 private:
     class Run * pRun_;

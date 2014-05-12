@@ -498,7 +498,7 @@ static QString lineToRtf(const QString & text,
         rtf += "{";
         const Chunk & chunk = result[i];
         if (chunk.color)
-            rtf += "\\cf"+QString::number(chunk.color).toAscii();
+            rtf += "\\cf"+QString::number(chunk.color).toLatin1();
         if (chunk.italic)
             rtf += "\\i";
         if (chunk.italic || chunk.color)
@@ -881,7 +881,7 @@ void OneSession::tryFinishInput()
         else if (format.contains("::")) {
             const QStringList typeName = format.split("::", QString::KeepEmptyParts);
             const QString & moduleName = typeName[0];
-            const QByteArray classAsciiName = typeName[1].toAscii();
+            const QByteArray classAsciiName = typeName[1].toLatin1();
             const QString & className  = typeName[2];
             QList<ExtensionSystem::KPlugin*> plugins =
                     ExtensionSystem::PluginManager::instance()->loadedPlugins("Actor*");

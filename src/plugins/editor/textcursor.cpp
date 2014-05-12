@@ -187,7 +187,7 @@ Macro* TextCursor::endRecordMacro()
 void TextCursor::normalizePlainText(QString &s)
 {
     static const QString from = QString::fromUtf8("–«»“”");
-    static const QString to = QString::fromAscii("-\"\"\"\"");
+    static const QString to = QString::fromLatin1("-\"\"\"\"");
     Q_ASSERT(from.length() == to.length());
     for (int i=0; i<from.length(); i++) {
         const QChar & f = from[i];

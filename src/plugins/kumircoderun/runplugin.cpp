@@ -10,18 +10,22 @@
 #include "guirun.h"
 #include "vm/vm_console_handlers.hpp"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace KumirCodeRun {
 
-struct CommonFunctors {
-    Common::ExternalModuleResetFunctor reset;
+struct CommonFunctors {    
     Common::ExternalModuleCallFunctor call;
     Common::CustomTypeFromStringFunctor fromString;
     Common::CustomTypeToStringFunctor toString;
 };
 
 struct ConsoleFunctors {
+    Common::ExternalModuleResetFunctor reset;
     Console::ExternalModuleLoadFunctor load;
     VM::Console::InputFunctor input;
     VM::Console::OutputFunctor output;
@@ -30,6 +34,7 @@ struct ConsoleFunctors {
 };
 
 struct GuiFunctors {
+    Gui::ExternalModuleResetFunctor reset;
     Gui::ExternalModuleLoadFunctor load;
     Gui::InputFunctor input;
     Gui::OutputFunctor output;
@@ -466,9 +471,7 @@ KumirRunPlugin::~KumirRunPlugin()
 
 void KumirRunPlugin::prepareCommonRun()
 {
-    common_ = new CommonFunctors;
-    common_->reset.setCallFunctor(&common_->call);
-    pRun_->vm->setFunctor(&common_->reset);
+    common_ = new CommonFunctors;        
     pRun_->vm->setFunctor(&common_->call);
     pRun_->vm->setFunctor(&common_->toString);
     pRun_->vm->setFunctor(&common_->fromString);
@@ -504,6 +507,9 @@ void KumirRunPlugin::prepareConsoleRun()
 
     console_->getMainArgument.init(arguments);
 
+    console_->reset.setCallFunctor(&common_->call);
+
+    pRun_->vm->setFunctor(&console_->reset);
     pRun_->vm->setFunctor(&console_->load);
     pRun_->vm->setFunctor(&console_->input);
     pRun_->vm->setFunctor(&console_->output);
@@ -511,6 +517,7 @@ void KumirRunPlugin::prepareConsoleRun()
     pRun_->vm->setFunctor(&console_->returnMainValue);
     pRun_->vm->setConsoleInputBuffer(&console_->input);
     pRun_->vm->setConsoleOutputBuffer(&console_->output);
+
 
 }
 
@@ -531,11 +538,17 @@ void KumirRunPlugin::prepareGuiRun()
     gui_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
     gui_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
 
+    gui_->reset.setCallFunctor(&common_->call);
+
     connect(&gui_->pause, SIGNAL(requestPause()),
             pRun_, SLOT(handlePauseRequest()),
             Qt::DirectConnection
             );
 
+    connect(&gui_->reset, SIGNAL(showActorWindow(QByteArray)),
+            this, SIGNAL(showActorWindowRequest(QByteArray)));
+
+    pRun_->vm->setFunctor(&gui_->reset);
     pRun_->vm->setFunctor(&gui_->load);
     pRun_->vm->setFunctor(&gui_->input);
     pRun_->vm->setFunctor(&gui_->output);
@@ -731,5 +744,6 @@ QAbstractItemModel * KumirRunPlugin::debuggerVariablesViewModel() const
 } // namespace KumirCodeRun
 
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCodeRun::KumirRunPlugin)
+#endif

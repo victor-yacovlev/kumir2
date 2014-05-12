@@ -1,7 +1,11 @@
 #ifndef CYRILLIC_MENU_H
 #define CYRILLIC_MENU_H
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #ifdef WIDGETS_LIBRARY
 #define WIDGETS_EXPORT Q_DECL_EXPORT

@@ -725,7 +725,7 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
     func.algId = func.id = algId;
     func.module = moduleId;
     func.moduleLocalizedName = mod->header.name.toStdWString();
-    func.name = QString::fromAscii("@below_main").toStdWString();
+    func.name = QString::fromLatin1("@below_main").toStdWString();
     func.instructions = instrs.toVector().toStdVector();
     byteCode_->d.push_back(func);
 

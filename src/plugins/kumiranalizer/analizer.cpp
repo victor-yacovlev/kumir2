@@ -27,9 +27,9 @@ void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Lang
 
 void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
 {
-    if (moduleName==QString::fromAscii("Files"))
+    if (moduleName==QString::fromLatin1("Files"))
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
-    if (moduleName==QString::fromAscii("Strings"))
+    if (moduleName==QString::fromLatin1("Strings"))
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
 }
 
@@ -361,7 +361,7 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
             const QString cap = rxTemplateParameter.cap();
             QVariant::Type templateType;
             const QChar ch = cap[1];
-            switch (ch.toAscii()) {
+            switch (ch.toLatin1()) {
             case 'd': templateType = QVariant::Int; break;
             case 'f': templateType = QVariant::Double; break;
             case 'b': templateType = QVariant::Bool; break;
@@ -386,7 +386,7 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
         if (ct.localizedNames.contains(QLocale::Russian))
             tp.name = ct.localizedNames[QLocale::Russian];
         else
-            tp.name = QString::fromAscii(ct.asciiName);
+            tp.name = QString::fromLatin1(ct.asciiName);
         tp.actor = AST::ActorPtr(actor);
         tp.asciiName = ct.asciiName;
         AI::Record record = ct.record;
@@ -437,11 +437,11 @@ static AST::Type actorTypeToASTType(const Shared::ActorInterface::FieldType ft,
         result.kind = AST::TypeUser;
         result.name = spec.localizedNames.contains(QLocale::Russian)
                 ? spec.localizedNames[QLocale::Russian]
-                : QString::fromAscii(spec.asciiName);
+                : QString::fromLatin1(spec.asciiName);
         result.asciiName = spec.asciiName;
         foreach (const Shared::ActorInterface::Field & field, spec.record) {
             AST::Field kfield;
-            kfield.first = QString::fromAscii(field.first);
+            kfield.first = QString::fromLatin1(field.first);
             kfield.second = actorTypeToASTType(field.second, Shared::ActorInterface::RecordSpecification());
             result.userTypeFields.push_back(kfield);
         }
@@ -471,7 +471,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
         alg->header.external.id = function.id;
         alg->header.name = function.localizedNames.contains(QLocale::Russian)
                 ? function.localizedNames[QLocale::Russian]
-                : QString::fromAscii(function.asciiName);
+                : QString::fromLatin1(function.asciiName);
         alg->header.external.algorithmAsciiName = function.asciiName;
         alg->header.broken = false;
         alg->header.specialType = function.accessType == Shared::ActorInterface::TeacherModeFunction
@@ -482,7 +482,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
             AST::VariablePtr karg = AST::VariablePtr(new AST::Variable);
             karg->name = arg.localizedNames.contains(QLocale::Russian)
                     ? arg.localizedNames[QLocale::Russian]
-                    : QString::fromAscii(arg.asciiName);
+                    : QString::fromLatin1(arg.asciiName);
             karg->baseType = actorTypeToASTType(arg.type, arg.typeSpecification);
             karg->dimension = arg.dimension;
             if (arg.accessType == Shared::ActorInterface::InOutArgument) {

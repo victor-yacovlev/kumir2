@@ -1,8 +1,12 @@
 #include "kumvariablesmodel.h"
 
+extern "C" {
+#include <string.h>
+}
 #include <QFont>
 #include <QPalette>
 #include <QApplication>
+
 
 namespace KumirCodeRun {
 
@@ -174,7 +178,7 @@ QModelIndex KumVariablesModel::arrayIndex(
         ) const
 {
     QVector<int> newIndeces(prevIndeces.size() + 1);
-    qMemCopy(newIndeces.data(), prevIndeces.constData(), prevIndeces.size() * sizeof(int));
+    ::memcpy(newIndeces.data(), prevIndeces.constData(), prevIndeces.size() * sizeof(int));
     int bounds[7];
     mutex_->lock();
     variable->getEffectiveBounds(bounds);
@@ -490,7 +494,7 @@ void KumVariablesModel::emitValueChanged(
     }
     if (indeces.size() > 0) {
         QVector<int> lessIndeces(indeces.size() - 1);
-        qMemCopy(lessIndeces.data(), indeces.constData(), (indeces.size()-1) * sizeof(int));
+        ::memcpy(lessIndeces.data(), indeces.constData(), (indeces.size()-1) * sizeof(int));
         emitValueChanged(variable, lessIndeces);
     }
 }
@@ -583,7 +587,7 @@ QString KumVariableItem::array1Representation(
     ind[3] = variable_->dimension();
     int indexToVary = indeces.size();
     if (indeces.size() > 0)
-        qMemCopy(ind, indeces.constData(), indeces.size() * sizeof(int));
+        ::memcpy(ind, indeces.constData(), indeces.size() * sizeof(int));
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
     for (int i=start; i<=end; i++) {
@@ -632,7 +636,7 @@ QString KumVariableItem::array2Representation(
     int end = bounds[2 * indexToVary + 1];
     QVector<int> ind(indeces.size() + 1);
     if (indeces.size() > 0)
-        qMemCopy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));
+        ::memcpy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));
     for (int i=start; i<=end; i++) {
         ind[indexToVary] = i;
         const int blockMaxItems = maxItems - readItems;
@@ -664,7 +668,7 @@ QString KumVariableItem::array3Representation(
     int end = bounds[2 * indexToVary + 1];
     QVector<int> ind(indeces.size() + 1);
     if (indeces.size() > 0)
-        qMemCopy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));
+        ::memcpy(ind.data(), indeces.constData(), indeces.size() * sizeof(int));
     for (int i=start; i<=end; i++) {
         ind[indexToVary] = i;
         const int blockMaxItems = maxItems - readItems;
@@ -719,7 +723,7 @@ QString KumVariableItem::valueRepresentation() const
     }
     else if (type_ == ArrayItem && hasValue()) {
         int ind[4];
-        qMemCopy(ind, indeces_.data(), indeces_.size() * sizeof(int));
+        ::memcpy(ind, indeces_.data(), indeces_.size() * sizeof(int));
         ind[3] = indeces_.size();
         result += QString::fromStdWString(variable_->toString(ind));
         if (variable_->baseType() == Bytecode::VT_string) {

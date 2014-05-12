@@ -1,7 +1,12 @@
 #ifndef PAINTERWINDOW_H
 #define PAINTERWINDOW_H
 
+#include <QtGlobal>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 
 

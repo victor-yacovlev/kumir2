@@ -1,3 +1,6 @@
+project(kumir2-run)
+cmake_minimum_required(VERSION 2.8.3)
+
 set(SRC
     main.cpp
 )

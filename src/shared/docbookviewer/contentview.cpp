@@ -4,8 +4,13 @@
 
 #include "extensionsystem/pluginmanager.h"
 
+#include <QUrl>
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace DocBookViewer {
 
@@ -421,7 +426,7 @@ QString ContentView::programTextForLanguage(const QString &source,
         inlineCommentSymbol = "|";
     }
     else if (language.toLower() == "pascal") {
-        keywordsList = QString::fromAscii("begin,end,program,unit,uses,for,from,"
+        keywordsList = QString::fromLatin1("begin,end,program,unit,uses,for,from,"
                                          "to,if,then,else,"
                                          "integer,real,string,char,boolean,"
                                          "array,of"
@@ -1139,7 +1144,7 @@ QVariant ContentView::loadResource(int type, const QUrl &name)
         const QString link = name.toString();
         if (link.startsWith("model_ptr:")) {
             ignore = false;
-            QByteArray linkPtr = QByteArray::fromHex(link.toAscii().mid(10));
+            QByteArray linkPtr = QByteArray::fromHex(link.toLatin1().mid(10));
             QDataStream ds(linkPtr);
             quintptr rawPointer = 0;
             ds >> rawPointer;
@@ -1216,7 +1221,7 @@ QString ContentView::renderSection(ModelPtr data) const
     const qint8 thisSectionLevel =
             data->sectionLevel() -
             onePageParentModel(data)->sectionLevel();
-    const QString tag = QString::fromAscii("h%1").arg(thisSectionLevel + 1);
+    const QString tag = QString::fromLatin1("h%1").arg(thisSectionLevel + 1);
     const QString number = sectionNumber(data);
     const QString title = number + "&nbsp;" + data->title();
     QString style;
@@ -1246,7 +1251,7 @@ QString ContentView::modelToLink(ModelPtr data) const
     QByteArray buffer;
     QDataStream ds(&buffer, QIODevice::WriteOnly);
     ds << ptr;
-    return QString::fromAscii(buffer.toHex());
+    return QString::fromLatin1(buffer.toHex());
 }
 
 QString ContentView::renderXref(ModelPtr data) const
@@ -1269,7 +1274,7 @@ QString ContentView::renderXref(ModelPtr data) const
                         topLevelModel(data), linkEnd
                         );
             if (container) {
-                href = QString::fromAscii("model_ptr:") +
+                href = QString::fromLatin1("model_ptr:") +
                         modelToLink(container);
             }
         }
@@ -1435,8 +1440,8 @@ QString ContentView::renderSet(ModelPtr data) const
         QByteArray buffer;
         QDataStream ds(&buffer, QIODevice::WriteOnly);
         ds << dataPtr;
-        const QString href = QString::fromAscii("model_ptr:") +
-                QString::fromAscii(buffer.toHex());
+        const QString href = QString::fromLatin1("model_ptr:") +
+                QString::fromLatin1(buffer.toHex());
         result += "<p align=\"left\"><a href=\"" + href +"\">" +
                 child->title() + "</a></p>\n";
         result += "<p margin='10' align='left'>" + child->subtitle() + "</p>";
@@ -1451,8 +1456,8 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     QByteArray buffer;
     QDataStream ds(&buffer, QIODevice::WriteOnly);
     ds << dataPtr;
-    const QString href = QString::fromAscii("model_ptr:") +
-            QString::fromAscii(buffer.toHex());
+    const QString href = QString::fromLatin1("model_ptr:") +
+            QString::fromLatin1(buffer.toHex());
     QString result = "\n<li>";
     QString index;
     if (data == DocBookModel::Example || data == DocBookModel::Table) {
@@ -1493,8 +1498,8 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
 
 void ContentView::handleInternalLink(const QUrl &url)
 {
-    if (url.encodedPath().startsWith("model_ptr:")) {
-        const QByteArray path = url.encodedPath().mid(10);
+    if (url.toEncoded().startsWith("model_ptr:")) {
+        const QByteArray path = url.toEncoded().mid(10);
         QByteArray data = QByteArray::fromHex(path);
         QDataStream ds(&data, QIODevice::ReadOnly);
         quintptr ptr = 0u;

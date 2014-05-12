@@ -27,7 +27,7 @@ ExternalModuleLoadFunctor::operator() (
         if (forceUpper) {
             forceUpper = false;
             qch = qch.toUpper();
-            ch = qch.toAscii();
+            ch = qch.toLatin1();
         }
         if (ch != ' ') {
             moduleCanonicalFileName.push_back(ch);
@@ -82,6 +82,30 @@ ExternalModuleLoadFunctor::operator() (
     return namesList;
 }
 
+
+void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName, const Kumir::String & moduleLocalizedName)
+{
+    using namespace Shared;
+    using namespace ExtensionSystem;
+
+    ActorInterface * actor = Util::findActor(moduleAsciiName);
+
+    if (actor) {
+        actor->reset();
+        if (callFunctor_) {
+            callFunctor_->checkForActorConnected(moduleAsciiName);
+        }
+    }
+    else {
+        const QString qModuleName = QString::fromStdWString(moduleLocalizedName);
+        const Kumir::String errorMessage =
+                QString::fromUtf8(
+                    "Ошибка инициализации исполнителя: нет исполнителя "
+                    "с именем %1"
+                    ).arg(qModuleName).toStdWString();
+        throw errorMessage;
+    }
+}
 
 } // namespace Console
 }

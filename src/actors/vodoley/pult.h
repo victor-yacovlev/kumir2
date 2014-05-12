@@ -19,7 +19,11 @@
 #include "vodoley.h"
 //#include "network.h"
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #define SCROLL_STEP 10
 #define RESP_PANEL 40
 #define LOGGER_BUTTONS 140
@@ -287,7 +291,7 @@ class VodoleyPult : public QWidget, public Ui::VodoleyPult
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-		VodoleyPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+        VodoleyPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
         inline QSize minimumSizeHint() const { return QSize(250, 450); }
 		/**
 		 * Деструктор

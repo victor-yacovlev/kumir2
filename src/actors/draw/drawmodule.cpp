@@ -232,7 +232,8 @@ namespace ActorDraw {
         
         
         texts.append(addSimpleText(Text,font));
-        texts.last()->scale(0.001,0.001); 
+//        texts.last()->scale(0.001,0.001);
+        texts.last()->setScale(0.001);
         texts.last()->setPos(from.x(), from.y()-fontMetric.boundingRect("OOOXX").height()/1000);
         texts.last()->setPen(QPen(color));
         return widthChar*Text.length();
@@ -1101,12 +1102,12 @@ void DrawModule::drawNet()
         mPen->setZValue(100);
         mPen->setBrush(QBrush(QColor("black")));
         CurScene->addItem(mPen);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+        mPen->setScale(0.5*5*mPen->scale());
         mPen->setZValue(100);
         
         

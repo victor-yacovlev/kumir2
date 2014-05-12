@@ -1,7 +1,12 @@
 #ifndef ROBOTCELL_H
 #define ROBOTCELL_H
 
+#include <QtGlobal>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 
 #define LEFT_WALL 	0x1

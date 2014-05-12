@@ -19,6 +19,14 @@ public:
                 /* throws std::string, Kumir::String */ ;
 };
 
+class ExternalModuleResetFunctor
+        : public VM::ExternalModuleResetFunctor
+{
+public:
+    void operator()(const std::string & moduleName, const Kumir::String & localizedName)
+        /* throws std::string, Kumir::String */ ;
+};
+
 }} // namespace Console
 
 

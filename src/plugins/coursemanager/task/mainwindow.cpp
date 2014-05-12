@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 //#include "interface.h"
 
- #include <QMacStyle>
+
 MainWindowTask::MainWindowTask(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindowTask)

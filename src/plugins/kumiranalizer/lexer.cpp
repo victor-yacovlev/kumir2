@@ -518,7 +518,7 @@ bool isDecimalRealConstant(const QString &s) {
 }
 
 static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
-static const QString hexFormSymbols = QString::fromAscii("0123456789ABCDEFabcdef");
+static const QString hexFormSymbols = QString::fromLatin1("0123456789ABCDEFabcdef");
 
 bool isExpRealConstant(const QString &s) {
     bool result = s.length()>0 && (s[0].isDigit() || s[0]=='.');
