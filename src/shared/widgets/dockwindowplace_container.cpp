@@ -66,6 +66,9 @@ void DockWindowPlaceContainer::paintWindowFrame()
 
 void DockWindowPlaceContainer::setupWidgetsAppearance()
 {
+    const QPalette & pal = palette();
+    const QString fgColor = pal.color(QPalette::Foreground).name();
+
     static const QSize buttonSize = QSize(24, 16);
     static const int titleHeight = 28;
     static const char * buttonCss = ""
@@ -75,10 +78,10 @@ void DockWindowPlaceContainer::setupWidgetsAppearance()
             "}"
             "QPushButton:focus { background: none; }"
             "QPushButton:hover {"
-            "   border: 1px solid black;"
+            "   border: 1px solid %fg;"
             "}"
             "QPushButton:pressed {"
-            "   border: 1px solid black;"
+            "   border: 1px solid %fg;"
             "}"
             ;
     static const char * titleCss = ""
@@ -91,8 +94,8 @@ void DockWindowPlaceContainer::setupWidgetsAppearance()
     btnClose_->setFixedSize(buttonSize);
     titleBox_->setFixedHeight(titleHeight);
 
-    btnDock_->setStyleSheet(buttonCss);
-    btnClose_->setStyleSheet(buttonCss);
+    btnDock_->setStyleSheet(QString(buttonCss).replace("%fg", fgColor));
+    btnClose_->setStyleSheet(QString(buttonCss).replace("%fg", fgColor));
     windowTitle_->setStyleSheet(titleCss);
 
     windowTitle_->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
@@ -103,12 +106,43 @@ void DockWindowPlaceContainer::setupWidgetsAppearance()
             iconPrefix;
 
     QIcon dockIcon, closeIcon;
-    dockIcon.addFile(pixmapsPrefix+"dock.png");
-    closeIcon.addFile(pixmapsPrefix+"close.png");
+    dockIcon = createIconMathcingColorTheme(pixmapsPrefix+"dock.png");
+    closeIcon = createIconMathcingColorTheme(pixmapsPrefix+"close.png");
 
     btnDock_->setToolTip(tr("Detach to separate window"));
     btnDock_->setIcon(dockIcon);
     btnClose_->setIcon(closeIcon);
+}
+
+QIcon DockWindowPlaceContainer::createIconMathcingColorTheme(const QString &fileName) const
+{
+    const QPalette & pal = palette();
+    const QColor fgColor = pal.color(QPalette::Foreground).toHsv();
+    const bool invertedTheme = fgColor.value() > 127;
+    const QImage sourceImage = QImage(fileName);
+    QImage target(sourceImage.size(), QImage::Format_ARGB32);
+    target.fill(0);
+    for (int y=0; y<sourceImage.height(); y++) {
+        for (int x=0; x<sourceImage.width(); x++) {
+            const QRgb sourceRGB = sourceImage.pixel(x, y);
+            const QColor sourceColor = QColor::fromRgba(sourceRGB).toHsv();
+            const int h = fgColor.hue();
+            const int s = fgColor.saturation();
+            const int themeValue = fgColor.value();
+            const int sourceValue = sourceColor.value();
+            int v = int(qreal(sourceValue) * (themeValue / 255.0f));
+            if (invertedTheme) {
+                v = themeValue - v;
+            }
+            const int a = sourceColor.alpha();
+            const QColor targetColor = QColor::fromHsv(h, s, v, a);
+            const QRgb targetRGB = targetColor.toRgb().rgba();
+            target.setPixel(x, y, targetRGB);
+        }
+    }
+    QIcon result;
+    result.addPixmap(QPixmap::fromImage(target));
+    return result;
 }
 
 void DockWindowPlaceContainer::setupWindow()
