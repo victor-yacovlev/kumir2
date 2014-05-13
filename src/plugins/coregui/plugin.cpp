@@ -31,15 +31,25 @@ using namespace Shared;
 Plugin::Plugin() :
     KPlugin()
 {
+#if defined(Q_OS_WIN32)
+    ipcShm_ = 0;
+#endif
     mainWindow_ = 0;
+    m_kumirStateLabel = 0;
+    m_genericCounterLabel = 0;
     plugin_editor = 0;
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
-    sessionsDisableFlag_ = false;
-    kumirProgram_ = 0;
+    plugin_browser = 0;
+    plugin_kumirCodeRun = 0;
     startPage_ = 0;
+    helpWindow_ = 0;
+    coursesWindow_ = 0;
+    terminal_ = 0;
+    kumirProgram_ = 0;
+    debugger_ = 0;
+    sessionsDisableFlag_ = false;
     helpViewer_ = 0;
     courseManager_ = 0;
-    helpWindow_ = 0;
     guiSettingsPage_ = 0;
 }
 
