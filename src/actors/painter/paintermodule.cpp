@@ -14,6 +14,7 @@ You should change it corresponding to functionality.
 #endif
 #include "paintermodule.h"
 #include "painterwindow.h"
+#include "painterview.h"
 #include "paintertools.h"
 
 namespace ActorPainter {
@@ -23,13 +24,37 @@ PainterModule::PainterModule(ExtensionSystem::KPlugin * parent)
 {
     m_window = new PainterWindow(this, 0);
     view = m_window->view();
-    originalCanvas = new QImage(QSize(640,480), QImage::Format_RGB32);
+    originalCanvas.reset(new QImage(QSize(640,480), QImage::Format_RGB32));
     originalCanvas->fill(QColor("white").rgb());
-    canvas = new QImage(QSize(640,480), QImage::Format_RGB32);
+    canvas.reset(new QImage(QSize(640,480), QImage::Format_RGB32));
     canvas->fill(QColor("white").rgb());
     canvasLock = new QMutex;
-    m_window->setCanvas(canvas, canvasLock);
+    m_window->setCanvasSize(canvas->size());
+    dirtyLock_ = new QMutex;
+    dirty_ = true;
+    startTimer(50);
     reset();
+}
+
+void PainterModule::timerEvent(QTimerEvent *event)
+{
+    dirtyLock_->lock();
+    if (dirty_) {
+        canvasLock->lock();
+        if (view) {
+            view->setCanvasData(*canvas);
+        }
+        canvasLock->unlock();
+        dirty_ = false;
+    }
+    dirtyLock_->unlock();
+    event->accept();
+}
+
+void PainterModule::markViewDirty()
+{
+    QMutexLocker l(dirtyLock_);
+    dirty_ = true;
 }
 
 QList<ExtensionSystem::CommandLineParameter> PainterModule::acceptableCommandLineParameters()
@@ -39,8 +64,6 @@ QList<ExtensionSystem::CommandLineParameter> PainterModule::acceptableCommandLin
 
 void PainterModule::reset()
 {
-    QImage * del = canvas;
-
     point = QPoint(0,0);
     font = QFont();
     brush = QBrush();
@@ -48,12 +71,10 @@ void PainterModule::reset()
     transparent = false;
     pen = QPen();
     canvasLock->lock();
-    canvas = new QImage(originalCanvas->copy());
-    m_window->setCanvas(canvas, canvasLock);
+    canvas.reset(new QImage(originalCanvas->copy()));
+    m_window->setCanvasSize(originalCanvas->size());
     canvasLock->unlock();
-    if (view)
-        view->update();
-    delete del;
+    markViewDirty();
 }
 
 void PainterModule::setAnimationEnabled(bool )
@@ -145,11 +166,10 @@ void PainterModule::runLoadPage(const QString& fileName)
     if (!QFile::exists(fileName)) {
         setError(tr("File not exists: %s").arg(fileName));
     }
-    QImage * oldCanvas = canvas;
-    canvas = new QImage(fileName);
+    canvas.reset(new QImage(fileName));
     if (m_window)
-        m_window->setCanvas(canvas, canvasLock);
-    delete oldCanvas;
+        m_window->setCanvasSize(canvas->size());
+    markViewDirty();
 }
 
 
@@ -171,15 +191,13 @@ void PainterModule::runFill(const int x, const int y)
             canvasLock->lock();
             canvas->setPixel(pnt, brush.color().rgb());
             canvasLock->unlock();
-//            view->update();
             stack.push(QPoint(pnt.x()-1, pnt.y()));
             stack.push(QPoint(pnt.x()+1, pnt.y()));
             stack.push(QPoint(pnt.x(), pnt.y()-1));
             stack.push(QPoint(pnt.x(), pnt.y()+1));
         }
     }
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -194,14 +212,13 @@ void PainterModule::runSetBrush(const Color& cs)
 void PainterModule::runLine(const int x0, const int y0, const int x, const int y)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawLine(x0,y0,x,y);
     canvasLock->unlock();
     p.end();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -229,38 +246,35 @@ void PainterModule::runPolygon(const int N, const QVector<int> &xx, const QVecto
 void PainterModule::drawPolygon(const QVector<QPoint> &points)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawPolygon(QPolygon(points));
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
 void PainterModule::runWrite(const int x, const int y, const QString& text)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.setFont(font);
     p.drawText(x,y,text);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
 void PainterModule::runNewPage(const int width, const int height, const Color& backgroundColor)
 {
     QColor clr(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-    QImage * oldCanvas = canvas;
-    canvas = new QImage(width,height,QImage::Format_RGB32);
+    canvas.reset(new QImage(width,height,QImage::Format_RGB32));
     canvas->fill(clr.rgb());
-    m_window->setCanvas(canvas, canvasLock);
-    delete oldCanvas;
+    m_window->setCanvasSize(canvas->size());
+    markViewDirty();
 }
 
 
@@ -289,13 +303,12 @@ void PainterModule::runSetPen(const int width, const Color& cs)
 void PainterModule::runPoint(const int x, const int y, const Color& color)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     const QColor qColor(color.r, color.g, color.b, color.a);
     p.setPen(QPen(qColor));
     p.drawPoint(x,y);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -470,13 +483,12 @@ void PainterModule::runSetFont(const QString& family, const int size, const bool
 void PainterModule::runEllipse(const int x, const int y, const int r1, const int r2)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawEllipse(x, y, r1, r2);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 

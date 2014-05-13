@@ -4,7 +4,7 @@ namespace ActorPainter {
 
 PainterRuler::PainterRuler(QWidget *parent)
     : QWidget(parent)
-    , m_canvas(0)
+    , canvasPixelSize_(0)
     , m_scrollBar(0)
     , m_view(0)
     , i_highLight(-1)
@@ -29,9 +29,10 @@ void PainterRuler::setZoom(qreal v)
     update();
 }
 
-void PainterRuler::setCanvas(QImage * canvas)
+void PainterRuler::setCanvasSize(int pixelSize)
 {
-    m_canvas = canvas;
+    canvasPixelSize_ = pixelSize;
+    update();
 }
 
 void PainterRuler::setView(QWidget *view)
@@ -47,7 +48,7 @@ void PainterRuler::highlightValue(int v)
 
 void PainterRuler::paintEvent(QPaintEvent *event)
 {
-    if (m_canvas && m_scrollBar && m_view) {
+    if (canvasPixelSize_ && m_scrollBar && m_view) {
         int offset = 18;
         if (m_scrollBar->orientation()==Qt::Horizontal) {
             if (m_scrollBar->isVisible()) {
@@ -67,8 +68,7 @@ void PainterRuler::paintEvent(QPaintEvent *event)
                 offset += m_view->y();
             }
         }
-        int size = m_scrollBar->orientation()==Qt::Vertical?
-                   m_canvas->height() : m_canvas->width();
+        int size = canvasPixelSize_;
         paintRuler(offset, size);
         if (i_highLight>-1) {
             QPainter p(this);

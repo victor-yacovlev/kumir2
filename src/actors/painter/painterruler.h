@@ -15,7 +15,7 @@ class PainterRuler : public QWidget
     Q_OBJECT
 public:
     explicit PainterRuler(QWidget *parent = 0);
-    void setCanvas(QImage * canvas);
+    void setCanvasSize(int pixelSize);
     void setScrollBar(QScrollBar * scrollBar);
     void setView(QWidget * view);
     void setZoom(qreal v);
@@ -25,7 +25,7 @@ private:
     void paintEvent(QPaintEvent *event);
     void paintRuler(int offset, int size);
 
-    QImage * m_canvas;
+    int canvasPixelSize_;
     QScrollBar * m_scrollBar;
     QWidget * m_view;
     int i_highLight;

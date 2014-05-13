@@ -80,14 +80,22 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
 
 }
 
-void PainterWindow::setCanvas(QImage * canvas, QMutex *locker)
+//void PainterWindow::setCanvas(QImage * canvas, QMutex *locker)
+//{
+//    ui->view->setCanvas(canvas, locker);
+//    ui->horizontalRuler->setCanvas(canvas);
+//    ui->verticalRuler->setCanvas(canvas);
+//}
+
+void PainterWindow::setCanvasSize(const QSize &size)
 {
-    ui->view->setCanvas(canvas, locker);
-    ui->horizontalRuler->setCanvas(canvas);
-    ui->verticalRuler->setCanvas(canvas);
+    ui->view->setCanvasSize(size);
+    ui->horizontalRuler->setCanvasSize(size.width());
+    ui->verticalRuler->setCanvasSize(size.height());
+
 }
 
-QWidget * PainterWindow::view()
+PainterView * PainterWindow::view()
 {
     return ui->view;
 }
