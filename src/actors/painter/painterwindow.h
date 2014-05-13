@@ -39,6 +39,8 @@ private slots:
     void handleFullScreen();
     void handleScale();
     void reset();
+    void changeZoom(int factor);
+    void setZoom(qreal scale);
 
 private:
 
