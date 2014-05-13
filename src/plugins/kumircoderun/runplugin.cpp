@@ -426,6 +426,14 @@ void KumirRunPlugin::terminate()
     pRun_->stop();
 }
 
+void KumirRunPlugin::terminateAndWaitForStopped()
+{
+    if (pRun_->isRunning()) {
+        terminate();
+    }
+    pRun_->wait();
+}
+
 
 void KumirRunPlugin::handleThreadFinished()
 {
@@ -719,6 +727,11 @@ void KumirRunPlugin::start()
             startTimer(0); // start thread after event loop started
         }
     }
+}
+
+void KumirRunPlugin::stop()
+{
+    terminateAndWaitForStopped();
 }
 
 bool KumirRunPlugin::hasMoreInstructions() const
