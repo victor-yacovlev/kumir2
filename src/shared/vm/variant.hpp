@@ -29,8 +29,8 @@ class AnyValue
 {
     friend class Variable;
 public:
-    inline explicit AnyValue(): svalue_(0), avalue_(0) { __init__(); }
-    inline AnyValue(const AnyValue & other): svalue_(0), avalue_(0) {
+    inline explicit AnyValue(): svalue_(0), avalue_(0), uvalue_(0) { __init__(); }
+    inline AnyValue(const AnyValue & other): svalue_(0), avalue_(0), uvalue_(0) {
         __init__();
         type_ = other.type_;
         if (other.svalue_) {
@@ -52,17 +52,17 @@ public:
             cvalue_ = other.cvalue_;
     }
 
-    inline explicit AnyValue(ValueType t): svalue_(0), avalue_(0) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; ivalue_ = 0; }
-    inline explicit AnyValue(int v): svalue_(0), avalue_(0) {
+    inline explicit AnyValue(ValueType t): svalue_(0), avalue_(0), uvalue_(0) { __init__(); type_ = t;  svalue_ = t==VT_string? new String() : 0; ivalue_ = 0; }
+    inline explicit AnyValue(int v): svalue_(0), avalue_(0), uvalue_(0) {
         __init__();
         type_ = VT_int;
         ivalue_ = v;
     }
-    inline explicit AnyValue(real v): svalue_(0), avalue_(0) { __init__(); type_ = VT_real;  rvalue_ = v; }
-    inline explicit AnyValue(bool v): svalue_(0), avalue_(0) { __init__(); type_ = VT_bool; bvalue_ = v; }
-    inline explicit AnyValue(Char v): svalue_(0), avalue_(0) { __init__(); type_ = VT_char; cvalue_ = v; }
-    inline explicit AnyValue(const String & v): svalue_(0), avalue_(0) { __init__(); type_ = VT_string; svalue_ = new String(v); }
-    inline explicit AnyValue(const Record & value): svalue_(0), avalue_(0) {
+    inline explicit AnyValue(real v): svalue_(0), avalue_(0), uvalue_(0) { __init__(); type_ = VT_real;  rvalue_ = v; }
+    inline explicit AnyValue(bool v): svalue_(0), avalue_(0), uvalue_(0) { __init__(); type_ = VT_bool; bvalue_ = v; }
+    inline explicit AnyValue(Char v): svalue_(0), avalue_(0), uvalue_(0) { __init__(); type_ = VT_char; cvalue_ = v; }
+    inline explicit AnyValue(const String & v): svalue_(0), avalue_(0), uvalue_(0) { __init__(); type_ = VT_string; svalue_ = new String(v); }
+    inline explicit AnyValue(const Record & value): svalue_(0), avalue_(0), uvalue_(0) {
         __init__();
         type_ = VT_record;
         uvalue_ = new Record(value);
@@ -192,6 +192,9 @@ private:
         }
         if (svalue_) {
             delete svalue_;
+        }
+        if (uvalue_) {
+            delete uvalue_;
         }
         type_ = VT_void;
         svalue_ = 0;
