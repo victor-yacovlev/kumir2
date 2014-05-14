@@ -25,6 +25,11 @@ public:
     inline void unlock() {
         m->unlock();
     }
+    inline void reset() {
+        m->tryLock();
+        m->unlock();
+    }
+
     inline ~Mutex() { delete m; }
 private:
     QMutex * m;

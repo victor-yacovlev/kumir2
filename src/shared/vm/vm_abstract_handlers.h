@@ -42,6 +42,7 @@ class CriticalSectionLocker {
 public:
     virtual void lock() {}
     virtual void unlock() {}
+    virtual void reset() {}
     // destructor MUST me virtual even not need
     inline virtual ~CriticalSectionLocker() {}
 };

@@ -683,7 +683,7 @@ void KumirVM::reset()
 {
     // Clear everything
     if (stacksMutex_) {
-        stacksMutex_->unlock();
+        stacksMutex_->reset();
     }
     lastContext_ = Context();
     blindMode_ = false;
