@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 extern "C" {
 #include <stdlib.h>
 #include <string.h>

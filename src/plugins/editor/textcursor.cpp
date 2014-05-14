@@ -8,7 +8,7 @@
 
 namespace Editor {
 
-TextCursor::TextCursor(Editor * editor)
+TextCursor::TextCursor(EditorInstance * editor)
     : QObject(editor)
     , editor_(editor)
     , editMode_(EM_Insert)

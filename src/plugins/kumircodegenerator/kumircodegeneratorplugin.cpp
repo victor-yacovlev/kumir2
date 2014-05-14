@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include <sstream>
 #include <cstdlib>
 #include "stdlib/kumirstdlib.hpp"

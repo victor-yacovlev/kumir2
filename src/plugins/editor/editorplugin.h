@@ -19,7 +19,7 @@ class EditorPlugin
 #endif
     Q_INTERFACES(Shared::EditorInterface)
 public:
-    friend class Editor;
+    friend class EditorInstance;
     friend class EditorPlane;
     EditorPlugin();
     ~EditorPlugin();
@@ -71,7 +71,7 @@ signals:
 
 protected:
 
-    void connectGlobalSignalsToEditor(class Editor * editor);
+    void connectGlobalSignalsToEditor(class EditorInstance * editor);
 
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &);
@@ -87,8 +87,8 @@ protected:
 private:
     struct Ed {
         inline Ed() { e = 0; a=0; id =-1; }
-        inline Ed(class Editor *ee, Shared::AnalizerInterface *aa, int i) { a=aa;e=ee;id=i; }
-        class Editor * e;
+        inline Ed(class EditorInstance *ee, Shared::AnalizerInterface *aa, int i) { a=aa;e=ee;id=i; }
+        class EditorInstance * e;
         Shared::AnalizerInterface * a;
         int id;
     };

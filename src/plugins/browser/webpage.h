@@ -1,10 +1,12 @@
 #ifndef BROWSER_WEBPAGE_H
 #define BROWSER_WEBPAGE_H
 
-#include <QtWebKit/QWebView>
-#include <QtWebKit/QWebPage>
-#include <QtWebKit/QWebFrame>
-#include <QtWebKit/QWebSettings>
+#include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWebKitWidgets>
+#else
+#include <QtWebKit>
+#endif
 
 namespace Browser {
 

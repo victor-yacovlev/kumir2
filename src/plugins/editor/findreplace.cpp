@@ -14,7 +14,7 @@
 
 namespace Editor {
 
-FindReplace::FindReplace(const QDir & resourcesRoot, Editor * editor)
+FindReplace::FindReplace(const QDir & resourcesRoot, EditorInstance * editor)
     : QWidget(editor)
     , ui(new Ui::FindReplace)
     , editor_(editor)

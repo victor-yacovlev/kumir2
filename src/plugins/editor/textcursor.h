@@ -22,7 +22,7 @@ public:
     enum EditMode { EM_Insert, EM_Overwrite };
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
-    explicit TextCursor(class Editor * editor);
+    explicit TextCursor(class EditorInstance * editor);
 
     ~TextCursor();
     inline uint row() const { return row_; }
@@ -86,7 +86,7 @@ signals:
 
 protected:
 
-    class Editor * editor_;
+    class EditorInstance * editor_;
 
     int justifyLeft(const QString & text) const;    
 

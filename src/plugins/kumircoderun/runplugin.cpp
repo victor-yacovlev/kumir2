@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "runplugin.h"
 #include "run.h"
 #include "extensionsystem/pluginmanager.h"

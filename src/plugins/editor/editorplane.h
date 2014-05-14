@@ -21,7 +21,7 @@ class EditorPlane : public QWidget
     friend class Editor;
     Q_OBJECT
 public:
-    explicit EditorPlane(class Editor * editor);
+    explicit EditorPlane(class EditorInstance * editor);
 
     uint widthInChars() const;
     uint charWidth() const;
@@ -97,7 +97,7 @@ protected slots:
 
 private:
     int timerId_;
-    class Editor * editor_;
+    class EditorInstance * editor_;
 
     QPoint marginMousePressedPoint_;
     QPoint delimeterRuleMousePressedPoint_;
