@@ -28,34 +28,6 @@ CriticalSectionLocker::~CriticalSectionLocker()
     delete mutex_;
 }
 
-void ExternalModuleResetFunctor::setCallFunctor(ExternalModuleCallFunctor *callFunctor)
-{
-    callFunctor_ = callFunctor;
-}
-
-void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName, const Kumir::String & moduleLocalizedName)
-{
-    using namespace ExtensionSystem;
-
-    ActorInterface * actor = Util::findActor(moduleAsciiName);
-
-    if (actor) {
-        actor->reset();
-        if (callFunctor_) {
-            callFunctor_->checkForActorConnected(actor);
-        }
-    }
-    else {
-        const QString qModuleName = QString::fromStdWString(moduleLocalizedName);
-        const Kumir::String errorMessage =
-                QString::fromUtf8(
-                    "Ошибка инициализации исполнителя: нет исполнителя "
-                    "с именем %1"
-                    ).arg(qModuleName).toStdWString();
-        throw errorMessage;
-    }
-}
-
 ExternalModuleCallFunctor::ExternalModuleCallFunctor(QObject *parent)
     : QObject(parent)
     , finishedFlag_(false)
@@ -148,11 +120,18 @@ AnyValue ExternalModuleCallFunctor::operator ()
     return result;
 }
 
-void ExternalModuleCallFunctor::checkForActorConnected(ActorInterface *actor)
+void ExternalModuleCallFunctor::checkForActorConnected(const std::string &asciiModuleName)
 {
-    if (connectedActors_.count(actor)==0) {
-        actor->connectSync(this, SLOT(handleActorSync()));
-        connectedActors_.push_back(actor);
+    using namespace Shared;
+    using namespace ExtensionSystem;
+
+    ActorInterface * actor = Util::findActor(asciiModuleName);
+
+    if (actor) {
+        if (connectedActors_.count(actor)==0) {
+            actor->connectSync(this, SLOT(handleActorSync()));
+            connectedActors_.push_back(actor);
+        }
     }
 }
 

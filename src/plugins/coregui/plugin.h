@@ -86,6 +86,7 @@ protected slots:
     void prepareKumirProgramToRun();
     void handleExternalProcessCommand(const QString & command);
     void updateSettings(const QStringList & keys);
+    void showActorWindow(const QByteArray &asciiName);
 
 
 
@@ -131,6 +132,7 @@ protected:
     static Plugin * instance_;
     QString fileNameToOpenOnReady_;
     GUISettingsPage * guiSettingsPage_;
+    QMap<QByteArray,QAction*> showActorActions_;
 
 signals:
     void externalProcessCommandReceived(const QString & command);

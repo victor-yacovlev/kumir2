@@ -79,6 +79,7 @@ protected:
  */
 class ExternalModuleResetFunctor: public Functor {
 public:
+    inline ExternalModuleResetFunctor(): callFunctor_(0) {}
     inline Type type() const { return ExternalModuleReset; }
     inline virtual void operator()(const std::string & moduleName, const Kumir::String & localizedName)
     /* throws std::string, Kumir::String */
@@ -89,6 +90,13 @@ public:
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
         throw errorMessage;
     }
+    inline void setCallFunctor(class ExternalModuleCallFunctor * callFunctor)
+    {
+        callFunctor_ = callFunctor;
+    }
+
+protected:
+    class ExternalModuleCallFunctor * callFunctor_;
 };
 
 
@@ -153,6 +161,7 @@ public:
         throw errorMessage;
         return AnyValue();
     }
+    inline virtual void checkForActorConnected(const std::string & /*asciiModuleName*/) {}
 };
 
 class CustomTypeToStringFunctor: public Functor {

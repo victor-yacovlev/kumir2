@@ -28,6 +28,7 @@ set(SOURCES
     paintertools.cpp
     painterview.cpp
     painterwindow.cpp
+    scrollarea.cpp
 )
 
 set(MOC_HEADERS
@@ -36,6 +37,7 @@ set(MOC_HEADERS
     painterruler.h
     painterview.h
     painterwindow.h
+    scrollarea.h
 )
 
 set(FORMS

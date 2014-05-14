@@ -6,6 +6,8 @@
 #include <QtGlobal>
 #include <QSplitter>
 
+#include <QDebug>
+#include <QFileInfo> // used for line debug information
 
 namespace CoreGUI {
 

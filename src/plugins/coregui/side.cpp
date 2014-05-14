@@ -10,9 +10,13 @@ Side::Side(QWidget *parent, const QString &settingsKey)
     : QSplitter(Qt::Horizontal, parent)
     , settingsKey_(settingsKey)
 {   
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setVisible(false);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setHandleWidth(10);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setAutoFillBackground(true);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 }
 
 void Side::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)

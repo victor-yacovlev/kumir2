@@ -13,6 +13,7 @@
 namespace ActorPainter {
 
 class PainterModule;
+class PainterView;
 
 namespace Ui {
     class PainterWindow;
@@ -24,9 +25,9 @@ class PainterWindow : public QWidget
 
 public:
     explicit PainterWindow(PainterModule * module, QWidget *parent = 0);
-    void setCanvas(QImage * canvas, QMutex * locker);
+    void setCanvasSize(const QSize & size);
     inline QSize minimumSizeHint() const { return QSize(360, 300); }
-    QWidget * view();
+    PainterView * view();
     ~PainterWindow();
 public slots:
     void newImage();
@@ -39,6 +40,8 @@ private slots:
     void handleFullScreen();
     void handleScale();
     void reset();
+    void changeZoom(int factor);
+    void setZoom(qreal scale);
 
 private:
 

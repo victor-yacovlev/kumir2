@@ -6,26 +6,55 @@ namespace ActorPainter {
 PainterView::PainterView(QWidget *parent)
     : QWidget(parent)
     , m_canvas(0)
-    , m_locker(0)
+    , m_locker(new QMutex)
     , r_zoom(1.0)
 {
     setMouseTracking(true);
 }
 
-void PainterView::setCanvas(QImage * canvas, QMutex *locker)
+//void PainterView::setCanvas(QImage * canvas, QMutex *locker)
+//{
+//    m_canvas = canvas;
+//    m_locker = locker;
+//    if (m_canvas && m_locker) {
+//        setFixedSize(int(canvas->size().width()*r_zoom)+36, int(canvas->size().height()*r_zoom)+36);
+//        update();
+//    }
+//}
+
+void PainterView::setCanvasSize(const QSize &size)
 {
-    m_canvas = canvas;
-    m_locker = locker;
+    QMutexLocker l(m_locker);
+    if (m_canvas)
+        delete m_canvas;
+    m_canvas = new QImage(size, QImage::Format_ARGB32);
+}
+
+void PainterView::setCanvasData(QImage data)
+{
+    QMutexLocker l(m_locker);
+    if (!m_canvas || m_canvas->width() != data.width() || m_canvas->height() != data.height()) {
+        if (m_canvas) delete m_canvas;
+        m_canvas = new QImage(data.size(), QImage::Format_ARGB32);
+    }
+    *m_canvas = data.copy(data.rect());
+    update();
+}
+
+void PainterView::updateSizeFromCanvas()
+{
     if (m_canvas && m_locker) {
-        setFixedSize(int(canvas->size().width()*r_zoom)+36, int(canvas->size().height()*r_zoom)+36);
+        m_locker->lock();
+        setFixedSize(int(m_canvas->size().width()*r_zoom)+36, int(m_canvas->size().height()*r_zoom)+36);
         update();
+        m_locker->unlock();
     }
 }
 
 void PainterView::setZoom(qreal v)
 {
     r_zoom = v;
-    setCanvas(m_canvas, m_locker);
+    updateSizeFromCanvas();
 }
 
 void PainterView::paintEvent(QPaintEvent *event)

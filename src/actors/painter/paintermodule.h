@@ -21,6 +21,7 @@ You should change it corresponding to functionality.
 namespace ActorPainter {
 
 class PainterWindow;
+class PainterView;
 class PainterNewImageDialog;
 
 class PainterModule
@@ -84,18 +85,22 @@ public:
     inline QWidget* pultWidget() const { return nullptr; }
 
 private:
+    void timerEvent(QTimerEvent *);
+    void markViewDirty();
     void drawPolygon(const QVector<QPoint> & points);
-    class PainterWindow * m_window;
-    QImage * canvas;
-    QImage * originalCanvas;
+    PainterWindow * m_window;
+    QScopedPointer<QImage> canvas;
+    QScopedPointer<QImage> originalCanvas;
     QMutex * canvasLock;
     QPoint point;
     QFont font;
     QBrush brush;
     QPen pen;
     bool transparent;
-    QWidget * view;
+    PainterView * view;
     Qt::BrushStyle style;
+    bool dirty_;
+    QMutex* dirtyLock_;
 
 
 }; // PainterModule

@@ -2,6 +2,9 @@
 #include "run.h"
 #include "util.h"
 
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/actorinterface.h"
+
 namespace KumirCodeRun {
 
 namespace Gui {
@@ -560,6 +563,38 @@ void DelayFunctor::operator ()(quint32 msec)
     if (!mustBreak) {
         msleep(lastQuantSize);
     }
+}
+
+ExternalModuleResetFunctor::ExternalModuleResetFunctor()
+    : QObject()
+    , VM::ExternalModuleResetFunctor()
+{
+}
+
+void ExternalModuleResetFunctor::operator ()(const std::string & moduleName, const String & localizedName)
+{
+    using namespace Shared;
+    using namespace ExtensionSystem;
+
+    ActorInterface * actor = Util::findActor(moduleName);
+
+    if (actor) {
+        actor->reset();
+        if (callFunctor_) {
+            callFunctor_->checkForActorConnected(moduleName);
+        }
+    }
+    else {
+        const QString qModuleName = QString::fromStdWString(localizedName);
+        const Kumir::String errorMessage =
+                QString::fromUtf8(
+                    "Ошибка инициализации исполнителя: нет исполнителя "
+                    "с именем %1"
+                    ).arg(qModuleName).toStdWString();
+        throw errorMessage;
+    }
+
+    emit showActorWindow(QByteArray(moduleName.c_str()));
 }
 
 }

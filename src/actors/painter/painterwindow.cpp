@@ -15,6 +15,7 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
     setParent(parent);
     setMinimumSize(minimumSizeHint());
     ui->setupUi(this);
+    connect(ui->scrollArea, SIGNAL(changeZoomRequest(int)), this, SLOT(changeZoom(int)));
     ui->horizontalRuler->setScrollBar(ui->scrollArea->horizontalScrollBar());
     ui->verticalRuler->setScrollBar(ui->scrollArea->verticalScrollBar());
     ui->horizontalRuler->setView(ui->view);
@@ -79,14 +80,22 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
 
 }
 
-void PainterWindow::setCanvas(QImage * canvas, QMutex *locker)
+//void PainterWindow::setCanvas(QImage * canvas, QMutex *locker)
+//{
+//    ui->view->setCanvas(canvas, locker);
+//    ui->horizontalRuler->setCanvas(canvas);
+//    ui->verticalRuler->setCanvas(canvas);
+//}
+
+void PainterWindow::setCanvasSize(const QSize &size)
 {
-    ui->view->setCanvas(canvas, locker);
-    ui->horizontalRuler->setCanvas(canvas);
-    ui->verticalRuler->setCanvas(canvas);
+    ui->view->setCanvasSize(size);
+    ui->horizontalRuler->setCanvasSize(size.width());
+    ui->verticalRuler->setCanvasSize(size.height());
+
 }
 
-QWidget * PainterWindow::view()
+PainterView * PainterWindow::view()
 {
     return ui->view;
 }
@@ -282,12 +291,30 @@ void PainterWindow::handleScale()
         qreal scaleW = wW/imW;
         scale = qMin(scaleW, scaleH);
     }
+    setZoom(scale);
+}
+
+void PainterWindow::setZoom(qreal scale)
+{
     ui->view->setZoom(scale);
     ui->verticalRuler->setZoom(scale);
     ui->horizontalRuler->setZoom(scale);
     ui->zoomLabel->setText(QString::number(int(ui->view->zoom()*100))+"%");
 }
 
+void PainterWindow::changeZoom(int factor)
+{
+    static const qreal MINZOOM = 1.0 / 16.;
+    static const qreal MAXZOOM = 16.;
+
+    qreal power = -1.0 * factor;
+    const qreal multiplier = qPow(2.0, power);
+    const qreal oldZoom = ui->view->zoom();
+    qreal newZoom = oldZoom * multiplier;
+    newZoom = qMax(MINZOOM, newZoom);
+    newZoom = qMin(MAXZOOM, newZoom);
+    setZoom(newZoom);
+}
 
 void PainterWindow::handleFullScreen()
 {

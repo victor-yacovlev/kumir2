@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QIcon>
 
 namespace Widgets {
 
@@ -25,6 +26,8 @@ public slots:
 
 private /*methods*/:
     explicit DockWindowPlaceContainer(class DockWindowPlace *parent);
+
+    QIcon createIconMathcingColorTheme(const QString & fileName) const;
 
     virtual void paintWindowFrame();
     virtual void setupWindow();

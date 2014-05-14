@@ -22,7 +22,7 @@ public:
 
 
     bool canStepOut() const;
-
+    void terminateAndWaitForStopped();
     bool loadProgram(const QString & fileName, const QByteArray & source);
     bool hasMoreInstructions() const;
     bool hasTestingEntryPoint() const;
@@ -72,6 +72,7 @@ public slots:
 
 protected:
     void start();
+    void stop();
     void timerEvent(QTimerEvent *);
     QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
     QString initialize(const QStringList &configurationArguments,
@@ -101,6 +102,7 @@ signals:
     void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
+    void showActorWindowRequest(const QByteArray & asciiModuleName);
 
 private:
     class Run * pRun_;

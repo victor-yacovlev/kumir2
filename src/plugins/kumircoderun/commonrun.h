@@ -40,7 +40,7 @@ public:
             VariableReferencesList alist
             )  /* throws std::string, Kumir::String */ ;
     ~ExternalModuleCallFunctor();
-    void checkForActorConnected(Shared::ActorInterface * actor);
+    void checkForActorConnected(const std::string & asciiModuleName);
 
 private slots:
     void handleActorSync();
@@ -51,16 +51,6 @@ private /*fields*/:
     QList<Shared::ActorInterface*> connectedActors_;
 };
 
-class ExternalModuleResetFunctor
-        : public VM::ExternalModuleResetFunctor
-{
-public:
-    void operator()(const std::string & moduleName, const String & localizedName)
-        /* throws std::string, Kumir::String */ ;
-    void setCallFunctor(ExternalModuleCallFunctor * callFunctor);
-private:
-    ExternalModuleCallFunctor * callFunctor_;
-};
 
 class CustomTypeToStringFunctor
         : public VM::CustomTypeToStringFunctor

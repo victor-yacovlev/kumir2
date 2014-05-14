@@ -26,10 +26,10 @@ Run::Run(QObject *parent) :
 
     originFunctionDeep_ = 0;
     interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
-    stoppingMutex_.reset(new QMutex);
-    stepDoneMutex_.reset(new QMutex);
-    algDoneMutex_.reset(new QMutex);
-    interactDoneMutex_.reset(new QMutex);
+    stoppingMutex_ = new QMutex;
+    stepDoneMutex_ = new QMutex;
+    algDoneMutex_ = new QMutex;
+    interactDoneMutex_ = new QMutex;
     runMode_ = RM_ToEnd;
 
     vm->setDebuggingHandler(this);
@@ -48,7 +48,7 @@ void Run::unlockVMMutex()
 
 void Run::stop()
 {
-    QMutexLocker l(stoppingMutex_.data());
+    QMutexLocker l(stoppingMutex_);
     stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1, 0u, 0u);

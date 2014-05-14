@@ -15,7 +15,8 @@ class PainterView : public QWidget
     Q_OBJECT
 public:
     explicit PainterView(QWidget *parent = 0);
-    void setCanvas(QImage * canvas, QMutex * locker);
+    void setCanvasSize(const QSize & size);
+    void setCanvasData(QImage data); // not a reference to avoid TLS problems
     QImage * canvas();
     void setZoom(qreal v);
     inline qreal zoom() const { return r_zoom; }
@@ -24,6 +25,7 @@ signals:
     void cursorOver(int x, int y, const QColor &color);
 
 protected:
+    void updateSizeFromCanvas();
     void paintEvent(QPaintEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
 
