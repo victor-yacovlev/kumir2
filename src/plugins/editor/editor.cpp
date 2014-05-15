@@ -812,6 +812,7 @@ void EditorInstance::createActions()
     separatorAction_->setSeparator(true);
 
     editMenu_ = new QMenu(tr("Edit"), 0);
+    editMenu_->setProperty("menuRole", "edit");
     editMenu_->addAction(undo_);
     editMenu_->addAction(redo_);
     editMenu_->addSeparator();
@@ -837,6 +838,7 @@ void EditorInstance::createActions()
     editMenu_->addAction(editMacros_);
 
     insertMenu_ = new Widgets::CyrillicMenu(tr("Insert"), 0);
+    insertMenu_->setProperty("menuRole", "insert");
 }
 
 const TextCursor * EditorInstance::cursor() const
