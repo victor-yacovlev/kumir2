@@ -3721,7 +3721,7 @@ bool RobotModule::runIsColor()
         }
         return result;
     };
-    double RobotModule::runRadiation(){    
+    qreal RobotModule::runRadiation(){    
         double result = field->currentCell()->radiation;
         QString status = QString::number(result);
         if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
