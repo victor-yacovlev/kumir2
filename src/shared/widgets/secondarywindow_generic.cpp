@@ -349,13 +349,13 @@ void SecondaryWindowGenericImplementation::toggleDockWindow()
 {
     titleBox_->setFocus();
     if (pairedContainer_ && centralWidget_) {
+        notifyOnDocked();
         const QPoint ps = mapToGlobal(centralWidget_->pos());
         const QSize sz = centralWidget_->size();
         QWidget * w = releaseWidgetOwnership();
         deactivate();
         pairedContainer_->getWidgetOwnership(w);
         pairedContainer_->activate(ps, sz);
-        notifyOnDocked();
     }
 }
 
@@ -611,7 +611,9 @@ void SecondaryWindowGenericImplementation::notifyOnDocked()
 {
     if (centralWidget_) {
         QObject * obj = centralWidget_;
-        QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, true));
+        if (-1 != obj->metaObject()->indexOfMethod("setDock(bool)")) {
+            QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, true));
+        }
     }
 }
 

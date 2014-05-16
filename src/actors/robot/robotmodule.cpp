@@ -4361,7 +4361,7 @@ void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
     };
 void RobotView::setDock(bool docked)
     {
-        
+    qDebug() << "RobotView::setDock(" << docked << ")";
     };
 void RobotView::changeEditMode(bool state)
     {

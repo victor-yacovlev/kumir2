@@ -161,7 +161,9 @@ void DockWindowPlaceContainer::notifyOnDocked()
 {
     if (centralWidget_) {
         QObject * obj = centralWidget_;
-        QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, false));
+        if (-1 != obj->metaObject()->indexOfMethod("setDock(bool)")) {
+            QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, false));
+        }
     }
 }
 
