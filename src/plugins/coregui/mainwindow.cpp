@@ -1307,7 +1307,7 @@ void MainWindow::showAlgorithmHelp(const QString &name)
 
 void MainWindow::newText()
 {
-    QString fileName = suggestNewFileName(".txt", nullptr);
+    QString fileName = suggestNewFileName("txt", nullptr);
     newText(fileName, "");
 }
 
