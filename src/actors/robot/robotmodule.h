@@ -492,7 +492,7 @@ namespace ActorRobot {
         bool runIsFreeAtRight();
         bool runIsColor();
         bool runIsClear();
-        double runRadiation();
+        qreal runRadiation();
         int runTemperature();
         void runFieldSize(int& rows, int& cols);
         bool runMark(const int row, const int col) ;
