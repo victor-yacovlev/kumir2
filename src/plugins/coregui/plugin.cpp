@@ -537,7 +537,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
             const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
             qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-            startPage_->go(browserEntryPoint);
+            const QUrl browserEntryUrl = QUrl::fromLocalFile(browserEntryPoint);
+            startPage_->go(browserEntryUrl);
             qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         }
     }

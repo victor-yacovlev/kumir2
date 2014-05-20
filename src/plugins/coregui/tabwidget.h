@@ -16,7 +16,7 @@ class TabWidget : public QTabWidget
 public:
     explicit TabWidget(QWidget *parent = 0);
     void disableTabs();
-    QSize minimumSizeHint() const override;
+    QSize minimumSizeHint() const /*override*/;
 protected:
     void paintEvent(QPaintEvent *);
 };

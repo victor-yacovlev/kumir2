@@ -10,7 +10,7 @@ namespace Editor
 
 
 
-TextDocument::TextDocument(Editor * editor)
+TextDocument::TextDocument(EditorInstance * editor)
     : QObject(editor)
     , editor_(editor)
     , undoStack_(new QUndoStack(this))

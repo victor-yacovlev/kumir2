@@ -67,7 +67,7 @@ public:
     inline TextLine & at(int index) { return data_[index]; }
     inline const TextLine & at(int index) const { return data_[index]; }
 
-    explicit TextDocument(class Editor * parent);
+    explicit TextDocument(class EditorInstance * parent);
 
     uint indentAt(uint lineNo) const;
     inline bool isProtected(uint lineNo) const {
@@ -142,7 +142,7 @@ protected:
     void insertLine(const QString & text, const uint beforeLineNo);
     void removeLine(const uint lineNo);
 private:
-    class Editor * editor_;
+    class EditorInstance * editor_;
     QSet<int> removedLines_;
     QPoint lastCursorPos_;
     QUndoStack * undoStack_;

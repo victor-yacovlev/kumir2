@@ -19,7 +19,7 @@ class FindReplace
     Q_OBJECT
     
 public:
-    explicit FindReplace(const QDir & resourcesRoot, class Editor * editor);
+    explicit FindReplace(const QDir & resourcesRoot, class EditorInstance * editor);
     ~FindReplace();
 
 public slots:
@@ -70,7 +70,7 @@ private:
 
 
     Ui::FindReplace *ui;
-    class Editor * editor_;
+    class EditorInstance * editor_;
 };
 
 

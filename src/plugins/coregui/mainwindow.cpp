@@ -25,11 +25,14 @@ MainWindow::MainWindow(Plugin * p) :
     statusBar_(new StatusBar),
     tabWidget_(0),
     prevBottomSize_(DefaultConsoleHeight)
-{
+{   
+
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     debuggerWindow_ = 0;
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->setupUi(this);    
+    ui->menuEdit->setProperty("menuRole", "edit");
+    ui->menuInsert->setProperty("menuRole", "insert");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     tabWidget_ = new TabWidget(this);
@@ -1004,7 +1007,8 @@ void MainWindow::prepareEditMenu()
 
 //    if (twe->type!=WWW) {
         for (int i=0; i<twe->menus.size(); i++) {
-            if (twe->menus[i]->title().trimmed()==ui->menuEdit->title().trimmed()) {
+            const QString menuRole = twe->menus[i]->property("menuRole").toString();
+            if ("edit" == menuRole) {
                 tabMenu = twe->menus[i];
                 break;
             }
@@ -1013,6 +1017,14 @@ void MainWindow::prepareEditMenu()
 
     if (tabMenu) {
         ui->menuEdit->menuAction()->setMenu(tabMenu);
+        foreach (const QObject * child, ui->menubar->children()) {
+            qDebug() << child->metaObject()->className();
+            if (QByteArray("QMenu") == child->metaObject()->className()) {
+                const QMenu * m = qobject_cast<const QMenu*>(child);
+                qDebug() << m->title();
+            }
+        }
+
     }
     else {
         ui->menuEdit->menuAction()->setMenu(menuNA2_);
@@ -1031,7 +1043,8 @@ void MainWindow::prepareInsertMenu()
 
 //    if (twe->type!=WWW) {
         for (int i=0; i<twe->menus.size(); i++) {
-            if (twe->menus[i]->title().trimmed()==ui->menuInsert->title().trimmed()) {
+            const QString menuRole = twe->menus[i]->property("menuRole").toString();
+            if ("insert" == menuRole) {
                 tabMenu = twe->menus[i];
                 break;
             }
@@ -1294,7 +1307,7 @@ void MainWindow::showAlgorithmHelp(const QString &name)
 
 void MainWindow::newText()
 {
-    QString fileName = suggestNewFileName(".txt", nullptr);
+    QString fileName = suggestNewFileName("txt", nullptr);
     newText(fileName, "");
 }
 
@@ -1388,10 +1401,11 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
     }
     for (int i=0; i<c.size(); i++) {
         const QString title = c[i]->title().trimmed();
+        const QString role = c[i]->property("menuRole").toString();
         bool found = false;
         for (int j=0; j<menus.size(); j++) {
-            const QString menuTitle = menus[j]->title().trimmed();
-            if (menuTitle==title) {
+            const QString menuRole = menus[j]->property("menuRole").toString();
+            if (menuRole==role) {
                 found = true;
                 break;
             }

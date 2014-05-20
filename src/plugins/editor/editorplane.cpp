@@ -27,7 +27,7 @@ static const uint MARGIN_LINE_WIDTH = 3u /*px*/;
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
-EditorPlane::EditorPlane(Editor * editor)
+EditorPlane::EditorPlane(EditorInstance * editor)
     : QWidget(editor)
     , editor_(editor)
     , highlightedTextLineNumber_(-1)

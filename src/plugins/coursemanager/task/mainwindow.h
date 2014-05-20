@@ -15,13 +15,16 @@
 ****************************************************************************/
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
-
 #include <QMainWindow>
 #include <QSettings>
 #include "../course_model.h"
 #include "../coursemanager_plugin.h"
 #include "editdialog.h"
 #include "newkursdialog.h"
+
+#ifdef interface
+#undef interface // used name 'interface' conflicts with Windows SDK
+#endif
 
 class KumZadanie
 {

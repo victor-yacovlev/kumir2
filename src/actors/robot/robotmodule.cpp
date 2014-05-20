@@ -3721,7 +3721,7 @@ bool RobotModule::runIsColor()
         }
         return result;
     };
-    double RobotModule::runRadiation(){    
+    qreal RobotModule::runRadiation(){    
         double result = field->currentCell()->radiation;
         QString status = QString::number(result);
         if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4361,7 +4361,7 @@ void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
     };
 void RobotView::setDock(bool docked)
     {
-        
+    qDebug() << "RobotView::setDock(" << docked << ")";
     };
 void RobotView::changeEditMode(bool state)
     {

@@ -37,7 +37,7 @@ EditorPlugin::~EditorPlugin()
 
 
 
-Editor::InstanceInterface * EditorPlugin::newDocument(
+EditorInstance::InstanceInterface * EditorPlugin::newDocument(
         const QString & canonicalLanguageName,
         const QString & documentDir)
 {
@@ -57,7 +57,7 @@ Editor::InstanceInterface * EditorPlugin::newDocument(
         }
     }
 
-    Editor * editor = new Editor(this, true, analizerPlugin, analizerInstance);
+    EditorInstance * editor = new EditorInstance(this, true, analizerPlugin, analizerInstance);
     connectGlobalSignalsToEditor(editor);
 
     if (analizerPlugin) {
@@ -91,7 +91,7 @@ Editor::InstanceInterface * EditorPlugin::newDocument(
 
 Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const KumFile::Data &data)
 {
-    Editor * editor = new Editor(this, true, nullptr, nullptr);
+    EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
     editor->loadDocument(data);
     return editor;
@@ -104,7 +104,7 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
         const QUrl & sourceUrl
         )
 {
-    Editor * editor = new Editor(this, true, nullptr, nullptr);
+    EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
     editor->loadDocument(device, fileNameSuffix, sourceEncoding, sourceUrl);
     return editor;
@@ -112,7 +112,7 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
 
 Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName)
 {
-    Editor * editor = new Editor(this, true, nullptr, nullptr);
+    EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
     editor->loadDocument(fileName);
     return editor;
@@ -168,7 +168,7 @@ void EditorPlugin::changeGlobalState(ExtensionSystem::GlobalState prev, Extensio
     emit globalStateUpdateRequest(quint32(prev), quint32(current));
 }
 
-void EditorPlugin::connectGlobalSignalsToEditor(Editor *editor)
+void EditorPlugin::connectGlobalSignalsToEditor(EditorInstance *editor)
 {
     connect(this, SIGNAL(settingsUpdateRequest(QStringList)),
             editor, SLOT(updateSettings(QStringList)), Qt::DirectConnection);

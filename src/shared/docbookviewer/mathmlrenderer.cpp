@@ -241,7 +241,7 @@ QImage MathMLRenderer::renderFrac(ModelPtr element)
 QImage MathMLRenderer::renderSup(ModelPtr element)
 {
     qreal prevFontSize = font_.pointSizeF();
-    qreal fontSize = qMax(font_.pointSizeF() * 0.66, MIN_FONT_SIZE);
+    qreal fontSize = qMax(qreal(font_.pointSizeF() * 0.66), qreal(MIN_FONT_SIZE));
     qreal baseHeight = QFontMetricsF(font_).lineSpacing();
     int supBaseLine = int(baseHeight * 0.66);
     font_.setPointSizeF(fontSize);
