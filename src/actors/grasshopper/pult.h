@@ -251,7 +251,7 @@ loggerButton* downButton;
 loggerButton* upButton;
 };
 
-class GrasshopperPult : public QWidget, public Ui::TurtlePult
+class GrasshopperPult : public QWidget, public Ui::GrasshopperPult
 {
 	Q_OBJECT
 	public:
@@ -264,7 +264,7 @@ class GrasshopperPult : public QWidget, public Ui::TurtlePult
 		/**
 		 * Деструктор
 		 */
-		~GrasshopperPult(){};
+        ~GrasshopperPult(){};
     
    bool Link(){return link;};
         pultLogger * Logger;

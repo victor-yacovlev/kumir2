@@ -364,7 +364,7 @@ cp->setText(text);
 
 
 GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
-		: QWidget ( parent, fl ), Ui::TurtlePult()
+        : QWidget ( parent, fl ), Ui::GrasshopperPult()
 {
 //	setStyleSheet("background-color:#7EB676;");
 	autoClose=false;
@@ -372,10 +372,10 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
 //	this->hide();
 //	setWindowFlags(Qt::Dialog);
 
-	Logger=new pultLogger(this);
+    Logger=new pultLogger(this);
 
-	Logger->setSizes(164,150);
-	Logger->Move(40,5);	
+    Logger->setSizes(164,150);
+    Logger->Move(40,5);
         greenLight=new linkLight(this);
         greenLight->move(15,29);
         greenLight->resize(12,104);
@@ -385,60 +385,60 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
 
         LeftB->hide();
         turnLeft=new MainButton(this);
-	turnLeft->setGeometry(LeftB->geometry());
+    turnLeft->setGeometry(LeftB->geometry());
         turnLeft->loadIcon(resdir.absoluteFilePath("160_55l.png"));
  
        // RightB->hide();
         turnRight=new MainButton(this);
-	turnRight->setGeometry(RightB->geometry());
+    turnRight->setGeometry(RightB->geometry());
         turnRight->loadIcon(resdir.absoluteFilePath("160_55r.png"));
         
 //        StenaB->hide();
         askStena=new MainButton(this);
 //        askStena->move(StenaB->pos());
         askStena->setCheckable(true);
-	askStena->setText(trUtf8("  "));
-	askStena->loadIcon(resdir.absoluteFilePath("stena.png"));
-	askStena->setCheckable(true);
-	askStena->hide();
+    askStena->setText(trUtf8("  "));
+    askStena->loadIcon(resdir.absoluteFilePath("stena.png"));
+    askStena->setCheckable(true);
+    askStena->hide();
 //        SvobodnoB->hide();
         askFree=new MainButton(this);
 //        askFree->move(SvobodnoB->pos());
         askFree->setCheckable(true);
-	askFree->setText(trUtf8(" "));
-	askFree->loadIcon(":/icons/svobodno.png");
-	askFree->setCheckable(true);
-	askFree->hide();
+    askFree->setText(trUtf8(" "));
+    askFree->loadIcon(":/icons/svobodno.png");
+    askFree->setCheckable(true);
+    askFree->hide();
   
 
         recolorB=new MainButton(this);
-	recolorB->setGeometry(colorB->geometry());  
-	recolorB->setText(trUtf8("  "));
-	recolorB->loadIcon(resdir.absoluteFilePath("recolor.png"));
-	colorB->hide();
+    recolorB->setGeometry(colorB->geometry());
+    recolorB->setText(trUtf8("  "));
+    recolorB->loadIcon(resdir.absoluteFilePath("recolor.png"));
+    colorB->hide();
 
 
         QIcon toKumirIco(":/kumir.png");
-	toKumir->setIcon(toKumirIco);
+    toKumir->setIcon(toKumirIco);
 	
 //	CenterB->setIcon(QIcon(":/icons/robo_field.png"));
 //	connect(buttFwd,SIGNAL(clicked()),this,SLOT(Up()));
 
 
-	//connect(buttBack,SIGNAL(clicked()),this,SLOT(Down()));
-	connect(turnLeft,SIGNAL(clicked()),this,SLOT(Left()));
-	connect(turnRight,SIGNAL(clicked()),this,SLOT(Right()));
+    //connect(buttBack,SIGNAL(clicked()),this,SLOT(Down()));
+    connect(turnLeft,SIGNAL(clicked()),this,SLOT(Left()));
+    connect(turnRight,SIGNAL(clicked()),this,SLOT(Right()));
 
 
 
-	connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
+    connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
         connect(ClearLog,SIGNAL(clicked()),this,SLOT(resetKuznec()));
 
         connect(toKumir,SIGNAL(clicked()),this,SLOT(logToKumir()));
         connect(recolorB,SIGNAL(clicked()),this,SLOT(ColorUnColor()));
 //	connect(CopyLog,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
     setMinimumSize(100,200);
-	link=true;
+    link=true;
 };
 
 

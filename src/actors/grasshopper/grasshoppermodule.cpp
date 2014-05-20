@@ -18,6 +18,18 @@ You should change it corresponding to functionality.
 
 namespace ActorGrasshopper {
 
+class AAA : public QWidget {
+public:
+    inline explicit AAA(QWidget * pult): QWidget(), pult_(pult) {
+        setLayout(new QVBoxLayout);
+        layout()->setContentsMargins(0, 0, 0, 0);
+        layout()->addWidget(pult);
+    }
+    inline QSize minimumSizeHint() const { return pult_->minimumSizeHint(); }
+private:
+    QWidget * pult_;
+};
+
 GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     : GrasshopperModuleBase(parent)
 {
@@ -75,7 +87,8 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return kuznec->Kpult;
+    static QWidget * dummy = new AAA(kuznec->Kpult);
+    return dummy;
     
 }
 

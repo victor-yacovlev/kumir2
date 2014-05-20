@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Denis Khachko</author>
- <class>TurtlePult</class>
- <widget class="QWidget" name="TurtlePult">
+ <class>GrasshopperPult</class>
+ <widget class="QWidget" name="GrasshopperPult">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -901,7 +901,7 @@
     <string>...</string>
    </property>
    <property name="icon">
-    <iconset resource="../application.qrc">
+    <iconset>
      <normaloff>:/clear.png</normaloff>:/clear.png</iconset>
    </property>
   </widget>
@@ -993,7 +993,7 @@
     <string>...</string>
    </property>
    <property name="icon">
-    <iconset resource="../application.qrc">
+    <iconset>
      <normaloff>:/kumir.png</normaloff>
      <normalon>:/kumir.png</normalon>:/kumir.png</iconset>
    </property>
@@ -1050,8 +1050,6 @@
    </property>
   </widget>
  </widget>
- <resources>
-  <include location="../application.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
