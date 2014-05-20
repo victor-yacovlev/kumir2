@@ -61,15 +61,38 @@ target_link_libraries(LLVMCodeGenerator
     ErrorMessages
 )
 
-add_custom_target(
-    stdlib.llvm
-    ALL
-    DEPENDS stdlib_c.h stdlib_c.cpp
-    COMMAND clang -c -std=c++0x -emit-llvm
-        -I${CMAKE_SOURCE_DIR}/src/shared
-        -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
-        ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
-)
+if(WIN32)    
+    exec_program(${MINGW_ROOT}/bin/gcc ARGS "--version" OUTPUT_VARIABLE GCC_VERSION_OUTPUT)
+    string(REGEX MATCH "[1-9].[1-9].[1-9]" GCC_VERSION "${GCC_VERSION_OUTPUT}")
+    add_custom_target(
+        stdlib_preproc.cxx
+        ALL
+        DEPENDS stdlib_c.h stdlib_c.cpp
+        COMMAND ${MINGW_ROOT}/bin/gcc -E -std=c++0x
+            -I${CMAKE_SOURCE_DIR}/src/shared
+            -o ${CMAKE_CURRENT_BINARY_DIR}/stdlib_preproc.cxx
+            ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
+    )
+    add_custom_target(
+        stdlib.llvm
+        ALL
+        DEPENDS stdlib_preproc.cxx
+        COMMAND ${Clang_EXECUTABLE} -c -std=c++0x -emit-llvm -nobuiltininc -nostdinc++
+            -fno-ms-compatibility -fno-ms-extensions
+            -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
+            ${CMAKE_CURRENT_BINARY_DIR}/stdlib_preproc.cxx
+    )
+else()
+    add_custom_target(
+        stdlib.llvm
+        ALL
+        DEPENDS stdlib_c.h stdlib_c.cpp
+        COMMAND ${Clang_EXECUTABLE} -c -std=c++0x -emit-llvm
+            -I${CMAKE_SOURCE_DIR}/src/shared
+            -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
+            ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
+    )
+endif(WIN32)
 
 file(MAKE_DIRECTORY ${SHARE_PATH}/llvmcodegenerator)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.h DESTINATION ${SHARE_PATH}/llvmcodegenerator)
