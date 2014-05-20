@@ -8,7 +8,7 @@ You should change it corresponding to functionality.
 
 // Self include
 #include "grasshoppermodule.h"
-
+#include "pult.h"
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 
@@ -21,7 +21,7 @@ namespace ActorGrasshopper {
 GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     : GrasshopperModuleBase(parent)
 {
-    kuznec=new KumKuznec();
+    kuznec=new KumKuznec(myResourcesDir());
     // Module constructor, called once on plugin load
     // TODO implement me
 }
@@ -75,7 +75,8 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
     // TODO implement me
-    return nullptr;
+    return kuznec->Kpult;
+    
 }
 
 /* public slot */ void GrasshopperModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -91,6 +92,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
 {
     // Resets module to initial state before program execution
     // TODO implement me
+    kuznec->Reset();
 }
 
 /* public slot */ void GrasshopperModule::setAnimationEnabled(bool enabled)
@@ -99,7 +101,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     // NOTE this method just setups a flag and might be called anytime, even module not needed
     // TODO implement me
     Q_UNUSED(enabled);  // Remove this line on implementation
-    kuznec->Reset();
+   // kuznec->Reset();
 }
 
 /* public slot */ void GrasshopperModule::runGoForward(const int distance)

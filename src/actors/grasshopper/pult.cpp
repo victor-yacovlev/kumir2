@@ -361,7 +361,9 @@ QString text;
 for(int i=0;i<lines.count();i++)if(!lines[i].KumCommand().isEmpty())text+=lines[i].KumCommand()+"\n";
 cp->setText(text);
 };
-GrasshopperPult::GrasshopperPult ( QWidget* parent, Qt::WindowFlags fl )
+
+
+GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
 		: QWidget ( parent, fl ), Ui::TurtlePult()
 {
 //	setStyleSheet("background-color:#7EB676;");
@@ -384,19 +386,19 @@ GrasshopperPult::GrasshopperPult ( QWidget* parent, Qt::WindowFlags fl )
         LeftB->hide();
         turnLeft=new MainButton(this);
 	turnLeft->setGeometry(LeftB->geometry());
-        turnLeft->loadIcon(":/160_55l.png");
+        turnLeft->loadIcon(resdir.absoluteFilePath("160_55l.png"));
  
        // RightB->hide();
         turnRight=new MainButton(this);
 	turnRight->setGeometry(RightB->geometry());
-        turnRight->loadIcon(":/160_55r.png");
+        turnRight->loadIcon(resdir.absoluteFilePath("160_55r.png"));
         
 //        StenaB->hide();
         askStena=new MainButton(this);
 //        askStena->move(StenaB->pos());
         askStena->setCheckable(true);
 	askStena->setText(trUtf8("  "));
-	askStena->loadIcon(":/icons/stena.png");
+	askStena->loadIcon(resdir.absoluteFilePath("stena.png"));
 	askStena->setCheckable(true);
 	askStena->hide();
 //        SvobodnoB->hide();
@@ -412,7 +414,7 @@ GrasshopperPult::GrasshopperPult ( QWidget* parent, Qt::WindowFlags fl )
         recolorB=new MainButton(this);
 	recolorB->setGeometry(colorB->geometry());  
 	recolorB->setText(trUtf8("  "));
-	recolorB->loadIcon(":/recolor.png");
+	recolorB->loadIcon(resdir.absoluteFilePath("recolor.png"));
 	colorB->hide();
 
 

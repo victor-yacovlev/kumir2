@@ -260,7 +260,7 @@ class GrasshopperPult : public QWidget, public Ui::TurtlePult
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-        GrasshopperPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
+        GrasshopperPult (QDir resDir=QDir(), QWidget* parent = 0, Qt::WindowFlags fl = 0 );
 		/**
 		 * Деструктор
 		 */

@@ -181,7 +181,7 @@ void KumKuznec::resizeEvent ( QResizeEvent * event )
  }; 
 //-----------------------------------------------------
 
-KumKuznec::KumKuznec()
+KumKuznec::KumKuznec(QDir mresd)
 {
 
 autoClose=false;
@@ -195,8 +195,9 @@ if (!QDir(curDir).exists()) {
 }
 curMode=4;
 moving=false;
-
+   
 MV=new QMainWindow();
+Kpult=new GrasshopperPult(mresd);
 MV->setAttribute(Qt::WA_KeyboardFocusChange,false);
 MV->setGeometry(10,10,500,500);
 QIcon icon(":/grasshopper.png");

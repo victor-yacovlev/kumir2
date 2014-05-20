@@ -128,7 +128,7 @@ class KumKuznec
 public:
 
 //		 * Конструктор
-		KumKuznec();
+		KumKuznec(QDir mresd);
 		void PenDown();
 		void PenUp();
 		int GoVector(double x,double y);
