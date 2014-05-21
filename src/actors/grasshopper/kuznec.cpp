@@ -198,6 +198,7 @@ moving=false;
    
 MV=new QMainWindow();
 Kpult=new GrasshopperPult(mresd);
+    Kpult->kuznecObj=this;
 MV->setAttribute(Qt::WA_KeyboardFocusChange,false);
 MV->setGeometry(10,10,500,500);
 QIcon icon(":/grasshopper.png");
