@@ -406,7 +406,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
 //        askFree->move(SvobodnoB->pos());
         askFree->setCheckable(true);
     askFree->setText(trUtf8(" "));
-    askFree->loadIcon(":/icons/svobodno.png");
+    askFree->loadIcon(resdir.absoluteFilePath("svobodno.png"));
     askFree->setCheckable(true);
     askFree->hide();
   
@@ -418,7 +418,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
     colorB->hide();
 
 
-        QIcon toKumirIco(":/kumir.png");
+        QIcon toKumirIco(resdir.absoluteFilePath("kumir.png"));
     toKumir->setIcon(toKumirIco);
 	
 //	CenterB->setIcon(QIcon(":/icons/robo_field.png"));

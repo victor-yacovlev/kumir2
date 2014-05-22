@@ -27,6 +27,7 @@ set(SOURCES
     groupbox.cpp
     cyrillicmenu.cpp
     secondarywindow.cpp
+    pultlogger.cpp
     dockwindowplace.cpp
     dockwindowplace_impl.cpp
     dockwindowplace_container.cpp
@@ -41,6 +42,7 @@ set(SOURCES
 set(MOC_HEADERS
     actionproxy.h
     groupbox.h
+    pultlogger.h
     cyrillicmenu.h
     secondarywindow.h
     dockwindowplace.h
