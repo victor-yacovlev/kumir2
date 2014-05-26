@@ -13,7 +13,8 @@ if(MSVC)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MDd -Zi")            
         else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -MD")
-            add_definitions(-DQT_NO_DEBUG -DNDEBUG)
+            add_definitions(-DQT_NO_DEBUG)
+            add_definitions(-DNDEBUG)
         endif()
         if(${USE_QT} GREATER 4)
             # Qt5 uses MSVC's built-in wchar_t type
@@ -29,6 +30,7 @@ endif(MSVC)
 
 if(NOT CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DNDEBUG)
+    add_definitions(-DQT_NO_DEBUG)
 endif(NOT CMAKE_BUILD_TYPE MATCHES Debug)
 
 # clear default CMake RPATH values
