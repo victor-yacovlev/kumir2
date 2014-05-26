@@ -19,14 +19,15 @@
 
 namespace KumirCodeRun {
 
-struct CommonFunctors {    
+struct CommonFunctors {
     Common::ExternalModuleCallFunctor call;
     Common::CustomTypeFromStringFunctor fromString;
     Common::CustomTypeToStringFunctor toString;
+    Common::ExternalModuleResetFunctor reset;
 };
 
 struct ConsoleFunctors {
-    Common::ExternalModuleResetFunctor reset;
+    Console::ExternalModuleResetFunctor reset;
     Console::ExternalModuleLoadFunctor load;
     VM::Console::InputFunctor input;
     VM::Console::OutputFunctor output;

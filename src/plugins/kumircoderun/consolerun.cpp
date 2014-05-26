@@ -4,16 +4,18 @@
 #include "util.h"
 
 #include <QWidget>
+#include <QMap>
 
 namespace KumirCodeRun {
 namespace Console {
 
-
+static QMap<Shared::ActorInterface*, QWidget*> ACTOR_WINDOWS;
 
 VM::ExternalModuleLoadFunctor::NamesList
 ExternalModuleLoadFunctor::operator() (
-    const Kumir::String & moduleLocalizedName,
-    const std::string & moduleAsciiName)
+        const std::string & moduleAsciiName,
+        const Kumir::String & moduleLocalizedName
+    )
     /* throws std::string, Kumir::String */
 {
     using namespace ExtensionSystem;
@@ -38,7 +40,6 @@ ExternalModuleLoadFunctor::operator() (
     }
 
     ActorInterface * actor = Util::findActor(moduleAsciiName);
-
 
     if (! actor) {
         const QString localError =
@@ -79,6 +80,17 @@ ExternalModuleLoadFunctor::operator() (
         }
     }
 
+    bool gui = true;
+#ifdef Q_WS_X11
+    gui = gui && getenv("DISPLAY")!=0;
+#endif
+
+    if (actor && gui && actor->mainWidget()) {
+        if (!ACTOR_WINDOWS.contains(actor)) {
+            ACTOR_WINDOWS[actor] = actor->mainWidget();
+        }
+    }
+
     return namesList;
 }
 
@@ -94,6 +106,10 @@ void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName
         actor->reset();
         if (callFunctor_) {
             callFunctor_->checkForActorConnected(moduleAsciiName);
+        }
+        if (ACTOR_WINDOWS.contains(actor)) {
+            QWidget * actorWindow = ACTOR_WINDOWS[actor];
+            actorWindow->setVisible(true);
         }
     }
     else {

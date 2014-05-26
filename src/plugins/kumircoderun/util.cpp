@@ -91,13 +91,13 @@ AnyValue QVariantToValue(const QVariant & var, int dim)
     return aval;
 }
 
-ActorInterface* findActor(const std::string & moduleAsciiName)
+ActorInterface* findActor(const std::string & moduleAsciiName, bool allowLoad)
 {
     const QByteArray qModuleName = QByteArray(moduleAsciiName.c_str());
-    return findActor(qModuleName);
+    return findActor(qModuleName, allowLoad);
 }
 
-ActorInterface* findActor(const QByteArray & qModuleName)
+ActorInterface* findActor(const QByteArray & qModuleName, bool allowLoad)
 {
     using namespace ExtensionSystem;
 
@@ -118,6 +118,14 @@ ActorInterface* findActor(const QByteArray & qModuleName)
             }
         }
         actor = nullptr;
+    }
+
+    if (!actor && allowLoad) {
+        const QString success =
+                PluginManager::instance()->loadExtraModule("Actor"+qModuleName);
+        if (success.length() == 0) {
+            return findActor(qModuleName, false);
+        }
     }
 
     return actor;
