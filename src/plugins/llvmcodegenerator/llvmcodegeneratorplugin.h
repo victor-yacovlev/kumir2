@@ -53,7 +53,7 @@ protected:
 
     static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
     static bool compileExternalUnit(const QString & fileName);
-    static QString findUtil(const QString & name);
+
 
 private:
     class LLVMGenerator * d;

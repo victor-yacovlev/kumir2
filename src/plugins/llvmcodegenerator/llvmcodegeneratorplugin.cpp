@@ -2,6 +2,10 @@
 #include "llvmgenerator.h"
 
 #include <QtPlugin>
+#include <QProcess>
+#if QT_VERSION >= 0x050000
+#include <QProcessEnvironment>
+#endif
 
 #include <llvm/Config/llvm-config.h>
 #if LLVM_VERSION_MINOR >= 3
@@ -307,9 +311,39 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
 
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
 {
-    static const QString CLang = findUtil("clang");
+    static const QString CLang = "clang";
+#ifdef Q_OS_WIN32
+    static const QString LD = "ld";
+#else
+    static const QString LD = "clang";
+#endif
 
-    // ====== Compile bitcote to machine assembly code
+#if QT_VERSION >= 0x050000
+    QProcessEnvironment toolsEnvironment = QProcessEnvironment::systemEnvironment();
+#else
+    QStringList toolsEnvironment = QProcess::systemEnvironment();
+#endif
+
+
+#ifdef Q_OS_WIN32
+    static const QString bundledToolchainPath = QDir::toNativeSeparators(
+                QDir::cleanPath(
+                    QCoreApplication::applicationDirPath() + "/../clang-mingw/"
+                    )
+                );
+#   if QT_VERSION >= 0x050000
+    toolsEnvironment.insert("PATH",
+                            bundledToolchainPath + ";" + toolsEnvironment.value("Path")
+                            );
+#   else
+    toolsEnvironment.replaceInStrings(
+                QRegExp("^PATH=(.*)", Qt::CaseSensitive),
+                QString("PATH=%1;\\1").arg(bundledToolchainPath)
+                );
+#   endif
+#endif
+
+    // ====== Write bitcode to external file
 
     QTemporaryFile bitcodeFile(QDir::tempPath() + "/XXXXXX.bc");
 
@@ -318,35 +352,89 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     bitcodeFile.close();
 
     const QString bcFileName = QFileInfo(bitcodeFile).absoluteFilePath();
+    const QString objFileName = bcFileName.left(bcFileName.length()-2) + "o";
     const QString exeFileName = bcFileName.left(bcFileName.length()-2) + "exe";
 
-    // ====== Use CLang toolchain to produce executable
+    QString errorMessage;
+    QProcess process;
+
+    // ====== Compile bitcode to machine code using CLang
 
     const QStringList clangArguments = QStringList()
-            << "-O3"
-            << "-o" << exeFileName << bcFileName << "-lstdc++" << "-lm";
+            << "-O3" << "-c"
+            << "-o" << objFileName << bcFileName;
 
-    const int clang_status = QProcess::execute(CLang, clangArguments);
-    QString errorMessage;
-    if (clang_status == -2) {
-        errorMessage = QString("Can't start CLang: %1 %2")
-                .arg(CLang).arg(clangArguments.join(" "));
+    process.setEnvironment(toolsEnvironment);
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(CLang, clangArguments);
+    if (!process.waitForFinished()) {
+        errorMessage = QString("%1 %2 failed: %2")
+                .arg(CLang)
+                .arg(clangArguments.join(" "))
+                .arg(process.errorString())
+                ;
     }
-    else if (clang_status == -1) {
-        errorMessage = QString("CLang crashed while executing: %1 %2")
-                .arg(CLang).arg(clangArguments.join(" "));
+    else {
+        const int status = process.exitStatus();
+        if (0 != status) {
+            errorMessage = QString("%1 %2 exited with status: %3")
+                    .arg(CLang).arg(clangArguments.join(" ")).arg(status);
+        }
     }
-    else if (clang_status != 0) {
-        errorMessage = QString("Command exited with status %3: %1 %2")
-                .arg(CLang).arg(clangArguments.join(" ")).arg(clang_status);
-    }
+
     if (errorMessage.length() > 0) {
         std::cerr << errorMessage.toStdString() << std::endl;
         qApp->setProperty("returnCode", 5);
         qApp->quit();
     }
 
-    // ====== Read result
+    // ====== Link executable using GNU ld
+
+    const QStringList ldArguments = QStringList()
+            << "-o" << exeFileName
+            << objFileName
+           #if defined(Q_OS_WIN32)
+            << "crt2.o" << "crtbegin.o" << "libmingw32.a" << "libgcc.a"
+            << "libgcc_eh.a" << "libmoldname.a" << "libmingwex.a"
+            << "libmsvcrt.a" << "libadvapi32.a" << "libshell32.a"
+            << "libuser32.a" << "libkernel32.a" << "libmingw32.a"
+            << "libgcc.a" << "libgcc_eh.a"
+            << "-lmoldname" "-lmingwex" "-lmingwex" << "-lmsvcrt"
+            << "crtend.o"
+           #endif
+           #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+            << "-lstdc++" << "-lm"
+           #endif
+               ;
+
+    process.setEnvironment(toolsEnvironment);
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(LD, ldArguments);
+    if (!process.waitForFinished()) {
+        errorMessage = QString("%1 %2 failed: %2")
+                .arg(CLang)
+                .arg(clangArguments.join(" "))
+                .arg(process.errorString())
+                ;
+    }
+    else {
+        const int status = process.exitStatus();
+        if (0 != status) {
+            errorMessage = QString("%1 %2 exited with status: %3")
+                    .arg(CLang).arg(clangArguments.join(" ")).arg(status);
+        }
+    }
+
+    QFile::remove(objFileName);
+
+    if (errorMessage.length() > 0) {
+        std::cerr << errorMessage.toStdString() << std::endl;
+        qApp->setProperty("returnCode", 5);
+        qApp->quit();
+    }
+
+    // ====== Read back result
+
     QFile executableFile(exeFileName);
     executableFile.open(QIODevice::ReadOnly);
     const QByteArray result = executableFile.readAll();
@@ -378,21 +466,6 @@ void LLVMCodeGeneratorPlugin::fixMultipleTypeDeclarations(QByteArray &data)
     data = lines.join("\n").toLatin1();
 }
 
-QString LLVMCodeGeneratorPlugin::findUtil(const QString &name)
-{
-    QString exec = name;
-#ifdef Q_OS_WIN32
-    exec += ".exe";
-#endif
-    QStringList paths;
-    foreach (const QString & pathName, paths) {
-        const QString fullPath = QDir(pathName).absoluteFilePath(exec);
-        if (QFile(fullPath).exists()) {
-            return fullPath;
-        }
-    }
-    return exec;
-}
 
 void LLVMCodeGeneratorPlugin::setOutputToText(bool flag)
 {
