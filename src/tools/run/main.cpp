@@ -21,7 +21,8 @@ static Encoding LOCALE;
 
 static void do_output(const String &s)
 {
-    const std::string localstring = Coder::encode(LOCALE, s);
+    Kumir::EncodingError encodingError;
+    const std::string localstring = Coder::encode(LOCALE, s, encodingError);
     std::cout << localstring;
 }
 
@@ -76,11 +77,13 @@ int usage(const char * programName)
         message += Core::fromUtf8("\tARG1...ARGn\tKumir program main algorithm arguments");
         message.push_back(_n);
     }
-    std::cerr << Coder::encode(LOCALE, message);
+    Kumir::EncodingError encodingError;
+    std::cerr << Coder::encode(LOCALE, message, encodingError);
     return 127;
 }
 
 int showErrorMessage(const String & message, int code) {
+    Kumir::EncodingError encodingError;
     bool toHttp = false;
 #if !defined(WIN32) && !defined(_WIN32)
     char * REQUEST_METHOD = getenv("REQUEST_METHOD");
@@ -88,12 +91,12 @@ int showErrorMessage(const String & message, int code) {
     toHttp = (REQUEST_METHOD!=0 && QUERY_STRING!=0);
 #endif
     if (!toHttp) {
-        const std::string localMessage = Coder::encode(LOCALE, message);
+        const std::string localMessage = Coder::encode(LOCALE, message, encodingError);
         std::cerr << localMessage << std::endl;
         return code;
     }
     else {
-        const std::string localMessage = Coder::encode(UTF8, message);
+        const std::string localMessage = Coder::encode(UTF8, message, encodingError);
 //        std::cout << "Content-type: text/html;charset=utf-8\n\n";
 //        std::cout << "<html><head><title>An error occured on server</title></head>\n";
 //        std::cout << "<body>\n";
@@ -168,6 +171,7 @@ int runKumirXRun(int argc, char* argv[]) {
 
 int main(int argc, char *argv[])
 {
+    Kumir::EncodingError encodingError;
 //    sleep(15); // for remote debugger
     // Look at arguments
 #if defined(WIN32) || defined(_WIN32)
@@ -235,7 +239,7 @@ int main(int argc, char *argv[])
         return 2;
     }
     catch (String e) {
-        std::cerr << "Can't load program file: " << Coder::encode(LOCALE, e) << std::endl;
+        std::cerr << "Can't load program file: " << Coder::encode(LOCALE, e, encodingError) << std::endl;
         return 2;
     }
     catch (...) {
@@ -276,7 +280,7 @@ int main(int argc, char *argv[])
     vm.setConsoleInputBuffer(&inputFunctor);
     vm.setConsoleOutputBuffer(&outputFunctor);
 
-    String programPath = Files::getAbsolutePath(Coder::decode(LOCALE, programName));
+    String programPath = Files::getAbsolutePath(Coder::decode(LOCALE, programName, encodingError));
     size_t slashPos = programPath.find_last_of(Char('/'));
     String programDir;
     if (slashPos!=String::npos) {
@@ -288,7 +292,7 @@ int main(int argc, char *argv[])
     static const String LOAD_ERROR = Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
 
     try {
-        vm.setProgram(programData, true, Coder::decode(LOCALE, programName));
+        vm.setProgram(programData, true, Coder::decode(LOCALE, programName, encodingError));
     }
     catch (String & msg) {
         String message = LOAD_ERROR + msg;

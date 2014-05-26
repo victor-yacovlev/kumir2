@@ -58,7 +58,8 @@ inline String & operator+(String & s, const /*ascii only*/ char c) {
     return s;
 }
 inline String & operator+(String &s1, const /*utf8*/ char * s2) {
-    String us2 = Coder::decode(UTF8, std::string(s2));
+    EncodingError encodingError;
+    String us2 = Coder::decode(UTF8, std::string(s2), encodingError);
     s1.append(us2);
     return s1;
 }
@@ -167,19 +168,15 @@ public:
 
     inline static String fromUtf8(const std::string & s) {
         String result;
-        try {
-            result = Coder::decode(UTF8, s);
-        }
-        catch (...) {}
+        EncodingError encodingError;
+        result = Coder::decode(UTF8, s, encodingError);
         return result;
     }
 
     inline static String fromAscii(const std::string & s) {
         String result;
-        try {
-            result = Coder::decode(ASCII, s);
-        }
-        catch (...) {}
+        EncodingError encodingError;
+        result = Coder::decode(ASCII, s, encodingError);
         return result;
     }
 
@@ -286,7 +283,8 @@ public:
         if (parts.size()==0)
             return UTF8;
         else {
-            static const std::string last = Coder::encode(ASCII, parts.at(parts.size()-1));
+            EncodingError encodingError;
+            static const std::string last = Coder::encode(ASCII, parts.at(parts.size()-1), encodingError);
             if (last==std::string("KOI8-R"))
                 return KOI8R;
             else if (last==std::string("CP866") ||
@@ -1021,7 +1019,8 @@ public:
             sprintfFormat.push_back('e');
         else
             sprintfFormat.push_back('g');
-        const std::string formatAscii = Coder::encode(ASCII, sprintfFormat);
+        EncodingError encodingError;
+        const std::string formatAscii = Coder::encode(ASCII, sprintfFormat, encodingError);
         const char * fmt = formatAscii.c_str();
         sprintf(buffer, fmt, value);
         std::string result(reinterpret_cast<char*>(&buffer));
@@ -1078,7 +1077,7 @@ public:
             if (dotFound)
                 result = result.substr(0, chopPos+1);
         }
-        String uniresult = Coder::decode(ASCII, result);
+        String uniresult = Coder::decode(ASCII, result, encodingError);
         size_t dotPos = uniresult.find_first_of('.');
         if (dotPos!=String::npos) {
             uniresult[dotPos] = dot;
@@ -1252,14 +1251,15 @@ public:
 #else
     inline static int code(wchar_t ch) {
         unsigned char value = 0;
-        try {
-            value = KOI8RCodingTable::enc(ch);
-        }
-        catch (EncodingError e) {
-            if (e==OutOfTable)
+        EncodingError error;
+        value = KOI8RCodingTable::enc(ch, error);
+        if (error) {
+            if (OutOfTable == error) {
                 Core::abort(Core::fromUtf8("Символ вне кодировки КОИ-8"));
-            else
+            }
+            else {
                 Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
+            }
         }
         return static_cast<int>(value);
     }
@@ -1271,7 +1271,8 @@ public:
         else {
             char buf[2] = { static_cast<char>(code), '\0' };
             charptr p = reinterpret_cast<charptr>(&buf);
-            uint32_t val = KOI8RCodingTable::dec(p);
+            EncodingError encodingError;
+            uint32_t val = KOI8RCodingTable::dec(p, encodingError);
             return static_cast<wchar_t>(val);
         }
     }
@@ -1712,7 +1713,8 @@ public:
 #   ifdef NO_UNICODE
         const char * path = const_cast<char*>(fileName.c_str());
 #   else
-        std::string localName = Kumir::Coder::encode(Kumir::UTF8, fileName);
+        EncodingError encodingError;
+        std::string localName = Kumir::Coder::encode(Kumir::UTF8, fileName, encodingError);
         const char * path = localName.c_str();
 #   endif
         struct stat st;
@@ -1838,13 +1840,11 @@ public:
 //            isCorrectName = false;
 //        }
 #       else
-        try {
-            localName = Coder::encode(UTF8, fileName);
-            isCorrectName = true;
-        }
-        catch (...) {
-            isCorrectName = false;
-        }
+        EncodingError encodingError;
+
+        localName = Coder::encode(UTF8, fileName, encodingError);
+        isCorrectName = NoEncodingError == encodingError;
+
 #       endif
         if (!isCorrectName) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Ошибка открытия файла: имя содержит недопустимый символ"));
@@ -2128,10 +2128,9 @@ public:
                     fwrite(BOM, sizeof(char), 3, file);
                 }
                 std::string bytes;
-                try {
-                    bytes = Coder::encode(encoding, s);
-                }
-                catch (...) {
+                EncodingError encodingError;
+                bytes = Coder::encode(encoding, s, encodingError);
+                if (encodingError) {
                     Core::abort(Core::fromUtf8("Ошибка кодирования строки вывода: недопустимый символ"));
                 }
                 fwrite(bytes.c_str(), sizeof(char), bytes.length(), file);
@@ -2328,10 +2327,9 @@ public:
                 }
                 const std::string sb(buffer);
                 std::wstring res;
-                try {
-                    res = Coder::decode(encoding_, sb);
-                }
-                catch (...) {
+                EncodingError encodingError;
+                res = Coder::decode(encoding_, sb, encodingError);
+                if (encodingError) {
                     Core::abort(Core::fromUtf8("Ошибка перекодирования при чтении данных из текстового файла"));
                     return false;
                 }

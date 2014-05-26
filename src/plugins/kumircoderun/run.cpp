@@ -319,6 +319,7 @@ int Run::effectiveLineNo() const
 
 bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
 {
+    Kumir::EncodingError encodingError;
     String errorMessage;
     bool ok = vm->loadProgramFromBinaryBuffer(stream, true, filename, errorMessage);
     if (!ok) {
@@ -326,7 +327,7 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
 #if defined(WIN32) || defined(_WIN32)
         msg = Kumir::Coder::encode(Kumir::CP866, errorMessage);
 #else
-        msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage);
+        msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage, encodingError);
 #endif
         std::cerr << msg << std::endl;
         programLoadError_ = QString::fromUtf8("Ошибка загрузки программы: %1")
@@ -339,13 +340,14 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
 
 void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
 {
+    Kumir::EncodingError encodingError;
     String error;
     if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
         msg = Kumir::Coder::encode(Kumir::CP866, error);
 #else
-        msg = Kumir::Coder::encode(Kumir::UTF8, error);
+        msg = Kumir::Coder::encode(Kumir::UTF8, error, encodingError);
 #endif
         std::cerr << msg << std::endl;
     }

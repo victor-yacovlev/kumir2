@@ -437,7 +437,8 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                     modulePath.push_back(Kumir::Char('/'));
                     modulePath += e.fileName;
                 }
-                const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath);
+                Kumir::EncodingError encodingError;
+                const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath, encodingError);
                 std::ifstream externalfile(filename.c_str());
                 if (
                         !Kumir::Files::exist(modulePath)
@@ -502,9 +503,11 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.moduleAsciiName = e.moduleAsciiName;
             reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
+            Kumir::EncodingError encodingError;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
-                        makeCanonicalName(e.fileName)
+                        makeCanonicalName(e.fileName),
+                        encodingError
                         );
             moduleContexts_[currentModuleContext].externInits.push_back(reference);
             if (externalModuleLoad_)
@@ -522,9 +525,11 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.moduleAsciiName = e.moduleAsciiName;
             reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
+            Kumir::EncodingError encodingError;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
-                        makeCanonicalName(e.fileName)
+                        makeCanonicalName(e.fileName),
+                        encodingError
                         );
             moduleContexts_[currentModuleContext].externs[key] = reference;
             if (externalModuleLoad_) {
