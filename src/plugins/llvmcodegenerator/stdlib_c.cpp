@@ -366,11 +366,11 @@ static bool __kumir_pipe_mode = false;
 
 EXTERN void __kumir_set_main_arguments(int argc, char ** argv)
 {
+    Kumir::EncodingError encodingError;
 #if defined(WIN32) || defined(_WIN32)
-    __kumir_program_directory = Kumir::Coder::decode(Kumir::CP1251, std::string(argv[0]));
+    __kumir_program_directory = Kumir::Coder::decode(Kumir::CP1251, std::string(argv[0]), encodingError);
     const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'\\');
 #else
-    Kumir::EncodingError encodingError;
     __kumir_program_directory = Kumir::Coder::decode(Kumir::UTF8, std::string(argv[0]), encodingError);
     const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'/');
 #endif

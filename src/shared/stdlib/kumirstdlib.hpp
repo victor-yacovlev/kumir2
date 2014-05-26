@@ -1493,7 +1493,7 @@ public:
         String absPath;
         if (fileName.length()==0
                 ||
-                fileName.length()>2 && fileName.at(1)==Char(':') && fileName.at(2)==Char('\\')
+                (fileName.length()>2 && fileName.at(1)==Char(':') && fileName.at(2)==Char('\\'))
             )
             absPath = fileName;
         else
