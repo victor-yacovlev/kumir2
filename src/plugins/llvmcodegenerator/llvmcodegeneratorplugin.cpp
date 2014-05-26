@@ -311,36 +311,17 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
 
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
 {
-    static const QString CLang = "clang";
-#ifdef Q_OS_WIN32
-    static const QString LD = "ld";
-#else
-    static const QString LD = "clang";
-#endif
-
-#if QT_VERSION >= 0x050000
-    QProcessEnvironment toolsEnvironment = QProcessEnvironment::systemEnvironment();
-#else
-    QStringList toolsEnvironment = QProcess::systemEnvironment();
-#endif
-
-
 #ifdef Q_OS_WIN32
     static const QString bundledToolchainPath = QDir::toNativeSeparators(
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath() + "/../clang-mingw/"
                     )
                 );
-#   if QT_VERSION >= 0x050000
-    toolsEnvironment.insert("PATH",
-                            bundledToolchainPath + ";" + toolsEnvironment.value("Path")
-                            );
-#   else
-    toolsEnvironment.replaceInStrings(
-                QRegExp("^PATH=(.*)", Qt::CaseSensitive),
-                QString("PATH=%1;\\1").arg(bundledToolchainPath)
-                );
-#   endif
+    static const QString CLang = bundledToolchainPath + "\\clang.exe";
+    static const QString LD = bundledToolchainPath + "\\ld.exe";
+#else
+    static const QString CLang = "clang";
+    static const QString LD = "clang";
 #endif
 
     // ====== Write bitcode to external file
@@ -360,24 +341,29 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 
     // ====== Compile bitcode to machine code using CLang
 
-    const QStringList clangArguments = QStringList()
+    const QStringList clangArguments = QStringList() << "-v"
             << "-O3" << "-c"
-            << "-o" << objFileName << bcFileName;
-
-    process.setEnvironment(toolsEnvironment);
+            << "-o" << QDir::toNativeSeparators(objFileName)
+            << QDir::toNativeSeparators(bcFileName);
+#ifdef Q_OS_WIN32
+    process.setWorkingDirectory(bundledToolchainPath);
+#endif
     process.setProcessChannelMode(QProcess::MergedChannels);
     process.start(CLang, clangArguments);
+    qDebug() << "Starting: " << CLang << clangArguments;
     if (!process.waitForFinished()) {
-        errorMessage = QString("%1 %2 failed: %2")
+        errorMessage = QString("== ERROR == %1 %2 failed: %3")
                 .arg(CLang)
                 .arg(clangArguments.join(" "))
                 .arg(process.errorString())
                 ;
     }
     else {
+        qDebug() << process.readAllStandardOutput();
+        qDebug() << process.readAllStandardError();
         const int status = process.exitStatus();
         if (0 != status) {
-            errorMessage = QString("%1 %2 exited with status: %3")
+            errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
                     .arg(CLang).arg(clangArguments.join(" ")).arg(status);
         }
     }
@@ -390,42 +376,47 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 
     // ====== Link executable using GNU ld
 
-    const QStringList ldArguments = QStringList()
+    const QStringList ldArguments = QStringList() << "-v"
             << "-o" << exeFileName
             << objFileName
            #if defined(Q_OS_WIN32)
-            << "crt2.o" << "crtbegin.o" << "libmingw32.a" << "libgcc.a"
+            << "crt2.o" << "crtbegin.o"
+            << "libstdc++" << "libmingw32.a" << "libgcc.a"
             << "libgcc_eh.a" << "libmoldname.a" << "libmingwex.a"
             << "libmsvcrt.a" << "libadvapi32.a" << "libshell32.a"
             << "libuser32.a" << "libkernel32.a" << "libmingw32.a"
             << "libgcc.a" << "libgcc_eh.a"
-            << "-lmoldname" "-lmingwex" "-lmingwex" << "-lmsvcrt"
+            << "-lmoldname" << "-lmingwex" << "-lmingwex" << "-lmsvcrt"
             << "crtend.o"
            #endif
            #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
             << "-lstdc++" << "-lm"
            #endif
                ;
-
-    process.setEnvironment(toolsEnvironment);
+#ifdef Q_OS_WIN32
+    process.setWorkingDirectory(bundledToolchainPath);
+#endif
     process.setProcessChannelMode(QProcess::MergedChannels);
+    qDebug() << "Starting: " << LD << ldArguments;
     process.start(LD, ldArguments);
     if (!process.waitForFinished()) {
-        errorMessage = QString("%1 %2 failed: %2")
+        errorMessage = QString("== ERROR == %1 %2 failed: %3")
                 .arg(CLang)
                 .arg(clangArguments.join(" "))
                 .arg(process.errorString())
                 ;
     }
     else {
+        qDebug() << process.readAllStandardOutput();
+        qDebug() << process.readAllStandardError();
         const int status = process.exitStatus();
         if (0 != status) {
-            errorMessage = QString("%1 %2 exited with status: %3")
+            errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
                     .arg(CLang).arg(clangArguments.join(" ")).arg(status);
         }
     }
 
-    QFile::remove(objFileName);
+//    QFile::remove(objFileName);
 
     if (errorMessage.length() > 0) {
         std::cerr << errorMessage.toStdString() << std::endl;
