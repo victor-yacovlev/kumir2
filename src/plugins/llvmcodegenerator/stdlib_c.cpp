@@ -6,6 +6,10 @@
 #include <stack>
 #include <stdarg.h>
 
+#ifdef USE_MINGW_TOOLCHAIN
+#include "dummy_sjlj.cpp"
+#endif
+
 #if defined(WIN32) || defined(_WIN32)
 #else
 #   include <sys/resource.h>
@@ -94,12 +98,8 @@ EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8)
 {
     std::string utf8string(utf8);
     std::wstring wstr;
-    try {
-        wstr = Kumir::Core::fromUtf8(utf8string);
-    }
-    catch (Kumir::EncodingError) {
-        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));        
-    }
+    Kumir::EncodingError encodingError;
+    wstr = Kumir::Core::fromUtf8(utf8string);
     result->defined = true;
     result->type = __KUMIR_CHAR;
     result->data.c = wstr[0];
@@ -109,12 +109,7 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
 {
     std::string utf8string(utf8);
     std::wstring wstr;
-    try {
-        wstr = Kumir::Core::fromUtf8(utf8string);
-    }
-    catch (Kumir::EncodingError) {
-        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));
-    }
+    wstr = Kumir::Core::fromUtf8(utf8string);
     result->defined = true;
     result->type = __KUMIR_STRING;
     result->data.s = reinterpret_cast<wchar_t*>(calloc(wstr.length() + 1, sizeof(wchar_t)));

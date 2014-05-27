@@ -9,7 +9,9 @@
 #include <map>
 #include <cstdio>
 #ifndef APPLE
+#ifndef USE_MINGW_TOOLCHAIN
 #include <random>
+#endif
 #endif
 #include "encodings.hpp"
 
@@ -624,9 +626,12 @@ public:
         seed = *seed_data_ptr;
         srand(seed);
 #endif
+#if defined(WIN32) && defined(USE_MINGW_TOOLCHAIN)
+        srand(time(0));
+#endif
     }
     inline static void finalize() {}
-#ifndef WIN32
+#if !defined(WIN32) || defined(USE_MINGW_TOOLCHAIN)
     inline static int irand(int a, int b) {
         if (a>b) {
             Core::abort(Core::fromUtf8("Неверный диапазон чисел"));
@@ -1861,8 +1866,8 @@ public:
             fmode = L"wb";
         else if (mode==FileType::Append)
             fmode = L"ab";
-        FILE * res = 0;
-        _wfopen_s(&res, fileName.c_str(), fmode);
+        FILE * res = _wfopen(fileName.c_str(), fmode);
+//        _wfopen_s(&res, fileName.c_str(), fmode);
 #   else
         const char * fmode;
         if (mode==FileType::Read)

@@ -18,7 +18,6 @@
 
 # ------------------ implementation
 find_program(Llvm_CONFIG_EXECUTABLE NAMES llvm-config PATHS ${LLVM_ROOT} ${LLVM_ROOT}/bin)
-find_program(Clang_EXECUTABLE NAMES clang PATHS ${LLVM_ROOT} ${LLVM_ROOT}/bin)
 
 if(Llvm_CONFIG_EXECUTABLE)
     exec_program(${Llvm_CONFIG_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE Llvm_VERSION)
@@ -64,5 +63,5 @@ if(Llvm_CONFIG_EXECUTABLE)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LLVM Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR Clang_EXECUTABLE)
-mark_as_advanced(Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR Clang_EXECUTABLE)
+find_package_handle_standard_args(LLVM Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR)
+mark_as_advanced(Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR)

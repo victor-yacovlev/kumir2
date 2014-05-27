@@ -314,14 +314,16 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 #ifdef Q_OS_WIN32
     static const QString bundledToolchainPath = QDir::toNativeSeparators(
                 QDir::cleanPath(
-                    QCoreApplication::applicationDirPath() + "/../clang-mingw/"
+                    QCoreApplication::applicationDirPath() + "/../llvm-mingw/"
                     )
                 );
-    static const QString CLang = bundledToolchainPath + "\\clang.exe";
+    static const QString LLC = bundledToolchainPath + "\\llc.exe";
+    static const QString AS = bundledToolchainPath + "\\as.exe";
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
-    static const QString CLang = "clang";
-    static const QString LD = "clang";
+    static const QString LLC = "llc";
+    static const QString AS = "as";
+    static const QString LD = "ld";
 #endif
 
     // ====== Write bitcode to external file
@@ -333,28 +335,29 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     bitcodeFile.close();
 
     const QString bcFileName = QFileInfo(bitcodeFile).absoluteFilePath();
+    const QString asmFileName = bcFileName.left(bcFileName.length()-2) + "s";
     const QString objFileName = bcFileName.left(bcFileName.length()-2) + "o";
     const QString exeFileName = bcFileName.left(bcFileName.length()-2) + "exe";
 
     QString errorMessage;
     QProcess process;
 
-    // ====== Compile bitcode to machine code using CLang
+    // ====== Compile bitcode to machine code using LLVM llc
 
-    const QStringList clangArguments = QStringList() << "-v"
-            << "-O3" << "-c"
-            << "-o" << QDir::toNativeSeparators(objFileName)
+    const QStringList llcArguments = QStringList()
+            << "-O3"
+            << "-o" << QDir::toNativeSeparators(asmFileName)
             << QDir::toNativeSeparators(bcFileName);
 #ifdef Q_OS_WIN32
     process.setWorkingDirectory(bundledToolchainPath);
 #endif
     process.setProcessChannelMode(QProcess::MergedChannels);
-    process.start(CLang, clangArguments);
-    qDebug() << "Starting: " << CLang << clangArguments;
+    process.start(LLC, llcArguments);
+    qDebug() << "Starting: " << LLC << llcArguments;
     if (!process.waitForFinished()) {
         errorMessage = QString("== ERROR == %1 %2 failed: %3")
-                .arg(CLang)
-                .arg(clangArguments.join(" "))
+                .arg(LLC)
+                .arg(llcArguments.join(" "))
                 .arg(process.errorString())
                 ;
     }
@@ -364,7 +367,41 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
-                    .arg(CLang).arg(clangArguments.join(" ")).arg(status);
+                    .arg(LLC).arg(llcArguments.join(" ")).arg(status);
+        }
+    }
+
+    if (errorMessage.length() > 0) {
+        std::cerr << errorMessage.toStdString() << std::endl;
+        qApp->setProperty("returnCode", 5);
+        qApp->quit();
+    }
+
+    // ====== Assemble object using GNU as
+
+    const QStringList asArguments = QStringList()
+            << "-o" << QDir::toNativeSeparators(objFileName)
+            << QDir::toNativeSeparators(asmFileName);
+#ifdef Q_OS_WIN32
+    process.setWorkingDirectory(bundledToolchainPath);
+#endif
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(AS, asArguments);
+    qDebug() << "Starting: " << AS << asArguments;
+    if (!process.waitForFinished()) {
+        errorMessage = QString("== ERROR == %1 %2 failed: %3")
+                .arg(AS)
+                .arg(asArguments.join(" "))
+                .arg(process.errorString())
+                ;
+    }
+    else {
+        qDebug() << process.readAllStandardOutput();
+        qDebug() << process.readAllStandardError();
+        const int status = process.exitStatus();
+        if (0 != status) {
+            errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
+                    .arg(AS).arg(asArguments.join(" ")).arg(status);
         }
     }
 
@@ -380,13 +417,15 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
             << "-o" << exeFileName
             << objFileName
            #if defined(Q_OS_WIN32)
+            << "--stack" << "33554432"
             << "crt2.o" << "crtbegin.o"
-            << "libstdc++" << "libmingw32.a" << "libgcc.a"
-            << "libgcc_eh.a" << "libmoldname.a" << "libmingwex.a"
+            << "libstdc++.a" << "libpthread.a" << "libmingw32.a" << "libgcc.a"
+            << "libmoldname.a" << "libmingwex.a"
             << "libmsvcrt.a" << "libadvapi32.a" << "libshell32.a"
             << "libuser32.a" << "libkernel32.a" << "libmingw32.a"
-            << "libgcc.a" << "libgcc_eh.a"
-            << "-lmoldname" << "-lmingwex" << "-lmingwex" << "-lmsvcrt"
+            << "libgcc.a" << "libpthread.a"
+            << "libmoldname.a" << "libmingwex.a" << "libmingwex.a" << "libmsvcrt.a"
+//            << "libgcc_s_sjlj-1.dll"
             << "crtend.o"
            #endif
            #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
@@ -401,8 +440,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     process.start(LD, ldArguments);
     if (!process.waitForFinished()) {
         errorMessage = QString("== ERROR == %1 %2 failed: %3")
-                .arg(CLang)
-                .arg(clangArguments.join(" "))
+                .arg(LLC)
+                .arg(llcArguments.join(" "))
                 .arg(process.errorString())
                 ;
     }
@@ -412,7 +451,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
-                    .arg(CLang).arg(clangArguments.join(" ")).arg(status);
+                    .arg(LLC).arg(llcArguments.join(" ")).arg(status);
         }
     }
 
