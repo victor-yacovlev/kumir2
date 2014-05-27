@@ -37,7 +37,9 @@ Section "Kumir" Kumir
 	File /r lib\*
 	SetOutPath "$INSTDIR\share"
 	File /r share\*
-	
+        SetOutPath "$INSTDIR\llvm-mingw"
+        File /r llvm-mingw\*
+
 	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
 	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
 	
