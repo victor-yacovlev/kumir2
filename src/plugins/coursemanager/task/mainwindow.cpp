@@ -300,13 +300,22 @@ void MainWindowTask::loadCourse()
          loadMarks(fileName);
          this->show();
          return;
-     }else
+     }
+    bool createDefaultWorkFile=true;
+    QMessageBox::StandardButton ans;
+            ans = QMessageBox::question(this, trUtf8("Практикум"), trUtf8("Вы хотите создать тетрадь?"),
+                                                                                                                            QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
+            if (ans == QMessageBox::Yes)
+            {
+                createDefaultWorkFile=false;
+                
+            };
      cursWorkFile.setFileName("");
      loadCourseData(fileName);
      isReadOnly=false;
      interface->setPreProgram(QVariant(""));
      QString cText=course->courceDescr();
-
+     
 
   if(cText.right(4)==".htm" ||cText.right(5)==".html" )
   {
@@ -318,6 +327,18 @@ void MainWindowTask::loadCourse()
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
     this->show();
+    if(createDefaultWorkFile)
+    {
+        markProgChange();
+        //curDir=QDir::currentPath();
+        qDebug()<<curDir;
+
+        cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        saveCourseFile();
+    }else
+    {
+        saveCourse();
+    };
 };
 
 
