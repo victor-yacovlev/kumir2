@@ -34,12 +34,26 @@ Logger::Logger(const QString & filePath, LogLevel logLevel)
         loggerFile_ = new QFile(filePath);
         loggerFile_->open(QIODevice::WriteOnly|QIODevice::Text|QIODevice::Append);
     }
-    writeLog("STARTED", "");
+#ifdef NDEBUG
+    bool process = Debug == logLevel_;
+#else
+    bool process = true;
+#endif
+    if (process) {
+        writeLog("STARTED", "");
+    }
 }
 
 Logger::~Logger()
 {
-    writeLog("EXITING", "");
+#ifdef NDEBUG
+    bool process = Debug == logLevel_;
+#else
+    bool process = true;
+#endif
+    if (process) {
+        writeLog("EXITING", "");
+    }
     if (loggerFile_) {
         loggerFile_->close();
         delete loggerFile_;
@@ -79,7 +93,14 @@ void Logger::debug(const QString &message)
 
 void Logger::warning(const QString &message)
 {
-    writeLog("WARNING", message);
+#ifdef NDEBUG
+    bool process = Debug == logLevel_;
+#else
+    bool process = true;
+#endif
+    if (process) {
+        writeLog("WARNING", message);
+    }
 }
 
 void Logger::critical(const QString &message)

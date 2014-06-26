@@ -20,7 +20,7 @@ endif()
 
 set(
     CONFIGURATION_TEMPLATE
-    "Actor*,!KumirCompilerTool,LLVMCodeGenerator,KumirAnalizer\(teacher,preload=Files,preload=Strings\)"
+    "!KumirCompilerTool,LLVMCodeGenerator,KumirAnalizer\(teacher,preload=Files,preload=Strings\)"
 )
 
 set(SRC ../main.cpp)
@@ -32,3 +32,6 @@ if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-llvmc PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)
 install(TARGETS kumir2-llvmc DESTINATION ${EXEC_DIR})
+if(WIN32)
+    install(FILES kumir2-llvmc-w.vbs DESTINATION ${EXEC_DIR})
+endif(WIN32)

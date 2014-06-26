@@ -9,70 +9,85 @@
 namespace Kumir {
 
     enum Encoding { DefaultEncoding, ASCII, UTF8, UTF16INTEL, UTF16MOTOROLA, CP866, CP1251, KOI8R };
-    enum EncodingError { OutOfTable, StreamEnded };
+    enum EncodingError { NoEncodingError = 0, OutOfTable, StreamEnded };
 
     typedef const char * charptr;
 
     class AsciiCodingTable {
     public:
-        static unsigned char enc(uint32_t symb) {
+        static unsigned char enc(uint32_t symb, EncodingError & error) {
+            error = NoEncodingError;
             uint32_t k = static_cast<uint32_t>(symb);
-            if (k<128)
+            if (k<128) {
                 return static_cast<unsigned char>(k);
+            }
             else {
-                throw OutOfTable; return '?';
+                error = OutOfTable;
+                return '?';
             }
         }
-        static uint32_t dec(charptr & from) {
-            if (from==0 || (*from)=='\0')
+        static uint32_t dec(charptr & from, EncodingError & error) {
+            error = NoEncodingError;
+            if (from==0 || (*from)=='\0') {
                 return L'\0';
+            }
             unsigned char k = static_cast<unsigned char>(*from);
             from ++;
-            if (k<128)
+            if (k<128) {
                 return static_cast<uint32_t>(k);
+            }
             else {
-                throw OutOfTable; return L'?';
+                error = OutOfTable;
+                return L'?';
             }
         }
     };
 
     class CP866CodingTable {
     public:
-        static unsigned char enc(uint32_t symb) {
+        static unsigned char enc(uint32_t symb, EncodingError & error) {
+            error = NoEncodingError;
             uint32_t k = static_cast<uint32_t>(symb);
-            if (k<128)
+            if (k<128) {
                 return static_cast<unsigned char>(k);
+            }
             switch (k) {
 #include "wchar_cp866.table"
-                default: throw OutOfTable; return '?';
+                default: error = OutOfTable; return '?';
             }
         }
-        static uint32_t dec(charptr & from) {
-            if (from==0 || (*from)=='\0')
+        static uint32_t dec(charptr & from, EncodingError & error) {
+            error = NoEncodingError;
+            if (from==0 || (*from)=='\0') {
                 return L'\0';
+            }
             unsigned char k = static_cast<unsigned char>(*from);
             from ++;
-            if (k<128)
+            if (k<128) {
                 return static_cast<uint32_t>(k);
+            }
             switch (k) {
 #include "cp866_wchar.table"
-                default: throw OutOfTable; return L'?';
+                default: error = OutOfTable; return L'?';
             }
         }
     };
 
     class CP1251CodingTable {
     public:
-        static unsigned char enc(uint32_t symb) {
+        static unsigned char enc(uint32_t symb, EncodingError & error) {
+            error = NoEncodingError;
             uint32_t k = static_cast<uint32_t>(symb);
-            if (k<128)
+            if (k<128) {
                 return static_cast<unsigned char>(k);
+            }
             switch (k) {
 #include "wchar_windows-1251.table"
-                default: throw OutOfTable; return '?';
+                default: error = OutOfTable; return '?';
             }
         }
-        static uint32_t dec(charptr & from) {
+        static uint32_t dec(charptr & from, EncodingError & error) {
+            error = NoEncodingError;
             if (from==0 || (*from)=='\0')
                 return L'\0';
             unsigned char k = static_cast<unsigned char>(*from);
@@ -83,8 +98,7 @@ namespace Kumir {
 #include "windows-1251_wchar.table"
                 default:
             {
-//                std::cerr << "Error decoding symbol with code: " << uint32_t(k) << std::endl;
-                throw OutOfTable; return L'?';
+                error = OutOfTable; return L'?';
             }
             }
         }
@@ -92,16 +106,18 @@ namespace Kumir {
 
     class KOI8RCodingTable {
     public:
-        static unsigned char enc(uint32_t symb) {
+        static unsigned char enc(uint32_t symb, EncodingError & error) {
+            error = NoEncodingError;
             uint32_t k = static_cast<uint32_t>(symb);
             if (k<128)
                 return static_cast<unsigned char>(k);
             switch (k) {
 #include "wchar_koi8-r.table"
-                default: throw OutOfTable; return '?';
+                default: error = OutOfTable; return '?';
             }
         }
-        static uint32_t dec(charptr & from) {
+        static uint32_t dec(charptr & from, EncodingError & error) {
+            error = NoEncodingError;
             if (from==0 || (*from)=='\0')
                 return L'\0';
             unsigned char k = static_cast<unsigned char>(*from);
@@ -110,7 +126,7 @@ namespace Kumir {
                 return static_cast<uint32_t>(k);
             switch (k) {
 #include "koi8-r_wchar.table"
-                default: throw OutOfTable; return L'?';
+                default: error = OutOfTable; return L'?';
             }
         }
     };
@@ -122,9 +138,10 @@ namespace Kumir {
 
     class UTF8CodingTable {
     public:
-        static MultiByte enc(uint32_t k) {
+        static MultiByte enc(uint32_t k, EncodingError & error) {
             // for implementation details see:
             //   man utf-8
+            error = NoEncodingError;
             uint32_t v = static_cast<uint32_t>(k);
             MultiByte result;
             if (v <= 0x7F) {
@@ -157,14 +174,15 @@ namespace Kumir {
                 // Support only Unicode Plane 0 (Base) !!!
                 result.size = 1;
                 result.data[0] = '?';
-                throw OutOfTable;
+                error = OutOfTable;
             }
             return result;
         }
-        inline static uint32_t dec(charptr & from) {
+        inline static uint32_t dec(charptr & from, EncodingError & error) {
+            error = NoEncodingError;
             uint32_t v = 0;
             if (from == 0 || (*from)=='\0') {
-                throw StreamEnded;
+                error = StreamEnded;
                 return L'\0';
             }
             unsigned char byte = (*from);
@@ -181,7 +199,7 @@ namespace Kumir {
                 // -- use two bytes
                 v = byte & 0x1F; // 0x1F = 000xxxxx
                 if (from == 0 || (*from)=='\0') {
-                    throw StreamEnded;
+                    error = StreamEnded;
                     return L'?';
                 }
                 byte = (*from);
@@ -193,14 +211,14 @@ namespace Kumir {
                 // -- use three bytes
                 v = byte & 0x0F; // 0x0F = 00001111
                 if (from == 0 || (*from)=='\0') {
-                    throw StreamEnded;
+                    error = StreamEnded;
                     return L'?';
                 }
                 byte = (*from);
                 from ++;
                 v = (v << 6) | (byte & 0x3F); // 0x3F = 00111111
                 if (from == 0 || (*from)=='\0') {
-                    throw StreamEnded;
+                    error = StreamEnded;
                     return L'?';
                 }
                 byte = (*from);
@@ -212,7 +230,7 @@ namespace Kumir {
                 //   1) corrupted data; or
                 //   2) symbol out of Basic Unicode
                 //      (we don't support supplementary plane)
-                throw OutOfTable;
+                error = OutOfTable;
                 return L'?';
             }
             return v;
@@ -222,54 +240,60 @@ namespace Kumir {
 #ifndef NO_UNICODE
     class Coder {
     public:
-        inline static std::string encode(Encoding E, const std::wstring & src) {
+        inline static std::string encode(Encoding E, const std::wstring & src, EncodingError &error) {
+            error = NoEncodingError;
             std::string result;
             if (E!=UTF8) {
                 result.reserve(src.length());
                 for (size_t i=0; i<src.length(); i++) {
                     char ch = '\0';
                     if (E==CP866)
-                        ch = CP866CodingTable::enc(src[i]);
+                        ch = CP866CodingTable::enc(src[i], error);
                     else if (E==CP1251)
-                        ch = CP1251CodingTable::enc(src[i]);
+                        ch = CP1251CodingTable::enc(src[i], error);
                     else if (E==KOI8R)
-                        ch = KOI8RCodingTable::enc(src[i]);
+                        ch = KOI8RCodingTable::enc(src[i], error);
                     else if (E==ASCII)
-                        ch = AsciiCodingTable::enc(src[i]);
+                        ch = AsciiCodingTable::enc(src[i], error);
+                    if (error) return result;
                     result.push_back(ch);
-
                 }
             }
             else {
                 result.reserve(3*src.length());
                 for (size_t i=0; i<src.length(); i++) {
-                    MultiByte mb = UTF8CodingTable::enc(src[i]);
+                    MultiByte mb = UTF8CodingTable::enc(src[i], error);
+                    if (error) return result;
                     for (unsigned char j=0; j<mb.size; j++)
                         result.push_back(mb.data[j]);
                 }
             }
             return result;
         }
-        inline static std::wstring decode(Encoding E, const std::string & src) {
+        inline static std::wstring decode(Encoding E, const std::string & src, EncodingError &error) {
+            error = NoEncodingError;
             std::wstring result;
             result.reserve(src.length());
             charptr p = src.c_str();
+            wchar_t wch = L'\0';
             while (p!=0 && (*p)!='\0') {
                 if (E==CP866) {
-                    result.push_back(CP866CodingTable::dec(p));
+                    wch = CP866CodingTable::dec(p, error);
                 }
                 else if (E==CP1251) {
-                    result.push_back(CP1251CodingTable::dec(p));
+                    wch = CP1251CodingTable::dec(p, error);
                 }
                 else if (E==KOI8R) {
-                    result.push_back(KOI8RCodingTable::dec(p));
+                    wch = KOI8RCodingTable::dec(p, error);
                 }
                 else if (E==UTF8) {
-                    result.push_back(UTF8CodingTable::dec(p));
+                    wch = UTF8CodingTable::dec(p, error);
                 }
                 else if (E==ASCII) {
-                    result.push_back(AsciiCodingTable::dec(p));
+                    wch = AsciiCodingTable::dec(p, error);
                 }
+                if (error) return result;
+                result.push_back(wch);
             }
             return result;
         }

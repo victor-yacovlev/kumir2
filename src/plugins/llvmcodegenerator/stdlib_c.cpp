@@ -6,6 +6,10 @@
 #include <stack>
 #include <stdarg.h>
 
+#ifdef USE_MINGW_TOOLCHAIN
+#include "dummy_sjlj.cpp"
+#endif
+
 #if defined(WIN32) || defined(_WIN32)
 #else
 #   include <sys/resource.h>
@@ -94,12 +98,8 @@ EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8)
 {
     std::string utf8string(utf8);
     std::wstring wstr;
-    try {
-        wstr = Kumir::Core::fromUtf8(utf8string);
-    }
-    catch (Kumir::EncodingError) {
-        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));        
-    }
+    Kumir::EncodingError encodingError;
+    wstr = Kumir::Core::fromUtf8(utf8string);
     result->defined = true;
     result->type = __KUMIR_CHAR;
     result->data.c = wstr[0];
@@ -109,12 +109,7 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
 {
     std::string utf8string(utf8);
     std::wstring wstr;
-    try {
-        wstr = Kumir::Core::fromUtf8(utf8string);
-    }
-    catch (Kumir::EncodingError) {
-        Kumir::Core::abort(Kumir::Core::fromAscii("Encoding error"));
-    }
+    wstr = Kumir::Core::fromUtf8(utf8string);
     result->defined = true;
     result->type = __KUMIR_STRING;
     result->data.s = reinterpret_cast<wchar_t*>(calloc(wstr.length() + 1, sizeof(wchar_t)));
@@ -218,7 +213,8 @@ EXTERN void __kumir_halt()
 #if defined(WIN32) || defined(_WIN32)
     enc = Kumir::CP866;
 #endif
-    const std::string loc_message = Kumir::Coder::encode(enc, message);
+    Kumir::EncodingError encodingError;
+    const std::string loc_message = Kumir::Coder::encode(enc, message, encodingError);
     std::cout << loc_message;
     exit(0);
 }
@@ -251,7 +247,8 @@ static void __kumir_handle_abort()
 #if defined(WIN32) || defined(_WIN32)
     enc = Kumir::CP866;
 #endif
-    const std::string loc_message = Kumir::Coder::encode(enc, message);
+    Kumir::EncodingError encodingError;
+    const std::string loc_message = Kumir::Coder::encode(enc, message, encodingError);
     std::cerr << loc_message << std::endl;
     exit(1);
 }
@@ -364,11 +361,12 @@ static bool __kumir_pipe_mode = false;
 
 EXTERN void __kumir_set_main_arguments(int argc, char ** argv)
 {
+    Kumir::EncodingError encodingError;
 #if defined(WIN32) || defined(_WIN32)
-    __kumir_program_directory = Kumir::Coder::decode(Kumir::CP1251, std::string(argv[0]));
+    __kumir_program_directory = Kumir::Coder::decode(Kumir::CP1251, std::string(argv[0]), encodingError);
     const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'\\');
 #else
-    __kumir_program_directory = Kumir::Coder::decode(Kumir::UTF8, std::string(argv[0]));
+    __kumir_program_directory = Kumir::Coder::decode(Kumir::UTF8, std::string(argv[0]), encodingError);
     const std::wstring::size_type slashPos = __kumir_program_directory.find_last_of(L'/');
 #endif
     if (slashPos != std::wstring::npos) {
@@ -399,6 +397,7 @@ static std::wstring __kumir_decodeHttpStringValue(const std::string & s)
     size_t cpos = 0;
     std::string utf8string;
     utf8string.reserve(s.length());
+    Kumir::EncodingError encodingError;
     while (cpos<s.length()) {
         if (s[cpos]=='%'
                 && cpos+2 < s.length()
@@ -408,7 +407,7 @@ static std::wstring __kumir_decodeHttpStringValue(const std::string & s)
         {
             std::string hexcode = std::string("0x")+s.substr(cpos+1,2);
             bool ok;
-            int value = Kumir::Converter::stringToInt(Kumir::Coder::decode(Kumir::ASCII,hexcode), ok);
+            int value = Kumir::Converter::stringToInt(Kumir::Coder::decode(Kumir::ASCII,hexcode,encodingError), ok);
             char ch = (char)value;
             utf8string.push_back(ch);
             cpos += 3;
@@ -419,7 +418,7 @@ static std::wstring __kumir_decodeHttpStringValue(const std::string & s)
         }
 
     }
-    result = Kumir::Coder::decode(Kumir::UTF8, utf8string);
+    result = Kumir::Coder::decode(Kumir::UTF8, utf8string,encodingError);
     return result;
 }
 
@@ -493,6 +492,7 @@ EXTERN void __kumir_get_scalar_argument(const char * argNameUtf8, const __kumir_
 EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int format, __kumir_array * res)
 {
     std::wstring wn = Kumir::Core::fromUtf8(std::string(argName));
+    Kumir::EncodingError encodingError;
     if (1u == res->dim) {
         int32_t start_x = res->shape_left[0];
         int32_t end_x = res->shape_right[0];
@@ -500,7 +500,7 @@ EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int f
             Kumir::String qwn = wn + Kumir::Core::fromAscii("[");
             qwn += Kumir::Converter::intToString(x);
             qwn += Kumir::Core::fromAscii("]");
-            std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+            std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn, encodingError);
             __kumir_scalar * elem = 0;
             __kumir_scalar ** elem_ptr = & elem;
             __kumir_scalar xx;
@@ -521,7 +521,7 @@ EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int f
                 qwn += Kumir::Core::fromAscii(",");
                 qwn += Kumir::Converter::intToString(x);
                 qwn += Kumir::Core::fromAscii("]");
-                std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+                std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn, encodingError);
                 __kumir_scalar * elem = 0;
                 __kumir_scalar ** elem_ptr = & elem;
                 __kumir_scalar xx, yy;
@@ -549,7 +549,7 @@ EXTERN void __kumir_get_array_argument(const char * argName, const __kumir_int f
                     qwn += Kumir::Core::fromAscii(",");
                     qwn += Kumir::Converter::intToString(x);
                     qwn += Kumir::Core::fromAscii("]");
-                    std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn);
+                    std::string utf8n = Kumir::Coder::encode(Kumir::UTF8, qwn, encodingError);
                     __kumir_scalar * elem = 0;
                     __kumir_scalar ** elem_ptr = & elem;
                     __kumir_scalar xx, yy, zz;

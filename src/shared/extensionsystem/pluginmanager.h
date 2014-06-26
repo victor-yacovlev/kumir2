@@ -50,6 +50,9 @@ public:
      *
      *  @returns error message or empty string on success */
     QString loadExtraModule(const std::string & canonicalFileName);
+    inline QString loadExtraModule(const QByteArray & canonicalFileName) {
+        return loadExtraModule(std::string(canonicalFileName.constData()));
+    }
 
     /** Returns true if at least one module requires gui event processing */
     bool isGuiRequired() const;

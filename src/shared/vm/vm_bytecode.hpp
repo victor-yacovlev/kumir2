@@ -111,12 +111,13 @@ inline void bytecodeFromDataStream(std::istream & is, Data & data)
 
 inline void makeHelpersForTextRepresentation(const Data & data, AS_Helpers & helpers)
 {
+    Kumir::EncodingError encodingError;
     for (size_t i=0; i<data.d.size(); i++) {
         const TableElem & e = data.d.at(i);
         if (e.type==EL_LOCAL) {
             AS_Key akey((e.module<<16)|e.algId, e.id);
             if (helpers.locals.count(akey)==0) {
-                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.name);
+                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.name, encodingError);
                 helpers.locals.insert(std::pair<AS_Key,std::string>(akey,value));
             }
         }
@@ -124,14 +125,14 @@ inline void makeHelpersForTextRepresentation(const Data & data, AS_Helpers & hel
             AS_Key akey(e.module<<16, e.type==EL_GLOBAL? e.id : e.algId);
             AS_Values * vals = e.type==EL_GLOBAL? &(helpers.globals) : &(helpers.algorithms);
             if (vals->count(akey)==0) {
-                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.name);
+                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.name, encodingError);
                 vals->insert(std::pair<AS_Key,std::string>(akey,value));
             }
         }
         if (e.type==EL_CONST) {
             AS_Key akey(0, e.id);
             if (helpers.constants.count(akey)==0) {
-                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.initialValue.toString());
+                const std::string value = Kumir::Coder::encode(Kumir::UTF8, e.initialValue.toString(), encodingError);
                 helpers.constants.insert(std::pair<AS_Key,std::string>(akey,value));
             }
         }

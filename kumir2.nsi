@@ -37,13 +37,16 @@ Section "Kumir" Kumir
 	File /r lib\*
 	SetOutPath "$INSTDIR\share"
 	File /r share\*
-	
+        SetOutPath "$INSTDIR\llvm-mingw"
+        File /r llvm-mingw\*
+
 	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
 	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
 	
         WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
         WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
         WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
+        WriteRegStr HKCR "ru.niisi.kumir2.program\shell\Создать выполняемый файл\command" "" 'wscript.exe "$INSTDIR\bin\kumir2-llvmc-w.vbs" "%L"'
         WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
         WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
         WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"        
