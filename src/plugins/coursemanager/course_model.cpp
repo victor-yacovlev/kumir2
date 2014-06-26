@@ -3,6 +3,7 @@
 #include <QColor>
 #include <QBrush>
 #include <QIcon>
+#include <QMessageBox>
 #define MARK_BLOCK 12
 int courseModel::loadCourse(QString file)
 {
@@ -17,12 +18,13 @@ int courseModel::loadCourse(QString file)
     };
 if(f.atEnd())return -1;
 QString error;
-courceXml.setContent(f.readAll(),true,&error);
+if(!courceXml.setContent(f.readAll(),true,&error))QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);;
 f.close();
 
 
 
 qDebug()<<"File parce:"<<error;
+ 
 int count=0;
 taskCount=count;
 root=courceXml.documentElement();
