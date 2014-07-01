@@ -31,13 +31,24 @@ namespace ActorTurtle {
 TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     : TurtleModuleBase(parent)
 {
+    Turtle = 0;
+    Tpult = 0;
+    animation=false;
+}
+
+void TurtleModule::createGui()
+{
     Turtle=new turtle(myResourcesDir());
     Tpult=new TurtlePult(myResourcesDir());
     Tpult->turtleObj=Turtle;
-   
-    animation=false;
-    // Module constructor, called once on plugin load
-    // TODO implement me
+}
+
+QString TurtleModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> TurtleModule::acceptableCommandLineParameters()
@@ -85,7 +96,7 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
-    
+    if (!Tpult) return 0;
     // TODO implement me
     static QWidget * dummy = new AAA(Tpult);
     return dummy;

@@ -56,10 +56,13 @@ public:
     // GUI access methods
     QWidget* mainWidget() const;
     inline QWidget* pultWidget() const { return nullptr; }
+    QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 
 private:
+    void createGui();
     Robot25DWindow * window_;
     Robot25D::RobotView * robotView_;
+    ExtensionSystem::KPlugin* parentObject_;
 
 
 }; // IsometricRobotModule

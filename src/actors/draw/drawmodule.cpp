@@ -744,9 +744,12 @@ void DrawView::resizeEvent ( QResizeEvent * event )
 
 DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     : DrawModuleBase(parent)
+{         
+    CurView = 0;
+}
+
+void DrawModule::createGui()
 {
-   
- 
     CurView=new DrawView();
     netStepX=1;
     netStepY=1;
@@ -758,19 +761,19 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     showToolsBut=new QToolButton(CurView);
     showToolsBut->move(20,20);
     showToolsBut->setCheckable(true);
-    
-    
+
+
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
-    
+
     connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
     connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
-    
+
     navigator->setDraw(this);
     navigator->setParent(CurView);
     navigator->setFixedSize(QSize(130,200));
     navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
     navigator->hide();
-    
+
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
     penColor.r = penColor.g = penColor.b = 0;
@@ -784,16 +787,22 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     CurView->setNet();
     netStepX=1;
     netStepY=1;
-    
-    
-    
+
+
+
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
+}
 
-   
+QString DrawModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
     
 void  DrawModule::openFile()

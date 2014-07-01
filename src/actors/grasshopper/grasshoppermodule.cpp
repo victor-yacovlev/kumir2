@@ -33,9 +33,22 @@ private:
 GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     : GrasshopperModuleBase(parent)
 {
-    kuznec=new KumKuznec(myResourcesDir());
+    kuznec = 0;
     // Module constructor, called once on plugin load
     // TODO implement me
+}
+
+void GrasshopperModule::createGui()
+{
+    kuznec=new KumKuznec(myResourcesDir());
+}
+
+QString GrasshopperModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> GrasshopperModule::acceptableCommandLineParameters()
@@ -74,6 +87,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
 
 /* public */ QWidget* GrasshopperModule::mainWidget() const
 {
+    if (!kuznec) return 0;
     // Returns module main view widget, or nullptr if there is no any views
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
@@ -83,6 +97,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
 
 /* public */ QWidget* GrasshopperModule::pultWidget() const
 {
+    if (!kuznec) return 0;
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!

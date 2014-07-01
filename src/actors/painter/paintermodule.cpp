@@ -22,6 +22,12 @@ namespace ActorPainter {
 PainterModule::PainterModule(ExtensionSystem::KPlugin * parent)
     : PainterModuleBase(parent)
 {
+    m_window = 0;
+    dirty_ = true;
+}
+
+void PainterModule::createGui()
+{
     m_window = new PainterWindow(this, 0);
     view = m_window->view();
     originalCanvas.reset(new QImage(QSize(640,480), QImage::Format_RGB32));
@@ -31,9 +37,16 @@ PainterModule::PainterModule(ExtensionSystem::KPlugin * parent)
     canvasLock = new QMutex;
     m_window->setCanvasSize(canvas->size());
     dirtyLock_ = new QMutex;
-    dirty_ = true;
     startTimer(50);
     reset();
+}
+
+QString PainterModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 void PainterModule::timerEvent(QTimerEvent *event)

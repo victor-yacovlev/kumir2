@@ -25,6 +25,11 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     : VodoleyModuleBase(parent)
 {
     self = this;
+    MainWindow = 0;
+}
+
+void VodoleyModule::createGui()
+{
     MainWindow=new Vodoley();
     // Module constructor, called once on plugin load
     // TODO implement me
@@ -34,6 +39,14 @@ VodoleyModule::VodoleyModule(ExtensionSystem::KPlugin * parent)
     actions.append(m_actionVodoleySaveEnvironment);
     MainWindow->createActions(actions);
    // m_actionVodoleyNewEnvironment
+}
+
+QString VodoleyModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> VodoleyModule::acceptableCommandLineParameters()
