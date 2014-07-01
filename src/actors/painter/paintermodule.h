@@ -83,8 +83,10 @@ public:
     // GUI access methods
     QWidget* mainWidget() const;
     inline QWidget* pultWidget() const { return nullptr; }
+    QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 
-private:
+private:    
+    void createGui();
     void timerEvent(QTimerEvent *);
     void markViewDirty();
     void drawPolygon(const QVector<QPoint> & points);

@@ -3302,10 +3302,17 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	*/
     animation=true;
     pressed=false;
+    m_mainWidget = 0;
+    m_pultWidget = 0;
+}
+
+
+void RobotModule::createGui()
+{
     field=new RoboField(0);
     //field->editField();
     field->createField(10,15);
-   
+
     field->setRoboPos(0,0);
       field->createRobot();
     view=new RobotView(field);
@@ -3342,7 +3349,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     connect(m_actionRobotLoadEnvironment,SIGNAL(triggered()) , this, SLOT(loadEnv()));
     connect(m_actionRobotRevertEnvironment,SIGNAL(triggered()) , this, SLOT(resetEnv()));
     connect(m_actionRobotSaveEnvironment,SIGNAL(triggered()) , this, SLOT(saveEnv()));
-    connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv())); 
+    connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv()));
     connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
     connect(m_actionRobotAutoWindowSize,SIGNAL(triggered()) , this, SLOT(setWindowSize()));
 
@@ -3350,8 +3357,9 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
     view->setWindowTitle(trUtf8("Робот - нет файла"));
-    
-} 
+}
+
+
 void RobotModule::copyFromPult(QString log)
     {
         QClipboard *clipboard = QApplication::clipboard();
@@ -3492,13 +3500,16 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
     
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
-    {ExtensionSystem::SettingsPtr sett;
-      sett=robotSettings();  
-        
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+        ExtensionSystem::SettingsPtr sett;
+        sett=robotSettings();
+
         if(runtimeParameters.value("field").isValid())
         {
             qDebug()<<"FIELD:|"<<runtimeParameters.value("field").toString()<<"|";
-           // std::cout <<"FIELD:" <<runtimeParameters.value("field").toString().toStdString();
+            // std::cout <<"FIELD:" <<runtimeParameters.value("field").toString().toStdString();
             if(LoadFromFile(runtimeParameters.value("field").toString())!=0)return "Error loading:"+runtimeParameters.value("field").toString();
             return "";
         }
@@ -3506,17 +3517,19 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         {
             if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
                 createEmptyField(7,7);
-                
-                }
+
+            }
             setWindowSize();
         }
         if(sett->value("Robot/Dir").isValid())
         {
             curDir=sett->value("Robot/Dir").toString();
         }
-       // setWindowSize();
-        return "";
+        // setWindowSize();
     }
+    return "";
+}
+
 void RobotModule::runGoUp()
 {
 	/* TODO implement me */

@@ -32,6 +32,7 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -48,6 +49,7 @@ public slots:
 
 
 private:
+    void createGui();
  KumKuznec*  kuznec;
     
 

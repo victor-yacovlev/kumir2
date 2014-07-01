@@ -525,6 +525,7 @@ namespace ActorRobot {
         void copyFromPult(QString log);
      
     private:
+        void createGui();
         void createEmptyField(int rows,int cols);
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
