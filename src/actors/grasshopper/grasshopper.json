@@ -22,7 +22,36 @@
 		"windows": [
 			{ "role": "main", "icon": "grasshopper" },
 			{ "role": "pult", "icon": "grasshopper-rc" }
-		]
+		],
+		"menus": [
+            {
+            "title": { "ascii": "Grasshopper", "ru_RU": "Кузнечик" },
+            "items": [
+                { 
+                "title": {
+                        "ascii": "New Environment...",
+                        "ru_RU": "Новое задание..."
+                    },
+                    "icon": "file-new"
+                },
+                {    "title": {
+                        "ascii": "Load Environment...",
+                        "ru_RU": "Загрузить задание..."
+                    },
+                    "icon": "file-open"
+            
+                },
+                {
+                "title": {
+                            "ascii": "Save",
+                            "ru_RU": "Сохранить..."
+                        }
+                }
+        
+            ]
+            }
+        ]
+
 	},
 	"settings": {
 		"BackgroundColor": {

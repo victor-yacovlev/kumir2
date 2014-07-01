@@ -2191,6 +2191,7 @@ void KumKuznec::LoadFromFileActivated()
 
 
  QString	VodFileN=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), curDir, "(*.kz)");
+    if(VodFileN.isEmpty())return;
 
  sett.setValue("Last", VodFileN);
  if(LoadFromFile(VodFileN)>0){

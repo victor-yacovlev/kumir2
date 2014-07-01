@@ -475,7 +475,7 @@ void DrawNet();
 void SetLineColor(int LRed, int LGreen, int LBlue);
 bool SetColorString(QString Color);
 		//void ShowInfo();
-;
+
 void CreatePen(void);
 bool moving;
 //void DestroyPen(void);
