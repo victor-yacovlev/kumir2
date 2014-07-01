@@ -1939,6 +1939,9 @@ void SyntaxAnalizer::parseVarDecl(int str)
         st.statement->error = error;
     }
     else {
+        if (!st.statement) {
+            st.statement = AST::StatementPtr(new Statement);
+        }
         st.statement->type = AST::StVarInitialize;
         st.statement->variables = vars;
     }
