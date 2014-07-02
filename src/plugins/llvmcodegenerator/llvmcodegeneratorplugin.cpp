@@ -370,6 +370,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     const QString exeFileName = bcFileName.left(bcFileName.length()-2) + "exe";
 
     QString errorMessage;
+    QByteArray output;
     QProcess process;
 
     // ====== Compile bitcode to machine code using LLVM llc
@@ -392,8 +393,9 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
                 ;
     }
     else {
-        qDebug() << process.readAllStandardOutput();
-        qDebug() << process.readAllStandardError();
+        output = process.readAllStandardOutput() + "\n" +
+                process.readAllStandardError();
+        qDebug() << output;
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
@@ -429,8 +431,9 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
                 ;
     }
     else {
-        qDebug() << process.readAllStandardOutput();
-        qDebug() << process.readAllStandardError();
+        output = process.readAllStandardOutput() + "\n" +
+                process.readAllStandardError();
+        qDebug() << output;
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
@@ -481,8 +484,9 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
                 ;
     }
     else {
-        qDebug() << process.readAllStandardOutput();
-        qDebug() << process.readAllStandardError();
+        output = process.readAllStandardOutput() + "\n" +
+                process.readAllStandardError();
+        qDebug() << output;
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
