@@ -400,6 +400,13 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     }
     if (clearCurrentLineError && row_<editor_->document()->linesCount()) {
         editor_->document()->marginAt(row_).errors.clear();
+        TextLine & line = editor_->document()->at(row_);
+        for (int lxNo = 0; lxNo < line.highlight.size(); lxNo++) {
+            line.highlight[lxNo] = Shared::LexemType(
+                        line.highlight[lxNo] & ~Shared::LxTypeError
+                        );
+        }
+        line.changed = true;
     }
 
     if (prevRow!=row_ || prevLines != editor_->document()->linesCount()) {
