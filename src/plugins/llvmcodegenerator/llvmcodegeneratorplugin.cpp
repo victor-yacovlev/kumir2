@@ -309,6 +309,36 @@ bool LLVMCodeGeneratorPlugin::compileExternalUnit(const QString &fileName)
     }
 }
 
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+QString LLVMCodeGeneratorPlugin::findLibraryByName(const QString &baseName)
+{
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QStringList libraryPaths = QStringList()
+            << "/lib64" << "/usr/lib64" << "/usr/local/lib64"
+            << "/lib" << "/usr/lib" << "/usr/local/lib";
+    if (env.contains("LD_LIBRARY_PATH")) {
+        libraryPaths += env.value("LD_LIBRARY_PATH").split(":");
+    }
+    Q_FOREACH(const QString & libraryPath, libraryPaths) {
+        QDir libraryDir(libraryPath);
+        if (libraryDir.exists()) {
+            const QString fileNamePattern =
+                    QString::fromLatin1("lib%1.so*").arg(baseName);
+            const QStringList filesList = libraryDir.entryList(
+                        QStringList() << fileNamePattern,
+                        QDir::Files,
+                        QDir::Name
+                        );
+            if (filesList.size() >= 1) {
+                return libraryDir.absoluteFilePath(filesList.at(0));
+            }
+        }
+    }
+    return "";
+}
+
+#endif
+
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
 {
 #ifdef Q_OS_WIN32
@@ -322,8 +352,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
     static const QString LLC = "llc";
-    static const QString AS = "as"; // GNU AS does not support Unicode names, so use CLang
-    static const QString LD = "clang"; // libstdc++ might have several names in Linux, use CLang to find it
+    static const QString AS = "as";
+    static const QString LD = "gcc"; // libstdc++ might have several names in Linux, use GCC to find it
 #endif
 
     // ====== Write bitcode to external file
@@ -432,7 +462,9 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
             << "crtend.o"
            #endif
            #if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
-            << "-lstdc++" << "-lm"
+            << "-lstdc++"
+            << "-lm"
+            << "-lc"
            #endif
                ;
 #ifdef Q_OS_WIN32

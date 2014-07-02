@@ -53,6 +53,9 @@ protected:
 
     static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
     static bool compileExternalUnit(const QString & fileName);
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+    static QString findLibraryByName(const QString & baseName);
+#endif
 
 
 private:
