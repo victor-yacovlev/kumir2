@@ -33,7 +33,12 @@ private:
 GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
     : GrasshopperModuleBase(parent)
 {
-    kuznec = 0;
+
+    kuznec=new KumKuznec(myResourcesDir());
+     connect(m_actionGrasshopperNewEnvironment,SIGNAL(triggered()) ,kuznec , SLOT(ClearPicture()));
+     connect(m_actionGrasshopperLoadEnvironment,SIGNAL(triggered()) ,kuznec , SLOT(LoadFromFileActivated()));
+     connect(m_actionGrasshopperSave,SIGNAL(triggered()) ,kuznec , SLOT(SaveToFileActivated()));
+
     // Module constructor, called once on plugin load
     // TODO implement me
 }
