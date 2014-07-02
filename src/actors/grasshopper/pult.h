@@ -36,7 +36,7 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define TEXT 5
+#define TEXTT 5
 
 
 
@@ -84,7 +84,7 @@ class  MainButton : public QWidget
 		 */
 		~MainButton(){};
 		void setDirection(int d){direction=d;};
-		void setText(QString t){text=t;direction=TEXT;};
+        void setText(QString t){text=t;direction=TEXTT;};
                 bool isChecked(){return checked;};
 		void setCheckable(bool flag){checkable=true;};
 		void setChecked(bool flag)

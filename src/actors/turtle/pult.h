@@ -33,7 +33,7 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define TEXT 5
+#define TEXTT 5
 
 
 
@@ -113,7 +113,7 @@ public:
 		 */
 	~MainButton(){};
 	inline void setDirection(int d){direction=d;}
-	inline void setText(const QString &t){text=t;direction=TEXT;}
+    inline void setText(const QString &t){text=t;direction=TEXTT;}
 	inline bool isChecked() const {return checked;}
 	inline void setCheckable(bool flag){Q_UNUSED(flag);checkable=true;}
 	inline void setChecked(bool flag)
