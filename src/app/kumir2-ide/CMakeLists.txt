@@ -22,7 +22,7 @@ else()
 endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Actor*,Browser,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
+    "CourseManager,Editor,Actor*,Browser,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
 )
 
 set(SPLASHSCREEN

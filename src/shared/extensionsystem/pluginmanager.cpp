@@ -53,6 +53,17 @@ PluginManager::~PluginManager()
 
 }
 
+bool PluginManager::isPluginLoaded(const QByteArray &name) const
+{
+    for (int i=0; i<pImpl_->specs.size(); i++) {
+        const PluginSpec & spec = pImpl_->specs.at(i);
+        if (spec.name.toLatin1() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void PluginManager::destroy()
 {
     PluginManager * pm = instance();

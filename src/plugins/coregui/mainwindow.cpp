@@ -290,6 +290,11 @@ MainWindow::MainWindow(Plugin * p) :
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->menuFile->removeAction(ui->actionRestore_previous_session); // Not implemented yet
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
+
+    ui->actionMake_native_executable->setVisible(manager->isPluginLoaded("LLVMCodeGenerator"));
+    connect(ui->actionMake_native_executable, SIGNAL(triggered()),
+            this, SLOT(makeNativeExecutable()));
 }
 
 //QString MainWindow::StatusbarWidgetCSS =
@@ -916,6 +921,7 @@ void MainWindow::setupActionsForTab()
     ui->actionSave_as->setEnabled(twe->type!=WWW);
 
     ui->actionClose->setEnabled(!twe->property("uncloseable").toBool());
+    ui->actionMake_native_executable->setEnabled(Program==twe->type);
 
     prepareEditMenu();
     prepareInsertMenu();
@@ -1057,6 +1063,67 @@ void MainWindow::prepareInsertMenu()
     else {
         ui->menuInsert->clear();
         ui->menuInsert->addAction(a_notAvailable3);
+    }
+}
+
+void MainWindow::makeNativeExecutable()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
+    twe->editor()->ensureAnalized();
+    const AST::DataPtr ast = twe->editor()->analizer()->compiler()->abstractSyntaxTree();
+    QString fileSuffix;
+    QString mimeType;
+    QByteArray buffer;
+    twe->kumirProgram()->kumirNativeGenerator()->generateExecuable(ast, buffer, mimeType, fileSuffix);
+    QString fileName = twe->editor()->documentContents().sourceUrl.toLocalFile();
+#ifndef Q_OS_WIN32
+    fileSuffix = "bin";
+#endif
+    if (!fileName.isEmpty() && fileName.endsWith(".kum")) {
+        fileName = fileName.mid(0, fileName.length()-4);
+        if (fileSuffix.length() > 0)
+            fileName += "." + fileSuffix;
+    }
+    else if (!fileName.isEmpty() && !fileSuffix.isEmpty()) {
+        fileName += "." + fileSuffix;
+    }
+    QString initialPath;
+    if (fileName.isEmpty()) {
+        QString lastFileName = m_plugin->mySettings()->value(Plugin::RecentFileKey).toString();
+        if (lastFileName.isEmpty()) {
+            initialPath = QDir::currentPath();
+        }
+        else {
+            initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
+        }
+        initialPath += "/" + suggestNewFileName(fileSuffix, twe->editor()->analizer(), initialPath);
+    }
+    else {
+        initialPath = fileName;
+    }
+    QStringList filter;
+    filter << tr("Native executables (*.%1)").arg(fileSuffix);
+    fileName = QFileDialog::getSaveFileName(this, tr("Save native executable"), initialPath, filter.join(";;"));
+    if (!fileName.isEmpty()) {
+#ifdef Q_OS_WIN32
+        if (!fileName.endsWith("." + fileSuffix)) {
+            fileName += "." + fileSuffix;
+        }
+#endif
+        QString settingsEntry = fileName;
+        if (settingsEntry.endsWith("." + fileSuffix)) {
+            settingsEntry = settingsEntry.left(settingsEntry.length()-4);
+        }
+        settingsEntry += ".kum";
+        m_plugin->mySettings()->setValue(Plugin::RecentFileKey, settingsEntry);
+        QFile f(fileName);
+        if (f.open(QIODevice::WriteOnly)) {
+            f.write(buffer);
+            f.close();
+            QFile::Permissions ps = f.permissions();
+            ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
+            QFile::setPermissions(fileName, ps);
+        }
     }
 }
 

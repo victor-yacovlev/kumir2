@@ -44,6 +44,8 @@ public:
     inline bool isRunning() const { return state_!=Idle; }
     inline void setMainWidget(QWidget * w) { mainWidget_ = w; }
     void setTerminal(Term * t, QDockWidget * w);
+    static Shared::GeneratorInterface * kumirCodeGenerator();
+    static Shared::GeneratorInterface * kumirNativeGenerator();
 
     inline QString endStatusText() const { return endStatusText_; }
     inline RunEndStatus endStatus() const { return endStatus_; }
@@ -72,7 +74,6 @@ private:
     void createConnections();
 
     static Shared::RunInterface * runner();
-    static Shared::GeneratorInterface * generator();
 
     void setAllActorsAnimationFlag(bool animationEnabled);
     void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);

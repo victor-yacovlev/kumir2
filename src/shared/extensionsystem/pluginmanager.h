@@ -101,6 +101,22 @@ public:
     }
 
     template <class PluginInterface>
+    PluginInterface* findPlugin(const QByteArray & name) {
+        QList<KPlugin*> plugins = loadedPlugins();
+        PluginInterface* result = nullptr;
+        for (int i=0; i<plugins.size(); i++) {
+            KPlugin * plugin = plugins[i];
+            if (plugin->pluginName() == name) {
+                result = qobject_cast<PluginInterface*>(plugin);
+            }
+            if (result) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    template <class PluginInterface>
     KPlugin* findKPlugin() {
         QList<KPlugin*> plugins = loadedPlugins();
         KPlugin * result = nullptr;
@@ -127,6 +143,14 @@ public:
                 result.push_back(implementation);
         }
         return result;
+    }
+
+    bool isPluginLoaded(const QByteArray &name) const;
+    inline bool isPluginLoaded(const QString & name) const {
+        return isPluginLoaded(name.toLatin1());
+    }
+    inline bool isPluginLoaded(const char * name) const {
+        return isPluginLoaded(QByteArray(name));
     }
 
 

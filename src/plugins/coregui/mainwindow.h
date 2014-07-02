@@ -91,7 +91,8 @@ public slots:
     void showUserManual();
     void showHelp();
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
-    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);   
+    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
+    void makeNativeExecutable();
 
 private slots:
     void loadRecentFile();

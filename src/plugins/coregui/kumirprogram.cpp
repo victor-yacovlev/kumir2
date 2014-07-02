@@ -146,7 +146,7 @@ Shared::RunInterface * KumirProgram::runner()
     return RUNNER;
 }
 
-Shared::GeneratorInterface * KumirProgram::generator()
+Shared::GeneratorInterface * KumirProgram::kumirCodeGenerator()
 {
     using namespace ExtensionSystem;
     using namespace Shared;
@@ -154,7 +154,21 @@ Shared::GeneratorInterface * KumirProgram::generator()
     static GeneratorInterface * GENERATOR = nullptr;
 
     if (!GENERATOR) {
-        GENERATOR = PluginManager::instance()->findPlugin<GeneratorInterface>();
+        GENERATOR = PluginManager::instance()->findPlugin<GeneratorInterface>("KumirCodeGenerator");
+    }
+
+    return GENERATOR;
+}
+
+Shared::GeneratorInterface * KumirProgram::kumirNativeGenerator()
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    static GeneratorInterface * GENERATOR = nullptr;
+
+    if (!GENERATOR) {
+        GENERATOR = PluginManager::instance()->findPlugin<GeneratorInterface>("LLVMCodeGenerator");
     }
 
     return GENERATOR;
@@ -277,10 +291,10 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
         const AST::DataPtr ast = editor_->analizer()->compiler()->abstractSyntaxTree();
         sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
         QByteArray bufArray;
-        generator()->setOutputToText(false);
-        generator()->setDebugLevel(debugLevel);
+        kumirCodeGenerator()->setOutputToText(false);
+        kumirCodeGenerator()->setDebugLevel(debugLevel);
         QString fileNameSuffix, mimeType;
-        generator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
+        kumirCodeGenerator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
         runner()->loadProgram(sourceProgramPath, bufArray);
     }
     else {

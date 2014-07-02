@@ -322,8 +322,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
     static const QString LLC = "llc";
-    static const QString AS = "as";
-    static const QString LD = "ld";
+    static const QString AS = "clang"; // GNU AS does not support Unicode names, so use CLang
+    static const QString LD = "clang"; // libstdc++ might have several names in Linux, use CLang to find it
 #endif
 
     // ====== Write bitcode to external file
@@ -379,9 +379,12 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 
     // ====== Assemble object using GNU as
 
-    const QStringList asArguments = QStringList()
+    QStringList asArguments = QStringList()
             << "-o" << QDir::toNativeSeparators(objFileName)
             << QDir::toNativeSeparators(asmFileName);
+    if (AS.endsWith("clang")) {
+        asArguments.prepend("-c");
+    }
 #ifdef Q_OS_WIN32
     process.setWorkingDirectory(bundledToolchainPath);
 #endif
