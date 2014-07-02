@@ -25,3 +25,5 @@ scripts/*.pyo
 /share/kumir2/widgets/secondarywindow/.directory
 /share/kumir2/widgets/secondarywindow/generic/.directory
 /share/kumir2/widgets/secondarywindow/oxygen/.directory
+/src/app/#CMakeLists.txt#
+/share/kumir2/translations/qt_ru.ts
