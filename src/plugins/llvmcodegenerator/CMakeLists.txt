@@ -23,6 +23,10 @@ add_definitions(${Llvm_DEFINITIONS})
 include_directories(${Llvm_INCLUDE_DIR})
 include(../../kumir2_plugin.cmake)
 
+if(MSVC)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 set(DEP_LIBS
 )
 
