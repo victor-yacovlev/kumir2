@@ -27,7 +27,7 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define TEXT 5
+#define TEXTT 5
 #ifdef WIDGETS_LIBRARY
 #define WIDGETS_EXPORT Q_DECL_EXPORT
 #else
