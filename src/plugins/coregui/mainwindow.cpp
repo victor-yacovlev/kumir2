@@ -1079,6 +1079,9 @@ void MainWindow::makeNativeExecutable()
 #ifndef Q_OS_WIN32
     fileSuffix = "bin";
 #endif
+    if (fileSuffix.startsWith(".")) {
+        fileSuffix.remove(0, 1);
+    }
     if (!fileName.isEmpty() && fileName.endsWith(".kum")) {
         fileName = fileName.mid(0, fileName.length()-4);
         if (fileSuffix.length() > 0)
