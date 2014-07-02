@@ -270,8 +270,8 @@ void LLVMGenerator::createMainFunction(const AST::AlgorithmPtr &entryPoint)
 
     if (entryPoint) {
         const QString entryPointQName = "__kumir_function_" + entryPoint->header.name;
-        const CString entryPointName =
-                CString(entryPointQName.toUtf8().constData());
+        const CString entryPointName = NameTranslator::screenUtf8Name(entryPointQName);
+
         Q_ASSERT(entryPointName.length() > 0);
 
         llvm::Function * entryPointFunc = currentModule_->getFunction(entryPointName);
@@ -406,7 +406,7 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
     const QString actualName = "__kumir_function_" + kfunc->header.name;
 
     // Use UTF-8 names to prevent unambiguous linkage between files
-    CString name = CString(actualName.toUtf8().data());
+    CString name = NameTranslator::screenUtf8Name(actualName);
 
 
     size_t largsCount = 0u;
@@ -1870,8 +1870,9 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
 
     if (alg->header.implType == AST::AlgorhitmCompiled) {
         builder.CreateCall(kumirCheckCallStack_);
-        funcName = CString("__kumir_function_") +
-                CString(alg->header.name.toUtf8().constData());
+        funcName = NameTranslator::screenUtf8Name(
+                    "__kumir_function_" + alg->header.name
+                    );
         func = currentModule_->getFunction(funcName);
         Q_ASSERT(func);
     }
@@ -1880,9 +1881,9 @@ llvm::Value * LLVMGenerator::createFunctionCall(llvm::IRBuilder<> &builder, cons
             alg->header.external.moduleName.endsWith(".kod") )
             )
     {
-        funcName = CString(alg->header.name.toUtf8().constData());
-        funcName = CString("__kumir_function_") +
-                CString(alg->header.name.toUtf8().constData());
+        funcName = NameTranslator::screenUtf8Name(
+                    "__kumir_function_" + alg->header.name
+                    );
         func = currentModule_->getFunction(funcName);
         Q_ASSERT(func);
     }

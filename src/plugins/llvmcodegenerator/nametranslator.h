@@ -21,6 +21,7 @@ public:
     CString addGlobal(const QString &name);
     CString find(const QString & name) const;
     static QString suggestName(const QString &x);
+    static CString screenUtf8Name(const QString &x);
 private:
     typedef struct {
         QString sName;

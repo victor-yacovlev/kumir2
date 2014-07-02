@@ -322,7 +322,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
     static const QString LLC = "llc";
-    static const QString AS = "clang"; // GNU AS does not support Unicode names, so use CLang
+    static const QString AS = "as"; // GNU AS does not support Unicode names, so use CLang
     static const QString LD = "clang"; // libstdc++ might have several names in Linux, use CLang to find it
 #endif
 
