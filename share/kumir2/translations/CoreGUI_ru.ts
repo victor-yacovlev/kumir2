@@ -568,7 +568,7 @@ Right click to navigate target</source>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="135"/>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="57"/>
         <source>Open...</source>
-        <translation>Загрузить программу...</translation>
+        <translation>Загрузить...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="138"/>
@@ -588,7 +588,7 @@ Right click to navigate target</source>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1805"/>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1994"/>
         <source>Save</source>
-        <translation>Сохранить программу</translation>
+        <translation>Сохранить</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="151"/>
@@ -598,7 +598,7 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="156"/>
         <source>Save as...</source>
-        <translation>Сохранить программу как...</translation>
+        <translation>Сохранить как...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="161"/>
