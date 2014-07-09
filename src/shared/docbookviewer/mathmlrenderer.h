@@ -6,6 +6,7 @@
 #include <QtGlobal>
 #include <QImage>
 #include <QFont>
+#include <QColor>
 
 namespace DocBookViewer {
 
@@ -36,6 +37,8 @@ private:
     MathMLRenderer();
 
     QFont font_;
+    QColor fgColor_;
+    QColor bgColor_;
 };
 
 } // namespace DocBookViewer

@@ -138,6 +138,9 @@ QString ContentView::renderArticle(ModelPtr data) const
 
 QString ContentView::wrapHTML(const QString &body) const
 {
+    const QPalette pal = palette();
+    const QColor fg = pal.brush(QPalette::Text).color();
+    const QColor bg = pal.brush(QPalette::Background).color();
     return QString() +
             "<html><head>"
             "<style type=\"text/css\">"
@@ -170,6 +173,11 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-family: " + CodeFontFamily + ";"
             "   font-size: " + CodeFontSize + ";"
             "}"
+            "th {"
+            "   font-weight: bold;"
+            "   color: " + bg.name() + ";"
+            "   background-color: " + fg.name() + ";"
+            "}"
             "h2 {"
             "   align: center;"
             "   margin: 30;"
@@ -177,6 +185,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "kbd {"
             "   font-family: " + GuiElementsFontFamily + ";"
             "   background-color: lightgray;"
+            "   color: black;"
             "}"
             "</style></head>"
             "<body>\n" + body +"\n</body></html>";
@@ -479,7 +488,7 @@ QString ContentView::renderTableContent(ModelPtr data) const
 QString ContentView::renderTHead(ModelPtr data) const
 {
     QString result;
-    result += "<thead>\n";
+    result += "<thead class='table-head'>\n";
     result += renderChilds(data);
     result += "</thead>\n";
     return result;
@@ -512,7 +521,7 @@ QString ContentView::renderRow(ModelPtr data) const
     }
     QString result;
     if (inTableHead) {
-        result += "<tr valign='center' bgcolor='lightgray'>\n";
+        result += "<tr valign='center'>\n";
     }
     else {
         result += "<tr valign='center'>\n";
@@ -539,15 +548,19 @@ QString ContentView::renderEntry(ModelPtr data) const
         parent = parent->parent();
     }
     QString result;
-    result += "<td align='center' valign='center'>\n";
     if (inTableHead) {
-        result += "<b>";
+        result += "<th align='center' valign='center'>\n";
+    }
+    else {
+        result += "<td align='center' valign='center'>\n";
     }
     result += renderChilds(data);
     if (inTableHead) {
-        result += "</b>";
+        result += "</th>\n";
     }
-    result += "</td>\n";
+    else {
+        result += "</td>\n";
+    }
     return result;
 }
 
