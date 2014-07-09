@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-                    "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-                    [
-                            <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
-                            <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
-                    ]>
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        [
+                <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
+                <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
+                ]>
 <chapter xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:mathml="http://www.w3.org/1998/Math/MathML">
     <title>Имена, величины и выражения</title>
     <section>
@@ -12,40 +12,58 @@
         <section>
             <title>Общие сведения</title>
             <para>
-                Имя бывает у величин, таблиц, алгоритмов и исполнителей. <emphasis>Имя</emphasis> -- это
+                Имя бывает у величин, таблиц, алгоритмов и исполнителей.
+                <emphasis>Имя</emphasis>
+                -- это
                 последовательность
                 слов, разделенных пробелами. Первое слово имени не должно начинаться с цифры. Ни
                 одно из слов не должно быть ключевым словом.
             </para>
             <para>
-                Примеры имен: <code>m</code>, <code>погода на завтра</code>,
-                <code>Ноябрь 7</code>, <code>Седьмое ноября</code>, <code>дом_57б</code>.
+                Примеры имен:<code>m</code>,<code>погода на завтра</code>,
+                <code>Ноябрь 7</code>,<code>Седьмое ноября</code>,<code>дом_57б</code>.
             </para>
             <para>
                 Примеры неправильных имен:
                 <itemizedlist>
                     <listitem>
-                        <para><code>7е ноября</code> (первое слово начинается с цифры);</para>
+                        <para>
+                            <code>7е ноября</code>
+                            (первое слово начинается с цифры);
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code>альфа-бета</code> (<code>-</code> -- недопустимый символ);</para>
+                        <para>
+                            <code>альфа-бета</code>
+                            (
+                            <code>-</code>
+                            -- недопустимый символ);
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code language="kumir">альфа или омега</code>
-                            (<code language="kumir">или</code> -- ключевое слово).</para>
+                        <para>
+                            <code language="kumir">альфа или омега</code>
+                            (
+                            <code language="kumir">или</code>
+                            -- ключевое слово).
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
             <para>
-                Примечание. Ключевое слово <code language="kumir">не</code> можно вставлять внутрь
+                Примечание. Ключевое слово
+                <code language="kumir">не</code>
+                можно вставлять внутрь
                 многословных логических имен.
             </para>
         </section>
         <section>
             <title>Слова</title>
             <para>
-                <emphasis>Слово</emphasis> -- это последовательность разрешенных (словарных) символов.
-                <emphasis>Словарными</emphasis> символами являются:
+                <emphasis>Слово</emphasis>
+                -- это последовательность разрешенных (словарных) символов.
+                <emphasis>Словарными</emphasis>
+                символами являются:
                 <itemizedlist>
                     <listitem>
                         <para>буквы (кириллические и латинские, прописные и строчные);</para>
@@ -54,16 +72,17 @@
                         <para>цифры;</para>
                     </listitem>
                     <listitem>
-                        <para>два специальных знака: <code>@ _</code>.</para>
+                        <para>два специальных знака:<code>@ _</code>.
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
             <para>
-                Примеры слов: <code>бета123</code>, <code>3кг</code>, <code>мама</code>,
-                <code>Linux</code>, <code>КоСтЯ</code>, <code>kumir@infomir_ru</code>.
+                Примеры слов:<code>бета123</code>,<code>3кг</code>,<code>мама</code>,
+                <code>Linux</code>,<code>КоСтЯ</code>,<code>kumir@infomir_ru</code>.
             </para>
             <para>
-                Примеры не слов: <code>альфа-123</code>, <code>ма%ма</code>, <code>С++</code>.
+                Примеры не слов:<code>альфа-123</code>,<code>ма%ма</code>,<code>С++</code>.
             </para>
         </section>
         <section>
@@ -82,8 +101,10 @@
                     language="kumir">симтаб</code>,<code language="kumir">литтаб</code>,<code language="kumir">и</code>,
                 <code language="kumir">или</code>,
                 <code language="kumir">не</code>,<code language="kumir">да</code>,<code language="kumir">нет</code>,
-                <code language="kumir">утв</code>,<code language="kumir">выход</code>,<code language="kumir">ввод</code>
-                ,<code language="kumir">вывод</code>,<code language="kumir">нс</code>,<code language="kumir">если</code>
+                <code language="kumir">утв</code>,<code language="kumir">выход</code>,
+                <code language="kumir">ввод</code>
+                ,<code language="kumir">вывод</code>,<code language="kumir">нс</code>,
+                <code language="kumir">если</code>
                 ,<code language="kumir">то</code>,<code language="kumir">иначе</code>,<code language="kumir">все</code>,
                 <code language="kumir">выбор</code>,<code language="kumir">при</code>,<code language="kumir">нц</code>,
                 <code language="kumir">кц</code>,<code language="kumir">кц_при</code>,
@@ -94,7 +115,8 @@
         <section>
             <title>Многословные не-имена</title>
             <para>
-                В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово <code language="kumir">не</code>
+                В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово
+                <code language="kumir">не</code>
                 можно вставлять между словами многословного имени.
             </para>
             <example>
@@ -109,9 +131,14 @@
                 </programlisting>
             </example>
             <para>
-                Первые три присваивания присваивают логической величине <code>л</code> значение, противоположное значению
-                логической величины <code>завтра будет четверг</code>. Четвертая строка синтаксически неверна -- <code language="kumir">не</code> нельзя
-                ставить после имени. Последняя строка также неверна: нельзя использовать более одного <code language="kumir">не</code>.
+                Первые три присваивания присваивают логической величине
+                <code>л</code>
+                значение, противоположное значению
+                логической величины<code>завтра будет четверг</code>. Четвертая строка синтаксически неверна --
+                <code language="kumir">не</code>
+                нельзя
+                ставить после имени. Последняя строка также неверна: нельзя использовать более одного<code
+                    language="kumir">не</code>.
             </para>
         </section>
     </section>
@@ -123,38 +150,66 @@
             следующие типы величин:
             <itemizedlist>
                 <listitem>
-                    <para><code language="kumir">цел</code> -- принимает целые значения от
-                        <code language="kumir">-МАКСЦЕЛ</code>
-                        до <code language="kumir">МАКСЦЕЛ</code>, где <code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647;
+                    <para>
+                        <code language="kumir">цел</code>
+                        -- принимает целые значения от
+                        <code language="kumir">-МАКСЦЕЛ-1</code>
+                        до<code language="kumir">МАКСЦЕЛ</code>, где<code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647;
                     </para>
                 </listitem>
                 <listitem>
-                    <para><code language="kumir">вещ</code> -- принимает целые значения от
+                    <para>
+                        <code language="kumir">вещ</code>
+                        -- принимает вещественные значения от
                         <code language="kumir">-МАКСВЕЩ</code>
-                        до <code language="kumir">МАКСВЕЩ</code>,
-                        где <code>МАКСВЕЩ</code> -- это число, немного меньшее, чем
+                        до<code language="kumir">МАКСВЕЩ</code>,
+                        где
+                        <code>МАКСВЕЩ</code>
+                        -- это число, немного меньшее, чем
                         1.797693&times;10<superscript>308</superscript>;
                     </para>
                 </listitem>
                 <listitem>
-                    <para><code language="kumir">лог</code> -- принимает значения <code language="kumir">да</code>
-                        или <code language="kumir">нет</code>;</para>
+                    <para>
+                        <code language="kumir">лог</code>
+                        -- принимает значения
+                        <code language="kumir">да</code>
+                        или<code language="kumir">нет</code>;
+                    </para>
                 </listitem>
                 <listitem>
-                    <para><code language="kumir">сим</code> -- значением может быть любой литеральный символ
-                        <xref linkend="aaa"/>;</para>
+                    <para>
+                        <code language="kumir">сим</code>
+                        -- значением может быть любой литеральный символ
+                        <xref linkend="aaa"/>;
+                    </para>
                 </listitem>
                 <listitem>
-                    <para><code language="kumir">лит</code> -- значением может быть строка литеральных символов.</para>
+                    <para>
+                        <code language="kumir">лит</code>
+                        -- значением может быть строка литеральных символов.
+                    </para>
                 </listitem>
             </itemizedlist>
         </para>
         <para>
-            Типы <code language="kumir">цел</code> и <code language="kumir">вещ</code> называются числовыми;
-            типы <code language="kumir">сим</code> и <code language="kumir">лит</code> -- текстовыми.
+            Типы
+            <code language="kumir">цел</code>
+            и
+            <code language="kumir">вещ</code>
+            называются числовыми;
+            типы
+            <code language="kumir">сим</code>
+            и
+            <code language="kumir">лит</code>
+            -- текстовыми.
         </para>
         <para>
-            Значения величин <code language="kumir">МАКСЦЕЛ</code> и <code language="kumir">МАКСВЕЩ</code> определяются
+            Значения величин
+            <code language="kumir">МАКСЦЕЛ</code>
+            и
+            <code language="kumir">МАКСВЕЩ</code>
+            определяются
             способом представления чисел в современных компьютерах и примерно одинаковая в большинстве
             современных языков программирования.
         </para>
@@ -163,7 +218,9 @@
             <xref linkend="aaa"/>.
             При необходимости значения целого типа автоматически переводятся в вещественные, а символьные --
             в строковые. Для преобразования вещественных значений в целые используется встроенная
-            функция <code>int</code><xref linkend="aaa"/>.
+            функция
+            <code>int</code>
+            <xref linkend="aaa"/>.
         </para>
     </section>
     <section>
@@ -177,11 +234,16 @@
         <section>
             <title>Целые константы</title>
             <para>
-                Целые константы бывают положительные и отрицательные. Целая константа по абсолютной величине
-                должна быть строго меньше 2<superscript>31</superscript>. Целые константы можно записывать в
-                десятичной и 16-ричной форме. Шестнадцатеричные константы начинаются с символа <code>$</code>.
+                Целые константы бывают положительные и отрицательные. Целая константа
+                должна быть в диапазоне от
+                <code>-МАКСЦЕЛ</code>
+                до<code>МАКСЦЕЛ</code>, где
+                <code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647. Целые
+                константы можно записывать в
+                десятичной и 16-ричной форме. Шестнадцатеричные константы начинаются с символа<code>$</code>.
             </para>
-            <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
+            <para>Примеры:<code>123</code>,<code>-100000</code>,<code>$100</code>.
+            </para>
         </section>
         <section>
             <title>Вещественные константы</title>
@@ -189,18 +251,19 @@
                 Вещественные константы бывают положительные и отрицательные. Вещественная константа
                 по абсолютной величине должна быть меньше 2<superscript>1023</superscript>. Вещественные константы можно
                 записывать в десятичной и экспоненциальной форме. В качестве разделителя в экспоненциальной
-                записи можно использовать любой вариант буквы <code>e</code>: строчный или прописной, латинский или
+                записи можно использовать любой вариант буквы<code>e</code>: строчный или прописной, латинский или
                 кириллический.
             </para>
             <para>
                 Ограничения для вещественных констант определяются стандартом IEEE 754-2008.
             </para>
-            <para>Примеры: <code>123</code>, <code>-100000</code>, <code>$100</code>.</para>
+            <para>Примеры:<code>123</code>,<code>-100000</code>,<code>$100</code>.
+            </para>
         </section>
         <section>
             <title>Логические константы</title>
             <para>
-                Логическая константа — это одно из ключевых слов <code language="kumir">да</code>,
+                Логическая константа — это одно из ключевых слов<code language="kumir">да</code>,
                 <code language="kumir">нет</code>.
             </para>
         </section>
@@ -208,17 +271,23 @@
             <title>Символьные и литеральные константы</title>
             <para>
                 В символьной константе допустим любой символ, который можно набрать на стандартной
-                клавиатуре. Такие символы называются <emphasis>допустимыми</emphasis>.
+                клавиатуре. Такие символы называются<emphasis>допустимыми</emphasis>.
             </para>
             <para>
-                Символьная константа имеет вид <code>'c'</code> или <code>"с"</code> (здесь с -- допустимый символ).
+                Символьная константа имеет вид
+                <code>'c'</code>
+                или
+                <code>"с"</code>
+                (здесь с -- допустимый символ).
             </para>
             <para>
-                Примеры: <code>'a'</code>, <code>"%"</code>, <code>'"'</code>, <code>"'"</code>,
-                <code>'Это я'</code>, <code>"It's me"</code>.
+                Примеры:<code>'a'</code>,<code>"%"</code>,<code>'"'</code>,<code>"'"</code>,
+                <code>'Это я'</code>,<code>"It's me"</code>.
             </para>
             <para>
-                Литеральная (текстовая) константа имеет вид <code>'Т'</code> или <code>"Т"</code>. Здесь Т -- строка,
+                Литеральная (текстовая) константа имеет вид
+                <code>'Т'</code>
+                или<code>"Т"</code>. Здесь Т -- строка,
                 состоящая из допустимых символов. При этом, если константа Т ограничена простыми кавычками,
                 то Т не содержит простую кавычку, а если Т ограничена двойными кавычками, то она не
                 содержит двойную кавычку.
@@ -230,15 +299,16 @@
         <section>
             <title>Общие сведения</title>
             <para>
-                Каждая величина имеет <emphasis>имя</emphasis>, <emphasis>тип</emphasis>,
-                <emphasis>вид</emphasis> и <emphasis>значение</emphasis>.
+                Каждая величина имеет<emphasis>имя</emphasis>,<emphasis>тип</emphasis>,
+                <emphasis>вид</emphasis>
+                и<emphasis>значение</emphasis>.
             </para>
             <para>
-                Имя величины служит для обозначения величины в алгоритме <xref linkend="ccc"/>.
+                Имя величины служит для обозначения величины в алгоритме<xref linkend="ccc"/>.
             </para>
             <para>
                 Тип величины показывает, какие значения может принимать величина, и какие операции
-                можно с ней выполнять <xref linkend="ccc"/>.
+                можно с ней выполнять<xref linkend="ccc"/>.
             </para>
             <para>
                 Вид величины показывает ее информационную роль в алгоритме. Например, аргументы
@@ -248,26 +318,38 @@
             </para>
             <para>
                 Во время выполнения алгоритма в каждый конкретный момент величина имеет какое-то
-                <emphasis>значение</emphasis> либо <emphasis>не определена</emphasis>.
+                <emphasis>значение</emphasis>
+                либо<emphasis>не определена</emphasis>.
             </para>
             <para>
                 Имя, тип и вид величины можно однозначно определить по тексту алгоритма.
-                Это <emphasis>статические</emphasis> характеристики величины.
+                Это
+                <emphasis>статические</emphasis>
+                характеристики величины.
             </para>
             <para>
-                Значение определяется только во время выполнения. Это <emphasis>динамическая</emphasis> характеристика.
+                Значение определяется только во время выполнения. Это
+                <emphasis>динамическая</emphasis>
+                характеристика.
             </para>
         </section>
         <section>
             <title>Простые величины и таблицы. Описания величин</title>
             <para>
-                В языке Кумир используются <emphasis>простые</emphasis> и табличные величины --
+                В языке Кумир используются
+                <emphasis>простые</emphasis>
+                и табличные величины --
                 <emphasis>таблицы</emphasis>.
             </para>
             <para>
-                Для таблиц определена <emphasis>размерность</emphasis> (бывают таблицы размерностей 1, 2 и 3).
-                Для каждого измерения определены <emphasis>границы</emphasis> изменения
-                <emphasis>индекса</emphasis> таблицы по этому измерению -- два целых числа.
+                Для таблиц определена
+                <emphasis>размерность</emphasis>
+                (бывают таблицы размерностей 1, 2 и 3).
+                Для каждого измерения определены
+                <emphasis>границы</emphasis>
+                изменения
+                <emphasis>индекса</emphasis>
+                таблицы по этому измерению -- два целых числа.
             </para>
         </section>
         <section>
@@ -279,7 +361,8 @@
                         <para>с помощью оператора описания;</para>
                     </listitem>
                     <listitem>
-                        <para>при задании формальных параметров алгоритма <xref linkend="vvv"/>.</para>
+                        <para>при задании формальных параметров алгоритма<xref linkend="vvv"/>.
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -288,7 +371,7 @@
             </para>
             <para>
                 Кроме того, в алгоритмах-функциях используется простая переменная знач, ее тип
-                определяется типом функции <xref linkend="dfg"/>. Явного описания переменная знач не имеет. Ее
+                определяется типом функции<xref linkend="dfg"/>. Явного описания переменная знач не имеет. Ее
                 область действия -- тело соответствующего алгоритма-функции.
             </para>
             <para>
@@ -325,12 +408,16 @@
             <title>Область дейсвия описаний</title>
             <para>
                 В зависимости от способа описания и места описания в программе, где описана величина,
-                определена ее <emphasis>область действия</emphasis> описания -- та часть текста программы,
+                определена ее
+                <emphasis>область действия</emphasis>
+                описания -- та часть текста программы,
                 где допустимо использование этой величины.
             </para>
             <para>
                 Если величина описана во вступлении к программе, ее можно использовать в любом
-                алгоритме <emphasis role="bold">этой</emphasis> программы.
+                алгоритме
+                <emphasis role="bold">этой</emphasis>
+                программы.
             </para>
             <para>
                 Если величина описана в заголовке алгоритма, то ее можно использовать в теле этого
@@ -338,7 +425,9 @@
             </para>
             <para>
                 Если переменная описана в теле алгоритма, то ее можно использовать только в теле
-                этого алгоритма <emphasis role="bold">после</emphasis> места описания.
+                этого алгоритма
+                <emphasis role="bold">после</emphasis>
+                места описания.
             </para>
             <example>
                 <title>Объявление величин в алгоритме</title>
@@ -360,19 +449,22 @@
             <title>Общие сведения</title>
             <para>
                 Выражение в языке КуМир описывает новое значение, полученное из уже известных значений
-                с помощью предусмотренных в языке КуМир <emphasis>операций</emphasis>.
+                с помощью предусмотренных в языке КуМир<emphasis>операций</emphasis>.
             </para>
             <para>
                 Примеры:
                 <itemizedlist>
                     <listitem>
-                        <para><code>(a+b)*(a-b)</code>;</para>
+                        <para><code>(a+b)*(a-b)</code>;
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code language="kumir">да или нет</code>;</para>
+                        <para><code language="kumir">да или нет</code>;
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code>(sin(альфа))**2+(cos(альфа))**2</code>.</para>
+                        <para><code>(sin(альфа))**2+(cos(альфа))**2</code>.
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -386,13 +478,15 @@
                         <para>в индексе таблицы;</para>
                     </listitem>
                     <listitem>
-                        <para>в аргументе (типа <code language="kumir">арг</code>) вызова функции;</para>
+                        <para>в аргументе (типа<code language="kumir">арг</code>) вызова функции;
+                        </para>
                     </listitem>
                     <listitem>
                         <para>в качестве подвыражения другого выражения;</para>
                     </listitem>
                     <listitem>
-                        <para>в команде <code language="kumir">вывод</code>.</para>
+                        <para>в команде<code language="kumir">вывод</code>.
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -439,15 +533,18 @@
                     </listitem>
                     <listitem>
                         <para>сравнение арифметическое (аргументы -- числового типа, результат --
-                            <code language="kumir">лог</code>);</para>
+                            <code language="kumir">лог</code>);
+                        </para>
                     </listitem>
                     <listitem>
                         <para>сравнение текстовое (аргументы -- текстового типа, результат --
-                            <code language="kumir">лог</code>);</para>
+                            <code language="kumir">лог</code>);
+                        </para>
                     </listitem>
                     <listitem>
-                        <para>логические операции (аргументы -- <code language="kumir">лог</code>, результат --
-                            <code language="kumir">лог</code>);</para>
+                        <para>логические операции (аргументы --<code language="kumir">лог</code>, результат --
+                            <code language="kumir">лог</code>);
+                        </para>
                     </listitem>
                     <listitem>
                         <para>текстовые операции (аргументы и результат -- текстового типа).</para>
@@ -459,16 +556,28 @@
                 применять составной символ, состоящий из двух обычных символов:
                 <itemizedlist>
                     <listitem>
-                        <para><code>**</code> -- возведение в степень;</para>
+                        <para>
+                            <code>**</code>
+                            -- возведение в степень;
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code><![CDATA[&lt;=]]></code> -- меньше или равно;</para>
+                        <para>
+                            <code><![CDATA[&lt;=]]></code>
+                            -- меньше или равно;
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code><![CDATA[&gt;=]]></code> -- больше или равно;</para>
+                        <para>
+                            <code><![CDATA[&gt;=]]></code>
+                            -- больше или равно;
+                        </para>
                     </listitem>
                     <listitem>
-                        <para><code><![CDATA[&lt;&gt;]]></code> -- не равно.</para>
+                        <para>
+                            <code><![CDATA[&lt;&gt;]]></code>
+                            -- не равно.
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -485,22 +594,33 @@
             <example>
                 <title>Тип выражения</title>
                 <para>
-                    Рассмотрим выражение <code>гамма(x) - дельта(2y+1, z)</code>,
-                    где <code>гамма</code> и <code>дельта</code> -- описанные в программе алгоритмы-функции.
+                    Рассмотрим выражение<code>гамма(x) - дельта(2y+1, z)</code>,
+                    где
+                    <code>гамма</code>
+                    и
+                    <code>дельта</code>
+                    -- описанные в программе алгоритмы-функции.
                 </para>
                 <para>
-                    Это должны быть функции числового типа.  Если обе они имеют тип <code language="kumir">цел</code>,
-                    то и все выражение имеет тип <code language="kumir">цел</code>. В противном случае выражение имеет
-                    тип <code language="kumir">вещ</code>.
+                    Это должны быть функции числового типа. Если обе они имеют тип<code language="kumir">цел</code>,
+                    то и все выражение имеет тип<code language="kumir">цел</code>. В противном случае выражение имеет
+                    тип<code language="kumir">вещ</code>.
                 </para>
             </example>
         </section>
         <section>
             <title>Вырезка из строки</title>
             <para>
-                Операция вырезки из строки имеет 3 аргумента: <code language="kumir">лит</code> строка,
-                <code language="kumir">цел</code> старт, <code language="kumir">цел</code> финиш и
-                результат: <code language="kumir">лит</code> вырезка. В отличие от базовых операций, аргументы вырезки
+                Операция вырезки из строки имеет 3 аргумента:
+                <code language="kumir">лит</code>
+                строка,
+                <code language="kumir">цел</code>
+                старт,
+                <code language="kumir">цел</code>
+                финиш и
+                результат:
+                <code language="kumir">лит</code>
+                вырезка. В отличие от базовых операций, аргументы вырезки
                 из строки имеют разные типы. Поэтому способ записи вырезки из строки отличается от способа,
                 принятого для базовых операций.
             </para>
@@ -521,15 +641,17 @@
                 В выражениях языка Кумир можно использовать:
                 <itemizedlist>
                     <listitem>
-                        <para>встроенные алгоритмы-функции, например: <code>sin(x)</code>, <code>длин("ХВОСТ")</code>;
+                        <para>встроенные алгоритмы-функции, например:<code>sin(x)</code>,<code>длин("ХВОСТ")</code>;
                         </para>
                     </listitem>
                     <listitem>
-                        <para>алгоритмы-функции встроенных исполнителей, например: <code>температура</code>;</para>
+                        <para>алгоритмы-функции встроенных исполнителей, например:<code>температура</code>;
+                        </para>
                     </listitem>
                     <listitem>
                         <para>алгоритмы-функции программы пользователя (в том числе -- алгоритмы-функции
-                            исполнителей пользователя).</para>
+                            исполнителей пользователя).
+                        </para>
                     </listitem>
                 </itemizedlist>
             </para>
@@ -540,7 +662,9 @@
             </para>
             <para>
                 Вызов функции с именем имя_функции и аргументами, заданными выражениями
-                X<subscript>1</subscript>,&nbsp;&hellip;,&nbsp;X<subscript>n</subscript> записывается так:
+                X<subscript>1</subscript>,&nbsp;&hellip;,&nbsp;X
+                <subscript>n</subscript>
+                записывается так:
                 <code>имя_функции(X1,...,Xn)</code>.
             </para>
         </section>
@@ -560,189 +684,243 @@
                 <tbody>
                     <row>
                         <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mo>-</mathml:mo>
-                                <mathml:mfrac>
-                                    <mathml:mrow><mathml:mn>1</mathml:mn></mathml:mrow>
-                                    <mathml:mrow>
-                                        <mathml:mi>x</mathml:mi>
-                                        <mathml:msup>
-                                            <mathml:mn>2</mathml:mn>
-                                        </mathml:msup>
-                                    </mathml:mrow>
-                                </mathml:mfrac>
-                            </mathml:mrow></mathml:math>
-                        </entry>
-                        <entry><code>-1/x**2</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mfrac>
-                                    <mathml:mrow><mathml:mi>a</mathml:mi></mathml:mrow>
-                                    <mathml:mrow>
-                                        <mathml:mi>b</mathml:mi>
-                                        <mathml:mi>c</mathml:mi>
-                                    </mathml:mrow>
-                                </mathml:mfrac>
-                            </mathml:mrow></mathml:math>
-                        </entry>
-                        <entry><code>a/(b*c)</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mfrac>
-                                    <mathml:mrow><mathml:mi>a</mathml:mi></mathml:mrow>
-                                    <mathml:mrow><mathml:mi>b</mathml:mi></mathml:mrow>
-                                </mathml:mfrac>
-                                <mathml:mi>c</mathml:mi>
-                            </mathml:mrow></mathml:math>
-                        </entry>
-                        <entry><code>a/b*c</code> или <code>(a/b)*c</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mn>2</mathml:mn>
-                                <mathml:msup>
-                                    <mathml:mn>2</mathml:mn>
-                                    <mathml:msup>
-                                        <mathml:mi>n</mathml:mi>
-                                    </mathml:msup>
-                                </mathml:msup>
-                            </mathml:mrow></mathml:math>
-                        </entry>
-                        <entry><code>2**(2**n)</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mfrac>
-                                    <mathml:mrow>
-                                        <mathml:mo>-</mathml:mo>
-                                        <mathml:mi>b</mathml:mi>
-                                        <mathml:mo>+</mathml:mo>
-                                        <mathml:msqrt>
-                                            <mathml:mi>b</mathml:mi>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mo>-</mathml:mo>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
+                                            <mathml:mn>1</mathml:mn>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mi>x</mathml:mi>
                                             <mathml:msup>
                                                 <mathml:mn>2</mathml:mn>
                                             </mathml:msup>
-                                            <mathml:mo>-</mathml:mo>
-                                            <mathml:mn>4</mathml:mn>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
+                                </mathml:mrow>
+                            </mathml:math>
+                        </entry>
+                        <entry>
+                            <code>-1/x**2</code>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
                                             <mathml:mi>a</mathml:mi>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mi>b</mathml:mi>
                                             <mathml:mi>c</mathml:mi>
-                                        </mathml:msqrt>
-                                    </mathml:mrow>
-                                    <mathml:mrow>
-                                        <mathml:mn>2</mathml:mn>
-                                        <mathml:mi>a</mathml:mi>
-                                    </mathml:mrow>
-                                </mathml:mfrac>
-
-                            </mathml:mrow></mathml:math>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
+                                </mathml:mrow>
+                            </mathml:math>
                         </entry>
-                        <entry><code>(-b+sqrt(b**2-4*a*c))/(2*a)</code></entry>
+                        <entry>
+                            <code>a/(b*c)</code>
+                        </entry>
                     </row>
                     <row>
                         <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:msqrt>
-                                    <mathml:mi>p</mathml:mi>
-                                    <mathml:mo>(</mathml:mo>
-                                    <mathml:mi>p</mathml:mi>
-                                    <mathml:mo>-</mathml:mo>
-                                    <mathml:mi>a</mathml:mi>
-                                    <mathml:mo>)</mathml:mo>
-                                    <mathml:mo>(</mathml:mo>
-                                    <mathml:mi>p</mathml:mi>
-                                    <mathml:mo>-</mathml:mo>
-                                    <mathml:mi>b</mathml:mi>
-                                    <mathml:mo>)</mathml:mo>
-                                    <mathml:mo>(</mathml:mo>
-                                    <mathml:mi>p</mathml:mi>
-                                    <mathml:mo>-</mathml:mo>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
+                                            <mathml:mi>a</mathml:mi>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mi>b</mathml:mi>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
                                     <mathml:mi>c</mathml:mi>
-                                    <mathml:mo>)</mathml:mo>
-                                </mathml:msqrt>
-                            </mathml:mrow></mathml:math>
+                                </mathml:mrow>
+                            </mathml:math>
                         </entry>
-                        <entry><code>sqrt(p*(p-a)*(p-b)*(p-c))</code></entry>
+                        <entry>
+                            <code>a/b*c</code>
+                            или
+                            <code>(a/b)*c</code>
+                        </entry>
                     </row>
                     <row>
                         <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mfrac>
-                                    <mathml:mrow>
-                                        <mathml:mi>a</mathml:mi>
-                                        <mathml:mo>+</mathml:mo>
-                                        <mathml:mi>b</mathml:mi>
-                                        <mathml:mo>+</mathml:mo>
-                                        <mathml:mi>c</mathml:mi>
-                                    </mathml:mrow>
-                                    <mathml:mrow>
-                                        <mathml:mn>2</mathml:mn>
-                                    </mathml:mrow>
-                                </mathml:mfrac>
-                            </mathml:mrow></mathml:math>
-                        </entry>
-                        <entry><code>(a+b+c)/2</code></entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:msqrt>
-                                    <mathml:mi>a</mathml:mi>
-                                    <mathml:msup><mathml:mn>2</mathml:mn></mathml:msup>
-                                    <mathml:mo>+</mathml:mo>
-                                    <mathml:mi>b</mathml:mi>
-                                    <mathml:msup><mathml:mn>2</mathml:mn></mathml:msup>
-                                    <mathml:mo>+</mathml:mo>
+                            <mathml:math>
+                                <mathml:mrow>
                                     <mathml:mn>2</mathml:mn>
-                                    <mathml:mi>a</mathml:mi>
-                                    <mathml:mi>b</mathml:mi>
-                                    <mathml:mi>cos</mathml:mi>
-                                    <mathml:mi>&gamma;</mathml:mi>
-                                </mathml:msqrt>
-                            </mathml:mrow></mathml:math>
+                                    <mathml:msup>
+                                        <mathml:mn>2</mathml:mn>
+                                        <mathml:msup>
+                                            <mathml:mi>n</mathml:mi>
+                                        </mathml:msup>
+                                    </mathml:msup>
+                                </mathml:mrow>
+                            </mathml:math>
                         </entry>
-                        <entry><code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code></entry>
+                        <entry>
+                            <code>2**(2**n)</code>
+                        </entry>
                     </row>
                     <row>
                         <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mfrac>
-                                    <mathml:mrow>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
+                                            <mathml:mo>-</mathml:mo>
+                                            <mathml:mi>b</mathml:mi>
+                                            <mathml:mo>+</mathml:mo>
+                                            <mathml:msqrt>
+                                                <mathml:mi>b</mathml:mi>
+                                                <mathml:msup>
+                                                    <mathml:mn>2</mathml:mn>
+                                                </mathml:msup>
+                                                <mathml:mo>-</mathml:mo>
+                                                <mathml:mn>4</mathml:mn>
+                                                <mathml:mi>a</mathml:mi>
+                                                <mathml:mi>c</mathml:mi>
+                                            </mathml:msqrt>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mn>2</mathml:mn>
+                                            <mathml:mi>a</mathml:mi>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
+
+                                </mathml:mrow>
+                            </mathml:math>
+                        </entry>
+                        <entry>
+                            <code>(-b+sqrt(b**2-4*a*c))/(2*a)</code>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:msqrt>
+                                        <mathml:mi>p</mathml:mi>
+                                        <mathml:mo>(</mathml:mo>
+                                        <mathml:mi>p</mathml:mi>
+                                        <mathml:mo>-</mathml:mo>
                                         <mathml:mi>a</mathml:mi>
-                                        <mathml:mi>d</mathml:mi>
+                                        <mathml:mo>)</mathml:mo>
+                                        <mathml:mo>(</mathml:mo>
+                                        <mathml:mi>p</mathml:mi>
+                                        <mathml:mo>-</mathml:mo>
+                                        <mathml:mi>b</mathml:mi>
+                                        <mathml:mo>)</mathml:mo>
+                                        <mathml:mo>(</mathml:mo>
+                                        <mathml:mi>p</mathml:mi>
+                                        <mathml:mo>-</mathml:mo>
+                                        <mathml:mi>c</mathml:mi>
+                                        <mathml:mo>)</mathml:mo>
+                                    </mathml:msqrt>
+                                </mathml:mrow>
+                            </mathml:math>
+                        </entry>
+                        <entry>
+                            <code>sqrt(p*(p-a)*(p-b)*(p-c))</code>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
+                                            <mathml:mi>a</mathml:mi>
+                                            <mathml:mo>+</mathml:mo>
+                                            <mathml:mi>b</mathml:mi>
+                                            <mathml:mo>+</mathml:mo>
+                                            <mathml:mi>c</mathml:mi>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mn>2</mathml:mn>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
+                                </mathml:mrow>
+                            </mathml:math>
+                        </entry>
+                        <entry>
+                            <code>(a+b+c)/2</code>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:msqrt>
+                                        <mathml:mi>a</mathml:mi>
+                                        <mathml:msup>
+                                            <mathml:mn>2</mathml:mn>
+                                        </mathml:msup>
                                         <mathml:mo>+</mathml:mo>
                                         <mathml:mi>b</mathml:mi>
-                                        <mathml:mi>c</mathml:mi>
-                                    </mathml:mrow>
-                                    <mathml:mrow>
+                                        <mathml:msup>
+                                            <mathml:mn>2</mathml:mn>
+                                        </mathml:msup>
+                                        <mathml:mo>+</mathml:mo>
+                                        <mathml:mn>2</mathml:mn>
+                                        <mathml:mi>a</mathml:mi>
                                         <mathml:mi>b</mathml:mi>
-                                        <mathml:mi>d</mathml:mi>
-                                    </mathml:mrow>
-                                </mathml:mfrac>
-                            </mathml:mrow></mathml:math>
+                                        <mathml:mi>cos</mathml:mi>
+                                        <mathml:mi>&gamma;</mathml:mi>
+                                    </mathml:msqrt>
+                                </mathml:mrow>
+                            </mathml:math>
                         </entry>
-                        <entry><code>(a*d+b*c)/(b*d)</code></entry>
+                        <entry>
+                            <code>sqrt(a**2+b**2-2*a*b*cos(gamma))</code>
+                        </entry>
                     </row>
                     <row>
                         <entry>
-                            <mathml:math><mathml:mrow>
-                                <mathml:mi>sin</mathml:mi>
-                                <mathml:mi>&alpha;</mathml:mi>
-                                <mathml:mi>cos</mathml:mi>
-                                <mathml:mi>&beta;</mathml:mi>
-                                <mathml:mo>+</mathml:mo>
-                                <mathml:mi>cos</mathml:mi>
-                                <mathml:mi>&alpha;</mathml:mi>
-                                <mathml:mi>sin</mathml:mi>
-                                <mathml:mi>&beta;</mathml:mi>
-                            </mathml:mrow></mathml:math>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mfrac>
+                                        <mathml:mrow>
+                                            <mathml:mi>a</mathml:mi>
+                                            <mathml:mi>d</mathml:mi>
+                                            <mathml:mo>+</mathml:mo>
+                                            <mathml:mi>b</mathml:mi>
+                                            <mathml:mi>c</mathml:mi>
+                                        </mathml:mrow>
+                                        <mathml:mrow>
+                                            <mathml:mi>b</mathml:mi>
+                                            <mathml:mi>d</mathml:mi>
+                                        </mathml:mrow>
+                                    </mathml:mfrac>
+                                </mathml:mrow>
+                            </mathml:math>
                         </entry>
-                        <entry><code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code></entry>
+                        <entry>
+                            <code>(a*d+b*c)/(b*d)</code>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>
+                            <mathml:math>
+                                <mathml:mrow>
+                                    <mathml:mi>sin</mathml:mi>
+                                    <mathml:mi>&alpha;</mathml:mi>
+                                    <mathml:mi>cos</mathml:mi>
+                                    <mathml:mi>&beta;</mathml:mi>
+                                    <mathml:mo>+</mathml:mo>
+                                    <mathml:mi>cos</mathml:mi>
+                                    <mathml:mi>&alpha;</mathml:mi>
+                                    <mathml:mi>sin</mathml:mi>
+                                    <mathml:mi>&beta;</mathml:mi>
+                                </mathml:mrow>
+                            </mathml:math>
+                        </entry>
+                        <entry>
+                            <code>sin(alpha)*cos(beta)+cos(alpha)*sin(beta)</code>
+                        </entry>
                     </row>
                 </tbody>
             </table>
