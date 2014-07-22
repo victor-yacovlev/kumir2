@@ -116,7 +116,7 @@ signals:
     void resetModule(const QString & pluginName);
     void aboutToStop();
     void clearMarginRequest(int,int);
-
+    void userTerminated(); // acts like QThread::finished()
 
 protected :
     void run();

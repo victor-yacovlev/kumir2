@@ -53,7 +53,7 @@ void Run::stop()
     stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1, 0u, 0u);
-//        emit finished();
+        emit userTerminated();
     }
 }
 

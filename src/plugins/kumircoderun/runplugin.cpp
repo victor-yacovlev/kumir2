@@ -60,6 +60,10 @@ KumirRunPlugin::KumirRunPlugin()
     connect (pRun_, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (pRun_, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (pRun_, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
+
+    // The signal userTerminated() has the same effect like QThread::finished()
+    connect (pRun_, SIGNAL(userTerminated()), this, SLOT(handleThreadFinished()));
+
     connect (pRun_, SIGNAL(lineChanged(int,quint32,quint32)), this, SIGNAL(lineChanged(int,quint32,quint32)));
     connect (pRun_, SIGNAL(updateStepsCounter(quint64)), this, SIGNAL(updateStepsCounter(quint64)));
     connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
