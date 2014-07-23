@@ -286,16 +286,18 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
 {
     bool ok = false;
     QString sourceProgramPath;
+    sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+    Shared::RunInterface::SourceInfo sourceInfo;
+    sourceInfo.sourceFileName = sourceProgramPath;
     if (editor_->analizer()->compiler()) {
         editor_->ensureAnalized();
         const AST::DataPtr ast = editor_->analizer()->compiler()->abstractSyntaxTree();
-        sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
         QByteArray bufArray;
         kumirCodeGenerator()->setOutputToText(false);
         kumirCodeGenerator()->setDebugLevel(debugLevel);
         QString fileNameSuffix, mimeType;
         kumirCodeGenerator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
-        runner()->loadProgram(sourceProgramPath, bufArray);
+        runner()->loadProgram(sourceProgramPath, bufArray, sourceInfo);
     }
     else {
         const KumFile::Data source = editor_->documentContents();
@@ -304,7 +306,7 @@ void KumirProgram::prepareKumirRunner(Shared::GeneratorInterface::DebugLevel deb
                 ? source.visibleText + "\n" + source.hiddenText
                 : source.visibleText;
         const QByteArray sourceData = sourceText.toUtf8();
-        ok = runner()->loadProgram(sourceProgramPath, sourceData);
+        ok = runner()->loadProgram(sourceProgramPath, sourceData, sourceInfo);
     }
     const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
     QDir::setCurrent(newCwd);

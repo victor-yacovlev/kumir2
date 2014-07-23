@@ -30,6 +30,7 @@ class Analizer
 public:
 
     explicit Analizer(class KumirAnalizerPlugin * plugin, bool teacherMode);
+    Shared::AnalizerInterface * plugin();
 
     ~Analizer();
 
@@ -78,6 +79,7 @@ private:
     const AST::AlgorithmPtr findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const;
     struct AnalizerPrivate * d;
     bool teacherMode_;
+    class KumirAnalizerPlugin * plugin_;
 
 
 

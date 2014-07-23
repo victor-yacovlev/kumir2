@@ -14,7 +14,11 @@
 
 #include <string>
 
-namespace Shared { namespace Analizer {
+namespace Shared {
+
+class AnalizerInterface;
+
+namespace Analizer {
 
 struct Error
 {
@@ -48,6 +52,8 @@ public:
         if (!me) return 0;
         return qobject_cast<HelperInterface*>(me);
     }
+
+    virtual AnalizerInterface * plugin() = 0;
 
 };
 

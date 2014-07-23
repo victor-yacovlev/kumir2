@@ -30,6 +30,8 @@ uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 EditorPlane::EditorPlane(EditorInstance * editor)
     : QWidget(editor)
     , editor_(editor)
+    , analizerHelper_(0)
+    , caseInsensitive_(false)
     , highlightedTextLineNumber_(-1)
     , highlightedTextColumnStartNumber_(0u)
     , highlightedTextColumnEndNumber_(0u)
@@ -43,6 +45,11 @@ EditorPlane::EditorPlane(EditorInstance * editor)
     , selectionInProgressFlag_(false)
     , marginHintBox_(new QLabel(this, Qt::ToolTip))
 {
+    if (editor->analizer()) {
+        caseInsensitive_ = editor->analizer()->plugin()->caseInsensitiveGrammatic();
+        analizerHelper_ = editor->analizer()->helper();
+    }
+
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setFocusPolicy(Qt::StrongFocus);
 
@@ -2485,7 +2492,26 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             }
             else {
                 // Draw a symbol using obtained format
-                p->drawText(offset, y,  QString(text[j]));
+                QChar ch = text[j];
+                if (curType & LxTypeName || curType == LxTypePrimaryKwd || curType == LxTypeSecondaryKwd) {
+                    if (caseInsensitive_ && analizerHelper_ && text[j].isLetterOrNumber()) {
+                        int wordStart = j;
+                        int wordEnd = j;
+                        while (text[wordStart].isLetterOrNumber() && wordStart > 0)
+                            wordStart--;
+                        if (!text[wordStart].isLetterOrNumber())
+                            wordStart++;
+                        while (wordEnd < text.length() && text[wordEnd].isLetterOrNumber())
+                            wordEnd++;
+                        int wordLen = wordEnd - wordStart;
+                        if (wordLen > 0) {
+                            const QString word = text.mid(wordStart, wordLen);
+                            const QString capWord = analizerHelper_->correctCapitalization(word, curType);
+                            ch = capWord[j-wordStart];
+                        }
+                    }
+                }
+                p->drawText(offset, y,  QString(ch));
             }
 
             // If there is an error then draw underline

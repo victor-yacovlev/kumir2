@@ -98,6 +98,8 @@ protected slots:
 private:
     int timerId_;
     class EditorInstance * editor_;
+    Shared::Analizer::HelperInterface * analizerHelper_;
+    bool caseInsensitive_;
 
     QPoint marginMousePressedPoint_;
     QPoint delimeterRuleMousePressedPoint_;

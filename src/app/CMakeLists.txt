@@ -7,6 +7,9 @@ if(APPLE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'../Plugins'")
 endif(APPLE)
 
+find_package(PythonLibs 3.2)
+find_package(Llvm)
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
     message(STATUS "Found explicit version info")
     include(${CMAKE_SOURCE_DIR}/version_info.cmake)
@@ -73,22 +76,36 @@ if(MSVC_IDE)
 endif (MSVC_IDE)
 
 if(NOT APPLE)
+    # Various GUI configurations
     add_subdirectory(kumir2-classic)
     add_subdirectory(kumir2-highgrade)
     add_subdirectory(kumir2-ide)
     add_subdirectory(kumir2-teacher)
-    #add_subdirectory(kumir2-python)    
+
+    # Check if Python present in this git branch and Python3 libraries found
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-python")
+        if(PYTHONLIBS_FOUND)
+            add_subdirectory(kumir2-python)
+        else()
+            message(WARNING "No Python 3.x libs found, building of Python language support disabled")
+        endif()
+    endif() # kumir2-python exists
+
+    # Check if Pascal present in this git branch
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-pascal")
+        add_subdirectory(kumir2-pascal)
+    endif() # kumir2-pascal exists
 endif(NOT APPLE)
 
 if(APPLE)
+    # Apple platform has exact one GUI configuration
     add_subdirectory(kumir2-macx)
 endif(APPLE)
 
-#add_subdirectory(kumir2-cc)
 add_subdirectory(kumir2-bc)
 add_subdirectory(kumir2-xrun)
 
-find_package(Llvm)
+# kumir2-llvmc is optional in case if LLVM libraries present
 if(Llvm_FOUND)
     add_subdirectory(kumir2-llvmc)
 else()

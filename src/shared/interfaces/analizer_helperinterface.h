@@ -1,6 +1,7 @@
 #ifndef ANALIZER_HELPERINTERFACE_H
 #define ANALIZER_HELPERINTERFACE_H
 
+#include "dataformats/lexem.h"
 #include "dataformats/ast.h"
 #include "error.h"
 
@@ -33,7 +34,11 @@ public:
     virtual void connectSignalImportsChanged(
             QObject * receiver,
             const char * slot /* void (QStringList localizedNames) */
-            ) { Q_UNUSED(receiver); Q_UNUSED(slot); }
+            ) { Q_UNUSED(receiver); Q_UNUSED(slot); }   
+    /** Corrects lexem capitalization for case-insensetive grammatics (optional)
+     */
+    inline virtual QString correctCapitalization(const QString & name, LexemType lxType) const
+    { return name; }
 };
 
 

@@ -36,8 +36,14 @@ void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
 Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
     : QObject(plugin)
     , teacherMode_(teacherMode)
+    , plugin_(plugin)
 {
     d = new AnalizerPrivate(plugin, this);
+}
+
+Shared::AnalizerInterface * Analizer::plugin()
+{
+    return plugin_;
 }
 
 QString Analizer::suggestFileName() const
