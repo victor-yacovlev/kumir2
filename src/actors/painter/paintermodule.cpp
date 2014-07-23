@@ -7,9 +7,14 @@ You should change it corresponding to functionality.
 */
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include "paintermodule.h"
 #include "painterwindow.h"
+#include "painterview.h"
 #include "paintertools.h"
 
 namespace ActorPainter {
@@ -17,15 +22,52 @@ namespace ActorPainter {
 PainterModule::PainterModule(ExtensionSystem::KPlugin * parent)
     : PainterModuleBase(parent)
 {
+    m_window = 0;
+    dirty_ = true;
+}
+
+void PainterModule::createGui()
+{
     m_window = new PainterWindow(this, 0);
     view = m_window->view();
-    originalCanvas = new QImage(QSize(640,480), QImage::Format_RGB32);
+    originalCanvas.reset(new QImage(QSize(640,480), QImage::Format_RGB32));
     originalCanvas->fill(QColor("white").rgb());
-    canvas = new QImage(QSize(640,480), QImage::Format_RGB32);
+    canvas.reset(new QImage(QSize(640,480), QImage::Format_RGB32));
     canvas->fill(QColor("white").rgb());
     canvasLock = new QMutex;
-    m_window->setCanvas(canvas, canvasLock);
+    m_window->setCanvasSize(canvas->size());
+    dirtyLock_ = new QMutex;
+    startTimer(50);
     reset();
+}
+
+QString PainterModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
+}
+
+void PainterModule::timerEvent(QTimerEvent *event)
+{
+    dirtyLock_->lock();
+    if (dirty_) {
+        canvasLock->lock();
+        if (view) {
+            view->setCanvasData(*canvas);
+        }
+        canvasLock->unlock();
+        dirty_ = false;
+    }
+    dirtyLock_->unlock();
+    event->accept();
+}
+
+void PainterModule::markViewDirty()
+{
+    QMutexLocker l(dirtyLock_);
+    dirty_ = true;
 }
 
 QList<ExtensionSystem::CommandLineParameter> PainterModule::acceptableCommandLineParameters()
@@ -35,8 +77,6 @@ QList<ExtensionSystem::CommandLineParameter> PainterModule::acceptableCommandLin
 
 void PainterModule::reset()
 {
-    QImage * del = canvas;
-
     point = QPoint(0,0);
     font = QFont();
     brush = QBrush();
@@ -44,12 +84,10 @@ void PainterModule::reset()
     transparent = false;
     pen = QPen();
     canvasLock->lock();
-    canvas = new QImage(originalCanvas->copy());
-    m_window->setCanvas(canvas, canvasLock);
+    canvas.reset(new QImage(originalCanvas->copy()));
+    m_window->setCanvasSize(originalCanvas->size());
     canvasLock->unlock();
-    if (view)
-        view->update();
-    delete del;
+    markViewDirty();
 }
 
 void PainterModule::setAnimationEnabled(bool )
@@ -77,49 +115,49 @@ static Color colorFromCss(const QString & css)
 
 Color PainterModule::runCMYK(const int c, const int m, const int y, const int k)
 {
-    return colorFromCss(QString::fromAscii("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k));
+    return colorFromCss(QString::fromLatin1("cmyk(%1,%2,%3,%4)").arg(c).arg(m).arg(y).arg(k));
 }
 
 
 Color PainterModule::runCMYKA(const int c, const int m, const int y, const int k, const int a)
 {
-    return colorFromCss(QString::fromAscii("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a));
+    return colorFromCss(QString::fromLatin1("cmyka(%1,%2,%3,%4,%5)").arg(c).arg(m).arg(y).arg(k).arg(a));
 }
 
 
 Color PainterModule::runHSL(const int h, const int s, const int l)
 {
-    return colorFromCss(QString::fromAscii("hsl(%1,%2,%3)").arg(h).arg(s).arg(l));
+    return colorFromCss(QString::fromLatin1("hsl(%1,%2,%3)").arg(h).arg(s).arg(l));
 }
 
 
 Color PainterModule::runHSLA(const int h, const int s, const int l, const int a)
 {
-    return colorFromCss(QString::fromAscii("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a));
+    return colorFromCss(QString::fromLatin1("hsla(%1,%2,%3,%4)").arg(h).arg(s).arg(l).arg(a));
 }
 
 
 Color PainterModule::runHSV(const int h, const int s, const int v)
 {
-    return colorFromCss(QString::fromAscii("hsv(%1,%2,%3)").arg(h).arg(s).arg(v));
+    return colorFromCss(QString::fromLatin1("hsv(%1,%2,%3)").arg(h).arg(s).arg(v));
 }
 
 
 Color PainterModule::runHSVA(const int h, const int s, const int v, const int a)
 {
-    return colorFromCss(QString::fromAscii("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a));
+    return colorFromCss(QString::fromLatin1("hsva(%1,%2,%3,%4)").arg(h).arg(s).arg(v).arg(a));
 }
 
 
 Color PainterModule::runRGB(const int r, const int g, const int b)
 {
-    return colorFromCss(QString::fromAscii("rgb(%1,%2,%3)").arg(r).arg(g).arg(b));
+    return colorFromCss(QString::fromLatin1("rgb(%1,%2,%3)").arg(r).arg(g).arg(b));
 }
 
 
 Color PainterModule::runRGBA(const int r, const int g, const int b, const int a)
 {
-    return colorFromCss(QString::fromAscii("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a));
+    return colorFromCss(QString::fromLatin1("rgba(%1,%2,%3,%4)").arg(r).arg(g).arg(b).arg(a));
 }
 
 
@@ -141,11 +179,10 @@ void PainterModule::runLoadPage(const QString& fileName)
     if (!QFile::exists(fileName)) {
         setError(tr("File not exists: %s").arg(fileName));
     }
-    QImage * oldCanvas = canvas;
-    canvas = new QImage(fileName);
+    canvas.reset(new QImage(fileName));
     if (m_window)
-        m_window->setCanvas(canvas, canvasLock);
-    delete oldCanvas;
+        m_window->setCanvasSize(canvas->size());
+    markViewDirty();
 }
 
 
@@ -167,15 +204,13 @@ void PainterModule::runFill(const int x, const int y)
             canvasLock->lock();
             canvas->setPixel(pnt, brush.color().rgb());
             canvasLock->unlock();
-            view->update();
             stack.push(QPoint(pnt.x()-1, pnt.y()));
             stack.push(QPoint(pnt.x()+1, pnt.y()));
             stack.push(QPoint(pnt.x(), pnt.y()-1));
             stack.push(QPoint(pnt.x(), pnt.y()+1));
         }
     }
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -190,14 +225,13 @@ void PainterModule::runSetBrush(const Color& cs)
 void PainterModule::runLine(const int x0, const int y0, const int x, const int y)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawLine(x0,y0,x,y);
     canvasLock->unlock();
     p.end();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -225,38 +259,35 @@ void PainterModule::runPolygon(const int N, const QVector<int> &xx, const QVecto
 void PainterModule::drawPolygon(const QVector<QPoint> &points)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawPolygon(QPolygon(points));
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
 void PainterModule::runWrite(const int x, const int y, const QString& text)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.setFont(font);
     p.drawText(x,y,text);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
 void PainterModule::runNewPage(const int width, const int height, const Color& backgroundColor)
 {
     QColor clr(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-    QImage * oldCanvas = canvas;
-    canvas = new QImage(width,height,QImage::Format_RGB32);
+    canvas.reset(new QImage(width,height,QImage::Format_RGB32));
     canvas->fill(clr.rgb());
-    m_window->setCanvas(canvas, canvasLock);
-    delete oldCanvas;
+    m_window->setCanvasSize(canvas->size());
+    markViewDirty();
 }
 
 
@@ -285,13 +316,12 @@ void PainterModule::runSetPen(const int width, const Color& cs)
 void PainterModule::runPoint(const int x, const int y, const Color& color)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     const QColor qColor(color.r, color.g, color.b, color.a);
     p.setPen(QPen(qColor));
     p.drawPoint(x,y);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 
@@ -466,13 +496,12 @@ void PainterModule::runSetFont(const QString& family, const int size, const bool
 void PainterModule::runEllipse(const int x, const int y, const int r1, const int r2)
 {
     canvasLock->lock();
-    QPainter p(canvas);
+    QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
     p.drawEllipse(x, y, r1, r2);
     canvasLock->unlock();
-    if (view)
-        view->update();
+    markViewDirty();
 }
 
 

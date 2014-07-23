@@ -2,7 +2,11 @@
 #define COREGUI_TABWIDGET_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace CoreGUI {
 
@@ -12,6 +16,7 @@ class TabWidget : public QTabWidget
 public:
     explicit TabWidget(QWidget *parent = 0);
     void disableTabs();
+    QSize minimumSizeHint() const /*override*/;
 protected:
     void paintEvent(QPaintEvent *);
 };

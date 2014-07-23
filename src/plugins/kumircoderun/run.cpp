@@ -1,4 +1,8 @@
-#include <cstdlib>
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
+extern "C" {
+#include <stdlib.h>
+#include <string.h>
+}
 #include "stdlib/kumirstdlib.hpp"
 #include "vm/variant.hpp"
 #include "vm/vm.hpp"
@@ -23,10 +27,10 @@ Run::Run(QObject *parent) :
 
     originFunctionDeep_ = 0;
     interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
-    stoppingMutex_.reset(new QMutex);
-    stepDoneMutex_.reset(new QMutex);
-    algDoneMutex_.reset(new QMutex);
-    interactDoneMutex_.reset(new QMutex);
+    stoppingMutex_ = new QMutex;
+    stepDoneMutex_ = new QMutex;
+    algDoneMutex_ = new QMutex;
+    interactDoneMutex_ = new QMutex;
     runMode_ = RM_ToEnd;
 
     vm->setDebuggingHandler(this);
@@ -45,11 +49,11 @@ void Run::unlockVMMutex()
 
 void Run::stop()
 {
-    QMutexLocker l(stoppingMutex_.data());
+    QMutexLocker l(stoppingMutex_);
     stoppingFlag_ = true;
     if (!isRunning()) {
         emit lineChanged(-1, 0u, 0u);
-        emit finished();
+        emit userTerminated();
     }
 }
 
@@ -160,7 +164,7 @@ void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * in
             ? QVector<int>()
             : QVector<int>(indeces[3]);
     if (ind.size() > 0)
-        qMemCopy(ind.data(), indeces, indeces[3] * sizeof(int));
+        ::memcpy(ind.data(), indeces, indeces[3] * sizeof(int));
     variablesModel_->emitValueChanged(variable, ind);
 }
 
@@ -315,14 +319,15 @@ int Run::effectiveLineNo() const
 
 bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
 {
+    Kumir::EncodingError encodingError;
     String errorMessage;
     bool ok = vm->loadProgramFromBinaryBuffer(stream, true, filename, errorMessage);
     if (!ok) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
-        msg = Kumir::Coder::encode(Kumir::CP866, errorMessage);
+        msg = Kumir::Coder::encode(Kumir::CP866, errorMessage, encodingError);
 #else
-        msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage);
+        msg = Kumir::Coder::encode(Kumir::UTF8, errorMessage, encodingError);
 #endif
         std::cerr << msg << std::endl;
         programLoadError_ = QString::fromUtf8("Ошибка загрузки программы: %1")
@@ -335,13 +340,14 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
 
 void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
 {
+    Kumir::EncodingError encodingError;
     String error;
     if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
         std::string msg;
 #if defined(WIN32) || defined(_WIN32)
-        msg = Kumir::Coder::encode(Kumir::CP866, error);
+        msg = Kumir::Coder::encode(Kumir::CP866, error, encodingError);
 #else
-        msg = Kumir::Coder::encode(Kumir::UTF8, error);
+        msg = Kumir::Coder::encode(Kumir::UTF8, error, encodingError);
 #endif
         std::cerr << msg << std::endl;
     }

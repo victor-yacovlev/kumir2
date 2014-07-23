@@ -25,6 +25,9 @@ class GdbRunPlugin
         , public RunInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.GDBRun" FILE "")
+#endif
     Q_INTERFACES(Shared::RunInterface)
 public:
     explicit GdbRunPlugin();
@@ -41,6 +44,7 @@ public:
     void runTesting();
     bool isTestingRun() const;
     void terminate();
+    void terminateAndWaitForStopped();
     bool hasMoreInstructions() const;
     bool hasTestingEntryPoint() const;
     int currentLineNo() const;

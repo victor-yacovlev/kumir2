@@ -34,10 +34,10 @@ extern bool parceJSON(const QScriptValue &value, Task &task)
         if (!strData.isEmpty() && !mimetype.isEmpty()) {
             QByteArray decoded;
             if (encoding=="base64") {
-                decoded = QByteArray::fromBase64(strData.toAscii());
+                decoded = QByteArray::fromBase64(strData.toLatin1());
             }
             else if (encoding=="hex") {
-                decoded = QByteArray::fromHex(strData.toAscii());
+                decoded = QByteArray::fromHex(strData.toLatin1());
             }
             else {
                 decoded = strData.toLocal8Bit();
@@ -83,7 +83,7 @@ QString encodeData(const QByteArray &data)
     qDebug() << "Store binary data of size " << data.size() << " with MD5: " << hash.result().toHex();
     QByteArray stage1 = qCompress(data, 9);
     QByteArray stage2 = stage1.toBase64();
-    return QString::fromAscii(stage2);
+    return QString::fromLatin1(stage2);
 }
 
 extern QString generateJSON(const Task &task)
@@ -96,7 +96,7 @@ extern QString generateJSON(const Task &task)
         QString d = mime.startsWith("text/")? screenString(task.hintData) : encodeData(task.hintData);
         bool compressed = !mime.startsWith("text/");
         const QString encoding = mime.startsWith("text/")? "notencoded" : "base64";
-        hint = QString::fromAscii("{ mimetype: \"%1\", encoding: \"%4\", compressed: %2, data: \"%3\" }")
+        hint = QString::fromLatin1("{ mimetype: \"%1\", encoding: \"%4\", compressed: %2, data: \"%3\" }")
                 .arg(mime)
                 .arg(compressed? "true" : "false")
                 .arg(d)

@@ -69,6 +69,19 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
     return result;
 }
 
+void SecondaryWindow::changeDockPlace(DockWindowPlace *dockPlace)
+{
+    Q_ASSERT(dockContainer_);
+    SecondaryWindowImplementationInterface * dock =
+            createDockContainer(dockContainer_->title(), dockPlace);
+    dock->setPairedContainer(windowContainer_);
+    dockPlace->registerWindowHere(this);
+    windowContainer_->setPairedContainer(dock);
+    QObject* old = dynamic_cast<QObject*>(dockContainer_);
+    old->deleteLater();
+    dockContainer_ = dock;
+}
+
 SecondaryWindowImplementationInterface *
 SecondaryWindow::createWindowContainer(const QString &title,
                                        const QIcon & icon,

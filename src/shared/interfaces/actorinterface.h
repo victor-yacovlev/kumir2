@@ -104,6 +104,9 @@ public /*methods*/:
     /** List of actor dependencies */
     inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
 
+    /** Default parameters for template names */
+    inline virtual QVariantList defaultTemplateParameters() const { return QVariantList(); }
+
 
     /* === Actor control methods === */
 
@@ -190,6 +193,15 @@ public /*methods*/:
     /** The destructor. Must be declared virtual */
     inline virtual ~ActorInterface() {}
 };
+
+template <class StringType>
+StringType actorCanonicalName(const StringType & fullyQualifiedName)
+{
+    if (! fullyQualifiedName.contains("%") )
+        return fullyQualifiedName;
+    int pos = fullyQualifiedName.indexOf("%");
+    return fullyQualifiedName.left(pos).simplified();
+}
 
 }
 Q_DECLARE_INTERFACE(Shared::ActorInterface, "kumir2.Actor")

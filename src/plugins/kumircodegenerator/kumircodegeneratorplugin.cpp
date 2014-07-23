@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include <sstream>
 #include <cstdlib>
 #include "stdlib/kumirstdlib.hpp"
@@ -10,8 +11,8 @@
 using namespace KumirCodeGenerator;
 using namespace Bytecode;
 
-static const QString MIME_BYTECODE_BINARY   = QString::fromAscii("executable/kumir2-bytecode");
-static const QString MIME_BYTECODE_TEXT     = QString::fromAscii("text/plain");
+static const QString MIME_BYTECODE_BINARY   = QString::fromLatin1("executable/kumir2-bytecode");
+static const QString MIME_BYTECODE_TEXT     = QString::fromLatin1("text/plain");
 
 KumirCodeGeneratorPlugin::KumirCodeGeneratorPlugin()
     : KPlugin()
@@ -133,7 +134,7 @@ void KumirCodeGeneratorPlugin::generateExecuable(
         out = QByteArray(text.c_str(), text.size());
         mimeType = MIME_BYTECODE_TEXT;
         fileSuffix = ".kod.txt";
-        qDebug() << QString::fromAscii(out);
+        qDebug() << QString::fromLatin1(out);
     }
     else {
         out.clear();
@@ -147,5 +148,6 @@ void KumirCodeGeneratorPlugin::generateExecuable(
 }
 
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCodeGeneratorPlugin)
+#endif

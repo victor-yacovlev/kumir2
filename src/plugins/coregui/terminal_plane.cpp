@@ -364,7 +364,7 @@ void Plane::updateScrollBars()
 void Plane::resizeEvent(QResizeEvent *e)
 {
     foreach (OneSession * session, terminal_->sessions_) {
-        session->relayout(e->size().width() - 2 * SessionMargin);
+        session->relayout(e->size().width() - 2 * SessionMargin, 0, true);
     }
 
     QWidget::resizeEvent(e);
@@ -403,15 +403,24 @@ void Plane::paintEvent(QPaintEvent *e)
     p.setRenderHint(QPainter::TextAntialiasing, true);    
 
     QPoint off = offset();
+    const QRect dirtyRect = e->rect();
     int y = SessionMargin;
     for (int i=0; i<terminal_->sessions_.size(); i++) {
         OneSession * session = terminal_->sessions_[i];
         const QSize sessionSize = session->visibleSize();
-        p.save();
-        p.translate(off.x(), y+off.y());
-        session->draw(p);
+        const QRect sessionRect(off + QPoint(0, y), sessionSize);
+        bool drawThisSession = dirtyRect.intersects(sessionRect);
+        if (drawThisSession) {
+            p.save();
+            p.translate(off.x(), y+off.y());
+            const QRect sessionDirtyRect = QRect(
+                        0, dirtyRect.top()-sessionRect.top(),
+                        width(), dirtyRect.height()
+                        );
+            session->draw(p, sessionDirtyRect);
+            p.restore();
+        }
         y += sessionSize.height() + 2 * SessionMargin;
-        p.restore();
         if (i < terminal_->sessions_.size() - 1) {
             p.save();
             p.setPen(QColor(Qt::lightGray));

@@ -10,13 +10,18 @@ You should change it corresponding to functionality.
 #define PAINTERMODULE_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include "extensionsystem/kplugin.h"
 #include "paintermodulebase.h"
 
 namespace ActorPainter {
 
 class PainterWindow;
+class PainterView;
 class PainterNewImageDialog;
 
 class PainterModule
@@ -78,20 +83,26 @@ public:
     // GUI access methods
     QWidget* mainWidget() const;
     inline QWidget* pultWidget() const { return nullptr; }
+    QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 
-private:
+private:    
+    void createGui();
+    void timerEvent(QTimerEvent *);
+    void markViewDirty();
     void drawPolygon(const QVector<QPoint> & points);
-    class PainterWindow * m_window;
-    QImage * canvas;
-    QImage * originalCanvas;
+    PainterWindow * m_window;
+    QScopedPointer<QImage> canvas;
+    QScopedPointer<QImage> originalCanvas;
     QMutex * canvasLock;
     QPoint point;
     QFont font;
     QBrush brush;
     QPen pen;
     bool transparent;
-    QWidget * view;
+    PainterView * view;
     Qt::BrushStyle style;
+    bool dirty_;
+    QMutex* dirtyLock_;
 
 
 }; // PainterModule

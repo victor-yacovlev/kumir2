@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "util.h"
 
 #include "extensionsystem/pluginmanager.h"
@@ -90,13 +91,13 @@ AnyValue QVariantToValue(const QVariant & var, int dim)
     return aval;
 }
 
-ActorInterface* findActor(const std::string & moduleAsciiName)
+ActorInterface* findActor(const std::string & moduleAsciiName, bool allowLoad)
 {
     const QByteArray qModuleName = QByteArray(moduleAsciiName.c_str());
-    return findActor(qModuleName);
+    return findActor(qModuleName, allowLoad);
 }
 
-ActorInterface* findActor(const QByteArray & qModuleName)
+ActorInterface* findActor(const QByteArray & qModuleName, bool allowLoad)
 {
     using namespace ExtensionSystem;
 
@@ -106,10 +107,25 @@ ActorInterface* findActor(const QByteArray & qModuleName)
     ActorInterface * actor = nullptr;
     foreach ( KPlugin * p, actorPlugins ) {
         actor = qobject_cast<ActorInterface*>(p);
-        if (actor && actor->asciiModuleName()==qModuleName) {
-            break;
+        if (actor) {
+            QByteArray canonicalName = actor->asciiModuleName();
+            const int end = canonicalName.indexOf("%");
+            if (-1 != end) {
+                canonicalName = canonicalName.left(end).trimmed();
+            }
+            if (qModuleName == canonicalName) {
+                break;
+            }
         }
         actor = nullptr;
+    }
+
+    if (!actor && allowLoad) {
+        const QString success =
+                PluginManager::instance()->loadExtraModule("Actor"+qModuleName);
+        if (success.length() == 0) {
+            return findActor(qModuleName, false);
+        }
     }
 
     return actor;

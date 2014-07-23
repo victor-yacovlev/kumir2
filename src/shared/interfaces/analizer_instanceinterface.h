@@ -14,7 +14,11 @@
 
 #include <string>
 
-namespace Shared { namespace Analizer {
+namespace Shared {
+
+class AnalizerInterface;
+
+namespace Analizer {
 
 struct Error
 {
@@ -36,20 +40,11 @@ public:
     virtual QList<LineProp> lineProperties() const = 0;
     virtual QList<QPoint> lineRanks() const = 0;
     virtual LineProp lineProp(int lineNo, const QString & text) const = 0;
-    virtual QString correctCapitalization(const QString & name, LexemType lxType) const { return name; }
 
     inline virtual ASTCompilerInterface * compiler() {
         QObject * me = dynamic_cast<QObject*>(this);
         if (!me) return 0;
-        ASTCompilerInterface* i = qobject_cast<ASTCompilerInterface*>(me);
-        return i;
-    }
-
-    inline virtual ExternalExecutableCompilerInterface * externalExecutableCompiler() {
-        QObject * me = dynamic_cast<QObject*>(this);
-        if (!me) return 0;
-        ExternalExecutableCompilerInterface* i = qobject_cast<ExternalExecutableCompilerInterface*>(me);
-        return i;
+        return qobject_cast<ASTCompilerInterface*>(me);
     }
 
     inline virtual HelperInterface * helper() {
@@ -57,6 +52,8 @@ public:
         if (!me) return 0;
         return qobject_cast<HelperInterface*>(me);
     }
+
+    virtual AnalizerInterface * plugin() = 0;
 
 };
 

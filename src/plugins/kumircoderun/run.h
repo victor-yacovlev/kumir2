@@ -25,6 +25,11 @@ public:
     inline void unlock() {
         m->unlock();
     }
+    inline void reset() {
+        m->tryLock();
+        m->unlock();
+    }
+
     inline ~Mutex() { delete m; }
 private:
     QMutex * m;
@@ -111,7 +116,7 @@ signals:
     void resetModule(const QString & pluginName);
     void aboutToStop();
     void clearMarginRequest(int,int);
-
+    void userTerminated(); // acts like QThread::finished()
 
 protected :
     void run();
@@ -119,17 +124,17 @@ protected :
     RunMode runMode_;
 
     bool stoppingFlag_;
-    QScopedPointer<QMutex> stoppingMutex_;
+    QMutex* stoppingMutex_;
 
     bool stepDoneFlag_;
-    QScopedPointer<QMutex> stepDoneMutex_;
+    QMutex* stepDoneMutex_;
 
     bool algDoneFlag_;
-    QScopedPointer<QMutex> algDoneMutex_;
+    QMutex* algDoneMutex_;
 
     int originFunctionDeep_;
 
-    QScopedPointer<QMutex> interactDoneMutex_;
+    QMutex* interactDoneMutex_;
     bool interactDoneFlag_;
 
     QVariantList inputResult_;

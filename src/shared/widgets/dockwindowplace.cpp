@@ -6,6 +6,7 @@
 #include <QTabBar>
 #include <QResizeEvent>
 #include <QDebug>
+#include <QFileInfo> // used for line number debug information
 
 namespace Widgets {
 
@@ -14,9 +15,13 @@ DockWindowPlace::DockWindowPlace(QWidget *parent,
     : QTabWidget(parent)
     , pImpl_(new DockWindowPlaceImpl(this, settingsKey))
 {
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setAutoFillBackground(true);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setTabPosition(QTabWidget::South);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setVisible(false);
+    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 }
 
 void DockWindowPlace::tabInserted(int)
@@ -33,6 +38,11 @@ void DockWindowPlace::tabRemoved(int)
     setVisible(count() > 0);
     tabBar()->setVisible(count() > 1);
     emit visiblityRequest(isVisible(), QSize());
+}
+
+void DockWindowPlace::activate(const QSize &)
+{
+    emit visiblityRequest(true, QSize());
 }
 
 void DockWindowPlace::resizeEvent(QResizeEvent *e)

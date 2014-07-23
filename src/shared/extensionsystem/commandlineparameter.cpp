@@ -104,22 +104,22 @@ QString CommandLineParameter::toHelpLine() const
             if (valueRequired_)
                 firstColumn = shortDescription_.leftJustified(30);
             else {
-                firstColumn = QString::fromAscii("%1...%2")
+                firstColumn = QString::fromLatin1("%1...%2")
                         .arg(shortDescription_.arg(1)).arg(shortDescription_.arg("n"))
                         .leftJustified(30);
             }
         }
         else {
-            firstColumn = QString::fromAscii("-%1=<%2>")
+            firstColumn = QString::fromLatin1("-%1=<%2>")
                     .arg(shortName_).arg(type).leftJustified(10);
-            secondColumn = QString::fromAscii("--%1=<%2>")
+            secondColumn = QString::fromLatin1("--%1=<%2>")
                     .arg(longName_).arg(type).leftJustified(20);
         }
     }
     else {
-        firstColumn = QString::fromAscii("-%1")
+        firstColumn = QString::fromLatin1("-%1")
                 .arg(shortName_).leftJustified(10);
-        secondColumn = QString::fromAscii("--%1")
+        secondColumn = QString::fromLatin1("--%1")
                 .arg(longName_).leftJustified(20);
     }
     QStringList lines;
@@ -188,14 +188,14 @@ void CommandLineParameter::fillValue(const QString &argument)
             else if (acceptType_ == QVariant::Bool) {
                 svalue = svalue.toLower();
                 static const QStringList YES = QStringList()
-                        << QString::fromAscii("1")
-                        << QString::fromAscii("true")
-                        << QString::fromAscii("yes")
+                        << QString::fromLatin1("1")
+                        << QString::fromLatin1("true")
+                        << QString::fromLatin1("yes")
                         << QString::fromUtf8("да");
                 static const QStringList NO = QStringList()
-                        << QString::fromAscii("0")
-                        << QString::fromAscii("false")
-                        << QString::fromAscii("no")
+                        << QString::fromLatin1("0")
+                        << QString::fromLatin1("false")
+                        << QString::fromLatin1("no")
                         << QString::fromUtf8("нет");
                 if (YES.contains(svalue) || NO.contains(svalue)) {
                     bool val = YES.contains(svalue);

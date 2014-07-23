@@ -56,6 +56,10 @@ public:
     void processAnalisys();
     QString suggestFileName() const;
     ~SyntaxAnalizer();
+
+Q_SIGNALS:
+    void importsChanged(const QStringList & names);
+
 private /*fields*/:
 
     Lexer * lexer_;
@@ -70,6 +74,8 @@ private /*fields*/:
     bool teacherMode_;
 
 private /*methods*/:
+    void checkForEmitImportsSignal();
+
     void parseImport(int str);
     void parseModuleHeader(int str);
     void parseAlgHeader(int str, bool onlyName, bool allowOperatorsDeclaration);
@@ -184,11 +190,24 @@ private /*methods*/:
                                   , AST::ExpressionPtr argument
                                   , const AST::ModulePtr currentModule
                                   ) const;
-    bool findAlgorhitm(const QString &name
+    bool findAlgorithm(const QString &name
                        , const AST::ModulePtr currentModule
                        , const AST::AlgorithmPtr currentAlgorithm
                        , AST::AlgorithmPtr & algorhitm
+                       , QVariantList & templateParameters
                        ) const;
+
+    bool findAlgorithmInModule(const QString &name
+                               , const AST::ModulePtr & module
+                               , const bool allowPrivate
+                               , const bool allowBroken
+                               , AST::AlgorithmPtr & algorithm
+                               , QVariantList & templateParameters
+                               ) const;
+
+    static void addTemplateParametersToFunctionCall(AST::ExpressionPtr & callNode,
+                                             const QVariantList & parameters);
+
     bool findGlobalVariable(const QString &name, const AST::ModulePtr module, AST::VariablePtr & var) const;
     bool findLocalVariable(const QString &name
                            , const AST::AlgorithmPtr alg
@@ -247,6 +266,8 @@ private /*methods*/:
         }
     }
     static LexemPtr findLexemByType(const QList<LexemPtr> lxs, LexemType type);
+
+    QStringList checkForConflictingNames(const AST::ModulePtr & moduleToCheck, const ModulePtr & parentModule) const;
 
 };
 

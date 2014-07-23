@@ -1,0 +1,207 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/7z)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/7z/CPP)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/7z/CPP/myWindows)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/7z/CPP/Common)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/7z/CPP/Windows)
+
+set(SOURCES_7Z
+#    3rd-party/7z/Asm/x86/7zAsm.asm
+#    3rd-party/7z/Asm/x86/7zCrcOpt.asm
+#    3rd-party/7z/Asm/x86/AesOpt.asm
+
+    3rd-party/7z/CPP/Common/CommandLineParser.cpp
+    3rd-party/7z/CPP/Common/CRC.cpp
+    3rd-party/7z/CPP/Common/IntToString.cpp
+    3rd-party/7z/CPP/Common/ListFileUtils.cpp
+    3rd-party/7z/CPP/Common/StdInStream.cpp
+    3rd-party/7z/CPP/Common/StdOutStream.cpp
+    3rd-party/7z/CPP/Common/MyString.cpp
+    3rd-party/7z/CPP/Common/MyWindows.cpp
+    3rd-party/7z/CPP/Common/StringConvert.cpp
+    3rd-party/7z/CPP/Common/StringToInt.cpp
+    3rd-party/7z/CPP/Common/UTFConvert.cpp
+    3rd-party/7z/CPP/Common/MyVector.cpp
+    3rd-party/7z/CPP/Common/Wildcard.cpp
+
+    3rd-party/7z/CPP/Windows/Error.cpp
+    3rd-party/7z/CPP/Windows/FileDir.cpp
+    3rd-party/7z/CPP/Windows/FileFind.cpp
+    3rd-party/7z/CPP/Windows/FileIO.cpp
+    3rd-party/7z/CPP/Windows/FileName.cpp
+    3rd-party/7z/CPP/Windows/PropVariant.cpp
+    3rd-party/7z/CPP/Windows/PropVariantUtils.cpp
+    3rd-party/7z/CPP/Windows/PropVariantConversions.cpp
+    3rd-party/7z/CPP/Windows/Synchronization.cpp
+    3rd-party/7z/CPP/Windows/System.cpp
+    3rd-party/7z/CPP/Windows/Time.cpp
+
+    3rd-party/7z/CPP/7zip/Common/CreateCoder.cpp
+    3rd-party/7z/CPP/7zip/Common/CWrappers.cpp
+    3rd-party/7z/CPP/7zip/Common/FilePathAutoRename.cpp
+    3rd-party/7z/CPP/7zip/Common/FileStreams.cpp
+    3rd-party/7z/CPP/7zip/Common/FilterCoder.cpp
+    3rd-party/7z/CPP/7zip/Common/InBuffer.cpp
+    3rd-party/7z/CPP/7zip/Common/InOutTempBuffer.cpp
+    3rd-party/7z/CPP/7zip/Common/LimitedStreams.cpp
+    3rd-party/7z/CPP/7zip/Common/LockedStream.cpp
+    3rd-party/7z/CPP/7zip/Common/MemBlocks.cpp
+    3rd-party/7z/CPP/7zip/Common/MethodId.cpp
+    3rd-party/7z/CPP/7zip/Common/MethodProps.cpp
+    3rd-party/7z/CPP/7zip/Common/OffsetStream.cpp
+    3rd-party/7z/CPP/7zip/Common/OutBuffer.cpp
+    3rd-party/7z/CPP/7zip/Common/OutMemStream.cpp
+    3rd-party/7z/CPP/7zip/Common/ProgressMt.cpp
+    3rd-party/7z/CPP/7zip/Common/ProgressUtils.cpp
+    3rd-party/7z/CPP/7zip/Common/StreamBinder.cpp
+    3rd-party/7z/CPP/7zip/Common/StreamObjects.cpp
+    3rd-party/7z/CPP/7zip/Common/StreamUtils.cpp
+    3rd-party/7z/CPP/7zip/Common/VirtThread.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/Bz2Handler.cpp
+    3rd-party/7z/CPP/7zip/Archive/DeflateProps.cpp
+    3rd-party/7z/CPP/7zip/Archive/GzHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/LzmaHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/PpmdHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/SplitHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/XzHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/ZHandler.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/Common/CoderMixer2.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/CoderMixer2MT.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/CrossThreadProgress.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/DummyOutStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/FindSignature.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/HandlerOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/InStreamWithCRC.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/ItemNameUtils.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/MultiStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/OutStreamWithCRC.cpp
+    3rd-party/7z/CPP/7zip/Archive/Common/ParseProperties.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/7z/7zCompressionMode.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zDecode.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zEncode.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zExtract.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zFolderInStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zFolderOutStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zHandlerOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zHeader.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zIn.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zProperties.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zSpecStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zUpdate.cpp
+    3rd-party/7z/CPP/7zip/Archive/7z/7zRegister.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/Cab/CabBlockInStream.cpp
+    3rd-party/7z/CPP/7zip/Archive/Cab/CabHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/Cab/CabHeader.cpp
+    3rd-party/7z/CPP/7zip/Archive/Cab/CabIn.cpp
+    3rd-party/7z/CPP/7zip/Archive/Cab/CabRegister.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarHandlerOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarHeader.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarIn.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarRegister.cpp
+    3rd-party/7z/CPP/7zip/Archive/Tar/TarUpdate.cpp
+
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipAddCommon.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipHandler.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipHandlerOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipHeader.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipIn.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipItem.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipOut.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipUpdate.cpp
+    3rd-party/7z/CPP/7zip/Archive/Zip/ZipRegister.cpp
+    
+    3rd-party/7z/CPP/7zip/Compress/Bcj2Coder.cpp
+    3rd-party/7z/CPP/7zip/Compress/Bcj2Register.cpp
+    3rd-party/7z/CPP/7zip/Compress/BcjCoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/BcjRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/BitlDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/BranchCoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/BranchMisc.cpp
+    3rd-party/7z/CPP/7zip/Compress/BranchRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/ByteSwap.cpp
+    3rd-party/7z/CPP/7zip/Compress/BZip2Crc.cpp
+    3rd-party/7z/CPP/7zip/Compress/BZip2Decoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/BZip2Encoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/BZip2Register.cpp
+    3rd-party/7z/CPP/7zip/Compress/CopyCoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/CopyRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/Deflate64Register.cpp
+    3rd-party/7z/CPP/7zip/Compress/DeflateDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/DeflateEncoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/DeflateRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/DeltaFilter.cpp
+    3rd-party/7z/CPP/7zip/Compress/ImplodeDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/ImplodeHuffmanDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/Lzma2Decoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/Lzma2Encoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/Lzma2Register.cpp
+    3rd-party/7z/CPP/7zip/Compress/LzmaDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/LzmaEncoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/LzmaRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/LzOutWindow.cpp
+    3rd-party/7z/CPP/7zip/Compress/Lzx86Converter.cpp
+    3rd-party/7z/CPP/7zip/Compress/LzxDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/PpmdDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/PpmdEncoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/PpmdRegister.cpp
+    3rd-party/7z/CPP/7zip/Compress/PpmdZip.cpp
+    3rd-party/7z/CPP/7zip/Compress/QuantumDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/ShrinkDecoder.cpp
+    3rd-party/7z/CPP/7zip/Compress/ZDecoder.cpp
+
+    3rd-party/7z/CPP/7zip/Crypto/7zAes.cpp
+    3rd-party/7z/CPP/7zip/Crypto/7zAesRegister.cpp
+    3rd-party/7z/CPP/7zip/Crypto/HmacSha1.cpp
+    3rd-party/7z/CPP/7zip/Crypto/MyAes.cpp
+    3rd-party/7z/CPP/7zip/Crypto/Pbkdf2HmacSha1.cpp
+    3rd-party/7z/CPP/7zip/Crypto/RandGen.cpp
+    3rd-party/7z/CPP/7zip/Crypto/Sha1.cpp
+    3rd-party/7z/CPP/7zip/Crypto/WzAes.cpp
+    3rd-party/7z/CPP/7zip/Crypto/ZipCrypto.cpp
+    3rd-party/7z/CPP/7zip/Crypto/ZipStrong.cpp
+
+    3rd-party/7z/CPP/../C/Aes.c
+    3rd-party/7z/CPP/../C/7zStream.c
+    3rd-party/7z/CPP/../C/Alloc.c
+    3rd-party/7z/CPP/../C/Bra.c
+    3rd-party/7z/CPP/../C/Bra86.c
+    3rd-party/7z/CPP/../C/BraIA64.c
+    3rd-party/7z/CPP/../C/BwtSort.c
+    3rd-party/7z/CPP/../C/Delta.c
+    3rd-party/7z/CPP/../C/HuffEnc.c
+    3rd-party/7z/CPP/../C/LzFind.c
+    3rd-party/7z/CPP/../C/LzFindMt.c
+    3rd-party/7z/CPP/../C/Lzma2Dec.c
+    3rd-party/7z/CPP/../C/Lzma2Enc.c
+    3rd-party/7z/CPP/../C/LzmaDec.c
+    3rd-party/7z/CPP/../C/LzmaEnc.c
+    3rd-party/7z/CPP/../C/MtCoder.c
+    3rd-party/7z/CPP/../C/Ppmd7.c
+    3rd-party/7z/CPP/../C/Ppmd7Dec.c
+    3rd-party/7z/CPP/../C/Ppmd7Enc.c
+    3rd-party/7z/CPP/../C/Ppmd8.c
+    3rd-party/7z/CPP/../C/Ppmd8Dec.c
+    3rd-party/7z/CPP/../C/Ppmd8Enc.c
+    3rd-party/7z/CPP/../C/Sha256.c
+    3rd-party/7z/CPP/../C/Sort.c
+    3rd-party/7z/CPP/../C/Threads.c
+    3rd-party/7z/CPP/../C/Xz.c
+    3rd-party/7z/CPP/../C/XzCrc64.c
+    3rd-party/7z/CPP/../C/XzDec.c
+    3rd-party/7z/CPP/../C/XzEnc.c
+    3rd-party/7z/CPP/../C/XzIn.c
+
+    3rd-party/7z/CPP/../C/7zCrc.c
+    3rd-party/7z/CPP/../C/7zCrcOpt.c
+    3rd-party/7z/CPP/../C/AesOpt.c
+    3rd-party/7z/CPP/../C/CpuArch.c
+)
+

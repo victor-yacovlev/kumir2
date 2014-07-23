@@ -180,6 +180,8 @@ private /*methods*/:
 
     inline void checkFunctors();
 
+    inline bool isRunningMain() const;
+
 private /*instruction methods*/:
     inline void do_call(uint8_t, uint16_t);
     inline void do_stdcall(uint16_t);
@@ -437,7 +439,8 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                     modulePath.push_back(Kumir::Char('/'));
                     modulePath += e.fileName;
                 }
-                const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath);
+                Kumir::EncodingError encodingError;
+                const std::string filename = Kumir::Coder::encode(VM_LOCALE, modulePath, encodingError);
                 std::ifstream externalfile(filename.c_str());
                 if (
                         !Kumir::Files::exist(modulePath)
@@ -502,9 +505,11 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.moduleAsciiName = e.moduleAsciiName;
             reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
+            Kumir::EncodingError encodingError;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
-                        makeCanonicalName(e.fileName)
+                        makeCanonicalName(e.fileName),
+                        encodingError
                         );
             moduleContexts_[currentModuleContext].externInits.push_back(reference);
             if (externalModuleLoad_)
@@ -522,9 +527,11 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             reference.moduleAsciiName = e.moduleAsciiName;
             reference.moduleLocalizedName = e.moduleLocalizedName;
             reference.fileName = e.fileName;
+            Kumir::EncodingError encodingError;
             reference.platformModuleName = Kumir::Coder::encode(
                         VM_LOCALE,
-                        makeCanonicalName(e.fileName)
+                        makeCanonicalName(e.fileName),
+                        encodingError
                         );
             moduleContexts_[currentModuleContext].externs[key] = reference;
             if (externalModuleLoad_) {
@@ -576,7 +583,7 @@ KumirVM::KumirVM()
     , entryPoint_(EP_Main)
     , blindMode_(true)
     , nextCallInto_(false)
-    , stacksMutex_(nullptr)
+    , stacksMutex_()
     , debugHandler_(nullptr)
     , externalModuleLoad_(nullptr)
     , externalModuleReset_(nullptr)
@@ -683,7 +690,7 @@ void KumirVM::reset()
 {
     // Clear everything
     if (stacksMutex_) {
-        stacksMutex_->unlock();
+        stacksMutex_->reset();
     }
     lastContext_ = Context();
     blindMode_ = false;
@@ -2397,19 +2404,32 @@ void KumirVM::do_load(uint8_t s, uint16_t id)
     }
 
     bool isRetVal = VariableScope(s)==LOCAL
-            && contextsStack_.top().locals[id].algorhitmName()==contextsStack_.top().locals[id].name();
-    if (isRetVal && contextsStack_.top().type==Bytecode::EL_MAIN)
+            && variable.algorhitmName()==variable.name();
+    if (isRetVal && isRunningMain())
         Variable::unsetError();
     if (Kumir::Core::getError().length()==0) {
         valuesStack_.push(val);
         if (val.dimension()==0)
             register0_ = val.value();
-        if (isRetVal && contextsStack_.top().type==Bytecode::EL_MAIN)
+        if (isRetVal && isRunningMain())
             Variable::unsetError();
     }
     error_ = Kumir::Core::getError();
     nextIP();
     if (stacksMutex_) stacksMutex_->unlock();
+}
+
+bool KumirVM::isRunningMain() const
+{
+    bool mainAtTop = Bytecode::EL_MAIN == contextsStack_.top().type;
+    bool noUpStacks =
+            1 == contextsStack_.size()
+            ||
+            (
+                contextsStack_.size()>1 &&
+                Bytecode::EL_BELOWMAIN == contextsStack_.at(contextsStack_.size()-2).type
+            );
+    return mainAtTop && noUpStacks;
 }
 
 void KumirVM::do_storearr(uint8_t s, uint16_t id)

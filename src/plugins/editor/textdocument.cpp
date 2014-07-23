@@ -10,7 +10,7 @@ namespace Editor
 
 
 
-TextDocument::TextDocument(Editor * editor)
+TextDocument::TextDocument(EditorInstance * editor)
     : QObject(editor)
     , editor_(editor)
     , undoStack_(new QUndoStack(this))
@@ -34,7 +34,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
         tl.hidden = blankLinesAreHidden;
         data_.append(tl);
     }
-    TextLine & tl = data_[line];
+    TextLine tl = data_[line];
     uint nlOffset = text == "\n" ? 1 : 0;
     while (pos>tl.text.length() + nlOffset) {
         blankChars ++;
@@ -43,7 +43,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
         tl.highlight << Shared::LxTypeEmpty;
     }
     tl.changed = true;
-//    data_[line] = tl;
+    data_[line] = tl;
 
     const QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()==1) {
@@ -418,7 +418,7 @@ QString TextDocument::toHtml(int fromLine, int toLine) const
                          : data_[i].margin.text
                            );
     }
-    result = QString::fromAscii(
+    result = QString::fromLatin1(
                 "<table width=\"100%\">"
                 "  <tr>"
                 "    <td width=\"60%\">"
@@ -462,7 +462,7 @@ QString TextDocument::lineToHtml(int lineNo) const
 
     QList<Chunk> chunks;
     for (int i=0; i<text.length(); i++) {
-        bool nonLatin = text[i]!='\0' && text[i].isLetter() && text[i].toAscii()!='\0';
+        bool nonLatin = text[i]!='\0' && text[i].isLetter() && text[i].toLatin1()!='\0';
         if (chunks.isEmpty()) {
             Chunk ch;
             ch.bold = ch.error = false;
@@ -543,7 +543,7 @@ QString TextDocument::lineToHtml(int lineNo) const
             chunks[i].bold = editor_->mySettings()->value(SettingsPage::KeyBoldComment, SettingsPage::DefaultBoldComment).toBool();
         }
         chunks[i].color = c.name();
-        chunks[i].html = QString::fromAscii(
+        chunks[i].html = QString::fromLatin1(
                     "<span style=\""
                     "color: %1;"
                     "font-weight: %2;"
@@ -576,9 +576,9 @@ static QByteArray rtfColor(const ExtensionSystem::SettingsPtr s,
     const QString colorName = s->value(key, defaultt).toString();
     const QColor color(colorName);
     QByteArray result;
-    result.append("\\red" + QString::number(color.red()).toAscii());
-    result.append("\\green" + QString::number(color.green()).toAscii());
-    result.append("\\blue" + QString::number(color.blue()).toAscii());
+    result.append("\\red" + QString::number(color.red()).toLatin1());
+    result.append("\\green" + QString::number(color.green()).toLatin1());
+    result.append("\\blue" + QString::number(color.blue()).toLatin1());
     result.append(";");
     return result;
 }
@@ -605,7 +605,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
     for (uint i=0; i<text.length(); i++) {
         bool latin = text[i]!='\0' &&
                 text[i].isLetter() &&
-                text[i].toAscii()!='\0';
+                text[i].toLatin1()!='\0';
         if (result.isEmpty())
         {
             // Create first empty chunk of text
@@ -716,7 +716,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
         const Chunk & chunk = result[i];
         d.append("{");
         if (chunk.color)
-            d.append("\\cf"+QString::number(chunk.color).toAscii());
+            d.append("\\cf"+QString::number(chunk.color).toLatin1());
         if (chunk.bold)
             d.append("\\b");
         if (chunk.italic)

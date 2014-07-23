@@ -4,39 +4,32 @@
 <context>
     <name>Editor::Editor</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="132"/>
         <source>Can&apos;t open file %1 for reading</source>
-        <translation type="unfinished">Не могу открыть %1 для чтения</translation>
+        <translation type="obsolete">Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="319"/>
         <source>import %1</source>
-        <translation>использовать %1</translation>
+        <translation type="obsolete">использовать %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="794"/>
         <source>Record keyboard sequence</source>
-        <translation>Запись последовательности нажатий клавиш</translation>
+        <translation type="obsolete">Запись последовательности нажатий клавиш</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="800"/>
         <source>Edit saved keyboard sequences...</source>
-        <translation>Изменить записанные последовательности...</translation>
+        <translation type="obsolete">Изменить записанные последовательности...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="807"/>
         <source>Edit</source>
-        <translation>Редактирование</translation>
+        <translation type="obsolete">Редактирование</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="832"/>
         <source>Insert</source>
-        <translation>Вставка</translation>
+        <translation type="obsolete">Вставка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="1051"/>
         <source>Can&apos;t open file %1 for writing</source>
-        <translation type="unfinished">Не могу открыть %1 для записи</translation>
+        <translation type="obsolete">Не могу открыть %1 для записи</translation>
     </message>
     <message>
         <source>Add sequence</source>
@@ -47,15 +40,57 @@
         <translation type="obsolete">Отмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="901"/>
+        <source>New keyboard sequence...</source>
+        <translation type="obsolete">Новая последовательность действий...</translation>
+    </message>
+</context>
+<context>
+    <name>Editor::EditorInstance</name>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="136"/>
+        <source>Can&apos;t open file %1 for reading</source>
+        <translation>Не могу открыть %1 для чтения</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="323"/>
+        <source>import %1</source>
+        <translation>использовать %1</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="801"/>
+        <source>Record keyboard sequence</source>
+        <translation>Запись последовательности нажатий клавиш</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="807"/>
+        <source>Edit saved keyboard sequences...</source>
+        <translation>Изменить записанные последовательности...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="814"/>
+        <source>Edit</source>
+        <translation>Редактирование</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="840"/>
+        <source>Insert</source>
+        <translation>Вставка</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="910"/>
         <source>New keyboard sequence...</source>
         <translation>Новая последовательность действий...</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="1060"/>
+        <source>Can&apos;t open file %1 for writing</source>
+        <translation>Не могу открыть %1 для записи</translation>
     </message>
 </context>
 <context>
     <name>Editor::EditorPlane</name>
     <message>
-        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1529"/>
+        <location filename="../../../src/plugins/editor/editorplane.cpp" line="1537"/>
         <source>Can&apos;t suggest autocomplete</source>
         <translation>Нет вариантов автодополнения</translation>
     </message>
@@ -71,7 +106,7 @@
         <translation type="obsolete">Не могу открыть %1 для чтения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="150"/>
+        <location filename="../../../src/plugins/editor/editorplugin.cpp" line="154"/>
         <source>Editor</source>
         <translation>Редактор</translation>
     </message>
@@ -811,59 +846,59 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="712"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="714"/>
         <source>Select all text in editor</source>
         <translation>Выбрать весь текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="718"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="721"/>
         <source>Copy selection to clipboard</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="725"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="729"/>
         <source>Cut selection to clipboard</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="732"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="737"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="739"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="744"/>
         <source>Find...</source>
         <translation>Найти...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="746"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="751"/>
         <source>Replace...</source>
         <translation>Заменить...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="755"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="760"/>
         <source>Delete line under cursor</source>
         <translation>Удалить строку</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="761"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="766"/>
         <source>Delete text from cursor to end of line</source>
         <translation>Удалить текст до конца строки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="768"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="774"/>
         <source>Undo last action</source>
         <translation>Отменить последнее действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="777"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="784"/>
         <source>Redo last undoed action</source>
         <translation>Повторить отмененное действие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/editor/editor.cpp" line="785"/>
+        <location filename="../../../src/plugins/editor/editor.cpp" line="792"/>
         <source>(Un)Comment lines</source>
-        <translation type="unfinished">(Рас)комменировать строки</translation>
+        <translation>(Рас)комменировать строки</translation>
     </message>
 </context>
 </TS>

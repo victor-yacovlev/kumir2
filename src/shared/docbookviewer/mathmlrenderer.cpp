@@ -10,6 +10,7 @@ static const qreal MIN_FONT_SIZE = 9.0; /* pt */
 static const int GRAPHICS_SPACING = 1; /* px */
 static const int REGULAR_LINE_WIDTH  = 2; /* px */
 static const int FRAC_LINE_WIDTH  = 1; /* px */
+static const int SQRT_LINE_WIDTH  = 1; /* px */
 
 MathMLRenderer* MathMLRenderer::self()
 {
@@ -21,6 +22,9 @@ const QImage& MathMLRenderer::render(ModelPtr data)
 {
     if (data->cachedImage_.isNull()) {
         font_ = mathFont(BASE_FONT_SIZE);
+        const QPalette pal = qApp->palette();
+        fgColor_ = pal.brush(QPalette::Text).color();
+        bgColor_ = pal.brush(QPalette::Background).color();
         data->cachedImage_ = renderBlock(data);
     }
     return data->cachedImage_;
@@ -154,6 +158,7 @@ QImage MathMLRenderer::renderOperator(ModelPtr element)
         result.fill(0);
         QPainter painter(&result);
         painter.setFont(font);
+        painter.setPen(fgColor_);
         painter.drawText(0, result.height() - fm.descent() - fm.leading(), op);
         painter.end();
     }
@@ -170,6 +175,8 @@ QImage MathMLRenderer::renderPlainText(ModelPtr element)
     image.fill(0);
     QPainter painter(&image);
     painter.setFont(font_);
+    painter.setPen(fgColor_);
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
     painter.drawText(1, image.height() - fm.descent() - fm.leading(), plainText);
     painter.end();
     return image;
@@ -187,8 +194,9 @@ QImage MathMLRenderer::renderSqrt(ModelPtr element)
     result.fill(0);
     QPainter painter(&result);
     QPen pen;
-    pen.setColor(Qt::black);
-    pen.setWidth(REGULAR_LINE_WIDTH);
+    pen.setColor(fgColor_);
+    pen.setWidth(SQRT_LINE_WIDTH);
+    painter.setPen(pen);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.drawLine(0, result.height() - sqrtSymbolHeight,
                      sqrtSymbolWidth / 2, result.height());
@@ -225,7 +233,7 @@ QImage MathMLRenderer::renderFrac(ModelPtr element)
                           firstImage.height() + 2 * GRAPHICS_SPACING +
                           FRAC_LINE_WIDTH, secondImage);
         QPen pen;
-        pen.setColor(Qt::black);
+        pen.setColor(fgColor_);
         pen.setWidth(FRAC_LINE_WIDTH);
         painter.setPen(pen);
         painter.drawLine(0,
@@ -241,7 +249,7 @@ QImage MathMLRenderer::renderFrac(ModelPtr element)
 QImage MathMLRenderer::renderSup(ModelPtr element)
 {
     qreal prevFontSize = font_.pointSizeF();
-    qreal fontSize = qMax(font_.pointSizeF() * 0.66, MIN_FONT_SIZE);
+    qreal fontSize = qMax(qreal(font_.pointSizeF() * 0.66), qreal(MIN_FONT_SIZE));
     qreal baseHeight = QFontMetricsF(font_).lineSpacing();
     int supBaseLine = int(baseHeight * 0.66);
     font_.setPointSizeF(fontSize);

@@ -16,6 +16,9 @@ class FpcAnalizerPlugin
         , public AnalizerInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.FPCAnalizer" FILE "")
+#endif
     Q_INTERFACES(Shared::AnalizerInterface)
 public:
     QString initialize(const QStringList &, const CommandLine &);

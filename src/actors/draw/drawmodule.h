@@ -205,6 +205,7 @@ public /* methods */:
     {
         return QColor(DrawSettings()->value("AxisColor","blue").toString());
     }
+    QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -233,6 +234,7 @@ public slots:
 
     /* ========= CLASS PRIVATE ========= */
 private:
+    void createGui();
     void CreatePen(void);
     
     DrawScene* CurScene;

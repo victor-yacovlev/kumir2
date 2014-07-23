@@ -22,8 +22,7 @@ public:
     enum EditMode { EM_Insert, EM_Overwrite };
     enum MoveMode { MM_Move, MM_Select, MM_RectSelect };
     enum ViewMode { VM_Blinking, VM_Hidden, VM_Visible };
-    explicit TextCursor(class Editor * editor);
-    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
+    explicit TextCursor(class EditorInstance * editor);
 
     ~TextCursor();
     inline uint row() const { return row_; }
@@ -41,8 +40,6 @@ public:
     void setViewMode(ViewMode mode);
     void setEnabled(bool v);
     bool hasSelection() const;
-    inline bool hardIndents() const { return hardIndents_; }
-    inline uint indentSize() const { return indentSize_; }
     inline bool hasRectSelection() const { return selectionRect_.x()!=-1 && selectionRect_.y()!=-1; }
     inline QRect selectionRect() const { return selectionRect_; }
     void selectionBounds(int &fromRow, int &fromCol, int &toRow, int &toCol) const;
@@ -66,6 +63,8 @@ public:
     bool isFreeCursorMovement() const;
     bool modifiesProtectedLiines() const;
 
+    static void normalizePlainText(QString & s);
+
 public slots:
     void toggleComment();
     void undo();
@@ -87,7 +86,7 @@ signals:
 
 protected:
 
-    class Editor * editor_;
+    class EditorInstance * editor_;
 
     int justifyLeft(const QString & text) const;    
 
@@ -107,9 +106,6 @@ protected:
 
     QRect selectionRect_;
     Macro * recordingMacro_;
-    unsigned int indentSize_;
-    bool hardIndents_;
-    bool denyAutoCloseBraces_;
 
 };
 

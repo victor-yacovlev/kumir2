@@ -12,6 +12,9 @@ class KumirRunPlugin
         , public Shared::RunInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.KumirCodeRun" FILE "")
+#endif
     Q_INTERFACES(Shared::RunInterface)
 public:
     explicit KumirRunPlugin();
@@ -19,8 +22,8 @@ public:
 
 
     bool canStepOut() const;
-
-    bool loadProgram(const QString & fileName, const QByteArray & source, const SourceInfo & sourceInfo);
+    void terminateAndWaitForStopped();
+    bool loadProgram(const QString & fileName, const QByteArray & source, const SourceInfo &sourceInfo);
     bool hasMoreInstructions() const;
     bool hasTestingEntryPoint() const;
     QString error() const;
@@ -69,6 +72,7 @@ public slots:
 
 protected:
     void start();
+    void stop();
     void timerEvent(QTimerEvent *);
     QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
     QString initialize(const QStringList &configurationArguments,
@@ -98,6 +102,7 @@ signals:
     void replaceMarginText(int lineNo, const QString & text, bool redFgColor);
     void clearMargin(int fromLine, int toLine);
     void resetModule(const QString &actorPluginName);
+    void showActorWindowRequest(const QByteArray & asciiModuleName);
 
 private:
     class Run * pRun_;

@@ -1,9 +1,28 @@
-set(QT_USE_QTMAIN 1)
-find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
-include (${QT_USE_FILE})
+project(kumir2-classic)
+cmake_minimum_required(VERSION 2.8.3)
+
+if(NOT DEFINED USE_QT)
+    set(USE_QT 4)
+endif(NOT DEFINED USE_QT)
+
+if(${USE_QT} GREATER 4)
+    # Find Qt5
+    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+    if(WIN32)
+        set(QT_LIBRARIES ${QT_LIBRARIES} ${Qt5Core_QTMAIN_LIBRARIES})
+    endif()
+else()
+    # Find Qt4
+    set(QT_USE_QTMAIN 1)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
+    include_directories(${QT_INCLUDE_DIR})
+    include(${QT_USE_FILE})
+endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Browser,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
+    "CourseManager,Editor,Browser,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/classic.png"

@@ -72,7 +72,7 @@ QString KumirCompilerToolPlugin::initialize(
     analizer_ = manager->findPlugin<AnalizerInterface>();
     generator_ = manager->findPlugin<GeneratorInterface>();
 
-    for (int i=1; i<qApp->argc(); i++) {
+    for (int i=1; i<qApp->arguments().size(); i++) {
         const QString arg = qApp->arguments()[i];
         if ( !arg.startsWith("-") && !arg.startsWith("[") && arg.endsWith(".kum")) {
             sourceFileName_ = arg;
@@ -189,5 +189,6 @@ void KumirCompilerToolPlugin::stop()
 
 }
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCompilerToolPlugin)
+#endif

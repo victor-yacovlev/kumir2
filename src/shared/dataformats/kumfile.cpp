@@ -29,8 +29,8 @@ QString KumFile::toString(const Data &data)
             result += "\n";
     }
     if (!data.hiddenTextSignature.isEmpty()) {
-        result += QString::fromAscii("|@signature %1|@hidden\n")
-                .arg(QString::fromAscii(data.hiddenTextSignature.toBase64()));
+        result += QString::fromLatin1("|@signature %1|@hidden\n")
+                .arg(QString::fromLatin1(data.hiddenTextSignature.toBase64()));
     }
     return result;
 }
@@ -63,7 +63,7 @@ KumFile::Data KumFile::fromString(const QString &s, bool keepIndents)
         if (line.startsWith("|@signature ") && line.endsWith("|@hidden"))
         {
             const QString b64 = line.mid(12, line.length()-20);
-            data.hiddenTextSignature = QByteArray::fromBase64(b64.toAscii());
+            data.hiddenTextSignature = QByteArray::fromBase64(b64.toLatin1());
         }
         else if (line.endsWith("|@hidden")) {
             data.hasHiddenText = true;
@@ -165,7 +165,7 @@ QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEn
         }
         else if (fileNameSuffix == "py") {
             QString codec = "UTF-8";
-            QStringList lines = QString::fromAscii(rawData).split("\n");
+            QStringList lines = QString::fromLatin1(rawData).split("\n");
             // PEP-0263 three variants to declare encoding
             // # coding=<encoding name>
             // # -*- coding: <encoding name -*-
@@ -192,12 +192,12 @@ QString KumFile::readRawDataAsString(QByteArray rawData, const QString &sourceEn
                     }
                 }
             }
-            ts.setCodec(codec.toAscii().data());
+            ts.setCodec(codec.toLatin1().data());
             ts.setAutoDetectUnicode(true);
         }
     }
     else {
-        ts.setCodec(QTextCodec::codecForName(sourceEncoding.toAscii().constData()));
+        ts.setCodec(QTextCodec::codecForName(sourceEncoding.toLatin1().constData()));
     }
     QString s = ts.readAll();
     s = s.replace(QChar(13),"");

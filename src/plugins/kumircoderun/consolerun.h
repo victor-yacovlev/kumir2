@@ -14,9 +14,17 @@ class ExternalModuleLoadFunctor
 {
 public:
     NamesList operator()(
-                const Kumir::String & moduleName,
-                const std::string & canonicalModuleFileName)
+                const std::string & moduleAsciiName,
+                const Kumir::String & moduleName)
                 /* throws std::string, Kumir::String */ ;
+};
+
+class ExternalModuleResetFunctor
+        : public VM::ExternalModuleResetFunctor
+{
+public:
+    void operator()(const std::string & moduleName, const Kumir::String & localizedName)
+        /* throws std::string, Kumir::String */ ;
 };
 
 }} // namespace Console

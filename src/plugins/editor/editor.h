@@ -11,11 +11,15 @@
 
 #include "interfaces/editor_instanceinterface.h"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace Editor {
 
-class Editor
+class EditorInstance
         : public QWidget
         , public Shared::Editor::InstanceInterface
 {
@@ -26,14 +30,14 @@ public:
     friend class TextCursor;
     friend class TextDocument;
 
-    explicit Editor(
+    explicit EditorInstance(
             EditorPlugin * plugin,
             bool initiallyNotSaved = false,
             Shared::AnalizerInterface * analizer = 0,
             Shared::Analizer::InstanceInterface * analizerInstance = 0
             );
 
-    ~Editor();
+    ~EditorInstance();
 
     QScrollBar * scrollBar(Qt::Orientation orientation);
 
@@ -57,7 +61,6 @@ public:
     void setKumFile(const KumFile::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
-    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
 
     quint32 errorLinesCount() const;
 
@@ -186,8 +189,8 @@ private /* fields */:
     QUrl documentUrl_;
 };
 
-QDataStream & operator<< (QDataStream & stream, const Editor & editor);
-QDataStream & operator>> (QDataStream & stream, Editor & editor);
+QDataStream & operator<< (QDataStream & stream, const EditorInstance & editor);
+QDataStream & operator>> (QDataStream & stream, EditorInstance & editor);
 
 } // namespace Editor
 

@@ -1,6 +1,10 @@
 #include "clipboard.h"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace Editor {
 
@@ -49,7 +53,12 @@ void Clipboard::push(const ClipboardData & data)
     QClipboard * cl = QApplication::clipboard();
     QMimeData * md = new QMimeData;
     md->setText(data.text);
-    md->setData("text/rtf", data.rtf);
+#ifdef Q_OS_WIN32
+    static const QString RTFMime = "Rich Text Format";
+#else
+    static const QString RTFMime = "text/rtf";
+#endif
+    md->setData(RTFMime, data.rtf);
     if (data.type==ClipboardData::Block)
         md->setData(BlockMimeType, data.block.join("\n").toUtf8());
     cl->setMimeData(md);

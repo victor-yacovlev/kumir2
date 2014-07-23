@@ -1,8 +1,6 @@
 #include "editcommands.h"
 #include "textdocument.h"
 #include "textcursor.h"
-#include "interfaces/analizerinterface.h"
-#include "extensionsystem/pluginmanager.h"
 
 namespace Editor {
 
@@ -15,12 +13,6 @@ InsertCommand::InsertCommand(TextDocument *doc, class TextCursor * cursor, Share
     this->pos = pos;
     this->text = text;
     blankLines = blankChars = 0;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 InsertCommand::InsertCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
@@ -41,9 +33,7 @@ void InsertCommand::redo()
     QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()>1) {
         cursor->setRow(cursor->row()+lines.size()-1);
-        uint indent = hardIndents? doc->indentAt(cursor->row())*indentSize : 0u;
-        uint column = uint(lines.last().length()) + indent;
-        cursor->setColumn(column);
+        cursor->setColumn(lines.last().length() + doc->indentAt(cursor->row())*2);
     }
     else {
         cursor->setColumn(cursor->column()+text.length());
@@ -70,7 +60,7 @@ bool InsertCommand::mergeWith(const QUndoCommand *other)
     if (o->line!=line)
         return false;
     if (o->pos-pos==text.length() || o->pos+o->text.length()==pos) {
-        static const QString delimeters = QString::fromAscii(" |\n!@*()[],+-=:;/<>\"'{}");
+        static const QString delimeters = QString::fromLatin1(" |\n!@*()[],+-=:;/<>\"'{}");
         for (int i=0; i<text.length(); i++) {
             if (delimeters.contains(text[i]))
                 return false;
@@ -115,12 +105,6 @@ RemoveCommand::RemoveCommand(
     this->keepKursor = keepCursor;
     cursorRowAfter = moveToRow;
     cursorColAfter = moveToCol;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 RemoveCommand::RemoveCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
@@ -144,15 +128,14 @@ void RemoveCommand::redo()
 
     if (!keepKursor) {
         for (int i=0; i<count; i++) {
-            int indent = hardIndents? doc->indentAt(cursor->row()) * indentSize : 0;
+            int indent = doc->indentAt(cursor->row()) * 2;
             int textPos = cursor->column()-indent;
             if (textPos>0) {
                 cursor->setColumn(cursor->column()-1);
             }
             else if (cursor->row()>0) {
                 cursor->setRow(cursor->row()-1);
-                indent = hardIndents? doc->indentAt(cursor->row()) * indentSize : 0;
-                cursor->setColumn(indent+doc->data_[cursor->row()].text.length());
+                cursor->setColumn(doc->indentAt(cursor->row())*2+doc->data_[cursor->row()].text.length());
             }
         }
     }
@@ -160,7 +143,7 @@ void RemoveCommand::redo()
     int indentAfter = 0;
     if (cursorRow<=doc->linesCount()) {
         QString curLineText = doc->textAt(cursorRow);
-        int indent = hardIndents? doc->indentAt(cursor->row()) * indentSize : 0;
+        int indent = doc->indentAt(cursor->row()) * 2;
         int textPos = cursor->column()-indent;
         removedText = "";
         if (textPos<curLineText.length()) {
@@ -202,7 +185,7 @@ bool RemoveCommand::mergeWith(const QUndoCommand *other)
     if (o->line!=line || keepKursor!=o->keepKursor)
         return false;
     if (pos+count==o->pos || o->pos+o->count==pos) {
-        static const QString delimeters = QString::fromAscii(" |\n!@*()[],+-=:;/<>\"'{}");
+        static const QString delimeters = QString::fromLatin1(" |\n!@*()[],+-=:;/<>\"'{}");
         for (int i=0; i<removedText.length(); i++) {
             if (delimeters.contains(removedText[i]))
                 return false;
@@ -244,12 +227,6 @@ RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc,
     this->cursor = cursor;
     this->analizer = analizer;
     this->block = block;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
@@ -257,12 +234,6 @@ RemoveBlockCommand::RemoveBlockCommand(TextDocument *doc, TextCursor *cursor, Sh
     this->doc = doc;
     this->cursor = cursor;
     this->analizer = analizer;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 void RemoveBlockCommand::redo()
@@ -278,7 +249,7 @@ void RemoveBlockCommand::redo()
     for (int i=top; i<bottom; i++) {
         TextLine tl = doc->data_[i];
         previousLines << tl.text;
-        int textPos = left - (hardIndents? doc->indentAt(i)*indentSize : 0);
+        int textPos = left - doc->indentAt(i)*2;
 
         tl.text = tl.text.remove(textPos, right-left);
         tl.changed = true;
@@ -340,12 +311,6 @@ InsertBlockCommand::InsertBlockCommand(
     this->cursor = cursor;
     this->analizer = analizer;
     addedLines = 0;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 InsertBlockCommand::InsertBlockCommand(TextDocument *doc, TextCursor *cursor, Shared::Analizer::InstanceInterface *analizer)
@@ -354,12 +319,6 @@ InsertBlockCommand::InsertBlockCommand(TextDocument *doc, TextCursor *cursor, Sh
     this->cursor = cursor;
     this->analizer = analizer;
     addedLines =row = column = 0;
-    Shared::AnalizerInterface * analizerInterface =
-            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
-    if (analizerInterface && analizer) {
-        indentSize = analizerInterface->indentSize();
-        hardIndents = ! analizerInterface->indentsSignificant();
-    }
 }
 
 void InsertBlockCommand::redo()
@@ -386,7 +345,7 @@ void InsertBlockCommand::redo()
     for (int i=0; i<block.size(); i++) {
         TextLine tl = doc->data_[row+i];
         tl.changed = true;
-        int textPos = column - (hardIndents? indentSize * doc->indentAt(row+i) : 0);
+        int textPos = column - 2 * doc->indentAt(row+i);
         while (textPos>tl.text.length())
             tl.text += " ";
         tl.text.insert(textPos, block[i]);

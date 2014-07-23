@@ -1,12 +1,12 @@
 {
 	"name": { "ascii": "Robot", "ru_RU": "Робот" },
 	"methods": [
-		{ "name": {"ascii": "go up", "ru_RU": "вверх" }},
-		{ "name": {"ascii": "go down", "ru_RU": "вниз" } },
-		{ "name": {"ascii": "go left", "ru_RU": "влево" } },
-		{ "name": {"ascii": "go right", "ru_RU": "вправо" } },
+        { "name": {"ascii": "go up", "ru_RU": "вверх" }, "async": true },
+        { "name": {"ascii": "go down", "ru_RU": "вниз" }, "async": true },
+        { "name": {"ascii": "go left", "ru_RU": "влево" }, "async": true },
+        { "name": {"ascii": "go right", "ru_RU": "вправо"}, "async": true },
 	
-		{ "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": false },
+        { "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": true },
 	{
 			"name": {"ascii": "is wall at top", "ru_RU": "сверху стена"},
 			"returnType": "bool"

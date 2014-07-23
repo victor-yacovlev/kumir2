@@ -249,7 +249,7 @@ void Term::start(const QString & fileName)
                 fileName.isEmpty() ? tr("New Program") : QFileInfo(fileName).fileName(),
                 m_plane
                 );
-    session->relayout(m_plane->width());
+    session->relayout(m_plane->width(), 0, true);
     connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
     sessions_ << session;
     connect (sessions_.last(), SIGNAL(message(QString)),

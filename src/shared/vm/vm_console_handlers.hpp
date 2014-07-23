@@ -16,7 +16,8 @@ using namespace Kumir;
 
 inline void do_output(const String &s, const Encoding locale)
 {
-    const std::string localstring = Coder::encode(locale, s);
+    EncodingError encodingError;
+    const std::string localstring = Coder::encode(locale, s, encodingError);
     std::cout << localstring;
     std::cout.flush();
 }
@@ -262,7 +263,8 @@ void GetMainArgumentFunctor::init(const std::deque<std::string> args)
             }
         }
         else {
-            m_arguments.push_back(Coder::decode(locale_, arg));
+            EncodingError encodingError;
+            m_arguments.push_back(Coder::decode(locale_, arg, encodingError));
         }
     }
 }
@@ -284,6 +286,7 @@ String GetMainArgumentFunctor::decodeHttpStringValue(const std::string & s)
     size_t cpos = 0;
     std::string utf8string;
     utf8string.reserve(s.length());
+    EncodingError encodingError;
     while (cpos<s.length()) {
         if (s[cpos]=='%'
                 && cpos+2 < s.length()
@@ -293,7 +296,7 @@ String GetMainArgumentFunctor::decodeHttpStringValue(const std::string & s)
         {
             std::string hexcode = std::string("0x")+s.substr(cpos+1,2);
             bool ok;
-            int value = Converter::stringToInt(Coder::decode(ASCII,hexcode), ok);
+            int value = Converter::stringToInt(Coder::decode(ASCII,hexcode,encodingError), ok);
             char ch = (char)value;
             utf8string.push_back(ch);
             cpos += 3;
@@ -304,7 +307,7 @@ String GetMainArgumentFunctor::decodeHttpStringValue(const std::string & s)
         }
 
     }
-    result = Coder::decode(UTF8, utf8string);
+    result = Coder::decode(UTF8, utf8string, encodingError);
     return result;
 }
 

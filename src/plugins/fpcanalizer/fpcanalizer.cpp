@@ -5,12 +5,15 @@
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <QDesktopServices>
-
+#if QT_VERSION >= 0x050000
+#   include <QStandardPaths>
+#endif
 
 namespace FpcAnalizer {
 
-FpcAnalizer::FpcAnalizer(QObject * plugin, uint instanceIndex)
+FpcAnalizer::FpcAnalizer(class FpcAnalizerPlugin * plugin, uint instanceIndex)
     : QObject(plugin)
+    , plugin_(plugin)
     , fpc_(new QProcess(this))
     , textCodec_(QTextCodec::codecForName("CP866"))
     , syntaxAnalizer_(0)
@@ -24,6 +27,11 @@ FpcAnalizer::FpcAnalizer(QObject * plugin, uint instanceIndex)
     functionNames_.insert("readln");
     functionNames_.insert("write");
     functionNames_.insert("writeln");
+}
+
+Shared::AnalizerInterface * FpcAnalizer::plugin()
+{
+    return plugin_;
 }
 
 void FpcAnalizer::setSourceDirName(const QString &path)
@@ -80,9 +88,14 @@ QString FpcAnalizer::analizerWorkSubdir() const
 
 QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
 {
+#if QT_VERSION >= 0x050000
+    QDir tempDir =
+            QDir(QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0));
+#else
 
     QDir tempDir =
             QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
+#endif
     QString subdir = analizerWorkSubdir();
     tempDir.mkpath(subdir);
     QDir workDir(tempDir.absoluteFilePath(subdir));
@@ -130,8 +143,14 @@ QPair<QByteArray,QString> FpcAnalizer::startFpcProcessToCheck()
 
 QPair<QByteArray,QString> FpcAnalizer::startFpcToPrepareRun(RunTarget target, QString &error)
 {
+#if QT_VERSION >= 0x050000
+    QDir tempDir =
+            QDir(QStandardPaths::standardLocations(QStandardPaths::TempLocation).at(0));
+#else
+
     QDir tempDir =
             QDir(QDesktopServices::storageLocation(QDesktopServices::TempLocation));
+#endif
     QString subdir = analizerWorkSubdir();
     tempDir.mkpath(subdir);
     QDir workDir(tempDir.absoluteFilePath(subdir));
@@ -484,6 +503,5 @@ QString FpcAnalizer::createImportStatementLine(const QString &importName) const
     return QString::fromAscii("uses %1").arg(importName);
 }
 
-
-
 }
+

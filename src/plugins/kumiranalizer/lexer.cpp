@@ -518,7 +518,7 @@ bool isDecimalRealConstant(const QString &s) {
 }
 
 static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
-static const QString hexFormSymbols = QString::fromAscii("0123456789ABCDEFabcdef");
+static const QString hexFormSymbols = QString::fromLatin1("0123456789ABCDEFabcdef");
 
 bool isExpRealConstant(const QString &s) {
     bool result = s.length()>0 && (s[0].isDigit() || s[0]=='.');
@@ -1212,7 +1212,27 @@ void popLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)
     result.type = lexems[0]->type;
     result.data << lexems[0];
     lexems.pop_front();
-    popLexemsUntilPrimaryKeyword(lexems, result);
+    bool isFreeLoop = true;
+    static const QList<LexemType> LoopKeywords = QList<LexemType>()
+            << LxSecFor << LxSecFrom << LxSecTo << LxSecTimes << LxSecStep << LxSecWhile;
+    Q_FOREACH(const LexemPtr lx, lexems) {
+        if (lx->type & LxTypePrimaryKwd) break;
+        if (LoopKeywords.contains(lx->type)) {
+            isFreeLoop = false;
+        }
+    }
+    if (isFreeLoop) {
+        return;
+    }
+    while (lexems.size()>0) {
+        LexemPtr lx = lexems[0];
+        if (lx->type==LxOperSemicolon || (lx->type & LxTypePrimaryKwd && lx->type!=LxPriAssign))
+            break;
+        if (result.data.size() > 0 && LxSecTimes==result.data.last()->type)
+            break;
+        lexems.pop_front();
+        result.data << lx;
+    }
 }
 
 void popEndLoopStatement(QList<LexemPtr> &lexems, TextStatement &result)

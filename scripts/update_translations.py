@@ -16,7 +16,7 @@ TS_MODULES = {
         "KumirCompiler": "src/plugins/kumircompiler",
         "KumirCodeRun": "src/plugins/kumircoderun",
         "KumirCodeGenerator": "src/plugins/kumircodegenerator",
-        "KumirNativeGenerator": "src/plugins/kumirnativegenerator",
+#        "KumirNativeGenerator": "src/plugins/kumirnativegenerator",
         "PascalAnalizer": "src/plugins/pascalanalizer",
 #        "st_funct": "src/plugins/st_funct"
     }

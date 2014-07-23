@@ -3,6 +3,9 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QDesktopServices>
+#if QT_VERSION >= 0x050000
+#   include <QStandardPaths>
+#endif
 
 namespace ExtensionSystem {
 
@@ -10,7 +13,11 @@ Settings::Settings(const QString & pluginName)
     : pluginName_(pluginName)
     , mutex_(new QMutex)
 #ifdef Q_OS_WIN32
+    #if QT_VERSION >= 0x050000
+    , qsettings_(new QSettings(QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0)+"/"+defaultSettingsScope()+"/"+pluginName+".conf", QSettings::IniFormat))
+    #else
     , qsettings_(new QSettings(QDesktopServices::storageLocation(QDesktopServices::DataLocation)+"/"+defaultSettingsScope()+"/"+pluginName+".conf", QSettings::IniFormat))
+    #endif
 #else
     , qsettings_(new QSettings(defaultSettingsScope(), pluginName))
 #endif

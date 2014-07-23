@@ -17,13 +17,28 @@ namespace ActorIsometricRobot {
 
 IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
     : IsometricRobotModuleBase(parent)
-    , window_(new Robot25DWindow(parent->myResourcesDir(), 0))
-    , robotView_(window_->robotView())
+    , window_(0)
+    , robotView_(0)
+    , parentObject_(parent)
+{   
+}
+
+void IsometricRobotModule::createGui()
 {
+    window_ = new Robot25DWindow(parentObject_->myResourcesDir(), 0);
+    robotView_ = window_->robotView();
     connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
             window_, SLOT(handleLoadAction()));
     connect(m_actionRobot25DResetEnvironment, SIGNAL(triggered()),
             this, SLOT(reset()));
+}
+
+QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 QList<ExtensionSystem::CommandLineParameter> IsometricRobotModule::acceptableCommandLineParameters()

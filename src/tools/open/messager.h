@@ -23,6 +23,7 @@ public:
     class ImplInterface {
     public:
         virtual void sendMessage(Pid receiver, const QString & message) = 0;
+        virtual ~ImplInterface() {}
     };
 
 private:

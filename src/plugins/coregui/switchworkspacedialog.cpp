@@ -13,24 +13,7 @@ SwitchWorkspaceDialog::SwitchWorkspaceDialog(ExtensionSystem::SettingsPtr settin
     settings_(settings)
 {
     ui->setupUi(this);
-    QString defaultSuffix = "/Kumir";
-    QString appName = QCoreApplication::arguments().at(0);
-    int kumir2pos = appName.lastIndexOf("kumir2");
-    if (-1 != kumir2pos) {
-        appName.remove(0, kumir2pos);
-    }
-    if ("kumir2-ide" != appName && "kumir2-classic" != appName && "kumir2-highgrade" != appName) {
-        int minusPos = appName.indexOf('-');
-        if (minusPos!=-1) {
-            QString lang = appName.mid(minusPos+1).toLower();
-            lang[0] = lang[0].toUpper();
-            if (lang.endsWith(".exe")) {
-                lang = lang.mid(0, lang.length()-4);
-            }
-            defaultSuffix = "/" + lang;
-        }
-    }
-    QStringList list = settings_->value(ExtensionSystem::PluginManager::WorkspacesListKey, QStringList() << QDir::homePath()+defaultSuffix).toStringList();
+    QStringList list = settings_->value(ExtensionSystem::PluginManager::WorkspacesListKey, QStringList() << QDir::homePath()+"/Kumir/").toStringList();
     for (int i=0; i<list.size(); i++) {
         list[i] = QDir::toNativeSeparators(list[i]);
     }

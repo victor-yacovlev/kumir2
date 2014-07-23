@@ -284,7 +284,7 @@ void MainButton::drawAddons(QPainter* painter)
 	if(direction==DOWN)painter->drawLines(downArrow);
 	if(direction==LEFT)painter->drawLines(leftArrow);
 	if(direction==RIGHT)painter->drawLines(rightArrow);
-	if(direction==TEXT)
+    if(direction==TEXTT)
 	{
 		if(!downFlag)painter->setPen(QColor(10,10,10));
 		QFont font("FreeSans");
@@ -516,7 +516,7 @@ void pultLogger::CopyLog()
     cp->setText(text);
 }
 
-VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WFlags fl )
+VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	: QWidget ( parent, fl ), Ui::VodoleyPult()
 {
 	autoClose=false;

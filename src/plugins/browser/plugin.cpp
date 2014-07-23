@@ -48,4 +48,6 @@ Shared::Browser::InstanceInterface * Plugin::createBrowser(const QUrl &url, cons
 
 } // namespace Browser
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(Browser, Browser::Plugin)
+#endif

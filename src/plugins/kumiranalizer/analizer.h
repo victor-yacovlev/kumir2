@@ -30,6 +30,7 @@ class Analizer
 public:
 
     explicit Analizer(class KumirAnalizerPlugin * plugin, bool teacherMode);
+    Shared::AnalizerInterface * plugin();
 
     ~Analizer();
 
@@ -39,6 +40,7 @@ public:
       */
     static void setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language & language);
     static void setModuleAlwaysAvailable(const QString & moduleName);
+    void connectSignalImportsChanged(QObject *receiver, const char *slot);
 
 public slots:
 
@@ -77,6 +79,7 @@ private:
     const AST::AlgorithmPtr findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const;
     struct AnalizerPrivate * d;
     bool teacherMode_;
+    class KumirAnalizerPlugin * plugin_;
 
 
 

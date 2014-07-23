@@ -232,7 +232,8 @@ namespace ActorDraw {
         
         
         texts.append(addSimpleText(Text,font));
-        texts.last()->scale(0.001,0.001); 
+//        texts.last()->scale(0.001,0.001);
+        texts.last()->setScale(0.001);
         texts.last()->setPos(from.x(), from.y()-fontMetric.boundingRect("OOOXX").height()/1000);
         texts.last()->setPen(QPen(color));
         return widthChar*Text.length();
@@ -667,11 +668,11 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         {
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
-            if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
-            if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
+            //if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
+            //if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
             QPointF center = mapToScene(viewport()->rect().center());
             centerOn(center+delta/2);
-           // press_pos=mapToScene(press_pos)+delta;
+             press_pos=event->pos();
            // qDebug()<<"CenterOn"<<center+delta;
             update();
         }
@@ -743,9 +744,12 @@ void DrawView::resizeEvent ( QResizeEvent * event )
 
 DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     : DrawModuleBase(parent)
+{         
+    CurView = 0;
+}
+
+void DrawModule::createGui()
 {
-   
- 
     CurView=new DrawView();
     netStepX=1;
     netStepY=1;
@@ -757,19 +761,19 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     showToolsBut=new QToolButton(CurView);
     showToolsBut->move(20,20);
     showToolsBut->setCheckable(true);
-    
-    
+
+
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
-    
+
     connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
     connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
-    
+
     navigator->setDraw(this);
     navigator->setParent(CurView);
     navigator->setFixedSize(QSize(130,200));
     navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
     navigator->hide();
-    
+
     CurScene->setDraw(this);
     CurView->setScene(CurScene);
     penColor.r = penColor.g = penColor.b = 0;
@@ -783,16 +787,22 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     CurView->setNet();
     netStepX=1;
     netStepY=1;
-    
-    
-    
+
+
+
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
+}
 
-   
+QString DrawModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
     
 void  DrawModule::openFile()
@@ -1101,12 +1111,12 @@ void DrawModule::drawNet()
         mPen->setZValue(100);
         mPen->setBrush(QBrush(QColor("black")));
         CurScene->addItem(mPen);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-        mPen->scale(0.5,0.5);
-
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+//        mPen->scale(0.5,0.5);
+        mPen->setScale((0.05)*mPen->scale());
         mPen->setZValue(100);
         
         

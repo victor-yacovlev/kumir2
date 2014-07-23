@@ -19,7 +19,11 @@
 #include "vodoley.h"
 //#include "network.h"
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #define SCROLL_STEP 10
 #define RESP_PANEL 40
 #define LOGGER_BUTTONS 140
@@ -29,7 +33,7 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define TEXT 5
+#define TEXTT 5
 
 
 
@@ -108,7 +112,7 @@ class  MainButton : public QWidget
 		 */
 		~MainButton(){};
 		void setDirection(int d){direction=d;};
-		void setText(QString t){text=t;direction=TEXT;};
+        void setText(QString t){text=t;direction=TEXTT;};
                 bool isChecked(){return checked;};
 		void setCheckable(bool){checkable=true;};
 		void setChecked(bool flag)
@@ -287,7 +291,7 @@ class VodoleyPult : public QWidget, public Ui::VodoleyPult
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-		VodoleyPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+        VodoleyPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
         inline QSize minimumSizeHint() const { return QSize(250, 450); }
 		/**
 		 * Деструктор

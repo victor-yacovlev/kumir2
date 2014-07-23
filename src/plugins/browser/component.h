@@ -2,12 +2,13 @@
 #define BROWSER_COMPONENT_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#include <QtWebKitWidgets>
+#else
 #include <QtGui>
-#include <QtWebKit/QWebView>
-#include <QtWebKit/QWebPage>
-#include <QtWebKit/QWebFrame>
-#include <QtWebKit/QWebSettings>
-#include <QtWebKit/QWebHistory>
+#include <QtWebKit>
+#endif
 
 #include "interfaces/browserinterface.h"
 #include "interfaces/browser_instanceinterface.h"

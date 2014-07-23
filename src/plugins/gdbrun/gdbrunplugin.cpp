@@ -336,6 +336,11 @@ void GdbRunPlugin::terminate()
     emit stopped(SR_UserTerminated);
 }
 
+void GdbRunPlugin::terminateAndWaitForStopped()
+{
+    terminate();
+}
+
 bool GdbRunPlugin::hasMoreInstructions() const
 {
     return true;
@@ -945,5 +950,6 @@ void GdbRunPlugin::StateWaiter::run()
 
 }
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(GDBRunPlugin, GdbRun::GdbRunPlugin)
+#endif

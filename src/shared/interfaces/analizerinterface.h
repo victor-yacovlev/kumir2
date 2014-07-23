@@ -16,7 +16,6 @@ public:
     virtual bool primaryAlphabetIsLatin() const = 0;
     virtual bool caseInsensitiveGrammatic() const = 0;
     virtual bool indentsSignificant() const = 0;
-    virtual unsigned int indentSize() const { return 2u; }
     virtual QString languageName() const = 0;
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 

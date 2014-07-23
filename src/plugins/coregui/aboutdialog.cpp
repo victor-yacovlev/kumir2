@@ -2,7 +2,11 @@
 #include "ui_aboutdialog.h"
 #include <QSysInfo>
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include "extensionsystem/pluginmanager.h"
 #include "extensionsystem/kplugin.h"
 #include "interfaces/analizerinterface.h"
@@ -53,6 +57,7 @@ void AboutDialog::copySystemInformationToClipboard()
 {
     QString textToCopy;
     textToCopy += "Version: "+ui->version->text()+"\n";
+    textToCopy += "Last Modified: "+ui->lastModified->text()+"\n";
     for (int i=0; i<ui->tableWidget->rowCount(); i++) {
         const QString key = ui->tableWidget->item(i, 0)->text();
         const QString value = ui->tableWidget->item(i, 1)->text();
@@ -134,7 +139,7 @@ void AboutDialog::addLoadedModules()
     QList<const ExtensionSystem::KPlugin*> all = pm->loadedConstPlugins();
     QStringList names;
     for (int i=0; i<all.size(); i++) {
-        names << QString::fromAscii(all[i]->pluginName());
+        names << QString::fromLatin1(all[i]->pluginName());
     }
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Loaded Modules")));

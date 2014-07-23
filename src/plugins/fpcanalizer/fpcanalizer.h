@@ -25,6 +25,7 @@ class FpcAnalizer
                  )
     friend class FpcAnalizerPlugin;
 public:
+    Shared::AnalizerInterface * plugin();
     void setSourceDirName(const QString &path);
     void setSourceText(const QString &plainText);
     virtual std::string rawSourceData() const;
@@ -57,7 +58,8 @@ protected:
     void parseFpcOutput(const QByteArray & bytes, const QString & fileName);
     void parseCallLine(const QString &line);
     void parseDefinition(const QString &line);
-    explicit FpcAnalizer(QObject * plugin, uint instanceIndex);
+    explicit FpcAnalizer(class FpcAnalizerPlugin * plugin, uint instanceIndex);
+    class FpcAnalizerPlugin * plugin_;
     QProcess* fpc_;
     QTextCodec* textCodec_;
     SimplePascalSyntaxAnalizer * syntaxAnalizer_;
@@ -74,6 +76,7 @@ protected:
 
     QString executableFilePath_;
     QString mainSourceFilePath_;
+
 };
 
 }

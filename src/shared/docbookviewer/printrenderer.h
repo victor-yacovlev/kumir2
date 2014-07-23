@@ -5,7 +5,10 @@
 #include "docbookmodel.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QPrinter>
+#include <QPoint>
+#include <QPointF>
+#include <QFont>
 
 
 namespace DocBookViewer {

@@ -31,13 +31,24 @@ namespace ActorTurtle {
 TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     : TurtleModuleBase(parent)
 {
+    Turtle = 0;
+    Tpult = 0;
+    animation=false;
+}
+
+void TurtleModule::createGui()
+{
     Turtle=new turtle(myResourcesDir());
     Tpult=new TurtlePult(myResourcesDir());
     Tpult->turtleObj=Turtle;
-   
-    animation=false;
-    // Module constructor, called once on plugin load
-    // TODO implement me
+}
+
+QString TurtleModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+{
+    if (!configurationParameters.contains("tablesOnly")) {
+        createGui();
+    }
+    return "";
 }
 
 /* public static */ QList<ExtensionSystem::CommandLineParameter> TurtleModule::acceptableCommandLineParameters()
@@ -85,7 +96,7 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
-    
+    if (!Tpult) return 0;
     // TODO implement me
     static QWidget * dummy = new AAA(Tpult);
     return dummy;
@@ -130,16 +141,19 @@ Turtle->TailUp();
 
 /* public slot */ void TurtleModule::runForward(const int dist)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
+     mutex.lock();
     Turtle->step=dist;
+   
     if(!Turtle->moveT())
         setError(trUtf8("Нельзя вперед!"));
+    mutex.unlock();
     
 }
 
 /* public slot */ void TurtleModule::runBack(const int dist)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
     Turtle->step=-dist;
     if(!Turtle->moveT())
         setError(trUtf8("Нельзя назад!"));
@@ -148,17 +162,23 @@ Turtle->TailUp();
 
 /* public slot */ void TurtleModule::runLeft(const int angle)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
+    mutex.lock();
     Turtle->grad=-angle;
+
     Turtle->rotate();
+    mutex.unlock();
     
 }
 
 /* public slot */ void TurtleModule::runRight(const int angle)
 {
-    if(animation)msleep(250);
+   // if(animation)msleep(50);
+    mutex.unlock();
     Turtle->grad=angle;
+  
     Turtle->rotate();
+    mutex.lock();
     
 }
 

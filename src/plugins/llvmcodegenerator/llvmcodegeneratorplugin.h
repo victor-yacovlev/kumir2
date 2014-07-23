@@ -20,6 +20,9 @@ class LLVMCodeGeneratorPlugin
         , public Shared::GeneratorInterface
 {
     Q_OBJECT
+#if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "kumir2.LLVMCodeGenerator" FILE "")
+#endif
     Q_INTERFACES(Shared::GeneratorInterface)
 
 public:
@@ -50,7 +53,10 @@ protected:
 
     static QByteArray runExternalToolsToGenerateExecutable(const QByteArray & bitcode);
     static bool compileExternalUnit(const QString & fileName);
-    static QString findUtil(const QString & name);
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACX)
+    static QString findLibraryByName(const QString & baseName);
+#endif
+
 
 private:
     class LLVMGenerator * d;

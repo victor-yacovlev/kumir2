@@ -3,6 +3,7 @@
 #include <QColor>
 #include <QBrush>
 #include <QIcon>
+#include <QMessageBox>
 #define MARK_BLOCK 12
 int courseModel::loadCourse(QString file)
 {
@@ -17,12 +18,13 @@ int courseModel::loadCourse(QString file)
     };
 if(f.atEnd())return -1;
 QString error;
-courceXml.setContent(f.readAll(),true,&error);
+if(!courceXml.setContent(f.readAll(),true,&error))QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);;
 f.close();
 
 
 
 qDebug()<<"File parce:"<<error;
+ 
 int count=0;
 taskCount=count;
 root=courceXml.documentElement();
@@ -155,7 +157,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
        QDomNode child_n=nodeById(child.internalId(),root);
       // if(child_n.isNull())return QModelIndex();
        QDomNode par=child_n.parentNode();
-       if(par.toElement().attribute("id").toInt()==0) return createIndex(0,0,0);
+       if(par.toElement().attribute("id").toInt()==0) return createIndex(0,0);
        return createIndex(domRow(par),0,idByNode(par));
     };
     int courseModel::columnCount(const QModelIndex &parent)const
@@ -219,7 +221,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      }
      QModelIndex courseModel::createMyIndex(int row,int column,QModelIndex parent) const
      {
-         if(!parent.isValid())return createIndex(0,0,0);
+         if(!parent.isValid())return createIndex(0,0);
       int id=parent.internalId();
       if(id<0)return QModelIndex();
       QDomNode par=nodeById(id,root);

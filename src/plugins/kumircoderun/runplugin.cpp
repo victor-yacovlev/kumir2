@@ -1,3 +1,4 @@
+#include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "runplugin.h"
 #include "run.h"
 #include "extensionsystem/pluginmanager.h"
@@ -10,18 +11,23 @@
 #include "guirun.h"
 #include "vm/vm_console_handlers.hpp"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 namespace KumirCodeRun {
 
 struct CommonFunctors {
-    Common::ExternalModuleResetFunctor reset;
     Common::ExternalModuleCallFunctor call;
     Common::CustomTypeFromStringFunctor fromString;
     Common::CustomTypeToStringFunctor toString;
+    Common::ExternalModuleResetFunctor reset;
 };
 
 struct ConsoleFunctors {
+    Console::ExternalModuleResetFunctor reset;
     Console::ExternalModuleLoadFunctor load;
     VM::Console::InputFunctor input;
     VM::Console::OutputFunctor output;
@@ -30,6 +36,7 @@ struct ConsoleFunctors {
 };
 
 struct GuiFunctors {
+    Gui::ExternalModuleResetFunctor reset;
     Gui::ExternalModuleLoadFunctor load;
     Gui::InputFunctor input;
     Gui::OutputFunctor output;
@@ -53,6 +60,10 @@ KumirRunPlugin::KumirRunPlugin()
     connect (pRun_, SIGNAL(output(QString)), this, SIGNAL(outputRequest(QString)));
     connect (pRun_, SIGNAL(input(QString)), this, SIGNAL(inputRequest(QString)));
     connect (pRun_, SIGNAL(finished()), this, SLOT(handleThreadFinished()));
+
+    // The signal userTerminated() has the same effect like QThread::finished()
+    connect (pRun_, SIGNAL(userTerminated()), this, SLOT(handleThreadFinished()));
+
     connect (pRun_, SIGNAL(lineChanged(int,quint32,quint32)), this, SIGNAL(lineChanged(int,quint32,quint32)));
     connect (pRun_, SIGNAL(updateStepsCounter(quint64)), this, SIGNAL(updateStepsCounter(quint64)));
     connect (pRun_, SIGNAL(marginText(int,QString)), this, SIGNAL(marginText(int,QString)));
@@ -77,7 +88,7 @@ QPair<quint32,quint32> KumirRunPlugin::currentColumn() const
     return QPair<quint32,quint32>(pRun_->vm->effectiveColumn().first, pRun_->vm->effectiveColumn().second);
 }
 
-bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source, const SourceInfo & )
+bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source, const SourceInfo &)
 {
     bool ok = false;
     std::list<char> buffer;
@@ -421,6 +432,14 @@ void KumirRunPlugin::terminate()
     pRun_->stop();
 }
 
+void KumirRunPlugin::terminateAndWaitForStopped()
+{
+    if (pRun_->isRunning()) {
+        terminate();
+    }
+    pRun_->wait();
+}
+
 
 void KumirRunPlugin::handleThreadFinished()
 {
@@ -466,9 +485,7 @@ KumirRunPlugin::~KumirRunPlugin()
 
 void KumirRunPlugin::prepareCommonRun()
 {
-    common_ = new CommonFunctors;
-    common_->reset.setCallFunctor(&common_->call);
-    pRun_->vm->setFunctor(&common_->reset);
+    common_ = new CommonFunctors;        
     pRun_->vm->setFunctor(&common_->call);
     pRun_->vm->setFunctor(&common_->toString);
     pRun_->vm->setFunctor(&common_->fromString);
@@ -504,6 +521,9 @@ void KumirRunPlugin::prepareConsoleRun()
 
     console_->getMainArgument.init(arguments);
 
+    console_->reset.setCallFunctor(&common_->call);
+
+    pRun_->vm->setFunctor(&console_->reset);
     pRun_->vm->setFunctor(&console_->load);
     pRun_->vm->setFunctor(&console_->input);
     pRun_->vm->setFunctor(&console_->output);
@@ -511,6 +531,7 @@ void KumirRunPlugin::prepareConsoleRun()
     pRun_->vm->setFunctor(&console_->returnMainValue);
     pRun_->vm->setConsoleInputBuffer(&console_->input);
     pRun_->vm->setConsoleOutputBuffer(&console_->output);
+
 
 }
 
@@ -531,11 +552,17 @@ void KumirRunPlugin::prepareGuiRun()
     gui_->getMainArgument.setCustomTypeFromStringFunctor(&common_->fromString);
     gui_->returnMainValue.setCustomTypeToStringFunctor(&common_->toString);
 
+    gui_->reset.setCallFunctor(&common_->call);
+
     connect(&gui_->pause, SIGNAL(requestPause()),
             pRun_, SLOT(handlePauseRequest()),
             Qt::DirectConnection
             );
 
+    connect(&gui_->reset, SIGNAL(showActorWindow(QByteArray)),
+            this, SIGNAL(showActorWindowRequest(QByteArray)));
+
+    pRun_->vm->setFunctor(&gui_->reset);
     pRun_->vm->setFunctor(&gui_->load);
     pRun_->vm->setFunctor(&gui_->input);
     pRun_->vm->setFunctor(&gui_->output);
@@ -627,8 +654,7 @@ QString KumirRunPlugin::initialize(const QStringList &,
             if (f.open(QIODevice::ReadOnly)) {
                 const QByteArray data = f.readAll();
                 try {
-                    SourceInfo sourceInfo;
-                    loadProgram(fileName, data, sourceInfo);
+                    loadProgram(fileName, data, SourceInfo());
                 }
                 catch (const std::wstring & message) {
                     return QString::fromStdWString(message);
@@ -709,6 +735,11 @@ void KumirRunPlugin::start()
     }
 }
 
+void KumirRunPlugin::stop()
+{
+    terminateAndWaitForStopped();
+}
+
 bool KumirRunPlugin::hasMoreInstructions() const
 {
     return pRun_->hasMoreInstructions();
@@ -732,5 +763,6 @@ QAbstractItemModel * KumirRunPlugin::debuggerVariablesViewModel() const
 } // namespace KumirCodeRun
 
 
-
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCodeRun::KumirRunPlugin)
+#endif

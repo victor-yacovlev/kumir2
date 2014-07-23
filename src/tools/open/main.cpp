@@ -3,16 +3,20 @@
 #include "settings.h"
 
 #include <QApplication>
+#include <QObject>
 #include <QFileInfo>
 #include <QDir>
 
-int main(int argc, char ** argv)
+class Worker
+        : public QObject
 {
-    if (argc < 2) { return 127; }
+private:
+    void customEvent(QEvent * processEvent);
+};
 
-    QApplication qapp(argc, argv); Q_UNUSED(qapp);
-
-    QString absPath = QString::fromLocal8Bit(argv[1]);
+void Worker::customEvent(QEvent *processEvent)
+{
+    QString absPath = qApp->arguments().at(1);
     if (!QFileInfo(absPath).isAbsolute()) {
         absPath = QDir::current().absoluteFilePath(absPath);
     }
@@ -41,5 +45,15 @@ int main(int argc, char ** argv)
         const quintptr id = appManager.applications().at(0).id;
         appManager.open(id, url);
     }
-    return 0;
+    processEvent->accept();
+    qApp->quit();
+}
+
+int main(int argc, char ** argv)
+{
+    if (argc < 2) { return 127; }
+    QApplication qapp(argc, argv);
+    Worker * worker = new Worker;
+    qapp.postEvent(worker, new QEvent(QEvent::User));
+    return qapp.exec();
 }

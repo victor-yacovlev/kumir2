@@ -105,7 +105,8 @@ inline void stdStringToDataStream(std::list<char>& stream, const std::string & s
 }
 
 inline void stringToDataStream(std::list<char>& stream, const String & str) {
-    const std::string utf = Kumir::Coder::encode(Kumir::UTF8, str);
+    Kumir::EncodingError encodingError;
+    const std::string utf = Kumir::Coder::encode(Kumir::UTF8, str, encodingError);
     stdStringToDataStream(stream, utf);
 }
 
@@ -125,7 +126,8 @@ inline void stringFromDataStream(std::list<char>& stream, String & str)
 {
     std::string utf;
     stdStringFromDataStream(stream, utf);
-    str = Kumir::Coder::decode(Kumir::UTF8, utf);
+    Kumir::EncodingError encodingError;
+    str = Kumir::Coder::decode(Kumir::UTF8, utf, encodingError);
 }
 
 inline void scalarConstantToDataStream(std::list<char> & stream, ValueType type, const VM::AnyValue & val) {
@@ -252,14 +254,15 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     valueToDataStream(ds, uint16_t(e.algId));
     valueToDataStream(ds, uint16_t(e.id));
     stringToDataStream(ds, e.name);
-    String mods = Kumir::Coder::decode(Kumir::ASCII, e.moduleAsciiName);
+    Kumir::EncodingError encodingError;
+    String mods = Kumir::Coder::decode(Kumir::ASCII, e.moduleAsciiName, encodingError);
     stringToDataStream(ds, mods);
     stringToDataStream(ds, e.moduleLocalizedName);
     if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
-        String ms = Kumir::Coder::decode(Kumir::ASCII, e.recordModuleAsciiName);
+        String ms = Kumir::Coder::decode(Kumir::ASCII, e.recordModuleAsciiName, encodingError);
         stringToDataStream(ds, ms);
         stringToDataStream(ds, e.recordModuleLocalizedName);
-        String us = Kumir::Coder::decode(Kumir::ASCII, e.recordClassAsciiName);
+        String us = Kumir::Coder::decode(Kumir::ASCII, e.recordClassAsciiName, encodingError);
         stringToDataStream(ds, us);
         stringToDataStream(ds, e.recordClassLocalizedName);
 
@@ -386,10 +389,11 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     e.refvalue = ValueKind(r);
     valueFromDataStream(ds, m);
     e.module = m;
+    Kumir::EncodingError encodingError;
     if (e.type==EL_EXTERN) {
         String ma;
         stringFromDataStream(ds, ma);
-        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma);
+        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma, encodingError);
         stringFromDataStream(ds, e.moduleLocalizedName);
         stringFromDataStream(ds, e.fileName);
         stringFromDataStream(ds, e.signature);
@@ -397,7 +401,7 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     if (e.type==EL_EXTERN_INIT) {
         String ma;
         stringFromDataStream(ds, ma);
-        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma);
+        e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ma, encodingError);
         stringFromDataStream(ds, e.moduleLocalizedName);
         stringFromDataStream(ds, e.fileName);
     }
@@ -411,17 +415,17 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     stringFromDataStream(ds, s);
     e.name = s;    
     stringFromDataStream(ds, s);
-    e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, s);
+    e.moduleAsciiName = Kumir::Coder::encode(Kumir::ASCII, s, encodingError);
     stringFromDataStream(ds, s);
     e.moduleLocalizedName = s;
     if (e.type==EL_GLOBAL || e.type==EL_LOCAL || e.type==EL_CONST) {
         String ms;
         stringFromDataStream(ds, ms);
-        e.recordModuleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ms);
+        e.recordModuleAsciiName = Kumir::Coder::encode(Kumir::ASCII, ms, encodingError);
         stringFromDataStream(ds, e.recordModuleLocalizedName);
         String us;
         stringFromDataStream(ds, us);
-        e.recordClassAsciiName = Kumir::Coder::encode(Kumir::ASCII, us);
+        e.recordClassAsciiName = Kumir::Coder::encode(Kumir::ASCII, us, encodingError);
         stringFromDataStream(ds, e.recordClassLocalizedName);
     }
     if (e.type==EL_CONST) {
@@ -660,7 +664,8 @@ inline std::string constantToTextStream(const TableElem & e)
     else {
         const Kumir::String stringConstant = e.initialValue.toString();
         const Kumir::String screenedValue = screenString(stringConstant);
-        const std::string utf8Value = Kumir::Coder::encode(Kumir::UTF8, screenedValue);
+        Kumir::EncodingError encodingError;
+        const std::string utf8Value = Kumir::Coder::encode(Kumir::UTF8, screenedValue, encodingError);
         os << "\"";
         os << utf8Value;
         os << "\"";
@@ -676,7 +681,8 @@ inline std::string localToTextStream(const TableElem & e)
     os << ".local kind=" << kindToString(e.refvalue) << " type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " algorithm=" << e.algId << " id=" << e.id;
     if (e.name.length()>0) {
-        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+        Kumir::EncodingError encodingError;
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name), encodingError) << "\"";
     }
     return os.str();
 }
@@ -689,7 +695,8 @@ inline std::string globalToTextStream(const TableElem & e)
     os << ".global type=" << vtypeToString(e.vtype, e.dimension) << " ";
     os << "module=" << int(e.module) << " id=" << e.id;
     if (e.name.length()>0) {
-        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+        Kumir::EncodingError encodingError;
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name), encodingError) << "\"";
     }
     return os.str();
 }
@@ -704,7 +711,8 @@ inline std::string functionToTextStream(const TableElem & e, const AS_Helpers & 
     os << elemTypeToString(e.type) << " ";
     os << "module=" << int(e.module) << " id=" << e.id << " size=" << e.instructions.size();
     if (e.name.length()>0) {
-        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+        Kumir::EncodingError encodingError;
+        os << " name=\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name), encodingError) << "\"";
     }
     os << "\n";
     os.unsetf(std::ios::basefield);
@@ -722,11 +730,12 @@ inline std::string externToTextStream(const TableElem & e)
     std::ostringstream os;
     os.setf(std::ios::hex,std::ios::basefield);
     os.setf(std::ios::showbase);
+    Kumir::EncodingError encodingError;
     os << ".extern ";
     os << "module=";
-    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleLocalizedName)) << "\"";
+    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.moduleLocalizedName), encodingError) << "\"";
     os << " function=";
-    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name)) << "\"";
+    os << "\"" << Kumir::Coder::encode(Kumir::UTF8, screenString(e.name), encodingError) << "\"";
     return os.str();
 }
 
@@ -767,6 +776,7 @@ inline std::map<std::string,std::string> attributesFromTextStream(std::istream &
 
 inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
 {
+    Kumir::EncodingError encodingError;
     e.type = EL_NONE;
     std::string header;
     while (!ts.eof()) {
@@ -802,8 +812,16 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
             e.type==EL_TESTING
             )
     {
-        if (attrs.count("name"))
-            e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["name"].substr(1,attrs["name"].length()-2)));
+        if (attrs.count("name")) {
+            Kumir::EncodingError encodingError;
+            e.name = unscreenString(
+                        Kumir::Coder::decode(
+                            Kumir::UTF8,
+                            attrs["name"].substr(1,attrs["name"].length()-2),
+                            encodingError
+                        )
+                    );
+        }
     }
     if (e.type==EL_LOCAL) {
         if (attrs.count("module")==0)
@@ -833,13 +851,25 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
         if (e.vtype.front()==VT_void)
             throw std::string("Illegal variable type");
     }
-    if (e.type==EL_EXTERN) {
+    if (e.type==EL_EXTERN) {        
         if (attrs.count("module")==0)
             throw std::string("No module name specified for external algorithm");
-        e.moduleLocalizedName = unscreenString(Kumir::Coder::decode(Kumir::UTF8, attrs["module"].substr(1,attrs["module"].length()-2)));
+        e.moduleLocalizedName = unscreenString(
+                    Kumir::Coder::decode(
+                        Kumir::UTF8,
+                        attrs["module"].substr(1,attrs["module"].length()-2),
+                        encodingError
+                    )
+                );
         if (attrs.count("algorithm")==0)
             throw std::string("No algorithm name specified for external reference");
-        e.name = unscreenString(Kumir::Coder::decode(Kumir::UTF8,attrs["algorithm"].substr(1,attrs["algorithm"].length()-2)));
+        e.name = unscreenString(
+                    Kumir::Coder::decode(
+                        Kumir::UTF8,
+                        attrs["algorithm"].substr(1,attrs["algorithm"].length()-2),
+                        encodingError
+                    )
+                 );
     }
     if (e.type==EL_CONST) {
         if (attrs.count("type")==0)
@@ -872,7 +902,15 @@ inline void tableElemFromTextStream(std::istream& ts, TableElem& e)
             if (lexem.length()<2) {
                 throw std::string("Wrong literal constant: "+header);
             }
-            e.initialValue = Variable(unscreenString(Kumir::Coder::decode(Kumir::UTF8, lexem.substr(1, lexem.length()-2))));
+            e.initialValue = Variable(
+                        unscreenString(
+                            Kumir::Coder::decode(
+                                Kumir::UTF8,
+                                lexem.substr(1, lexem.length()-2),
+                                encodingError
+                                )
+                            )
+                        );
         }
     }
     if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {

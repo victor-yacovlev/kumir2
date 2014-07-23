@@ -4,7 +4,11 @@
 #include "extensionsystem/settings.h"
 #include "docbookviewer/docbookview.h"
 
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "interfaces/lexemtype.h"
 #include "interfaces/analizerinterface.h"
@@ -17,8 +21,8 @@ class EditorPlane : public QWidget
     friend class Editor;
     Q_OBJECT
 public:
-    explicit EditorPlane(class Editor * editor);
-    void setAnalizer(Shared::Analizer::InstanceInterface * analizer);
+    explicit EditorPlane(class EditorInstance * editor);
+
     uint widthInChars() const;
     uint charWidth() const;
     uint lineHeight() const;
@@ -30,11 +34,10 @@ public:
     uint normalizedNewMarginLinePosition(uint x) const;
     static QString MarginWidthKey;
     static uint MarginWidthDefault;
-    void addContextMenuAction(QAction * a);    
+    void addContextMenuAction(QAction * a);
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
-    inline unsigned int indentSize() const { return indentSize_; }
 public slots:
     void selectAll();
     void copy();
@@ -94,7 +97,9 @@ protected slots:
 
 private:
     int timerId_;
-    class Editor * editor_;
+    class EditorInstance * editor_;
+    Shared::Analizer::HelperInterface * analizerHelper_;
+    bool caseInsensitive_;
 
     QPoint marginMousePressedPoint_;
     QPoint delimeterRuleMousePressedPoint_;
@@ -114,9 +119,6 @@ private:
     QList<QAction*> contextMenuActions_;
 
     QLabel * marginHintBox_;
-    unsigned int indentSize_;
-    bool hardIndents_;
-    bool caseInsensitive_;
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

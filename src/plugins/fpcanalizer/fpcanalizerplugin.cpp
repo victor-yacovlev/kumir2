@@ -53,4 +53,6 @@ Analizer::InstanceInterface* FpcAnalizerPlugin::createInstance()
 
 }
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(FPCAnalizerPlugin, FpcAnalizer::FpcAnalizerPlugin)
+#endif
