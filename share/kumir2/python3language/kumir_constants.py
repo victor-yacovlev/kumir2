@@ -1,0 +1,1 @@
+/home/victor/Projects/NIISI/kumir/python3_static_analyzer/kumir_constants.py
