@@ -198,7 +198,7 @@ public:
     void undo();
 private:
     class TextDocument * doc;
-    struct KumFile::Data prevData;
+    struct Shared::Analizer::SourceFileInterface::Data prevData;
     int firstHiddenLineNo;
 };
 

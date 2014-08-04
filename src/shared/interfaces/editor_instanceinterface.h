@@ -3,6 +3,7 @@
 
 #include "dataformats/kumfile.h"
 #include "interfaces/analizer_instanceinterface.h"
+#include "interfaces/analizer_sourcefileinterface.h"
 
 #include <QWidget>
 #include <QList>
@@ -22,12 +23,12 @@ public:
                               const QUrl & sourceUrl = QUrl()
             ) /* throws QString */ = 0;
     virtual void loadDocument(const QString & fileName) /* throws QString */ = 0;
-    virtual void loadDocument(const KumFile::Data &data) /* throws QString */ = 0;
+    virtual void loadDocument(const Analizer::SourceFileInterface::Data &data) /* throws QString */ = 0;
 
     virtual void saveDocument(const QString & fileName) /* throws QString */ = 0;
     virtual void saveDocument(QIODevice * device) /* throws QString */ = 0;
 
-    virtual KumFile::Data documentContents() const = 0;
+    virtual Analizer::SourceFileInterface::Data documentContents() const = 0;
 
     virtual Analizer::InstanceInterface * analizer() = 0;
     virtual quint32 errorLinesCount() const = 0;

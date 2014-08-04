@@ -10,6 +10,7 @@
 namespace KumirAnalizer {
 
 class Analizer;
+class KumFileHandler;
 
 class KumirAnalizerPlugin
         : public ExtensionSystem::KPlugin
@@ -24,6 +25,7 @@ class KumirAnalizerPlugin
     friend struct AnalizerPrivate;
 public:
     Shared::Analizer::InstanceInterface * createInstance();
+    Shared::Analizer::SourceFileInterface * sourceFileHandler();
 
     KumirAnalizerPlugin();
     ~KumirAnalizerPlugin();
@@ -49,6 +51,7 @@ protected:
 private:
     QVector<Analizer*> analizers_;
     bool teacherMode_;
+    KumFileHandler* kumFileHandler_;
 };
 
 }

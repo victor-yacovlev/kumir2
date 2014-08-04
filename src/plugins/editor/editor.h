@@ -46,7 +46,7 @@ public:
     QSize minimumSizeHint() const;
     QList<QMenu*> menus() const;
 
-    KumFile::Data documentContents() const;
+    Shared::Analizer::SourceFileInterface::Data documentContents() const;
 
     void loadDocument(QIODevice * device,
                               const QString & fileNameSuffix = "",
@@ -54,11 +54,11 @@ public:
                               const QUrl & sourceUrl = QUrl()
             ) /* throws QString */;
     void loadDocument(const QString & fileName) /* throws QString */;
-    void loadDocument(const KumFile::Data &data) /* throws QString */;
+    void loadDocument(const Shared::Analizer::SourceFileInterface::Data &data) /* throws QString */;
 
     void saveDocument(const QString &fileName);
     void saveDocument(QIODevice * device);
-    void setKumFile(const KumFile::Data & data);
+    void setKumFile(const Shared::Analizer::SourceFileInterface::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
 
@@ -83,9 +83,7 @@ public:
     void lock();
     void unlock();
     void setLineHighlighted(int lineNo, const QColor & color, quint32 colStart, quint32 colEnd);
-    void ensureAnalized();
-    QByteArray saveState() const;
-    void restoreState(const QByteArray &data);
+    void ensureAnalized();   
     void unsetAnalizer();
     bool forceNotSavedFlag() const;
     void setForceNotSavedFlag(bool v);
@@ -189,8 +187,6 @@ private /* fields */:
     QUrl documentUrl_;
 };
 
-QDataStream & operator<< (QDataStream & stream, const EditorInstance & editor);
-QDataStream & operator>> (QDataStream & stream, EditorInstance & editor);
 
 } // namespace Editor
 

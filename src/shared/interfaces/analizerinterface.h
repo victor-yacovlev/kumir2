@@ -6,6 +6,7 @@
 #include "dataformats/ast.h"
 
 #include "analizer_instanceinterface.h"
+#include "analizer_sourcefileinterface.h"
 
 #include <QtCore>
 
@@ -20,6 +21,7 @@ public:
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 
     virtual Analizer::InstanceInterface * createInstance() = 0;
+    virtual Analizer::SourceFileInterface * sourceFileHandler() = 0;
 };
 
 }

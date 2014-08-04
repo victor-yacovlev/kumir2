@@ -1,6 +1,7 @@
 #include "coursemanager_plugin.h"
 #include <dataformats/kumfile.h>
 #include "task/mainwindow.h"
+#include "interfaces/analizerinterface.h"
 
 namespace CourseManager {
 
@@ -34,10 +35,12 @@ QList<QMenu*>  Plugin::menus()const
 
 QString Plugin::getText()
 {
- GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
- 
-    qDebug()<<"Text"<< KumFile::toString(gui->programSource().content);
-    return KumFile::toString(gui->programSource().content);
+    GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    const QString text = analizer->sourceFileHandler()->toString(gui->programSource().content);
+    qDebug()<<"Text"<< text;
+    return text;
 }    
 
 void Plugin::setPreProgram(QVariant param)
@@ -48,8 +51,10 @@ void Plugin::setPreProgram(QVariant param)
   }
   else
   {GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+      Shared::AnalizerInterface * analizer =
+              ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
    Shared::GuiInterface::ProgramSourceText text;
-   text.content=KumFile::fromString(param.toString());
+   text.content=analizer->sourceFileHandler()->fromString(param.toString());
    text.content=KumFile::insertTeacherMark(text.content);
    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
    gui->setProgramSource(text);
@@ -67,9 +72,11 @@ bool Plugin::setTextFromFile(QString fname)
     if(!file.open(QIODevice::ReadOnly))return false;
     
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
+    Shared::AnalizerInterface * analizer =
+            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
     Shared::GuiInterface::ProgramSourceText text;
-    QDataStream ds(&file);
-    ds>>text.content;
+    text.content = analizer->sourceFileHandler()->fromBytes(file.readAll());
+    file.close();
     text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
     text.content=KumFile::insertTeacherMark(text.content);
     gui->setProgramSource(text);
