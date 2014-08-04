@@ -17,6 +17,8 @@ namespace Python3Language {
 
 struct Python3Module;
 class PythonRunThread;
+class PyFileHandler;
+
 using namespace Shared;
 
 class Python3LanguagePlugin
@@ -36,6 +38,7 @@ public:
 
     // Analizer interface methods
     Analizer::InstanceInterface * createInstance();
+    Analizer::SourceFileInterface * sourceFileHandler();
     inline bool primaryAlphabetIsLatin() const { return true; }
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline virtual bool indentsSignificant() const { return true; }    
@@ -43,7 +46,7 @@ public:
     inline QString languageName() const { return "Python"; }
 
     // Runner interface methods
-    bool loadProgram(const QString &fileName, const QByteArray &source, const SourceInfo &);
+    bool loadProgram(const RunnableProgram & program);
     inline QDateTime loadedProgramVersion() const { return loadedProgramVersion_; }
     bool canStepOut() const;
     bool isTestingRun() const;
@@ -85,6 +88,7 @@ protected:
 protected Q_SLOTS:
 
 private /*fields*/:
+    PyFileHandler * fileHandler_;
     PyThreadState * pyMain_;
     PythonRunThread * runner_;
     QDateTime loadedProgramVersion_;

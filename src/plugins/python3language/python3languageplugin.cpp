@@ -2,14 +2,21 @@
 #include "analizerinstance.h"
 #include "pythonrunthread.h"
 #include "interpretercallback.h"
+#include "pyfilehandler.h"
 
 namespace Python3Language {
 
 Python3LanguagePlugin::Python3LanguagePlugin()
     : ExtensionSystem::KPlugin()
+    , fileHandler_(new PyFileHandler(this))
     , runner_(0)
     , pyMain_(0)
 {    
+}
+
+Analizer::SourceFileInterface * Python3LanguagePlugin::sourceFileHandler()
+{
+    return fileHandler_;
 }
 
 QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
@@ -60,9 +67,13 @@ Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
 }
 
 
-bool Python3LanguagePlugin::loadProgram(const QString &fileName, const QByteArray &source, const SourceInfo &)
+bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {
-    runner_->loadProgram(fileName, QString::fromUtf8(source));
+    runner_->loadProgram(program.sourceFileName,
+                         fileHandler_->toString(
+                             fileHandler_->fromBytes(program.executableData)
+                             )
+                         );
     loadedProgramVersion_ = QDateTime::currentDateTime();
     return true;
 }

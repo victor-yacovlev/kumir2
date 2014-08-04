@@ -38,6 +38,7 @@ set(SOURCES
     interpretercallback.cpp
     pythonrunthread.cpp
     actorshandler.cpp
+    pyfilehandler.cpp
 )
 
 set(MOC_HEADERS
@@ -46,6 +47,7 @@ set(MOC_HEADERS
     interpretercallback.h
     pythonrunthread.h
     actorshandler.h
+    pyfilehandler.h
 )
 
 if(${USE_QT} GREATER 4)

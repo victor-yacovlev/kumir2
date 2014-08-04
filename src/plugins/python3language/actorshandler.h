@@ -26,22 +26,48 @@ public:
 private Q_SLOTS:
     void handleActorSync();
 
+private /*types*/:
+    typedef QPair<ActorInterface*, ActorInterface::RecordSpecification> TypeSpec;
+
 private /*methods*/:
     explicit ActorsHandler(QObject *parent = 0);
     void initializeActors();
-    static QPair<QString, QString> generateActorNames(const ActorInterface * actor);
+    void addActor(ActorInterface * actor);
+
+    QVariant encodeActorCustomTypeArgument(const QVariant & from) const;
+    QVariant decodeActorCustomTypeValue(
+            const QString &typeName,
+            const QVariant & from
+            ) const;
+
+    static QString toCamelCase(const QString & s);
+    static QString toPythonicName(const QString & s);
     static QString createActorWrapper(const int id,
                                       const ActorInterface * actor,
                                       const QString & camelCaseName
                                       );
+    static QString createActorMethod(const int moduleId,
+                                     const ActorInterface::Function & func,
+                                     const QString & actorCamelCaseName
+                                     );
+
+    static QString createClassMethod(const int moduleId,
+                                     const ActorInterface::Function & func,
+                                     const QString & actorCamelCaseName
+                                     );
+
+
+    static bool isOperator(const QByteArray & asciiName);
+    static QString toPythonOperator(const QByteArray & asciiName);
 
 private /*fields*/:
-    static ActorsHandler* self;
+    static ActorsHandler* self;    
     QVector<QString> names_;
     QVector<QString> wrappers_;
     QVector<ActorInterface*> actors_;
     QSemaphore* syncSemaphore_;
     QVariant actorCallResult_;
+    QMap<QString,TypeSpec> actorCustomTypes_;
 };
 
 } // namespace Python3Language

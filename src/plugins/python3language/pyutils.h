@@ -17,6 +17,7 @@ extern QVariantList PyListToQVariantList(PyObject * list);
 extern PyObject* QVariantListToPyList(const QVariantList & list,
                                         bool toTuple);
 
+extern QMap<QString,QVariant> PyDictToPropertyMap(PyObject * object);
 extern QMap<QString,QVariant> PyObjectToPropertyMap(PyObject * object);
 extern QVariant PyObjectToQVariant(PyObject * object);
 extern PyObject* QVariantToPyObject(const QVariant & value);
@@ -55,6 +56,10 @@ extern PyObject* createModuleFromSource(
         const QString & moduleName,
         const QString & moduleSource
         );
+
+extern void clearCreatedModules();
+
+extern PyObject* findCreatedModule(const QString & name);
 
 extern void appendToSysPath(const QString & path);
 

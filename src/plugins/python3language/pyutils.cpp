@@ -33,6 +33,26 @@ extern void printPythonTraceback()
     qDebug() << qtraceback;
 }
 
+QMap<QString,QVariant> PyDictToPropertyMap(PyObject *object)
+{
+    QMap<QString,QVariant> result;
+    PyObject * py_keys = PyDict_Keys(object);
+    size_t size = PyList_Size(py_keys);
+    for (size_t i=0; i<size; i++) {
+        PyObject * py_key = PyList_GetItem(py_keys, i);
+        PyObject * py_value = PyDict_GetItem(object, py_key);
+        PyObject * py_key_repr = PyObject_Repr(py_key);
+        const QString key = PyUnicodeToQString(py_key_repr);
+        const QVariant value = PyObjectToQVariant(py_value);
+        result[key] = value;
+        Py_DECREF(py_key_repr);
+        Py_DECREF(py_key);
+        Py_DECREF(py_value);
+    }
+    Py_DECREF(py_keys);
+    return result;
+}
+
 QMap<QString,QVariant> PyObjectToPropertyMap(PyObject *object)
 {
     PyObject * __dict__ = PyObject_GenericGetDict(object, 0);
@@ -48,13 +68,14 @@ QMap<QString,QVariant> PyObjectToPropertyMap(PyObject *object)
             const QVariant value = PyObjectToQVariant(py_value);
             result[key] = value;
         }
-    }
+    }    
     return result;
 }
 
 extern QVariant PyObjectToQVariant(PyObject *object)
 {
-    const QByteArray objectTypeName(object->ob_type->tp_name);
+    const PyTypeObject* const objectType = object->ob_type;
+    const QByteArray objectTypeName(objectType->tp_name);
     if (objectTypeName == "NoneType") {
         return QVariant();
     }
@@ -70,8 +91,21 @@ extern QVariant PyObjectToQVariant(PyObject *object)
         return QVariant(PyLong_AsLong(object) != 0);
     else if (PyUnicode_Check(object))
         return QVariant(PyUnicodeToQString(object));
-    else
-        return QVariant(PyObjectToPropertyMap(object));
+    else if (PyDict_Check(object))
+        return QVariant(PyDictToPropertyMap(object));
+    else {
+        QMap<QString,QVariant> propertyMap = PyObjectToPropertyMap(object);
+        if (propertyMap.isEmpty() || (propertyMap.size()==1 && propertyMap.keys().at(0)=="__name__")) {
+            PyObject* __repr__ = PyObject_Repr(object);
+            QString repr = PyUnicodeToQString(__repr__);
+            Py_DecRef(__repr__);
+            return QVariant(repr);
+        }
+        else {
+            propertyMap["__type__.__name__"] = objectTypeName;
+            return QVariant(propertyMap);
+        }
+    }
 }
 
 extern PyObject* QVariantToPyObject(const QVariant & value)
@@ -91,6 +125,32 @@ extern PyObject* QVariantToPyObject(const QVariant & value)
         result = QStringToPyUnicode(value.toString());
     else if (QVariant::List==value.type())
         result = QVariantListToPyList(value.toList(), false);
+    else if (QVariant::Map==value.type() &&
+             value.toMap().contains("__type__.__name__") &&
+             value.toMap().contains("__type__.__module__.__name__")
+             )
+    {
+        const QMap<QString,QVariant> map = value.toMap();
+        const QString & moduleName = map["__type__.__module__.__name__"].toString();
+        const QString & className = map["__type__.__name__"].toString();
+        PyObject * module = findCreatedModule(moduleName);
+        const QString initInstanceName = "__init__" + className;
+        PyObject * py_initInstanceName = QStringToPyUnicode(initInstanceName);
+        PyObject * py_initInstance = PyObject_GetAttr(module, py_initInstanceName);
+        Py_DECREF(py_initInstanceName);
+        QVariantList initArgs;
+        Q_FOREACH(const QString & key, map.keys()) {
+            if (!key.startsWith("_")) {
+                const QVariant arg = map[key];
+                initArgs.append(arg);
+            }
+        }
+        PyObject * py_initArgs = QVariantListToPyList(initArgs, true);
+        PyObject * py_instance = PyObject_Call(py_initInstance, py_initArgs, 0);
+        Py_DECREF(py_initArgs);
+        result = py_instance;
+
+    }
     // TODO support more types?
     Py_XINCREF(result);
     return result;
@@ -194,6 +254,16 @@ extern PyObject* compileModule(
     return result;
 }
 
+static QMap<QString,PyObject*> CreatedModules;
+
+extern void clearCreatedModules()
+{
+    Q_FOREACH(PyObject * obj, CreatedModules.values()) {
+        Py_XDECREF(obj);
+    }
+    CreatedModules.clear();
+}
+
 extern PyObject* createModuleFromSource(
         PyThreadState *interpreter,
         const QString &moduleName,
@@ -217,7 +287,18 @@ extern PyObject* createModuleFromSource(
     }
     PyEval_ReleaseThread(interpreter);
     Py_XINCREF(module);
+    CreatedModules[moduleName] = module;
     return module;
+}
+
+extern PyObject* findCreatedModule(const QString &name)
+{
+    if (CreatedModules.contains(name)) {
+        return CreatedModules[name];
+    }
+    else {
+        return 0;
+    }
 }
 
 }

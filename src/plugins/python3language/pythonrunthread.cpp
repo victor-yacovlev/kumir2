@@ -87,6 +87,7 @@ void PythonRunThread::run()
     PyEval_ReleaseThread(py);
 
     // Create actor 'modules'
+    clearCreatedModules();
     for (int i=0; i<actorsHandler_->size(); i++) {
         const QString source = actorsHandler_->moduleWrapper(i);
         const QString name = actorsHandler_->moduleName(i);
