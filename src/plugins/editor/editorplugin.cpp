@@ -73,14 +73,8 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
         if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
             const QByteArray bytes = f.readAll();
             f.close();
-            const KumFile::Data data =
-                    KumFile::fromString(
-                        KumFile::readRawDataAsString(
-                            bytes,
-                            QString(),
-                            analizerPlugin->defaultDocumentFileNameSuffix()
-                            )
-                        );
+            const Shared::Analizer::SourceFileInterface::Data data =
+                    analizerPlugin->sourceFileHandler()->fromBytes(bytes);
             editor->setKumFile(data);
         }
     }
@@ -89,7 +83,7 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
     return editor;
 }
 
-Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const KumFile::Data &data)
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data)
 {
     EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
@@ -104,7 +98,21 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
         const QUrl & sourceUrl
         )
 {
-    EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+
+    QList<Shared::AnalizerInterface*> analizers =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        const QString suffix = analizers[i]->defaultDocumentFileNameSuffix();
+        if (suffix == fileNameSuffix) {
+            analizerPlugin = analizers[i];
+            break;
+        }
+    }
+
+    EditorInstance * editor = new EditorInstance(this, true, analizerPlugin, nullptr);
     connectGlobalSignalsToEditor(editor);
     editor->loadDocument(device, fileNameSuffix, sourceEncoding, sourceUrl);
     return editor;
@@ -112,7 +120,21 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
 
 Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName)
 {
-    EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
+    Shared::AnalizerInterface * analizerPlugin = nullptr;
+
+    QList<Shared::AnalizerInterface*> analizers =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugins<Shared::AnalizerInterface>();
+
+    for (int i=0; i<analizers.size(); i++) {
+        const QString suffix = "." + analizers[i]->defaultDocumentFileNameSuffix();
+        if (fileName.endsWith(suffix)) {
+            analizerPlugin = analizers[i];
+            break;
+        }
+    }
+
+    EditorInstance * editor = new EditorInstance(this, true, analizerPlugin, nullptr);
     connectGlobalSignalsToEditor(editor);
     editor->loadDocument(fileName);
     return editor;

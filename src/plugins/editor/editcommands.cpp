@@ -708,7 +708,7 @@ QDataStream & operator>> (QDataStream & stream, ToggleLineProtectedCommand & com
 QDataStream & operator<< (QDataStream & stream, const ChangeHiddenLineDelimeterCommand & command)
 {
     stream << command.firstHiddenLineNo;
-    stream << KumFile::toString(command.prevData);
+//    stream << KumFile::toString(command.prevData);
     return stream;
 }
 
@@ -717,7 +717,7 @@ QDataStream & operator>> (QDataStream & stream, ChangeHiddenLineDelimeterCommand
     stream >> command.firstHiddenLineNo;
     QString s;
     stream >> s;
-    command.prevData = KumFile::fromString(s);
+//    command.prevData = KumFile::fromString(s);
     return stream;
 }
 

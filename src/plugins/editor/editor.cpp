@@ -84,30 +84,18 @@ void EditorInstance::appendMarginText(int lineNo, const QString &text)
 void EditorInstance::loadDocument(QIODevice *device, const QString &fileNameSuffix,
                           const QString &sourceEncoding, const QUrl &sourceUrl)
 {
-    Shared::AnalizerInterface * analizerPlugin = nullptr;
-
-    ExtensionSystem::PluginManager * manager =
-            ExtensionSystem::PluginManager::instance();
-
-    QList<Shared::AnalizerInterface*> analizers =
-            manager->findPlugins<Shared::AnalizerInterface>();
-
-    for (int i=0; i<analizers.size(); i++) {
-        if (analizers[i]->defaultDocumentFileNameSuffix() == fileNameSuffix) {
-            analizerPlugin = analizers[i];
-            break;
-        }
-    }
-
-//    bool keepIndents = analizerPlugin==nullptr || analizerPlugin->indentsSignificant();
-    bool keepIndents = true;
-
     const QByteArray bytes = device->readAll();
 
-    KumFile::Data data = KumFile::fromString(
-                KumFile::readRawDataAsString(bytes, sourceEncoding, fileNameSuffix),
-                keepIndents
-                );
+    Shared::Analizer::SourceFileInterface::Data data;
+
+    if (analizerPlugin_) {
+        data = analizerPlugin_->sourceFileHandler()->fromBytes(bytes, sourceEncoding);
+    }
+    else {
+        QTextCodec * codec = QTextCodec::codecForName(sourceEncoding.toLatin1());
+        data.hasHiddenText = false;
+        data.visibleText = codec->toUnicode(bytes);
+    }
     data.canonicalSourceLanguageName = fileNameSuffix;
     data.sourceUrl = sourceUrl;
     loadDocument(data);
@@ -137,7 +125,7 @@ void EditorInstance::loadDocument(const QString &fileName)
     }
 }
 
-void EditorInstance::loadDocument(const KumFile::Data &data)
+void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data)
 {
     Shared::AnalizerInterface * analizerPlugin = nullptr;
     Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
@@ -960,54 +948,9 @@ QList<QMenu*> EditorInstance::menus() const
     return result;
 }
 
-QByteArray EditorInstance::saveState() const
-{
-    QBuffer buffer;
-    buffer.open(QIODevice::WriteOnly);
-    QDataStream stream(&buffer);
-    stream << (*this);
-    QByteArray data = buffer.data();
-    QByteArray md5 = QCryptographicHash::hash(data, QCryptographicHash::Md5);
-    QByteArray version =
-            QCoreApplication::instance()->applicationVersion().leftJustified(20, ' ')
-            .toLatin1();
-    return md5 + version + data;
-}
 
-void EditorInstance::restoreState(const QByteArray &data)
-{
-    if (data.size()>=36) {
-        QByteArray checksum = data.mid(0,16);
-        QString version = QString::fromLatin1(data.mid(16,20)).trimmed();
-        QString myVersion = QCoreApplication::instance()->applicationVersion();
-        QByteArray d = data.mid(36);
-        QByteArray md5 = QCryptographicHash::hash(d, QCryptographicHash::Md5);
-        bool equal = true;
-        for (int i=0; i<16; i++) {
-            if (checksum[i]!=md5[i]) {
-                equal = false;
-                break;
-            }
-        }
-        if (version>myVersion || (myVersion.contains("alpha") && myVersion!=version)) {
-            qWarning() << "Can't restore state: version mismatch (my: "
-                       << myVersion << ", required: " << version << ")";
-        }
-        else if (!equal) {
-            qWarning() << "Can't restore state: MD5 checksum mismatch";
-        }
-        else {
-            QDataStream stream(d);
-            stream >> (*this);
-        }
-    }
-    else {
-        qWarning() << "Can't restore state: not enought data";
-    }
-    checkForClean();
-}
 
-void EditorInstance::setKumFile(const KumFile::Data &data)
+void EditorInstance::setKumFile(const Shared::Analizer::SourceFileInterface::Data &data)
 {
     notSaved_ = true;
     doc_->setKumFile(data, plugin_->teacherMode_);
@@ -1041,9 +984,9 @@ void  EditorInstance::setPlainText(const QString & data)
     checkForClean();
 }
 
-KumFile::Data EditorInstance::documentContents() const
+Shared::Analizer::SourceFileInterface::Data EditorInstance::documentContents() const
 {
-    KumFile::Data data = doc_->toKumFile();
+    Shared::Analizer::SourceFileInterface::Data data = doc_->toKumFile();
     data.sourceUrl = documentUrl_;
     return data;
 }
@@ -1051,7 +994,7 @@ KumFile::Data EditorInstance::documentContents() const
 void EditorInstance::saveDocument(const QString &fileName)
 {
     QFile f(fileName);
-    if (f.open(QIODevice::WriteOnly|QIODevice::Text)) {
+    if (f.open(QIODevice::WriteOnly)) {
         saveDocument(&f);
         f.close();
         documentUrl_ = QUrl::fromLocalFile(fileName);
@@ -1063,8 +1006,21 @@ void EditorInstance::saveDocument(const QString &fileName)
 
 void EditorInstance::saveDocument(QIODevice *device)
 {
-    QDataStream ds(device);
-    ds << documentContents();    
+    if (analizerPlugin_) {
+        QByteArray bytes = analizerPlugin_->sourceFileHandler()->toBytes(documentContents());
+        device->write(bytes);
+    }
+    else {
+        QTextStream ts(device);
+#ifdef Q_OS_WIN32
+        ts.setCodec("CP1251");
+#else
+        ts.setCodec("UTF-8");
+        ts.setGenerateByteOrderMark(true);
+#endif
+        ts << documentContents().visibleText;
+        ts.flush();
+    }
     notSaved_ = false;
     checkForClean();
     doc_->undoStack()->setClean();
@@ -1180,109 +1136,6 @@ void EditorInstance::setForceNotSavedFlag(bool v)
 {
     notSaved_ = v;
     checkForClean();
-}
-
-QDataStream & operator<< (QDataStream & stream, const EditorInstance & editor)
-{
-    stream << KumFile::toString(editor.documentContents());
-    stream << editor.cursor()->row();
-    stream << editor.cursor()->column();
-    stream << quint8(editor.forceNotSavedFlag());
-    stream << editor.document()->undoStack()->count();
-    stream << editor.document()->undoStack()->cleanIndex();
-    stream << editor.document()->undoStack()->index();
-    for (int i=0; i<editor.document()->undoStack()->count(); i++) {
-        const QUndoCommand * cmd = editor.document()->undoStack()->command(i);
-        stream << cmd->id();
-        if (cmd->id()==1) {
-            const InsertCommand * insertCommand =
-                    static_cast<const InsertCommand*>(cmd);
-            stream << (*insertCommand);
-        }
-        if (cmd->id()==2) {
-            const RemoveCommand * removeCommand =
-                    static_cast<const RemoveCommand*>(cmd);
-            stream << (*removeCommand);
-        }
-        if (cmd->id()==3) {
-            const InsertBlockCommand * insertCommand =
-                    static_cast<const InsertBlockCommand*>(cmd);
-            stream << (*insertCommand);
-        }
-        if (cmd->id()==4) {
-            const RemoveBlockCommand * removeCommand =
-                    static_cast<const RemoveBlockCommand*>(cmd);
-            stream << (*removeCommand);
-        }
-        if (cmd->id()==0xA0) {
-            const ToggleLineProtectedCommand * toggleCommand =
-                    static_cast<const ToggleLineProtectedCommand*>(cmd);
-            stream << (*toggleCommand);
-        }
-    }
-
-    return stream;
-}
-
-QDataStream & operator>> (QDataStream & stream, EditorInstance & editor)
-{
-    QString txt;
-    int row, col;
-    stream >> txt;
-    stream >> row;
-    stream >> col;
-    editor.setKumFile(KumFile::fromString(txt));
-    editor.cursor()->setRow(row);
-    editor.cursor()->setColumn(col);
-    quint8 notsaved;
-    stream >> notsaved;
-    editor.setForceNotSavedFlag(bool(notsaved));
-    int undoCount, cleanIndex, undoIndex;
-    stream >> undoCount >> cleanIndex >> undoIndex;
-    QUndoStack * undo = editor.document()->undoStack();
-    TextDocument::noUndoRedo = true;
-    for (int i=0; i<undoCount; i++) {
-        if (i==cleanIndex)
-            undo->setClean();
-        int id;
-        stream >> id;
-        if (id==1) {
-            InsertCommand * cmd = new InsertCommand(editor.document(),
-                                                    editor.cursor(),
-                                                    editor.analizer());
-            stream >> (*cmd);
-            undo->push(cmd);
-        }
-        if (id==2) {
-            RemoveCommand * cmd = new RemoveCommand(editor.document(),
-                                                    editor.cursor(),
-                                                    editor.analizer());
-            stream >> (*cmd);
-            undo->push(cmd);
-        }
-        if (id==3) {
-            InsertBlockCommand * cmd = new InsertBlockCommand(editor.document(),
-                                                              editor.cursor(),
-                                                              editor.analizer());
-            stream >> (*cmd);
-            undo->push(cmd);
-        }
-        if (id==4) {
-            RemoveBlockCommand * cmd = new RemoveBlockCommand(editor.document(),
-                                                              editor.cursor(),
-                                                              editor.analizer());
-            stream >> (*cmd);
-            undo->push(cmd);
-        }
-        if (id==0xA0) {
-            ToggleLineProtectedCommand * cmd = new ToggleLineProtectedCommand(editor.document(), -1);
-            stream >> (*cmd);
-            undo->push(cmd);
-        }
-    }
-    undo->setIndex(undoIndex);
-    TextDocument::noUndoRedo = false;
-    return stream;
 }
 
 } // namespace Editor

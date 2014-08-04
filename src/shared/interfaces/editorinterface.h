@@ -3,6 +3,7 @@
 
 #include "interfaces/analizerinterface.h"
 #include "interfaces/editor_instanceinterface.h"
+#include "interfaces/analizer_sourcefileinterface.h"
 #include "dataformats/kumfile.h"
 
 namespace Shared
@@ -22,7 +23,7 @@ public:
             const QString & fileName) /* throws QString */ = 0;
 
     virtual Editor::InstanceInterface * loadDocument(
-            const KumFile::Data &data) /* throws QString */ = 0;
+            const Analizer::SourceFileInterface::Data &data) /* throws QString */ = 0;
 
     virtual Editor::InstanceInterface * newDocument(
             const QString & canonicalLanguageName = "",

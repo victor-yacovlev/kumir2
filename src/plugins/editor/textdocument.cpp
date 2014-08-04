@@ -241,7 +241,7 @@ uint TextDocument::indentAt(uint lineNo) const
     return uint( qMax(result, 0) );
 }
 
-void TextDocument::setKumFile(const KumFile::Data &d, bool showHiddenLines)
+void TextDocument::setKumFile(const Shared::Analizer::SourceFileInterface::Data &d, bool showHiddenLines)
 {
     data_.clear();
     QStringList lines = d.visibleText.split("\n");
@@ -317,9 +317,10 @@ int TextDocument::hiddenLineStart() const
     return result;
 }
 
-KumFile::Data TextDocument::toKumFile() const
+Shared::Analizer::SourceFileInterface::Data TextDocument::toKumFile() const
 {
-    KumFile::Data kumfile;
+    Shared::Analizer::SourceFileInterface::Data kumfile;
+    kumfile.hasHiddenText = false;
     for (int i=0; i<data_.size(); i++) {
         if (data_[i].hidden) {
             kumfile.hiddenText += data_[i].text;

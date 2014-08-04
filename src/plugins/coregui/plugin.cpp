@@ -103,7 +103,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    qRegisterMetaType<KumFile::Data>("KumirFile.Data");
+    qRegisterMetaType<Shared::Analizer::SourceFileInterface::Data>("KumirFile.Data");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     qRegisterMetaType<Shared::GuiInterface::ProgramSourceText::Language>
             ("Gui.ProgramSourceText.Language");

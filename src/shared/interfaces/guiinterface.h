@@ -19,7 +19,7 @@ public:
         Language language;
         QDateTime saved;
         QDateTime changed;
-        KumFile::Data content;
+        Shared::Analizer::SourceFileInterface::Data content;
         QString title;
         QUrl url;
     };

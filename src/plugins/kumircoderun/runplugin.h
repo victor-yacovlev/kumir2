@@ -23,7 +23,7 @@ public:
 
     bool canStepOut() const;
     void terminateAndWaitForStopped();
-    bool loadProgram(const QString & fileName, const QByteArray & source, const SourceInfo &sourceInfo);
+    bool loadProgram(const RunnableProgram &sourceInfo);
     bool hasMoreInstructions() const;
     bool hasTestingEntryPoint() const;
     QString error() const;

@@ -101,11 +101,13 @@ void KumirCompilerToolPlugin::start()
     const QString filename = QFileInfo(sourceFileName_).absoluteFilePath();
     QFile f(filename);
     if (f.open(QIODevice::ReadOnly)) {
-        QDataStream ts(&f);
-        KumFile::Data kumFile;
-        kumFile.sourceEncoding = sourceFileEncoding_;
-        ts >> kumFile;
+
+        QByteArray fileData = f.readAll();
         f.close();
+
+        Shared::Analizer::SourceFileInterface::Data kumFile;
+        kumFile = analizer_->sourceFileHandler()->fromBytes(fileData, sourceFileEncoding_);
+        kumFile.sourceUrl = QUrl::fromLocalFile(sourceFileName_);
 
         Shared::Analizer::InstanceInterface * analizer =
                 analizer_->createInstance();

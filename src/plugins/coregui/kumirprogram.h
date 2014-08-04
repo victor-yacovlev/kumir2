@@ -76,7 +76,7 @@ private:
     static Shared::RunInterface * runner();
 
     void setAllActorsAnimationFlag(bool animationEnabled);
-    void prepareKumirRunner(Shared::GeneratorInterface::DebugLevel);
+    void prepareRunner(Shared::GeneratorInterface::DebugLevel);
 
 private /*fields*/:
     enum State { Idle, RegularRun, BlindRun, StepRun, TestingRun } state_;

@@ -2,6 +2,7 @@
 #define KUMFILE_KUMFILE_H
 
 #include <QtCore>
+#include "interfaces/analizer_sourcefileinterface.h"
 
 #ifdef DATAFORMATS_LIBRARY
 #define KUMFILE_EXPORT Q_DECL_EXPORT
@@ -11,22 +12,7 @@
 
 namespace KumFile {
 
-struct Data
-{
-    QString visibleText;
-    QSet<int> protectedLineNumbers;
-    QString hiddenText;
-    bool hasHiddenText;
-    QString sourceEncoding;
-    QByteArray hiddenTextSignature;
-    QString canonicalSourceLanguageName; // the same as file suffix after '.'
-    QUrl sourceUrl;
-};
-
-KUMFILE_EXPORT QString toString(const Data & data);
-KUMFILE_EXPORT Data fromString(const QString &s, bool keepIndents = false);
-KUMFILE_EXPORT KumFile::Data insertTeacherMark(KumFile::Data & data);
-KUMFILE_EXPORT QString readRawDataAsString(QByteArray rawData, const QString & sourceEncoding, const QString & fileNameSuffix);
+KUMFILE_EXPORT Shared::Analizer::SourceFileInterface::Data insertTeacherMark(Shared::Analizer::SourceFileInterface::Data & data);
 
 KUMFILE_EXPORT bool hasCryptographicRoutines();
 KUMFILE_EXPORT void generateKeyPair(
@@ -36,7 +22,7 @@ KUMFILE_EXPORT void generateKeyPair(
         );
 
 KUMFILE_EXPORT void signHiddenText(
-        Data& data,
+        Shared::Analizer::SourceFileInterface::Data& data,
         const QString & privateKey,
         const QString & passPhrase
         );
@@ -49,14 +35,11 @@ enum VerifyResult {
 };
 
 KUMFILE_EXPORT VerifyResult verifyHiddenText(
-        const Data& data,
+        const Shared::Analizer::SourceFileInterface::Data& data,
         const QString& publicKey
         );
 
 } // namespace KumFile
 
-
-KUMFILE_EXPORT QDataStream & operator<<(QDataStream & stream, const KumFile::Data & data);
-KUMFILE_EXPORT QDataStream & operator>>(QDataStream & stream, KumFile::Data & data);
 
 #endif // KUMFILE_KUMFILE_H
