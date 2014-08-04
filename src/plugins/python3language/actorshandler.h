@@ -17,6 +17,7 @@ public:
 
     QVariant call(int moduleId, int functionId, const QVariantList & arguments);
     void reset();
+    void resetActors();
 
     inline int size() const { return names_.size(); }
     inline bool contains(const QString & name) const { return names_.contains(name); }

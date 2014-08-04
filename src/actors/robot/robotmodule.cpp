@@ -722,7 +722,7 @@ namespace ActorRobot {
     }
     
     RoboField::RoboField(QWidget *parent)
-	: QGraphicsScene(parent)
+    : QGraphicsScene(parent)
 	
     
     {
@@ -3294,7 +3294,7 @@ namespace ActorRobot {
    
     
 RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
-	: RobotModuleBase(parent)
+    : RobotModuleBase(parent)
 {
     self = this;
 	/* TODO 

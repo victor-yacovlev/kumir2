@@ -33,7 +33,10 @@ void ActorsHandler::reset()
         syncSemaphore_->acquire();
         sem = syncSemaphore_->available();
     }
+}
 
+void ActorsHandler::resetActors()
+{
     // Reset all registered actors
     Q_FOREACH(ActorInterface * actor, actors_) {
         actor->reset();
@@ -133,6 +136,8 @@ QString ActorsHandler::createActorWrapper(const int id, const ActorInterface *ac
     r += "    def __init__(self, message):\n";
     r += "        self.message = message\n";
     r += "    def __str__(self):\n";
+    r += "        return self.message\n";
+    r += "    def __repr__(self):\n";
     r += "        return self.message\n";
     r += "\n\n";
 

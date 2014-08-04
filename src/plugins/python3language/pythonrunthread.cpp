@@ -184,7 +184,15 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
             self->lineNumber_ = lineNumber;
             self->mutex_->unlock();
 
-            if (PyTrace_LINE==what)
+            if (PyTrace_LINE==what || PyTrace_CALL==what || PyTrace_C_CALL==what) {
+                // Program not broken, so clear possible previous error flag
+                self->mutex_->lock();
+                self->errorText_.clear();
+                self->mutex_->unlock();
+            }
+
+            if (PyTrace_LINE==what)                
+                // Notify GUI on line change
                 self->dispatchLineChange();
 
             if (RM_StepOver==self->runMode_ || RM_StepIn==self->runMode_ || RM_StepOut==self->runMode_) {
@@ -206,7 +214,6 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
                 self->errorText_ = PyUnicodeToQString(message);
                 self->mutex_->unlock();
                 Py_XDECREF(message);
-                Py_XDECREF(exception);
             }
         }
     }
@@ -286,6 +293,7 @@ void PythonRunThread::startOrContinue(const RunMode runMode)
 {
     runMode_ = runMode;
     if (!isRunning()) {
+        actorsHandler_->resetActors();
         start();
     }
     else {
