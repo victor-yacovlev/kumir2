@@ -333,8 +333,9 @@ extern QVariant callPythonFunction(
 
 extern void appendToSysPath(const QString & path)
 {
+    QString localPath = QDir::toNativeSeparators(path);
     PyObject * sysPath = PySys_GetObject("path");
-    PyObject * extraPath = QStringToPyUnicode(path);
+    PyObject * extraPath = QStringToPyUnicode(localPath);
     PyList_Insert(sysPath, 0, extraPath);
 }
 
