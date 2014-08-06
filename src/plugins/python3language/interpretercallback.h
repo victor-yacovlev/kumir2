@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QStringList>
 
 extern "C" {
 #include <Python.h>
@@ -26,8 +27,15 @@ public:
     static PyObject* write_error(PyObject *, PyObject * args);
     static PyObject* read_input(PyObject *, PyObject *);
     static PyObject* actor_call(PyObject *, PyObject * args);
+    static PyObject* get_output_buffer(PyObject *, PyObject *);
+    static PyObject* simulate_input(PyObject*, PyObject *args);
 
-    inline void reset() { QMutexLocker l(mutex_); inputString_.clear();}
+    inline void reset() {
+        QMutexLocker l(mutex_);
+        inputString_.clear();
+        outputBuffer_.clear();
+        simulatingInputBuffer_.clear();
+    }
     inline void setInputString(const QString & text) { QMutexLocker l(mutex_); inputString_ = text; }
 
 Q_SIGNALS:
@@ -42,6 +50,8 @@ private /*fields*/:
     static InterpreterCallback * self;
     QMutex * mutex_;
     QString inputString_;
+    QString outputBuffer_;
+    QStringList simulatingInputBuffer_;
 };
 
 } // namespace Python3Language

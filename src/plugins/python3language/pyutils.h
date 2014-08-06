@@ -19,6 +19,15 @@ extern PyObject* QVariantListToPyList(const QVariantList & list,
 
 extern QMap<QString,QVariant> PyDictToPropertyMap(PyObject * object);
 extern QMap<QString,QVariant> PyObjectToPropertyMap(PyObject * object);
+
+struct ValueRepresentation {
+    QString name;
+    QString repr;
+    QList<ValueRepresentation> children;
+};
+
+extern ValueRepresentation PyObjectToValueRepresentation(const QString & name, PyObject * object);
+
 extern QVariant PyObjectToQVariant(PyObject * object);
 extern PyObject* QVariantToPyObject(const QVariant & value);
 
@@ -64,5 +73,7 @@ extern PyObject* findCreatedModule(const QString & name);
 extern void appendToSysPath(const QString & path);
 
 }
+
+Q_DECLARE_METATYPE(Python3Language::ValueRepresentation)
 
 #endif // PYUTILS_H

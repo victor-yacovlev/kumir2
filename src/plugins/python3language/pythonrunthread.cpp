@@ -3,6 +3,7 @@
 #include "actorshandler.h"
 #include "pyutils.h"
 #include "interfaces/runinterface.h"
+#include "variablesmodel.h"
 
 extern "C" {
 #include <Python.h>
@@ -24,14 +25,15 @@ PythonRunThread* PythonRunThread::instance(QObject *parent, const QString &extra
 
 PythonRunThread::PythonRunThread(QObject *parent, const QString & extraPythonPath)
     : QThread(parent)
-    , runMode_(RM_Idle)
     , callback_(InterpreterCallback::instance(this))
     , actorsHandler_(ActorsHandler::instance(this))
     , pythonPath_(extraPythonPath)
     , mutex_(new QMutex)
-    , mainModuleName_("__main__")
+    , testingMode_(false)
     , runPauseSemaphore_(new QSemaphore(0))
     , runInputSemaphore_(new QSemaphore(0))
+    , variablesModel_(new VariablesModel(this))
+    , canStepOut_(false)
 {
     connect(callback_, SIGNAL(errorMessageRequest(QString)),
             this, SIGNAL(errorOutputRequest(QString)),
@@ -58,6 +60,7 @@ void PythonRunThread::reset()
     releaseSemaphores();
     runPauseSemaphore_->acquire();
     runInputSemaphore_->acquire();
+    canStepOut_ = false;
 }
 
 void PythonRunThread::releaseSemaphores()
@@ -77,6 +80,7 @@ void PythonRunThread::run()
     reset();
     callback_->reset();
     actorsHandler_->reset();
+    variablesModel_->resetModel();
 
     // Initialize interpreter in current thread
     PyGILState_Ensure();
@@ -94,6 +98,28 @@ void PythonRunThread::run()
         createModuleFromSource(py, name, source);
     }
 
+    // Prepare pre-run and post-run program code
+    mutex_->lock();
+    PyEval_AcquireThread(py);
+    PyObject * preCode = 0;
+    if (preRunSource_.trimmed().length() > 0)
+        preCode = compileModule(
+                QString("<hidden>"),
+                preRunSource_,
+                &lineNumber_,
+                &errorText_
+                );
+    PyObject * postCode = 0;
+    if (postRunSource_.trimmed().length() > 0)
+        postCode = compileModule(
+                QString("<hidden>"),
+                postRunSource_,
+                &lineNumber_,
+                &errorText_
+                );
+    PyEval_ReleaseThread(py);
+    mutex_->unlock();
+
     // Prepare main program code
     mutex_->lock();
     PyEval_AcquireThread(py);
@@ -105,7 +131,7 @@ void PythonRunThread::run()
                 &errorText_
                 );
     PyEval_ReleaseThread(py);
-    QByteArray mainModuleName = mainModuleName_;
+    bool testingMode = testingMode_;
     mutex_->unlock();
 
     if (!code) {
@@ -123,20 +149,30 @@ void PythonRunThread::run()
 
         // Prepare globals
         PyObject *globals = PyModule_GetDict(mainModule);
-        PyObject *pyModuleName = QStringToPyUnicode(mainModuleName);
-        PyDict_SetItemString(globals, "__name__", pyModuleName);
-        if ("__testing__"==mainModuleName) {
-            PyObject *pyTestResult = PyLong_FromLong(0);
-            PyDict_SetItemString(globals, "__test__", pyTestResult);
+        if (testingMode) {
+            PyDict_SetItemString(globals, "__name__", QStringToPyUnicode("__testing__"));
+        }
+
+        // In tesing mode call __pre_run__ if present
+        if (testingMode && preCode) {
+            PyEval_EvalCode(preCode, globals, globals);
+            PyObject * emptyArgs = PyTuple_New(0);
+            PyObject * emptyKwds = PyDict_New();
+            PyObject * __pre_run__ = PyObject_GetAttrString(mainModule, "__pre_run__");
+            PyObject_Call(__pre_run__, emptyArgs, emptyKwds);
         }
 
         // Evaluate
         PyEval_EvalCode(code, globals, globals);
 
-        // Get testing result if present
-        if ("__testing__"==mainModuleName) {
-            PyObject *pyTestResult = PyDict_GetItemString(globals, "__test__");
-            if (pyTestResult) {
+        // In tesing mode call __post_run__ if present
+        if (testingMode && postCode) {
+            PyEval_EvalCode(postCode, globals, globals);
+            PyObject * __post_run__ = PyObject_GetAttrString(mainModule, "__post_run__");
+            PyObject * emptyArgs = PyTuple_New(0);
+            PyObject * emptyKwds = PyDict_New();
+            PyObject * pyTestResult = PyObject_Call(__post_run__, emptyArgs, emptyKwds);
+            if (pyTestResult && PyLong_Check(pyTestResult)) {
                 int testingResult = PyLong_AsLong(pyTestResult);
                 mutex_->lock();
                 testingResult_ = QVariant(testingResult);
@@ -166,7 +202,7 @@ void PythonRunThread::run()
         exitStatus = RunInterface::SR_Error;
     mutex_->unlock();
     Q_EMIT stopped(exitStatus);
-    setMainModuleName("__main__");
+    setTestingMode(false);
 }
 
 int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int what, PyObject *arg)
@@ -175,6 +211,10 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
     static const QString DummyFileName = QString::fromLatin1("<program>");
     const bool sameFile = DummyFileName==fileName || fileName==self->sourceProgramPath_;
     bool mustStop = false;
+
+    self->mutex_->lock();
+    self->canStepOut_ = frame->f_back != 0;
+    self->mutex_->unlock();
 
     if (!mustStop) {
         if (sameFile) {
@@ -195,15 +235,37 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
                 // Notify GUI on line change
                 self->dispatchLineChange();
 
-            if (RM_StepOver==self->runMode_ || RM_StepIn==self->runMode_ || RM_StepOut==self->runMode_) {
-                self->updateDebuggerVariablesModel(frame);
+            if (!self->runMode_.isEmpty()) {
+                RunMode mode = self->runMode_.last();
+                if (RM_StepOver==mode || RM_StepIn==mode) {
+                    self->updateDebuggerVariablesModel(frame);
+                }
             }
 
-            if (PyTrace_LINE==what) {
-                if (RM_StepOver==self->runMode_ || RM_StepIn==self->runMode_) {
+            if (PyTrace_LINE==what && !self->runMode_.isEmpty()) {
+                RunMode mode = self->runMode_.last();
+                if (RM_StepOver==mode || RM_StepIn==mode) {
                     Q_EMIT self->stopped(RunInterface::SR_UserInteraction);
                     self->runPauseSemaphore_->acquire();
                 }
+            }
+
+            if (PyTrace_CALL==what) {
+                RunMode curMode = RM_StepOver;
+                if (!self->runMode_.isEmpty())
+                    curMode = self->runMode_.top();
+                RunMode nextMode;
+                if (RM_Blind == curMode || RM_Regular == curMode)
+                    nextMode = curMode;
+                else if (RM_StepIn == curMode)
+                    nextMode = RM_StepOver;
+                else
+                    nextMode = RM_StepOut;
+                self->runMode_.push(curMode==RM_StepIn ? RM_StepOver : RM_Regular);
+            }
+
+            if (PyTrace_RETURN==what && !self->runMode_.isEmpty()) {
+                self->runMode_.pop();
             }
 
             if (PyTrace_EXCEPTION==what || PyTrace_C_EXCEPTION==what) {
@@ -215,6 +277,14 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
                 self->mutex_->unlock();
                 Py_XDECREF(message);
             }
+        }
+        else {
+            // not same file
+            self->mutex_->lock();
+            if (!self->runMode_.isEmpty() && RM_StepIn==self->runMode_.top()) {
+                self->runMode_.top() = RM_StepOver;
+            }
+            self->mutex_->unlock();
         }
     }
 
@@ -236,10 +306,13 @@ void PythonRunThread::terminate()
 
 void PythonRunThread::dispatchLineChange()
 {
-    bool emitSteps = RM_StepOver==runMode_ || RM_StepIn==runMode_ || RM_StepOut==runMode_;
+    mutex_->lock();
+    RunMode currentMode = RM_Regular;
+    if (!runMode_.isEmpty())
+        currentMode = runMode_.top();
+    bool emitSteps = RM_StepOver==currentMode || RM_StepIn==currentMode || RM_StepOut==currentMode;
     bool justStarted = false;
     unsigned long int stepsCounter = 0;
-    mutex_->lock();
     int lineNumber = lineNumber_;
     emitSteps = emitSteps || justStarted_;
     if (!justStarted_) {
@@ -260,7 +333,7 @@ void PythonRunThread::dispatchLineChange()
     }
 
     // Highlight current line if need
-    if (RM_StepOver==runMode_ || RM_StepIn==runMode_ || RM_StepOut==runMode_) {
+    if (RM_StepOver==currentMode || RM_StepIn==currentMode || RM_StepOut==currentMode) {
         Q_EMIT lineChanged(lineNumber, 0, 0);
     }
 
@@ -286,19 +359,29 @@ void PythonRunThread::setInputResult(const QVariantList &results)
 
 void PythonRunThread::updateDebuggerVariablesModel(PyFrameObject *current_frame)
 {
-    // TODO implement me
+    variablesModel_->update(current_frame);
 }
 
 void PythonRunThread::startOrContinue(const RunMode runMode)
-{
-    runMode_ = runMode;
+{    
     if (!isRunning()) {
+        runMode_.clear();
+        runMode_.push(RM_StepOver==runMode? RM_StepIn : runMode);
         actorsHandler_->resetActors();
         start();
     }
     else {
+        if (runMode_.isEmpty())
+            runMode_.push(runMode);
+        else
+            runMode_.top() = runMode;
         runPauseSemaphore_->release();
     }
+}
+
+QAbstractItemModel* PythonRunThread::variablesModel() const
+{
+    return variablesModel_;
 }
 
 } // namespace Python3Language

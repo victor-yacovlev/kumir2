@@ -13,6 +13,7 @@ namespace Python3Language {
 
 class InterpreterCallback;
 class ActorsHandler;
+class VariablesModel;
 
 class PythonRunThread : public QThread
 {
@@ -24,9 +25,11 @@ public /*methods*/:
     inline int currentLineNumber() const { QMutexLocker l(mutex_); return lineNumber_; }
     inline unsigned long int stepsCounted() const
     { QMutexLocker l(mutex_); return stepsCounted_; }
-    inline void setMainModuleName(const QByteArray & name)
-    { QMutexLocker l(mutex_); mainModuleName_ = name; }
-    inline QByteArray mainModuleName() const { QMutexLocker l(mutex_); return mainModuleName_; }
+    inline void setTestingMode(bool v) { QMutexLocker l(mutex_); testingMode_ = v; }
+    inline bool isTestingMode() const { QMutexLocker l(mutex_); return testingMode_; }
+    inline bool hasPostRunSource() const { QMutexLocker l(mutex_); return postRunSource_.length() > 0; }
+    QAbstractItemModel * variablesModel() const;
+    inline bool canStepOut() const { QMutexLocker l(mutex_); return canStepOut_; }
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -37,8 +40,18 @@ Q_SIGNALS:
     void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
 
 public Q_SLOTS:
-    inline void loadProgram(const QString & fileName, const QString & source)
-    { sourceProgramPath_ = fileName; sourceProgram_ = source; }
+    inline void loadProgram(
+            const QString & fileName,
+            const QString & source,
+            const QString & preRunSource,
+            const QString & postRunSource
+            )
+    {
+        sourceProgramPath_ = fileName;
+        sourceProgram_ = source;
+        preRunSource_ = preRunSource;
+        postRunSource_ = postRunSource;
+    }
 
     void startOrContinue(const RunMode runMode);
     void terminate();
@@ -59,7 +72,7 @@ private /*methods*/:
 
 private /*fields*/:
     static PythonRunThread* self;
-    RunMode runMode_;
+    QStack<RunMode> runMode_;
     InterpreterCallback * callback_;
     ActorsHandler* actorsHandler_;
     QString pythonPath_;
@@ -73,9 +86,14 @@ private /*fields*/:
     bool justStarted_;
     bool stopping_;
     QByteArray mainModuleName_;
+    bool testingMode_;
     QSemaphore * runPauseSemaphore_;
     QSemaphore * runInputSemaphore_;
     QVariant testingResult_;
+    QString preRunSource_;
+    QString postRunSource_;
+    VariablesModel* variablesModel_;
+    bool canStepOut_;
 };
 
 } // namespace Python3Language

@@ -84,6 +84,7 @@ protected:
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void stop();
     inline void updateSettings(const QStringList &) {}
+    static QString extractFunction(const QString & source, const QString &funcName);
 
 protected Q_SLOTS:
 

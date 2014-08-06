@@ -27,6 +27,8 @@ PyObject* InterpreterCallback::__init__()
         { "write_error", write_output, METH_VARARGS, "Output error (red) text to I/O area" },
         { "read_input", read_input, METH_VARARGS, "Read text line from I/O area" },
         { "actor_call", actor_call, METH_VARARGS, "Call actor method" },
+        { "get_output_buffer", get_output_buffer, METH_VARARGS, "Get output buffer text" },
+        { "simulate_input", simulate_input, METH_VARARGS, "Pushes a value to be read from stdin" },
         { 0, 0, 0, 0 }
     };
 
@@ -51,6 +53,9 @@ PyObject* InterpreterCallback::write_output(PyObject *, PyObject *args)
 {
     PyObject * msg = PyTuple_GetItem(args, 0);
     QString message = PyUnicodeToQString(msg);
+    self->mutex_->lock();
+    self->outputBuffer_ += message;
+    self->mutex_->unlock();
     Q_EMIT self->outputMessageRequest(message);
     Py_RETURN_NONE;
 }
@@ -67,14 +72,48 @@ PyObject* InterpreterCallback::read_input(PyObject *, PyObject *)
 {
     self->mutex_->lock();
     self->inputString_.clear();
+    bool hasSimulatingInput = self->simulatingInputBuffer_.size() > 0;
     self->mutex_->unlock();
-    Q_EMIT self->inputRequest();
-    QMutexLocker l(self->mutex_);
-    PyObject * result = QStringToPyUnicode(self->inputString_);
+    PyObject* result = 0;
+    if (hasSimulatingInput) {
+        self->mutex_->lock();
+        QString line = self->simulatingInputBuffer_.front();
+        self->simulatingInputBuffer_.pop_front();
+        line += "\n";
+        self->mutex_->unlock();
+        result = QStringToPyUnicode(line);
+    }
+    else {
+        Q_EMIT self->inputRequest();
+        self->mutex_->lock();
+        result = QStringToPyUnicode(self->inputString_);
+        self->mutex_->unlock();
+    }
     Py_INCREF(result);
     return result;
 }
 
+PyObject* InterpreterCallback::get_output_buffer(PyObject *, PyObject *)
+{
+    self->mutex_->lock();
+    PyObject* result = QStringToPyUnicode(self->outputBuffer_);
+    self->mutex_->unlock();
+    Py_INCREF(result);
+    return result;
+}
+
+PyObject* InterpreterCallback::simulate_input(PyObject *, PyObject *args)
+{
+    QMutexLocker l(self->mutex_);
+    size_t count = PyTuple_Size(args);
+    for (size_t i=0; i<count; i++) {
+        PyObject * val = PyTuple_GetItem(args, i);
+        PyObject * repr = PyObject_Str(val);
+        QString line = PyUnicodeToQString(repr);
+        self->simulatingInputBuffer_.push_back(line);
+    }
+    Py_RETURN_NONE;
+}
 
 PyObject* InterpreterCallback::actor_call(PyObject *, PyObject *args)
 {

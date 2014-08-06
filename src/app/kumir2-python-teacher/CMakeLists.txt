@@ -1,4 +1,4 @@
-project(kumir2-python)
+project(kumir2-python-teacher)
 cmake_minimum_required(VERSION 2.8.3)
 
 if(NOT DEFINED USE_QT)
@@ -19,7 +19,7 @@ else()
 endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Actor*,Editor,Browser,Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
+    "CourseManager,Actor*,Editor\(teacher\),Browser,Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/python.png"
@@ -27,16 +27,16 @@ set(SPLASHSCREEN
 
 set(SRC ../main.cpp)
 if(WIN32)
-    list(APPEND SRC kumir2-python.rc)
+    list(APPEND SRC kumir2-python-teacher.rc)
 endif(WIN32)
 
 #include(${QT_USE_FILE})
 
-add_executable(kumir2-python WIN32 ${SRC})
-target_link_libraries(kumir2-python ${QT_LIBRARIES} ExtensionSystem ${STDCXX_LIB})
-set_property(TARGET kumir2-python APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
-set_property(TARGET kumir2-python APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCREEN="${SPLASHSCREEN}")
+add_executable(kumir2-python-teacher WIN32 ${SRC})
+target_link_libraries(kumir2-python-teacher ${QT_LIBRARIES} ExtensionSystem ${STDCXX_LIB})
+set_property(TARGET kumir2-python-teacher APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
+set_property(TARGET kumir2-python-teacher APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCREEN="${SPLASHSCREEN}")
 if (XCODE OR MSVC_IDE)
-    set_target_properties (kumir2-python PROPERTIES PREFIX "../")
+    set_target_properties (kumir2-python-teacher PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)
-install(TARGETS kumir2-python DESTINATION ${EXEC_DIR})
+install(TARGETS kumir2-python-teacher DESTINATION ${EXEC_DIR})

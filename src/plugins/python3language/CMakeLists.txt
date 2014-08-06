@@ -39,6 +39,7 @@ set(SOURCES
     pythonrunthread.cpp
     actorshandler.cpp
     pyfilehandler.cpp
+    variablesmodel.cpp
 )
 
 set(MOC_HEADERS
@@ -48,6 +49,8 @@ set(MOC_HEADERS
     pythonrunthread.h
     actorshandler.h
     pyfilehandler.h
+    variablesmodel.h
+    pyutils.h
 )
 
 if(${USE_QT} GREATER 4)

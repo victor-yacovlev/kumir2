@@ -53,9 +53,13 @@ QMap<QString,QVariant> PyDictToPropertyMap(PyObject *object)
     return result;
 }
 
-QMap<QString,QVariant> PyObjectToPropertyMap(PyObject *object)
+extern QMap<QString,QVariant> PyObjectToPropertyMap(PyObject *object)
 {
-    PyObject * __dict__ = PyObject_GenericGetDict(object, 0);
+    PyObject * __dict__ = 0;
+    if (PyDict_Check(object))
+        __dict__ = object;
+    else
+        __dict__ = PyObject_GenericGetDict(object, 0);
     Q_ASSERT(PyDict_Check(__dict__));
     PyObject * keys = PyDict_Keys(__dict__);
     size_t count = PyObject_Length(keys);
@@ -69,6 +73,103 @@ QMap<QString,QVariant> PyObjectToPropertyMap(PyObject *object)
             result[key] = value;
         }
     }    
+    return result;
+}
+
+extern ValueRepresentation PyObjectToValueRepresentation(const QString & name, PyObject *object)
+{
+    ValueRepresentation result;
+    result.name = name;
+    if (name.startsWith('_')) {
+        return result;
+    }
+    const PyTypeObject* const objectType = object->ob_type;
+    const QByteArray objectTypeName(objectType->tp_name);
+    if (objectTypeName == "NoneType") {
+        result.repr = "None";
+        return result;
+    }
+    if (!name.isEmpty()) {
+        PyObject * repr = PyObject_Repr(object);
+        if (repr) {
+            result.repr = PyUnicodeToQString(repr);
+        }
+    }
+    if (PyList_Check(object)) {
+        size_t count = PyList_Size(object);
+        for (size_t i=0; i<count; i++) {
+            PyObject* child = PyList_GetItem(object, i);
+            QString childName = QString("%1[%2]").arg(name).arg(i);
+            result.children.append(
+                        PyObjectToValueRepresentation(
+                            childName, child
+                            )
+                        );
+        }
+    }
+    else if (PyTuple_Check(object)) {
+        size_t count = PyTuple_Size(object);
+        for (size_t i=0; i<count; i++) {
+            PyObject* child = PyTuple_GetItem(object, i);
+            QString childName = QString("%1[%2]").arg(name).arg(i);
+            result.children.append(
+                        PyObjectToValueRepresentation(
+                            childName, child
+                            )
+                        );
+        }
+    }
+    else if (PyDict_Check(object)) {
+        PyObject* keys = PyDict_Keys(object);
+        size_t count = PyList_Size(keys);
+        for (size_t i=0; i<count; i++) {
+            PyObject * key = PyList_GetItem(keys, i);
+            if (name.isEmpty()) {
+                // Table value
+                QString keyName = PyUnicodeToQString(key);
+                if (!keyName.startsWith("_")) {
+                    PyObject * value = PyDict_GetItem(object, key);
+                    result.children.append(
+                                PyObjectToValueRepresentation(
+                                    keyName, value
+                                    )
+                                );
+                }
+            }
+            else {
+                // Pure dict value
+                PyObject * keyRepr = PyObject_Repr(key);
+                QString qKeyRepr = PyUnicodeToQString(keyRepr);
+                QString childName = QString("%1[%2]").arg(name).arg(qKeyRepr);
+                PyObject * value = PyDict_GetItem(object, key);
+                result.children.append(
+                            PyObjectToValueRepresentation(
+                                childName, value
+                                )
+                            );
+            }
+        }
+    }
+    else {
+        // Inspect top-level module
+        if ("module"==objectTypeName && !name.contains('.') && !name.contains('[')) {
+            PyObject * dict = PyObject_GenericGetDict(object, 0);
+            PyObject* keys = PyDict_Keys(dict);
+            size_t count = PyList_Size(keys);
+            for (size_t i=0; i<count; i++) {
+                PyObject * key = PyList_GetItem(keys, i);
+                QString keyName = PyUnicodeToQString(key);
+                if (!keyName.startsWith("_")) {
+                    PyObject * value = PyDict_GetItem(dict, key);
+                    result.children.append(
+                                PyObjectToValueRepresentation(
+                                    name + "." + keyName, value
+                                    )
+                                );
+                }
+            }
+        }
+    }
     return result;
 }
 
@@ -247,9 +348,11 @@ extern PyObject* compileModule(
     const std::string cfileName(fileName.toLocal8Bit().constData());
     const std::string csource(source.toLocal8Bit().constData());
     PyObject* result = Py_CompileString(csource.c_str(), cfileName.c_str(), Py_file_input);
-    if (!result) {
+    if (!result && errorLineNumber && errorText) {
         PyObject * ptype, *pvalue, *ptraceback;
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        PyObject * pstr = PyObject_Str(pvalue);
+        *errorText = PyUnicodeToQString(pstr);
     }
     return result;
 }

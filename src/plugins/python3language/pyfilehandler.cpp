@@ -7,20 +7,13 @@ PyFileHandler::PyFileHandler(QObject *parent)
 {
 }
 
-static const QString ProtectedLine = "# -*- kumir: protected line -*-";
+static const QString ProtectedLines = "# -*- kumir: protected lines: ";
 static const QString HiddentTextSignature = "# -*- kumir: hidden text signature: ";
 static const QString BeginHiddenText = "# -*- kumir: begin hidden text -*-";
 
 QString PyFileHandler::toString(const Data &data) const
-{
-    QStringList visibleLines = data.visibleText.split("\n", QString::KeepEmptyParts);
-    for (int i=0; i<visibleLines.size(); i++) {
-        QString & line = visibleLines[i];
-        if (data.protectedLineNumbers.contains(i)) {
-            line += "  " + ProtectedLine;
-        }
-    }
-    QString result = visibleLines.join("\n");
+{    
+    QString result = data.visibleText;
     if (data.hasHiddenText) {
         if (data.hiddenTextSignature.length() > 0) {
             result += "\n" + HiddentTextSignature;
@@ -30,6 +23,13 @@ QString PyFileHandler::toString(const Data &data) const
         result += "\n" + BeginHiddenText + "\n";
         result += data.hiddenText;
     }
+    if (!data.protectedLineNumbers.isEmpty()) {
+        result += "\n" + ProtectedLines;
+        Q_FOREACH(int value, data.protectedLineNumbers.toList()) {
+            result += QString::number(value) + " ";
+        }
+        result += "-*-";
+    }
     return result;
 }
 
@@ -37,19 +37,11 @@ SourceFileInterface::Data PyFileHandler::fromString(const QString &string) const
 {
     SourceFileInterface::Data result;
     result.hasHiddenText = false;
-    QString & currentBlock = result.visibleText;
+    QString * currentBlock = &result.visibleText;
     QStringList lines = string.split("\n", QString::KeepEmptyParts);
     Q_FOREACH(const QString & sourceLine, lines) {
-        int protectedBegin = sourceLine.lastIndexOf(ProtectedLine);
-        QString line;
-        if (-1==protectedBegin)
-            line = sourceLine;
-        else
-            line = sourceLine.left(protectedBegin);
-        while (line.endsWith(' ')) {
-            line = line.left(line.length()-1);
-        }
 
+        QString line = sourceLine;
         line = line.replace('\t', "    ");
 
         if (line.startsWith(HiddentTextSignature)) {
@@ -59,13 +51,24 @@ SourceFileInterface::Data PyFileHandler::fromString(const QString &string) const
             result.hiddenTextSignature = QByteArray::fromHex(signatureHex);
         }
         else if (line.startsWith(BeginHiddenText)) {
-            currentBlock = result.hiddenText;
+            currentBlock = &result.hiddenText;
             result.hasHiddenText = true;
         }
+        else if (line.startsWith(ProtectedLines)) {
+            int rangeStart = ProtectedLines.length();
+            int rangeEnd = line.lastIndexOf("-*-");
+            QStringList numbers = line.mid(rangeStart, rangeEnd-rangeStart).split(" ", QString::SkipEmptyParts);
+            QStringList visibleLines = result.visibleText.split("\n", QString::KeepEmptyParts);
+            Q_FOREACH(const QString & number, numbers) {
+                int value = number.toInt();
+                if (value < visibleLines.size())
+                    result.protectedLineNumbers.insert(value);
+            }
+        }
         else {
-            if (currentBlock.length() > 0)
-                currentBlock += "\n";
-            currentBlock += line;
+            if (currentBlock->length() > 0)
+                currentBlock->append("\n");
+            currentBlock->append(line);
         }
     }
     return result;

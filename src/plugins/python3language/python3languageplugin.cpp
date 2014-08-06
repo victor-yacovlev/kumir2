@@ -3,6 +3,7 @@
 #include "pythonrunthread.h"
 #include "interpretercallback.h"
 #include "pyfilehandler.h"
+#include "pyutils.h"
 
 namespace Python3Language {
 
@@ -21,6 +22,8 @@ Analizer::SourceFileInterface * Python3LanguagePlugin::sourceFileHandler()
 
 QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
+    qRegisterMetaType<Python3Language::ValueRepresentation>("ValueRepresentation");
+    qRegisterMetaType<QList<Python3Language::ValueRepresentation> >("QList<ValueRepresentation>");
     PyImport_AppendInittab("_kumir", &InterpreterCallback::__init__);
     Py_Initialize();
     PyEval_InitThreads();
@@ -69,23 +72,53 @@ Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
 
 bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {
-    runner_->loadProgram(program.sourceFileName,
-                         fileHandler_->toString(
-                             fileHandler_->fromBytes(program.executableData)
-                             )
-                         );
+    const QString programSource = fileHandler_->toString(fileHandler_->fromBytes(program.executableData));
+    const QString preRunSource = extractFunction(programSource, "__pre_run__");
+    const QString postRunSource = extractFunction(programSource, "__post_run__");
+    runner_->loadProgram(program.sourceFileName, programSource, preRunSource, postRunSource);
     loadedProgramVersion_ = QDateTime::currentDateTime();
     return true;
 }
 
+QString Python3LanguagePlugin::extractFunction(const QString &source, const QString &funcName)
+{
+    QString result;
+    QStringList sourceLines = source.split("\n", QString::KeepEmptyParts);
+    int lineStart = -1;
+    int lineCount = 0;
+    for (int i=0; i<sourceLines.size(); i++) {
+        if (-1==lineStart) {
+            QString line = sourceLines[i].simplified();
+            if (line.startsWith("def "+funcName)) {
+                lineStart = i;
+                lineCount = 1;
+            }
+        }
+        else {
+            QString line = sourceLines[i];
+            if (line.isEmpty() || line.startsWith(' ') || line.startsWith('\t')) {
+                lineCount ++;
+            }
+            else {
+                break;
+            }
+        }
+    }
+    if (-1!=lineStart) {
+        QStringList midLines = sourceLines.mid(lineStart, lineCount);
+        result = midLines.join("\n");
+    }
+    return result;
+}
+
 bool Python3LanguagePlugin::canStepOut() const
 {
-    return false;
+    return runner_->canStepOut();
 }
 
 bool Python3LanguagePlugin::isTestingRun() const
 {
-    return "__testing__" == runner_->mainModuleName();
+    return runner_->isTestingMode();
 }
 
 bool Python3LanguagePlugin::hasMoreInstructions() const
@@ -95,7 +128,7 @@ bool Python3LanguagePlugin::hasMoreInstructions() const
 
 bool Python3LanguagePlugin::hasTestingEntryPoint() const
 {
-    return true;
+    return runner_->hasPostRunSource();
 }
 
 int Python3LanguagePlugin::currentLineNo() const
@@ -125,7 +158,7 @@ unsigned long int Python3LanguagePlugin::stepsCounted() const
 
 QAbstractItemModel * Python3LanguagePlugin::debuggerVariablesViewModel() const
 {
-    return 0;
+    return runner_->variablesModel();
 }
 
 void Python3LanguagePlugin::runBlind()
@@ -145,17 +178,17 @@ void Python3LanguagePlugin::runStepOver()
 
 void Python3LanguagePlugin::runStepInto()
 {
-    runner_->startOrContinue(RM_StepOver); // TODO implement me
+    runner_->startOrContinue(RM_StepIn); // TODO implement me
 }
 
 void Python3LanguagePlugin::runToEnd()
 {
-    runner_->startOrContinue(RM_StepOver); // TODO implement me
+    runner_->startOrContinue(RM_StepOut); // TODO implement me
 }
 
 void Python3LanguagePlugin::runTesting()
 {
-    runner_->setMainModuleName("__testing__");
+    runner_->setTestingMode(true);
     runner_->startOrContinue(RM_Blind);
 }
 
