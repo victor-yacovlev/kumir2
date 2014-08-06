@@ -207,7 +207,7 @@ void TabWidgetElement::setDocumentChangesClean(bool clean)
 QString TabWidgetElement::title() const
 {
     if (editorInstance_) {
-        const KumFile::Data data = editorInstance_->documentContents();
+        const Shared::Analizer::SourceFileInterface::Data data = editorInstance_->documentContents();
         const QUrl url = data.sourceUrl;
         if (url.isValid()) {
             const QString fullPath = editorInstance_->documentContents().sourceUrl.toLocalFile();

@@ -1386,7 +1386,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
     Shared::Editor::InstanceInterface * editor =
             m_plugin->plugin_editor->newDocument("", QDir::currentPath());
 
-    KumFile::Data data;
+    Shared::Analizer::SourceFileInterface::Data data;
     data.canonicalSourceLanguageName = "";
     data.sourceUrl = fileName.isEmpty()
             ? QUrl() : QUrl::fromLocalFile(fileName);
@@ -2124,7 +2124,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         courseManagerTab->setCourseTitle(data.title);
     }
     if (data.language == ST::Kumir) {
-        KumFile::Data src = data.content;
+        Shared::Analizer::SourceFileInterface::Data src = data.content;
         src.canonicalSourceLanguageName = "kum";
 
         if (courseManagerTab) {

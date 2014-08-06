@@ -39,7 +39,7 @@ public:
             const QString & fileName) /* throws QString */;
 
     Shared::Editor::InstanceInterface * loadDocument(
-            const KumFile::Data &data) /* throws QString */;
+            const Shared::Analizer::SourceFileInterface::Data &data) /* throws QString */;
 
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
@@ -47,9 +47,9 @@ public:
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
     QString loadDocument(int documentId, const QString & fileName, bool keepIndents);
-    QString loadDocument(int documentId, const KumFile::Data &data);
+    QString loadDocument(int documentId, const Shared::Analizer::SourceFileInterface::Data &data);
     QString saveDocument(int documentId, const QString & fileName);
-    KumFile::Data documentContent(int documentId) const;
+    Shared::Analizer::SourceFileInterface::Data documentContent(int documentId) const;
     Shared::AnalizerInterface * analizer(int documentId);
     quint32 errorsLinesCount(int documentId) const;
     void highlightLineGreen(int documentId, int lineNo, quint32 colStart, quint32 colEnd);

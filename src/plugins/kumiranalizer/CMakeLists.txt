@@ -26,6 +26,7 @@ set(SOURCES
     statement.cpp
     pdautomata.cpp
     syntaxanalizer.cpp
+    kumfilehandler.cpp
 )
 
 set(MOC_HEADERS
@@ -34,6 +35,7 @@ set(MOC_HEADERS
     lexer.h
     pdautomata.h
     syntaxanalizer.h
+    kumfilehandler.h
 )
 
 if(${USE_QT} GREATER 4)

@@ -88,17 +88,20 @@ QPair<quint32,quint32> KumirRunPlugin::currentColumn() const
     return QPair<quint32,quint32>(pRun_->vm->effectiveColumn().first, pRun_->vm->effectiveColumn().second);
 }
 
-bool KumirRunPlugin::loadProgram(const QString & filename, const QByteArray & source, const SourceInfo &)
+bool KumirRunPlugin::loadProgram(const RunnableProgram &program)
 {
+    const QString programFileName = program.sourceFileName.isEmpty()
+            ? program.executableFileName : program.sourceFileName;
     bool ok = false;
     std::list<char> buffer;
-    for (int i=0; i<source.size(); i++)
-        buffer.push_back(source[i]);
-    ok = pRun_->loadProgramFromBinaryBuffer(buffer, filename.toStdWString());
+    for (int i=0; i<program.executableData.size(); i++)
+        buffer.push_back(program.executableData[i]);
+    ok = pRun_->loadProgramFromBinaryBuffer(buffer, programFileName.toStdWString());
     if (!ok) {
         return ok;
     }
-    const QString programDirName = QFileInfo(filename).absoluteDir().absolutePath();
+    const QString programDirName =
+            QFileInfo(programFileName).absoluteDir().absolutePath();
     pRun_->setProgramDirectory(programDirName);
     pRun_->programLoaded = ok;
     return ok;
@@ -652,9 +655,11 @@ QString KumirRunPlugin::initialize(const QStringList &,
         if (!fileName.isEmpty()) {
             QFile f(fileName);
             if (f.open(QIODevice::ReadOnly)) {
-                const QByteArray data = f.readAll();
+                RunnableProgram program;
+                program.executableData = f.readAll();
+                program.executableFileName = fileName;
                 try {
-                    loadProgram(fileName, data, SourceInfo());
+                    loadProgram(program);
                 }
                 catch (const std::wstring & message) {
                     return QString::fromStdWString(message);

@@ -1134,7 +1134,7 @@ void TextCursor::findLexemBound(uint &row, uint &column, const qint8 dir) const
                     while (linePos>0 && curLexemType==LxTypeEmpty) {
                         // ignore whitespaces
                         linePos -= 1;
-                        curLexemType = editor_->document()->at(row).highlight.at(linePos-1);
+                        curLexemType = editor_->document()->at(row).highlight.at(qMax(0, linePos-1));
                     }
                     while (linePos>0) {
                         // linePos==0 is : line bound is a delimeter too

@@ -6,15 +6,22 @@
 
 #include <QtCore>
 
+#include "kumfilehandler.h"
 
 using namespace KumirAnalizer;
-
 
 KumirAnalizerPlugin::KumirAnalizerPlugin()
     : ExtensionSystem::KPlugin()
     , teacherMode_(false)
+    , kumFileHandler_(new KumFileHandler(this))
 {
     analizers_ = QVector<Analizer*> (128, NULL);
+}
+
+
+Shared::Analizer::SourceFileInterface* KumirAnalizerPlugin::sourceFileHandler()
+{
+    return kumFileHandler_;
 }
 
 
