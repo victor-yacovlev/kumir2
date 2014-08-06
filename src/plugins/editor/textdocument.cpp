@@ -339,6 +339,8 @@ Shared::Analizer::SourceFileInterface::Data TextDocument::toKumFile() const
         kumfile.hasHiddenText = true;
         kumfile.hiddenText = hiddenText_;
     }
+    if (kumfile.hiddenText.length() > 0)
+        kumfile.hasHiddenText = true;
     return kumfile;
 }
 
