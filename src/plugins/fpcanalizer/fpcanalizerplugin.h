@@ -4,6 +4,7 @@
 #include "extensionsystem/kplugin.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/analizer_instanceinterface.h"
+#include "interfaces/analizer_sourcefileinterface.h"
 
 
 namespace FpcAnalizer {
@@ -21,6 +22,7 @@ class FpcAnalizerPlugin
 #endif
     Q_INTERFACES(Shared::AnalizerInterface)
 public:
+    explicit FpcAnalizerPlugin();
     QString initialize(const QStringList &, const CommandLine &);
     void updateSettings(const QStringList &keys);
     inline bool primaryAlphabetIsLatin() const { return true; }
@@ -29,12 +31,14 @@ public:
     inline QString languageName() const { return "Pascal"; }
     inline QString defaultDocumentFileNameSuffix() const { return "pas"; }
     Analizer::InstanceInterface* createInstance();
+    Analizer::SourceFileInterface* sourceFileHandler();
     QMap<QString,QString> readCapitalizationHints() const;
     static FpcAnalizerPlugin* self();
     inline QDir resoursesDir() { return myResourcesDir(); }
 private:
     uint lastInstanceIndex_;
     static FpcAnalizerPlugin* me_;
+    Analizer::SourceFileInterface* sourceFileHander_;
 };
 
 

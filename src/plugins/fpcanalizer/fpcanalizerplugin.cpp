@@ -1,7 +1,21 @@
 #include "fpcanalizerplugin.h"
 #include "fpcanalizer.h"
+#include "pasfilehandler.h"
 
 namespace FpcAnalizer {
+
+FpcAnalizerPlugin::FpcAnalizerPlugin()
+    : KPlugin()
+    , lastInstanceIndex_(0u)
+    , sourceFileHander_(new PasFileHandler(this))
+{
+
+}
+
+Analizer::SourceFileInterface* FpcAnalizerPlugin::sourceFileHandler()
+{
+    return sourceFileHander_;
+}
 
 QString FpcAnalizerPlugin::initialize(const QStringList &, const CommandLine &)
 {

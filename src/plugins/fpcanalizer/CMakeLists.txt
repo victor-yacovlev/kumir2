@@ -21,12 +21,14 @@ set(SOURCES
     fpcanalizerplugin.cpp
     fpcanalizer.cpp
     simplepascalsyntaxanalizer.cpp
+    pasfilehandler.cpp
 )
 
 set(MOC_HEADERS
     fpcanalizerplugin.h
     fpcanalizer.h
     simplepascalsyntaxanalizer.h
+    pasfilehandler.h
 )
 
 if(${USE_QT} GREATER 4)

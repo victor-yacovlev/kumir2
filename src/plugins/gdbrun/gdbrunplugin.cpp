@@ -58,7 +58,7 @@ void GdbRunPlugin::updateSettings(const QStringList &)
 
 }
 
-bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, const SourceInfo &sourceInfo)
+bool GdbRunPlugin::loadProgram(const RunnableProgram &sourceInfo)
 {    
     currentFrameLevel_ = 0;
     lastRunCommand_.clear();
@@ -86,12 +86,12 @@ bool GdbRunPlugin::loadProgram(const QString &fileName, const QByteArray &, cons
     QString comm = "localhost:0";
     QStringList gdbServerArguemnts = QStringList()
             << comm
-            << QDir::toNativeSeparators(fileName)
+            << QDir::toNativeSeparators(sourceInfo.executableFileName)
                ;
     gdbServer_->start(gdbServerCommand(), gdbServerArguemnts);
     gdbServer_->waitForStarted();
 
-    programFileName_ = fileName;
+    programFileName_ = sourceInfo.sourceFileName;
     if (variablesModel_) {
         variablesModel_->deleteLater();
     }

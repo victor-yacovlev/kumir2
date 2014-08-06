@@ -33,7 +33,7 @@ public:
     explicit GdbRunPlugin();
     QString initialize(const QStringList &conf, const CommandLine &);
     void updateSettings(const QStringList &);
-    bool loadProgram(const QString &fileName, const QByteArray &source, const SourceInfo &sourceInfo);
+    bool loadProgram(const RunnableProgram &sourceInfo);
     QDateTime loadedProgramVersion() const;
     bool canStepOut() const;
     void runBlind();
