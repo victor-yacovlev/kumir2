@@ -85,7 +85,11 @@ void PythonRunThread::run()
     // Initialize interpreter in current thread
     PyGILState_Ensure();
     PyThreadState * py = Py_NewInterpreter();
+#ifdef Q_OS_WIN32
+    prepareBundledSysPath();
+#else
     appendToSysPath(pythonPath_);   
+#endif
     PyObject* py_run_wrapper = PyImport_ImportModule("run_wrapper");
     if (!py_run_wrapper) { printPythonTraceback(); return; }    
     PyEval_ReleaseThread(py);

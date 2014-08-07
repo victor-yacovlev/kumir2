@@ -339,6 +339,30 @@ extern void appendToSysPath(const QString & path)
     PyList_Insert(sysPath, 0, extraPath);
 }
 
+#ifdef Q_OS_WIN32
+extern void prepareBundledSysPath()
+{
+    static const QString KumirRoot =
+            QDir::toNativeSeparators(
+                QDir::cleanPath(
+                    QCoreApplication::applicationDirPath() + "/../"
+                    )
+                );
+    static const QStringList PathItems = QStringList()
+            << KumirRoot + "\\share\\kumir2\\python3language"
+            << KumirRoot + "\\python\\Lib"
+            << KumirRoot + "\\python\\DLLs"
+            << KumirRoot + "\\python\\Lib\\site-packages"
+               ;
+    PyObject * sysPath = PyList_New(PathItems.size());
+    for (int i=0; i<PathItems.size(); i++) {
+        PyObject * pyItem = QStringToPyUnicode(PathItems[i]);
+        PyList_SetItem(sysPath, i, pyItem);
+    }
+    PySys_SetObject("path", sysPath);
+}
+#endif
+
 extern PyObject* compileModule(
         const QString &fileName,
         const QString &source,
@@ -346,8 +370,8 @@ extern PyObject* compileModule(
         QString * errorText
         )
 {
-    const std::string cfileName(fileName.toLocal8Bit().constData());
-    const std::string csource(source.toLocal8Bit().constData());
+    const std::string cfileName(fileName.toUtf8().constData());
+    const std::string csource(source.toUtf8().constData());
     PyObject* result = Py_CompileString(csource.c_str(), cfileName.c_str(), Py_file_input);
     if (!result && errorLineNumber && errorText) {
         PyObject * ptype, *pvalue, *ptraceback;

@@ -10,12 +10,21 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
     , plugin_(parent)
     , py_(0)
 { 
+#ifdef Q_OS_WIN32
+    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
+#else
     if (PyThreadState_GET())
+#endif
         ::PyEval_AcquireLock();
     else
         ::PyGILState_Ensure();
     py_ = ::Py_NewInterpreter();
+#ifdef Q_OS_WIN32
+    Q_UNUSED(extraPythonPath);
+    prepareBundledSysPath();
+#else
     appendToSysPath(extraPythonPath);
+#endif
     initializePyAnalizer();
     ::PyEval_ReleaseThread(py_);
 }

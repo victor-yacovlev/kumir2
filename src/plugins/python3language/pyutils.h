@@ -72,6 +72,10 @@ extern PyObject* findCreatedModule(const QString & name);
 
 extern void appendToSysPath(const QString & path);
 
+#ifdef Q_OS_WIN32
+extern void prepareBundledSysPath();
+#endif
+
 }
 
 Q_DECLARE_METATYPE(Python3Language::ValueRepresentation)
