@@ -37,8 +37,16 @@ Section "Kumir" Kumir
 	File /r lib\*
 	SetOutPath "$INSTDIR\share"
 	File /r share\*
-        SetOutPath "$INSTDIR\llvm-mingw"
-        File /r llvm-mingw\*
+
+        IfFileExists llvm-mingw\* 0 +3
+            SetOutPath "$INSTDIR\llvm-mingw"
+            File /r llvm-mingw\*
+
+
+        IfFileExists python\* 0 +3
+            SetOutPath "$INSTDIR\python"
+            File /r python\*
+
 
 	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
 	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
