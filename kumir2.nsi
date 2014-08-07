@@ -38,14 +38,11 @@ Section "Kumir" Kumir
 	SetOutPath "$INSTDIR\share"
 	File /r share\*
 
-        IfFileExists llvm-mingw\* 0 +3
-            SetOutPath "$INSTDIR\llvm-mingw"
-            File /r llvm-mingw\*
+        SetOutPath "$INSTDIR\llvm-mingw"
+        File /nonfatal /r llvm-mingw\*
 
-
-        IfFileExists python\* 0 +3
-            SetOutPath "$INSTDIR\python"
-            File /r python\*
+        SetOutPath "$INSTDIR\python"
+        File /nonfatal /r python\*
 
 
 	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
