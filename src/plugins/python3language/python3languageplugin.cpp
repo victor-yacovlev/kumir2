@@ -27,6 +27,26 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
     qRegisterMetaType<QList<Python3Language::ValueRepresentation> >("QList<ValueRepresentation>");
     qDebug() << "Append _kumit to inittab";
     PyImport_AppendInittab("_kumir", &InterpreterCallback::__init__);
+#ifdef Q_OS_WIN32
+    qDebug() << "Setting initial PYTHONPATH";
+    static const QString KumirRoot =
+            QDir::toNativeSeparators(
+                QDir::cleanPath(
+                    QCoreApplication::applicationDirPath() + "/../"
+                    )
+                );
+    static const QStringList PathItems = QStringList()
+            << KumirRoot + "\\share\\kumir2\\python3language"
+            << KumirRoot + "\\python\\Lib"
+            << KumirRoot + "\\python\\DLLs"
+            << KumirRoot + "\\python\\Lib\\site-packages"
+               ;
+    static const QString PythonPath = "PYTHONPATH=" + PathItems.join(";");
+    wchar_t * wPythonPath = (wchar_t*) malloc( (PythonPath.length()+1) * sizeof(wchar_t));
+    wPythonPath[PythonPath.length()+1] = L'\0';
+    PythonPath.toWCharArray(wPythonPath);
+    _wputenv(wPythonPath);
+#endif
     qDebug() << "Py_Initialize()";
     Py_Initialize();
     qDebug() << "Initializing threads";
