@@ -22,16 +22,26 @@ Analizer::SourceFileInterface * Python3LanguagePlugin::sourceFileHandler()
 
 QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
 {
+    qDebug() << "Registering metatypes";
     qRegisterMetaType<Python3Language::ValueRepresentation>("ValueRepresentation");
     qRegisterMetaType<QList<Python3Language::ValueRepresentation> >("QList<ValueRepresentation>");
+    qDebug() << "Append _kumit to inittab";
     PyImport_AppendInittab("_kumir", &InterpreterCallback::__init__);
+    qDebug() << "Py_Initialize()";
     Py_Initialize();
+    qDebug() << "Initializing threads";
     PyEval_InitThreads();
+    qDebug() << "Saving main thread state";
     pyMain_ = PyEval_SaveThread();
+    qDebug() << "Acquring main thread lock";
     PyEval_AcquireThread(pyMain_);
+    qDebug() << "Releasing main thread lock";
     PyEval_ReleaseLock();
+    qDebug() << "Creating runner instance";
     runner_ = PythonRunThread::instance(this, myResourcesDir().absolutePath());
+    qDebug() << "Connecting signals/slots";
     connectRunThreadSignals();
+    qDebug() << "Initialization done";
     return QString();
 }
 

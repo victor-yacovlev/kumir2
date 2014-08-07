@@ -35,6 +35,7 @@ PythonRunThread::PythonRunThread(QObject *parent, const QString & extraPythonPat
     , variablesModel_(new VariablesModel(this))
     , canStepOut_(false)
 {
+    qDebug() << "Run thread: connecting signals/slots";
     connect(callback_, SIGNAL(errorMessageRequest(QString)),
             this, SIGNAL(errorOutputRequest(QString)),
             Qt::DirectConnection);
@@ -45,7 +46,9 @@ PythonRunThread::PythonRunThread(QObject *parent, const QString & extraPythonPat
             this, SLOT(handlePythonInput()),
             Qt::DirectConnection);
 
+    qDebug() << "Run thread: reset";
     reset();
+    qDebug() << "Run thread: created";
 }
 
 void PythonRunThread::reset()
