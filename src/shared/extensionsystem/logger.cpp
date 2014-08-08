@@ -27,7 +27,7 @@ Logger* Logger::instance()
             }
         }
 #if defined(Q_OS_WIN32) && defined(QT_NO_DEBUG)
-        if (path.isEmpty()) {
+        if (path.isEmpty() && qApp->arguments().contains("--debug")) {
             path = QDir::temp().absoluteFilePath("kumir-log.txt");
             if (QFile::exists(path)) {
                 QFile::remove(path);
