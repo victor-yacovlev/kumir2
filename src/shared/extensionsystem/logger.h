@@ -39,6 +39,7 @@ private:
     Logger(const QString & filePath, LogLevel logLevel);
     QFile * loggerFile_;
     LogLevel logLevel_;
+    static Logger * self_;
 };
 
 } // namespace ExtensionSystem

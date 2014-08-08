@@ -6,7 +6,7 @@
 #include <QDateTime>
 #include <QBuffer>
 #include <QTextStream>
-
+#include <QDir>
 
 extern "C" {
 #include <stdio.h>
@@ -14,17 +14,29 @@ extern "C" {
 
 namespace ExtensionSystem {
 
+Logger* Logger::self_ = 0;
+
 Logger* Logger::instance()
-{
-    QString path;
-    foreach (QString arg, qApp->arguments()) {
-        if (arg.startsWith("--log=")) {
-            path = arg.mid(6);
-            break;
+{    
+    if (!self_) {
+        QString path;
+        foreach (QString arg, qApp->arguments()) {
+            if (arg.startsWith("--log=")) {
+                path = arg.mid(6);
+                break;
+            }
         }
+#if defined(Q_OS_WIN32) && defined(QT_NO_DEBUG)
+        if (path.isEmpty()) {
+            path = QDir::temp().absoluteFilePath("kumir-log.txt");
+            if (QFile::exists(path)) {
+                QFile::remove(path);
+            }
+        }
+#endif
+        self_ = new Logger(path, qApp->arguments().contains("--debug")? Debug : Release);
     }
-    static Logger logger = Logger(path, qApp->arguments().contains("--debug")? Debug : Release);
-    return &logger;
+    return self_;
 }
 
 Logger::Logger(const QString & filePath, LogLevel logLevel)
