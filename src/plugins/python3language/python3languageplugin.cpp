@@ -41,11 +41,12 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
             << KumirRoot + "\\python\\DLLs"
             << KumirRoot + "\\python\\Lib\\site-packages"
                ;
-    static const QString PythonPath = "PYTHONPATH=" + PathItems.join(";");
-    wchar_t * wPythonPath = (wchar_t*) malloc( (PythonPath.length()+1) * sizeof(wchar_t));
+    static const QString PythonPath = PathItems.join(";");
+    static wchar_t wPythonPath[4096];
     wPythonPath[PythonPath.length()+1] = L'\0';
     PythonPath.toWCharArray(wPythonPath);
-    _wputenv(wPythonPath);
+    qDebug() << "Calling _wputenv";
+    _wputenv_s(L"PYTHONPATH", wPythonPath);
 #endif
     qDebug() << "Py_Initialize()";
     Py_Initialize();
