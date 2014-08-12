@@ -17,7 +17,7 @@
         <title>Текстовое представление чисел</title>
         <section>
             <title>цел_в_лит</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг лит <function>цел_в_лит</function></funcdef>
                     <paramdef>цел <parameter>число</parameter></paramdef>
@@ -27,7 +27,7 @@
                 Возвращает строковое представление <parameter>число</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
 цел а
@@ -42,7 +42,7 @@
         </section>
         <section>
             <title>вещ_в_лит</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг лит <function>вещ_в_лит</function></funcdef>
                     <paramdef>вещ <parameter>число</parameter></paramdef>
@@ -52,7 +52,7 @@
                 Возвращает строковое представление <parameter>число</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   вещ а
@@ -67,7 +67,7 @@
         </section>
         <section>
             <title>лит_в_вещ</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>лит_в_вещ</function></funcdef>
                     <paramdef>лит <parameter>строка</parameter></paramdef>
@@ -84,7 +84,7 @@
 
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   лит а
@@ -100,7 +100,7 @@
         </section>
         <section>
             <title>лит_в_цел</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>лит_в_цел</function></funcdef>
                     <paramdef>лит <parameter>строка</parameter></paramdef>
@@ -117,7 +117,7 @@
 
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   лит а
@@ -136,7 +136,7 @@
         <title>Математика</title>
         <section>
             <title>sqrt</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>sqrt</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -150,7 +150,7 @@
                 Значение <parameter>x</parameter> должно быть <code>&ge; 0</code>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -164,7 +164,7 @@
         </section>
         <section>
             <title>abs</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>abs</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -174,7 +174,7 @@
                 Возвращает абсолютное (неотрицательное) значение вещественного числа <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ а, б
 алг
 нач
@@ -189,7 +189,7 @@
         </section>
         <section>
             <title>iabs</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>iabs</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -199,7 +199,7 @@
                 Возвращает абсолютное (неотрицательное) значение целого числа <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел а, б
 алг
 нач
@@ -214,7 +214,7 @@
         </section>
         <section>
             <title>sign</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>sign</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -235,7 +235,7 @@
                 </itemizedlist>
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел а, б
 алг
 нач
@@ -256,7 +256,7 @@
         </section>
         <section>
             <title>sin</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>sin</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -266,7 +266,7 @@
                 Возвращает синус <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -280,7 +280,7 @@
         </section>
         <section>
             <title>cos</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>cos</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -290,7 +290,7 @@
                 Возвращает косинус <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -302,7 +302,7 @@
                 </programlisting>
             </example>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ x, y
 алг
 нач
@@ -317,7 +317,7 @@
         </section>
         <section>
             <title>tg</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>tg</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -327,7 +327,7 @@
                 Возвращает тангенс <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -341,7 +341,7 @@
         </section>
         <section>
             <title>ctg</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>ctg</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -351,7 +351,7 @@
                 Возвращает котангенс <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -365,7 +365,7 @@
         </section>
         <section>
             <title>arcsin</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>arcsin</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -375,7 +375,7 @@
                 Возвращает арксинус <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -389,7 +389,7 @@
         </section>
         <section>
             <title>arccos</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>arccos</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -399,7 +399,7 @@
                 Возвращает арккосинус <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -413,7 +413,7 @@
         </section>
         <section>
             <title>arctg</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>arctg</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -423,7 +423,7 @@
                 Возвращает арктангенс <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -437,7 +437,7 @@
         </section>
         <section>
             <title>arcctg</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>arcctg</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -447,7 +447,7 @@
                 Возвращает арккотангенс <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ х
 алг
 нач
@@ -461,7 +461,7 @@
         </section>
         <section>
             <title>ln</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>ln</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -471,7 +471,7 @@
                 Возвращает натуральный логарифм <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ а,б,с
 алг
 нач
@@ -486,7 +486,7 @@
         </section>
         <section>
             <title>lg</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>lg</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -496,7 +496,7 @@
                 Возвращает десятичный логарифм <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ а,б,с
 алг
 нач
@@ -511,7 +511,7 @@
         </section>
         <section>
             <title>exp</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>exp</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -521,7 +521,7 @@
                 Возвращает <emphasis>e</emphasis><parameter><superscript>x</superscript></parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ x
 цел а
 алг
@@ -536,7 +536,7 @@
         </section>
         <section>
             <title>min</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>min</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -549,7 +549,7 @@
         </section>
         <section>
             <title>max</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>max</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -560,7 +560,7 @@
                 Возвращает наибольшее из вещественных значений <parameter>x</parameter> или <parameter>y</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ а,б,с1, с2
 алг
 нач
@@ -576,7 +576,7 @@
         </section>
         <section>
             <title>imin</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>imin</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -589,7 +589,7 @@
         </section>
         <section>
             <title>imax</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>imax</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -600,7 +600,7 @@
                 Возвращает наибольшее из целых значений <parameter>x</parameter> или <parameter>y</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел а,б,с1, с2
 алг
 нач
@@ -616,7 +616,7 @@
         </section>
         <section>
             <title>div</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>div</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -630,7 +630,7 @@
 
         <section>
             <title>mod</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>mod</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -641,7 +641,7 @@
                 Возвращает остаток от деления целых значений <parameter>x</parameter> на <parameter>y</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел а,б,с1, с2
 алг
 нач
@@ -658,7 +658,7 @@
 
         <section>
             <title>int</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>int</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -669,7 +669,7 @@
                 <parameter>x</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вещ а, б
 алг
 нач
@@ -684,7 +684,7 @@
 
         <section>
             <title>rnd</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>rnd</function></funcdef>
                     <paramdef>вещ <parameter>x</parameter></paramdef>
@@ -695,7 +695,7 @@
                 последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг Построение последовательности случайных вещественных чисел
 нач
   вещ таб а [1:10]
@@ -716,7 +716,7 @@
 
         <section>
             <title>rand</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>rand</function></funcdef>
                     <paramdef>вещ <parameter>a</parameter></paramdef>
@@ -732,7 +732,7 @@
 
         <section>
             <title>irnd</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>irnd</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
@@ -746,7 +746,7 @@
 
         <section>
             <title>МАКСЦЕЛ</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>МАКСЦЕЛ</function></funcdef>
                 </funcprototype>
@@ -764,7 +764,7 @@
 
         <section>
             <title>МАКСВЕЩ</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг вещ <function>МАКСВЕЩ</function></funcdef>
                 </funcprototype>
@@ -782,7 +782,7 @@
         <title>Обработка текста</title>
         <section>
             <title>длин</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>длин</function></funcdef>
                     <paramdef>лит <parameter>s</parameter></paramdef>
@@ -792,7 +792,7 @@
                 Возвращает количество символов в строке <parameter>s</parameter>.
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   лит а
@@ -809,7 +809,7 @@
 
         <section>
             <title>код</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>код</function></funcdef>
                     <paramdef>сим <parameter>c</parameter></paramdef>
@@ -820,7 +820,7 @@
                 RFC&nbsp;1489).
             </para>
             <example>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   сим а
@@ -837,7 +837,7 @@
 
         <section>
             <title>юникод</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcprototype>
                     <funcdef>алг цел <function>юникод</function></funcdef>
                     <paramdef>сим <parameter>c</parameter></paramdef>

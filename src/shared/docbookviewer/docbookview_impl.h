@@ -49,6 +49,9 @@ public /* methods */:
 
     void createActions();
 
+    void setRole(ModelType category, const QString & value);
+    QString role(ModelType category) const;
+
 signals:
     void itemSelected(ModelPtr model);
 
@@ -88,6 +91,8 @@ private /* fields */:
     QWidget * filler_;
     QWidget * background_;
     QStackedWidget * splitterRightWidget_;
+
+    QMap<ModelType,QString> roleValues_;
 
     bool compactModeFlag_;
 

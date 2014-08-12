@@ -242,7 +242,7 @@ QAction * DocBookViewImpl::viewerAction(const DocBookView::DocBookViewAction typ
 Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index)
 {
     DocBookFactory * factory = DocBookFactory::self();
-    Document doc = factory->parseDocument(url, error);
+    Document doc = factory->parseDocument(roleValues_, url, error);
     sidePanel_->addDocument(doc);
     if (content_->isEmpty()) {
         content_->renderData(doc.root_);
@@ -310,6 +310,26 @@ void DocBookViewImpl::activateBookIndex(int index)
     }
     if (target) {
         showAnItem(target);
+    }
+}
+
+void DocBookViewImpl::setRole(ModelType category, const QString &value)
+{
+    if (value.isEmpty() && roleValues_.contains(category)) {
+        roleValues_.remove(category);
+    }
+    else {
+        roleValues_[category] = value.toLower().trimmed();
+    }
+}
+
+QString DocBookViewImpl::role(ModelType category) const
+{
+    if (roleValues_.contains(category)) {
+        return roleValues_[category];
+    }
+    else {
+        return "";
     }
 }
 

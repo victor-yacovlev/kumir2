@@ -104,4 +104,14 @@ void DocBookView::activateBookIndex(int index)
     pImpl_->activateBookIndex(index);
 }
 
+void DocBookView::setRole(ModelType category, const QString &value)
+{
+    pImpl_->setRole(category, value);
+}
+
+QString DocBookView::role(ModelType category) const
+{
+    return pImpl_->role(category);
+}
+
 }

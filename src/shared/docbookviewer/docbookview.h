@@ -3,6 +3,7 @@
 
 // Self includes
 #include "document.h"
+#include "modeltype.h"
 
 // Extension system includes
 #include "extensionsystem/settings.h"
@@ -41,6 +42,9 @@ public:
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     bool hasAlgorithm(const QString & name) const;
     void navigateToApiFunction(const QString & package, const QString & function);
+
+    void setRole(ModelType category, const QString & value);
+    QString role(ModelType category) const;
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;

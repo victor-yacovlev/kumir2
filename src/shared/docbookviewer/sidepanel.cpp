@@ -45,7 +45,7 @@ void SidePanel::addDocument(Document document)
 {
     QList<ModelPtr> topLevelItems;
     if (document.root_) {
-        if (document.root_->modelType() == DocBookModel::Set) {
+        if (document.root_->modelType() == Set) {
             topLevelItems = document.root_->children();
         }
         else {
@@ -212,8 +212,8 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
             itemsOfModels_[child] = childItem;
             createNavigationItems(childItem, child);
             item->addChild(childItem);
-            const DocBookModel::ModelType type = child->modelType();
-            item->setExpanded(type == DocBookModel::Book);
+            const ModelType type = child->modelType();
+            item->setExpanded(type == Book);
         }
     }
 }
@@ -222,8 +222,8 @@ void SidePanel::createListOfExamples(ModelPtr root)
 {
     ModelPtr listOfExamples = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfExamples,
-                DocBookModel::Example
+                ListOfExamples,
+                Example
                 );
     if (listOfExamples) {
         QTreeWidgetItem * topLevelItem =
@@ -250,8 +250,8 @@ void SidePanel::createListOfTables(ModelPtr root)
 {
     ModelPtr listOfTables = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfTables,
-                DocBookModel::Table
+                ListOfTables,
+                Table
                 );
     if (listOfTables) {
         QTreeWidgetItem * topLevelItem =
