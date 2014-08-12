@@ -348,7 +348,11 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         helpViewer_->setRole(DocBookViewer::Type, apiHelpListingRole);
     }
 
-    helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + indexFileName));
+    indexFileName = helpPath + indexFileName;
+    if (QFile::exists(indexFileName)) {
+        helpViewer_->addDocument(QUrl::fromLocalFile(indexFileName));
+    }
+
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     helpWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
