@@ -420,7 +420,7 @@ QString ContentView::programTextForLanguage(const QString &source,
     QString multilineCommentStartSymbol;
     QString multilineCommentEndSymbol;
 
-    if (language.toLower() == "kumir") {
+    if (language.toLower() == QString::fromUtf8("кумир")) {
         keywordsList = QString::fromUtf8("алг,нач,кон,нц,кц,кц_при,если,"
                                          "то,иначе,все,выбор,при,утв,"
                                          "дано,надо,ввод,вывод,пауза,"
@@ -443,6 +443,13 @@ QString ContentView::programTextForLanguage(const QString &source,
         inlineCommentSymbol = "//";
         multilineCommentStartSymbol = "{";
         multilineCommentEndSymbol = "}";
+    }
+    else if (language.toLower() == "python") {
+        keywordsList = QString::fromLatin1("from,import,as,def,class,try,except,"
+                                         "is,assert,if,elif,else,for,in"
+                                         "and,or,not,str,int,float,bool,list,dict,tuple"
+                                         ).split(",");
+        inlineCommentSymbol = "#";
     }
     return formatProgramSourceText(
                 source.trimmed(),
@@ -1637,7 +1644,7 @@ QString ContentView::formatProgramSourceText(
                 result += cap;
                 result += afterCommentTag;
             }
-            else if (keywords.contains(cap)) {
+            else if (keywords.contains(cap) && !inlineComment && !multilineComment) {
                 result += kwdOpenTag + cap + kwdCloseTag;
             }
             else {
