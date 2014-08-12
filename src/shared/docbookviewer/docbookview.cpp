@@ -89,9 +89,9 @@ bool DocBookView::hasAlgorithm(const QString &name) const
     return pImpl_->hasAlgorithm(name);
 }
 
-void DocBookView::selectAlgorithm(const QString &name)
+void DocBookView::navigateToApiFunction(const QString &package, const QString & function)
 {
-    pImpl_->selectAlgorithm(name);
+    pImpl_->navigateToApiFunction(package, function);
 }
 
 QStringList DocBookView::booksList() const
@@ -102,6 +102,16 @@ QStringList DocBookView::booksList() const
 void DocBookView::activateBookIndex(int index)
 {
     pImpl_->activateBookIndex(index);
+}
+
+void DocBookView::setRole(ModelType category, const QString &value)
+{
+    pImpl_->setRole(category, value);
+}
+
+QString DocBookView::role(ModelType category) const
+{
+    return pImpl_->role(category);
 }
 
 }

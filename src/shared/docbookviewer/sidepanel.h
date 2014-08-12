@@ -27,7 +27,13 @@ public:
     QList<ModelPtr> loadedDocuments() const;
     void saveState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
     void restoreState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
-    ModelPtr findAlgorithm(const QString & name) const;
+
+    /** Find function in any package by name */
+    ModelPtr findApiFunction(const QString & name) const;
+
+    /** Find function in specified package by name */
+    ModelPtr findApiFunction(const QString & package, const QString & function) const;
+
 
     ~SidePanel();
 
@@ -50,12 +56,13 @@ private:
             QTreeWidgetItem * root
             );
 
+    typedef QPair<QString,QString> FunctionName; // <Package,Function>
 
     Ui::SidePanel *ui;
     QString settingsPrefix_;
     QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
     QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
-    QMap<QString, ModelPtr> algorithmsIndex_;
+    QMap<FunctionName, ModelPtr> functionsIndex_;
     QList<Document> loadedDocuments_;
     QList<ModelPtr> topLevelItems_;
 

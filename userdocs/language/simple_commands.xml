@@ -50,7 +50,7 @@ b[i,j]:=-b[j,i]
         </para>
         <para>
             Формат вызова:
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 утв ЛОГ ВЫРАЖЕНИЕ
 дано ЛОГ ВЫРАЖЕНИЕ
 надо ЛОГ ВЫРАЖЕНИЕ
@@ -70,7 +70,7 @@ b[i,j]:=-b[j,i]
         </para>
         <example>
             <title>Использование "дано" и "надо"</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг абс (рез вещ х)
 дано х<=0
 надо х>=0
@@ -82,7 +82,7 @@ b[i,j]:=-b[j,i]
         </example>
         <example>
             <title>Использование "утв"</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг вещ кв (вещ х)
 нач
   вещ к
@@ -100,12 +100,12 @@ b[i,j]:=-b[j,i]
             <title>Вывод</title>
             <para>
                 Формат вызова:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вывод выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
                 или
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 вывод величина-файлового-типа, выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
@@ -122,7 +122,7 @@ b[i,j]:=-b[j,i]
             </para>
             <example>
                 <title>Вывод на экран</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   цел а
@@ -148,7 +148,7 @@ b[i,j]:=-b[j,i]
             </example>
             <example>
                 <title>Вывод в файл</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 использовать Файлы
 алг
 нач
@@ -181,12 +181,12 @@ b[i,j]:=-b[j,i]
             <title>Ввод</title>
             <para>
                 Формат вызова:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 ввод выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
                 или
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 ввод величина-файлового-типа, выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
@@ -227,7 +227,7 @@ b[i,j]:=-b[j,i]
         </para>
         <example>
             <title>Вызов подпрограммы без параметров</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг
 нач
   подпрограмма
@@ -242,7 +242,7 @@ b[i,j]:=-b[j,i]
         </example>
         <example>
             <title>Вызов подпрограммы с параметрами</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг
 нач
   сумма(2.4, 7.6)
@@ -267,7 +267,7 @@ b[i,j]:=-b[j,i]
         </para>
         <example>
             <title>Использование команды "выход"</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг
 нач
   нц

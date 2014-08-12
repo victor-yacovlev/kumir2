@@ -322,7 +322,33 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             "/userdocs/";
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + "default.xml"));
+    const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
+    QString applicationName =
+            applicationLanucher.startsWith(qApp->applicationDirPath())
+            ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
+            : applicationLanucher;
+#ifdef Q_OS_WIN32
+    if (applicationName.endsWith(".exe")) {
+        applicationName.remove(applicationName.length()-4, 4);
+    }
+#endif
+
+    QString indexFileName = applicationName + ".xml";
+    indexFileName.replace("kumir2-", "index-");
+
+    Shared::AnalizerInterface * analizerPlugin =
+            ExtensionSystem::PluginManager::instance()
+            ->findPlugin<Shared::AnalizerInterface>();
+
+    if (analizerPlugin) {
+        const QString apiHelpListingRole = analizerPlugin->languageName();
+        helpViewer_->setRole(DocBookViewer::ProgramListing, apiHelpListingRole);
+        helpViewer_->setRole(DocBookViewer::FuncSynopsys, apiHelpListingRole);
+        helpViewer_->setRole(DocBookViewer::Section, apiHelpListingRole);
+        helpViewer_->setRole(DocBookViewer::Type, apiHelpListingRole);
+    }
+
+    helpViewer_->addDocument(QUrl::fromLocalFile(helpPath + indexFileName));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     helpWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
@@ -337,7 +363,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(mainWindow_->ui->actionUsage, SIGNAL(triggered()),
-            helpWindow_, SLOT(activate()));
+            mainWindow_, SLOT(showHelp()));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondaryWindows_ << helpWindow_;
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;

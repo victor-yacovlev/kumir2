@@ -31,7 +31,7 @@
             </para>
             <example>
                 <title>Программа со вступление, основным алгоритмом без имени и вспомогательным алгоритмом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 | Это вступление
 цел длина, ширина
 длина := 10
@@ -54,7 +54,7 @@
             </example>
             <example>
                 <title>Программа со вступление, основным алгоритмом и вспомогательным алгоритмом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 | Это вступление
 вещ длина, ширина, масса
 длина := 10
@@ -97,7 +97,7 @@
         <section>
             <title>Общий вид описания</title>
             <para>Алгоритм на языку Кумир записывается в следующем виде:</para>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг тип_алгоритма имя_алгоритма (описание_параметров)
   дано условие_применимости_алгоритма
   надо цель_выполнения_алгоритма
@@ -144,7 +144,7 @@
             </para>
             <example>
                 <title>Пример алгоритма-процедуры</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг гипотенуза (вещ a, b, рез вещ c)
   дано a>=0 и b>=0 | длины катетов треугольника
   надо | c = длинa гипотенузы этого треугольника
@@ -155,7 +155,7 @@
             </example>
             <example>
                 <title>Пример алгоритма-функции</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг вещ площадь (вещ a, b, c)
   дано a>=0 и b>=0 и c>=0 | длины сторон треугольника
   надо | значение функции равно площади этого треугольника
@@ -201,7 +201,7 @@
         </para>
         <example>
             <title>Описание алгоритма с параметрами</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг
 нач
   вещ число
@@ -246,7 +246,7 @@
             <para>Точка с запятой приравнивается к переносу строки.</para>
             <example>
                 <title>Программа 1 и Программа 2 имеют одинаковый смысл</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 | Программа 1 — сжатое написание
 алг
 нач
@@ -293,7 +293,7 @@
             </para>
             <example>
                 <title>Использование неявных переносов строк</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач цел знак, вещ модуль
   вещ щ
@@ -312,7 +312,7 @@
         <title>Комментарии</title>
         <example>
             <title>Использование комментариев</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 алг
   | Это алгоритм вычисления суммы двух чисел
 нач

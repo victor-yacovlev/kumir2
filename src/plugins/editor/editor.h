@@ -90,6 +90,10 @@ public:
     void paintEvent(QPaintEvent *);
     bool eventFilter(QObject *, QEvent *);
     inline QWidget * widget() { return this; }
+    inline bool supportsContextHelp() const {
+        return nullptr!=analizerInstance_ && nullptr!=analizerInstance_->helper();
+    }
+    Shared::Analizer::ApiHelpItem contextHelpItem() const;
 public slots:
     void undo();
     void redo();
@@ -104,7 +108,7 @@ signals:
     void cursorPositionChanged(uint row, uint column);
     void keyboardLayoutChanged(QLocale::Language lang, bool capslock, bool shift, bool alt);
     void message(const QString &);
-    void requestHelpForAlgorithm(const QString & text);
+    void requestHelpForAlgorithm(const QString & package, const QString & function);
     void recordMacroChanged(bool on);
 
 

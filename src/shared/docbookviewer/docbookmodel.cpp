@@ -20,7 +20,7 @@ quint8 DocBookModel::sectionLevel() const
     return sectionLevel_;
 }
 
-DocBookModel::ModelType DocBookModel::modelType() const
+ModelType DocBookModel::modelType() const
 {
     return modelType_;
 }

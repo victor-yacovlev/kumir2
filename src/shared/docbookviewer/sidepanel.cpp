@@ -45,7 +45,7 @@ void SidePanel::addDocument(Document document)
 {
     QList<ModelPtr> topLevelItems;
     if (document.root_) {
-        if (document.root_->modelType() == DocBookModel::Set) {
+        if (document.root_->modelType() == Set) {
             topLevelItems = document.root_->children();
         }
         else {
@@ -212,8 +212,8 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
             itemsOfModels_[child] = childItem;
             createNavigationItems(childItem, child);
             item->addChild(childItem);
-            const DocBookModel::ModelType type = child->modelType();
-            item->setExpanded(type == DocBookModel::Book);
+            const ModelType type = child->modelType();
+            item->setExpanded(type == Book);
         }
     }
 }
@@ -222,8 +222,8 @@ void SidePanel::createListOfExamples(ModelPtr root)
 {
     ModelPtr listOfExamples = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfExamples,
-                DocBookModel::Example
+                ListOfExamples,
+                Example
                 );
     if (listOfExamples) {
         QTreeWidgetItem * topLevelItem =
@@ -250,8 +250,8 @@ void SidePanel::createListOfTables(ModelPtr root)
 {
     ModelPtr listOfTables = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfTables,
-                DocBookModel::Table
+                ListOfTables,
+                Table
                 );
     if (listOfTables) {
         QTreeWidgetItem * topLevelItem =
@@ -311,16 +311,26 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
                 itemsOfModels_[algorithm] = algItem;
                 modelsOfItems_[algItem] = algorithm;
                 algItem->setText(0, algorithm->title());
-                algorithmsIndex_[algorithm->title()] = algorithm;
+                FunctionName fn(key, algorithm->title());
+                functionsIndex_[fn] = algorithm;
             }
         }
     }
 }
 
-ModelPtr SidePanel::findAlgorithm(const QString &name) const
+ModelPtr SidePanel::findApiFunction(const QString &name) const
 {
-    if (algorithmsIndex_.contains(name)) {
-        return algorithmsIndex_[name];
+    foreach (const FunctionName &fn, functionsIndex_.keys()) {
+        if (fn.second==name)
+            return functionsIndex_[fn];
+    }
+    return ModelPtr();
+}
+
+ModelPtr SidePanel::findApiFunction(const QString &package, const QString &function) const
+{
+    if (functionsIndex_.contains(FunctionName(package, function))) {
+        return functionsIndex_[FunctionName(package, function)];
     }
     else {
         return ModelPtr();

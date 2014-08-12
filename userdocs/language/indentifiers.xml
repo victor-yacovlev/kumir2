@@ -121,7 +121,7 @@
             </para>
             <example>
                 <title>Использование многословных не-имен</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 лог л, завтра будет четверг
 л := не завтра будет четверг   | Правильно
 л := завтра не будет четверг   | Правильно
@@ -380,7 +380,7 @@
             </para>
             <example>
                 <title>Пример объявления простых величин</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел j, k, n
 вещ длина, ширина
 лит мой текст]]>
@@ -393,7 +393,7 @@
             </para>
             <example>
                 <title>Пример объявления табличных величин</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 цел таб k[-5:5]
 вещтаб tab[1:4, 1:12]]]>
                 </programlisting>
@@ -431,7 +431,7 @@
             </para>
             <example>
                 <title>Объявление величин в алгоритме</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 алг
 нач
   п := 1 | Так нельзя!
@@ -626,7 +626,7 @@
             </para>
             <example>
                 <title>Вырезка из строки</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 лит строка, вырезка
 строка = "строка"
 вырезка := строка[3:5]

@@ -1352,8 +1352,8 @@ void MainWindow::newProgram()
 
     QWidget* vc = editor->widget();
     connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-    connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
-            this, SLOT(showAlgorithmHelp(QString)));
+    connect(vc, SIGNAL(requestHelpForAlgorithm(QString, QString)),
+            this, SLOT(showAlgorithmHelp(QString, QString)));
 
     QString fileName = suggestNewFileName(suffix, editor->analizer());
     TabWidgetElement * e = addCentralComponent(
@@ -1369,10 +1369,10 @@ void MainWindow::newProgram()
 
 }
 
-void MainWindow::showAlgorithmHelp(const QString &name)
+void MainWindow::showAlgorithmHelp(const QString &package, const QString & function)
 {
     m_plugin->helpWindow_->activate();
-    m_plugin->helpViewer_->selectAlgorithm(name);
+    m_plugin->helpViewer_->navigateToApiFunction(package, function);
 }
 
 void MainWindow::newText()
@@ -1784,8 +1784,22 @@ void MainWindow::showUserManual()
 
 void MainWindow::showHelp()
 {
-    if (!ui->actionUsage->isChecked())
-        ui->actionUsage->trigger();
+    using namespace Shared::Analizer;
+
+    TabWidgetElement * twe =
+            qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
+    if (twe->editor() && twe->editor()->supportsContextHelp()) {
+        ApiHelpItem item = twe->editor()->contextHelpItem();
+        if (ApiHelpItem::Function == item.kind) {
+            m_plugin->helpViewer_->navigateToApiFunction(item.packageName, item.itemName);
+        }
+    }
+    m_plugin->helpWindow_->activate();
+    if (twe->editor() && twe->editor()->supportsContextHelp()) {
+        // Return focus back to editor in case if context menu
+        twe->editor()->widget()->activateWindow();
+        twe->editor()->widget()->setFocus(Qt::MouseFocusReason);
+    }
 }
 
 void MainWindow::fileOpen()

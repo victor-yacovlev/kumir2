@@ -120,7 +120,7 @@ QString ContentView::renderArticle(ModelPtr data) const
     result += "<h1 align='center'>" + normalizeText(data->title()) + "</h1>\n";
     ModelPtr abstract;
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::Abstract) {
+        if (child == Abstract) {
             abstract = child;
             break;
         }
@@ -193,10 +193,10 @@ QString ContentView::wrapHTML(const QString &body) const
 
 QString ContentView::renderModel(ModelPtr data) const
 {
-    if (data->modelType() == DocBookModel::Set) {
+    if (data->modelType() == Set) {
         return renderSet(data);
     }
-    else if (data->modelType() == DocBookModel::Book)
+    else if (data->modelType() == Book)
     {
         return renderTOC(data);
     }
@@ -231,118 +231,118 @@ QString ContentView::renderChilds(ModelPtr data) const
 
 QString ContentView::renderElement(ModelPtr data) const
 {
-    if (data == DocBookModel::Text) {
+    if (data == Text) {
         return renderText(data);
     }
-    else if (data == DocBookModel::Para) {
+    else if (data == Para) {
         return renderParagraph(data);
     }
-    else if (data == DocBookModel::Emphasis) {
+    else if (data == Emphasis) {
         return renderEmphasis(data);
     }
-    else if (data == DocBookModel::ListItem) {
+    else if (data == ListItem) {
         return renderListItem(data);
     }
-    else if (data == DocBookModel::OrderedList) {
+    else if (data == OrderedList) {
         return renderOrderedList(data);
     }
-    else if (data == DocBookModel::ItemizedList) {
+    else if (data == ItemizedList) {
         return renderItemizedList(data);
     }
-    else if (data == DocBookModel::Chapter) {
+    else if (data == Chapter) {
         return renderChapter(data);
     }
-    else if (data == DocBookModel::Article) {
+    else if (data == Article) {
         return renderArticle(data);
     }    
-    else if (data == DocBookModel::Section) {
+    else if (data == Section) {
         return renderSection(data);
     }
-    else if (data == DocBookModel::Example) {
+    else if (data == Example) {
         return renderExample(data);
     }
-    else if (data == DocBookModel::ProgramListing) {
+    else if (data == ProgramListing) {
         return renderProgramListing(data);
     }
-    else if (data == DocBookModel::Code) {
+    else if (data == Code) {
         return renderCode(data);
     }
-    else if (data == DocBookModel::Xref) {
+    else if (data == Xref) {
         return renderXref(data);
     }
-    else if (data == DocBookModel::KeyCombo) {
+    else if (data == KeyCombo) {
         return renderKeyCombo(data);
     }
-    else if (data == DocBookModel::KeySym) {
+    else if (data == KeySym) {
         return renderKeySym(data);
     }
-    else if (data == DocBookModel::InformalTable) {
+    else if (data == InformalTable) {
         return renderInformalTable(data);
     }
-    else if (data == DocBookModel::Table) {
+    else if (data == Table) {
         return renderTable(data);
     }
-    else if (data == DocBookModel::THead) {
+    else if (data == THead) {
         return renderTHead(data);
     }
-    else if (data == DocBookModel::TBody) {
+    else if (data == TBody) {
         return renderTBody(data);
     }
-    else if (data == DocBookModel::Row) {
+    else if (data == Row) {
         return renderRow(data);
     }
-    else if (data == DocBookModel::Entry) {
+    else if (data == Entry) {
         return renderEntry(data);
     }
-    else if (data == DocBookModel::Subscript) {
+    else if (data == Subscript) {
         return renderSubscript(data);
     }
-    else if (data == DocBookModel::Superscript) {
+    else if (data == Superscript) {
         return renderSuperscript(data);
     }
-    else if (data == DocBookModel::MediaObject) {
+    else if (data == MediaObject) {
         return renderMediaObject(data);
     }
-    else if (data == DocBookModel::Caption) {
+    else if (data == Caption) {
         return renderCaption(data, QString());
     }
-    else if (data == DocBookModel::InlineMediaObject) {
+    else if (data == InlineMediaObject) {
         return renderInlineMediaObject(data);
     }
-    else if (data == DocBookModel::ImageObject) {
+    else if (data == ImageObject) {
         return renderImageObject(data);
     }
-    else if (data == DocBookModel::FuncSynopsys) {
+    else if (data == FuncSynopsys) {
         return renderFuncSynopsys(data);
     }
-    else if (data == DocBookModel::Function) {
+    else if (data == Function) {
         return renderFunction(data);
     }
-    else if (data == DocBookModel::Parameter) {
+    else if (data == Parameter) {
         return renderParameter(data);
     }
-    else if (data == DocBookModel::Type) {
+    else if (data == Type) {
         return renderType(data);
     }
-    else if (data == DocBookModel::MathML_Math) {
+    else if (data == MathML_Math) {
         return renderMathML(data);
     }
-    else if (data == DocBookModel::ListOfExamples) {
+    else if (data == ListOfExamples) {
         return renderListOfExamples(data);
     }
-    else if (data == DocBookModel::ListOfTables) {
+    else if (data == ListOfTables) {
         return renderListOfTables(data);
     }
-    else if (data == DocBookModel::ListOfFunctions) {
+    else if (data == ListOfFunctions) {
         return renderListOfFunctions(data);
     }
-    else if (data == DocBookModel::GuiMenu) {
+    else if (data == GuiMenu) {
         return renderGuiMenu(data);
     }
-    else if (data == DocBookModel::GuiMenuItem) {
+    else if (data == GuiMenuItem) {
         return renderGuiMenuItem(data);
     }
-    else if (data == DocBookModel::GuiButton) {
+    else if (data == GuiButton) {
         return renderGuiButton(data);
     }
     else {
@@ -509,11 +509,11 @@ QString ContentView::renderRow(ModelPtr data) const
     bool inTableHead = false;
     bool inTableBody = false;
     while (parent) {
-        if (parent->modelType()==DocBookModel::THead) {
+        if (parent->modelType()==THead) {
             inTableHead = true;
             break;
         }
-        if (parent->modelType()==DocBookModel::TBody) {
+        if (parent->modelType()==TBody) {
             inTableBody = true;
             break;
         }
@@ -537,11 +537,11 @@ QString ContentView::renderEntry(ModelPtr data) const
     bool inTableHead = false;
     bool inTableBody = false;
     while (parent) {
-        if (parent->modelType()==DocBookModel::THead) {
+        if (parent->modelType()==THead) {
             inTableHead = true;
             break;
         }
-        if (parent->modelType()==DocBookModel::TBody) {
+        if (parent->modelType()==TBody) {
             inTableBody = true;
             break;
         }
@@ -576,7 +576,7 @@ QString ContentView::renderTable(ModelPtr data) const
               .arg(elementNumber(data))
             : QString::number(elementNumber(data));
 
-    if (loadedModel_ == DocBookModel::ListOfTables) {
+    if (loadedModel_ == ListOfTables) {
         result += "<a name='" + modelToLink(data) + "'></a>\n";
         result += "<h2 align='left' style='margin: 0;'>" +
                 tr("Table&nbsp;%1. ").arg(index) +
@@ -635,7 +635,7 @@ QString ContentView::sectionNumber(ModelPtr data)
         result = QString("%1.").arg(indexInParent(current)) + result;
         current = parent;
         parent = parent->parent();
-        if (current == DocBookModel::Book || current == DocBookModel::Article) {
+        if (current == Book || current == Article) {
             break;
         }
     }
@@ -646,9 +646,9 @@ quint16 ContentView::elementNumber(ModelPtr data)
 {
     ModelPtr root = data->parent();
     while (root) {
-        if (root == DocBookModel::Chapter ||
-                root == DocBookModel::Book ||
-                root == DocBookModel::Article)
+        if (root == Chapter ||
+                root == Book ||
+                root == Article)
         {
             break;
         }
@@ -661,12 +661,12 @@ quint16 ContentView::elementNumber(ModelPtr data)
 quint16 ContentView::countOfElements(ModelPtr root, ModelPtr until, bool &stop)
 {
     quint16 result = 0;
-    DocBookModel::ModelType rt = root->modelType();
-    DocBookModel::ModelType ut = until->modelType();
+    ModelType rt = root->modelType();
+    ModelType ut = until->modelType();
     quint8 rl = root->sectionLevel();
     quint8 ul = until->sectionLevel();
     bool match = rt == ut;
-    if (match && rt == DocBookModel::Section) {
+    if (match && rt == Section) {
         match = rl == ul;
     }
     if (root == until) {
@@ -695,12 +695,12 @@ quint16 ContentView::chapterNumber(ModelPtr data)
 
     topLevelSection = data->parent();
     while (topLevelSection) {
-        if (topLevelSection->modelType() == DocBookModel::Chapter) {
+        if (topLevelSection->modelType() == Chapter) {
             topLevelBook = topLevelSection->parent();
             if (topLevelBook) {
                 for (int i = 0; i < topLevelBook->children().size(); i++) {
                     const ModelPtr & child = topLevelBook->children()[i];
-                    if (child->modelType() == DocBookModel::Chapter) {
+                    if (child->modelType() == Chapter) {
                         chapterNumber ++;
                         if (child == topLevelSection) {
                             break;
@@ -720,10 +720,10 @@ QString ContentView::renderItemContextLink(ModelPtr data) const
     QString result;
     ModelPtr context = data->parent();
     while (context) {
-        if (context == DocBookModel::Section ||
-                context == DocBookModel::Chapter ||
-                context == DocBookModel::Article ||
-                context == DocBookModel::Book)
+        if (context == Section ||
+                context == Chapter ||
+                context == Article ||
+                context == Book)
         {
             break;
         }
@@ -752,7 +752,7 @@ QString ContentView::renderExample(ModelPtr data) const
               .arg(elementNumber(data))
             : QString::number(elementNumber(data));
 
-    if (loadedModel_ == DocBookModel::ListOfExamples) {
+    if (loadedModel_ == ListOfExamples) {
         result += "<a name='" + modelToLink(data) + "'></a>\n";
         result += "<h2 align='left' style='margin: 0;'>" +
                 tr("Example&nbsp;%1. ").arg(index) +
@@ -788,9 +788,9 @@ QString ContentView::renderFuncSynopsys(ModelPtr data) const
     result += "<a name='" + modelToLink(data) + "'></a>";
     ModelPtr info, prototype;
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::FuncSynopsysInfo)
+        if (child == FuncSynopsysInfo)
             info = child;
-        else if (child == DocBookModel::FuncPrototype)
+        else if (child == FuncPrototype)
             prototype = child;
     }
     if (loadedModel_ == data->indexParent()) {
@@ -804,8 +804,8 @@ QString ContentView::renderFuncSynopsys(ModelPtr data) const
 
         if (data->parent()) {
             foreach (ModelPtr child, data->parent()->children()) {
-                if (child != DocBookModel::Para &&
-                        child != DocBookModel::FuncSynopsys)
+                if (child != Para &&
+                        child != FuncSynopsys)
                 {
                     hasMoreThanText = true;
                     break;
@@ -837,10 +837,10 @@ QString ContentView::renderFuncSynopsys(ModelPtr data) const
         int from = data->parent()->children().indexOf(data);
         for (int i=from + 1; i<data->parent()->children().size(); i++) {
             ModelPtr child = data->parent()->children()[i];
-            if (child == DocBookModel::Para) {
+            if (child == Para) {
                 result += renderParagraph(child);
             }
-            else if (child == DocBookModel::FuncSynopsysInfo) {
+            else if (child == FuncSynopsysInfo) {
                 break;
             }
         }
@@ -855,7 +855,7 @@ QString ContentView::renderFunction(ModelPtr data) const
 {
     QString result;
     result += "<span class='code'>" + renderChilds(data) + "</span>";
-    wrapInlineElement(data, result, true, data->parent() != DocBookModel::FuncDef);
+    wrapInlineElement(data, result, true, data->parent() != FuncDef);
     return result;
 }
 
@@ -863,7 +863,7 @@ QString ContentView::renderParameter(ModelPtr data) const
 {
     QString result;
     result += "<span class='code'><i>" + renderChilds(data) + "</i></span>";
-    wrapInlineElement(data, result, true, data->parent() != DocBookModel::ParamDef);
+    wrapInlineElement(data, result, true, data->parent() != ParamDef);
     return result;
 }
 
@@ -872,7 +872,7 @@ QString ContentView::renderType(ModelPtr data) const
     QString result;
     result += "<span class='code'><b>" + renderChilds(data) + "</b></span>";
     wrapInlineElement(data, result, true, true);
-    if (!result.endsWith(" ") && data->parent() == DocBookModel::FuncDef)
+    if (!result.endsWith(" ") && data->parent() == FuncDef)
         result += " ";
     return result;
 }
@@ -889,9 +889,9 @@ QString ContentView::renderFuncPrototype(ModelPtr data) const
     ModelPtr funcdef;
     QList<ModelPtr> paramdefs;
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::FuncDef)
+        if (child == FuncDef)
             funcdef = child;
-        else if (child == DocBookModel::ParamDef)
+        else if (child == ParamDef)
             paramdefs.push_back(child);
     }
     result += "<pre class='code'>";
@@ -927,7 +927,7 @@ QString ContentView::renderFuncDef(ModelPtr data) const
         parent = parent->parent();
     }
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::Text)
+        if (child == Text)
             result += programTextForLanguage(child->text(), lang);
         else
             result += renderElement(child);
@@ -945,7 +945,7 @@ QString ContentView::renderParamDef(ModelPtr data) const
         parent = parent->parent();
     }
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::Text)
+        if (child == Text)
             result += programTextForLanguage(child->text(), lang);
         else
             result += renderElement(child);
@@ -993,12 +993,12 @@ QString& ContentView::wrapInlineElement(ModelPtr data, QString & result,
         if (processRight && index < parent->children().size() - 1) {
             right = parent->children()[index+1];
         }
-        if (left == DocBookModel::Text && left->text().length() > 0) {
+        if (left == Text && left->text().length() > 0) {
             const QChar achar = left->text()[left->text().length()-1];
             if (achar != '(' && achar != '[' && achar != '"' && achar != '\'')
                 result = " " + result;
         }
-        if (right == DocBookModel::Text && right->text().length() > 0) {
+        if (right == Text && right->text().length() > 0) {
             const QChar achar = right->text()[0];
             if (!achar.isPunct() || achar == '(' || achar =='[' || achar == '-')
                 result = result + " ";
@@ -1046,7 +1046,7 @@ QString ContentView::renderMediaObject(ModelPtr data) const
     ModelPtr mediaObject = findImageData(data);
     ModelPtr caption;
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::Caption) {
+        if (child == Caption) {
             caption = child;
             break;
         }
@@ -1093,7 +1093,7 @@ QString ContentView::renderImageObject(ModelPtr data) const
     QString result;
     ModelPtr imageData;
     foreach (ModelPtr child, data->children()) {
-        if (child->modelType() == DocBookModel::ImageData) {
+        if (child->modelType() == ImageData) {
             imageData = child;
             break;
         }
@@ -1107,7 +1107,7 @@ QString ContentView::renderMathML(ModelPtr data) const
     QString result;
     QList<ModelPtr> rows;
     foreach (ModelPtr child, data->children()) {
-        if (child == DocBookModel::MathML_MRow) {
+        if (child == MathML_MRow) {
             rows << child;
         }
     }
@@ -1164,11 +1164,11 @@ QVariant ContentView::loadResource(int type, const QUrl &name)
             if (rawPointer) {
                 DocBookModel * model =
                         reinterpret_cast<DocBookModel*>(rawPointer);
-                if (model->modelType() == DocBookModel::ImageData) {
+                if (model->modelType() == ImageData) {
                     const QImage & image = model->imageData();
                     result = image;
                 }
-                else if (model->modelType() == DocBookModel::MathML_MRow) {
+                else if (model->modelType() == MathML_MRow) {
                     MathMLRenderer::self()->render(model->self());
                     const QImage & image = model->imageData();
                     result = image;
@@ -1216,9 +1216,9 @@ QString ContentView::renderText(ModelPtr data) const
     ModelPtr parent = data->parent();
     bool isPreformat = false;
     while (parent) {
-        if (parent->modelType() == DocBookModel::ProgramListing
+        if (parent->modelType() == ProgramListing
                 ||
-                parent->modelType() == DocBookModel::Code
+                parent->modelType() == Code
                 ) {
             isPreformat = true;
             break;
@@ -1337,21 +1337,21 @@ ModelPtr ContentView::topLevelModel(ModelPtr data) const
 
 ModelPtr ContentView::onePageParentModel(ModelPtr data) const
 {
-    if (data->parent().isNull() || data->modelType() == DocBookModel::Chapter ||
-            data->modelType() == DocBookModel::Article ||
-            data->modelType() == DocBookModel::ListOfExamples ||
-            data->modelType() == DocBookModel::ListOfTables ||
-            data->modelType() == DocBookModel::ListOfFunctions ||
-            data->modelType() == DocBookModel::Book)
+    if (data->parent().isNull() || data->modelType() == Chapter ||
+            data->modelType() == Article ||
+            data->modelType() == ListOfExamples ||
+            data->modelType() == ListOfTables ||
+            data->modelType() == ListOfFunctions ||
+            data->modelType() == Book)
     {
         return data;
     }
     else if (data->indexParent()) {
         return data->indexParent();
     }
-    else if (data->parent()->modelType() == DocBookModel::Chapter ||
-             data->parent()->modelType() == DocBookModel::Article ||
-             data->parent()->modelType() == DocBookModel::Book)
+    else if (data->parent()->modelType() == Chapter ||
+             data->parent()->modelType() == Article ||
+             data->parent()->modelType() == Book)
     {
         return data->parent();
     }
@@ -1380,9 +1380,9 @@ ModelPtr ContentView::findImageData(ModelPtr parent) const
     ModelPtr svgChild;
     ModelPtr pngChild;
     foreach (ModelPtr child, parent->children()) {
-        if (child->modelType()==DocBookModel::ImageObject) {
+        if (child->modelType()==ImageObject) {
             foreach (ModelPtr childChild, child->children()) {
-                if (childChild->modelType()==DocBookModel::ImageData) {
+                if (childChild->modelType()==ImageData) {
                     if (childChild->format() == "svg") {
                         svgChild = child;
                     }
@@ -1397,30 +1397,30 @@ ModelPtr ContentView::findImageData(ModelPtr parent) const
 }
 
 
-static const QList<DocBookModel::ModelType> TOC_types =
-        QList<DocBookModel::ModelType>()
-        << DocBookModel::ListOfExamples << DocBookModel::ListOfFunctions
-        << DocBookModel::ListOfTables << DocBookModel::Book
-        << DocBookModel::Article << DocBookModel::Set
-        << DocBookModel::Chapter << DocBookModel::Section;
+static const QList<ModelType> TOC_types =
+        QList<ModelType>()
+        << ListOfExamples << ListOfFunctions
+        << ListOfTables << Book
+        << Article << Set
+        << Chapter << Section;
 
 QString ContentView::renderTOC(ModelPtr data) const
 {
     QString result;
     QString title;
-    if (data == DocBookModel::ListOfExamples) {
+    if (data == ListOfExamples) {
         title = tr("List of examples in \"%1\"").arg(data->title());
     }
-    else if (data == DocBookModel::ListOfTables) {
+    else if (data == ListOfTables) {
         title = tr("List of tables in \"%1\"").arg(data->title());
     }
-    else if (data == DocBookModel::ListOfFunctions) {
+    else if (data == ListOfFunctions) {
         if (data->title().isEmpty())
             title = tr("List of Standard Library algorithms");
         else
             title = tr("List of algorithms of module \"%1\"").arg(data->title());
     }
-    else if (data == DocBookModel::Book || data == DocBookModel::Article) {
+    else if (data == Book || data == Article) {
         title = data->title();
     }
     else {
@@ -1434,7 +1434,7 @@ QString ContentView::renderTOC(ModelPtr data) const
     }
     result += "<hr/>\n";
     foreach (ModelPtr child, data->children()) {
-        const DocBookModel::ModelType childType = child->modelType();
+        const ModelType childType = child->modelType();
         if (TOC_types.contains(childType)) {
             result += renderTOCElement(child, 0, true);
         }
@@ -1473,17 +1473,17 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
             QString::fromLatin1(buffer.toHex());
     QString result = "\n<li>";
     QString index;
-    if (data == DocBookModel::Example || data == DocBookModel::Table) {
+    if (data == Example || data == Table) {
         index = chapterNumber(data) > 0
                 ? QString("%1.%2")
                   .arg(chapterNumber(data))
                   .arg(elementNumber(data))
                 : QString::number(elementNumber(data));
-        index = data == DocBookModel::Example
+        index = data == Example
                 ? tr("Example&nbsp;%1. ").arg(index)
                 : tr("Table&nbsp;%1. ").arg(index);
     }
-    else if (data == DocBookModel::FuncSynopsys) {
+    else if (data == FuncSynopsys) {
         QString::number(elementNumber(data));
     }
     else {
@@ -1500,7 +1500,7 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
         foreach (ModelPtr child, data->children()) {
-            DocBookModel::ModelType childType = child->modelType();
+            ModelType childType = child->modelType();
             if (TOC_types.contains(childType)) {
                 result += renderTOCElement(child, level + 1, enumerate);
             }

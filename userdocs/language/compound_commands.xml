@@ -10,7 +10,7 @@
             <title>если-то-иначе-все</title>
             <para>
                 Общий вид команды:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если условие
   то серия1
   иначе серия2
@@ -21,7 +21,7 @@
             <para>
                 <code>серия2</code> вместе со служебным словом <code language="kumir">иначе</code> может отсутствовать.
                 В этом случае команда имеет вид:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если условие
   то серия1
 все
@@ -41,7 +41,7 @@
             </para>
             <example>
                 <title>Конструкция "если-то-иначе-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если a<b
   то b:=b-a; p:=p+q
   иначе a:=a-b; q:=q+p
@@ -51,7 +51,7 @@
             </example>
             <example>
                 <title>Конструкция "если-то-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если x>m
   то
     m:=x
@@ -65,7 +65,7 @@
             <title>выбор-при-иначе-все</title>
             <para>
                 Общий вид команды:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при условие 1 : серия 1
   при условие 2 : серия 2
@@ -79,7 +79,7 @@
             <para>
                 Ключевое слово <code language="kumir">иначе</code> вместе с соответствующей серией команд
                 может отсутствовать:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при условие_1 : серия_1
   при условие_2 : серия_2
@@ -107,7 +107,7 @@
             </para>
             <example>
                 <title>Конструкция "выбор-при-иначе-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при а>1: i:=i+1
   при а<0: j:=j-1
@@ -118,7 +118,7 @@
             </example>
             <example>
                 <title>Конструкция "выбор-при-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при а[i]>1000 : b[i]:=3; c[i]:=3.141
   при а[i]>100 :
@@ -142,7 +142,7 @@
             <title>Цикл "для"</title>
             <para>
                 Общий вид цикла <emphasis>для</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от i1 до i2
   тело_цикла
 кц
@@ -160,7 +160,7 @@
             </para>
             <para>
                 Общий вид цикла <emphasis>для</emphasis> с <emphasis>шагом</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от i1 до i2 шаг d
   тело_цикла
 кц
@@ -175,7 +175,7 @@
             </para>
             <example>
                 <title>Цикл "для" без указания шага</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для j от 1 до длин(t)
   t1[j]:=t[длин(t)+1-j]
 кц
@@ -184,7 +184,7 @@
             </example>
             <example>
                 <title>Цикл "для" с положительным шагом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от 1 до 100 шаг 2
   а[i+1]:=a[i]
 кц
@@ -193,7 +193,7 @@
             </example>
             <example>
                 <title>Цикл "для" с отрицательным шагом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от 100 до 1 шаг -2
   а[i]:=a[i-1]
 кц
@@ -205,7 +205,7 @@
             <title>Цикл "пока"</title>
             <para>
                 Общий вид цикла <emphasis>пока</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц пока условие
   тело_цикла
 кц
@@ -234,7 +234,7 @@
             </para>
             <example>
                 <title>Цикл "пока"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц пока а<10
   а := а + 1
 кц
@@ -246,7 +246,7 @@
             <title>Цикл "до тех пор"</title>
             <para>
                 Общий вид цикла <emphasis>до тех пор</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
 · тело_цикла
 кц при условие
@@ -281,7 +281,7 @@
             </para>
             <example>
                 <title>Цикл "до тех пор"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   x := 2*x
 кц_при x>100
@@ -293,7 +293,7 @@
                 <emphasis>N раз</emphasis>.
                 <example>
                     <title>Цикл с условием "при"</title>
-                    <programlisting role="kumir"><![CDATA[
+                    <programlisting role="кумир"><![CDATA[
 нц 5 раз
   ввод x, y, z
   вывод нс, "Координаты:", x, y, z
@@ -312,7 +312,7 @@
             <title>Цикл "N раз"</title>
             <para>
                 Общий вид цикла <emphasis>N раз</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц N раз
   тело_цикла
 кц
@@ -328,7 +328,7 @@
             <title>Цикл "нц-кц"</title>
             <para>
                 Общий вид цикла:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   тело_цикла
 кц
@@ -337,7 +337,7 @@
             </para>
             <example>
                 <title>Цикл "нц-кц"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   а := а + 1
   если а>100 то выход все

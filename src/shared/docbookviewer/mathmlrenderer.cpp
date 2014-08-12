@@ -63,28 +63,28 @@ QImage MathMLRenderer::renderBlock(ModelPtr block)
 
 QImage MathMLRenderer::renderElement(ModelPtr element)
 {
-    if (element == DocBookModel::Text) {
+    if (element == Text) {
         return renderPlainText(element);
     }
-    if (element == DocBookModel::MathML_MI) {
+    if (element == MathML_MI) {
         return renderIdentifier(element);
     }
-    if (element == DocBookModel::MathML_MN) {
+    if (element == MathML_MN) {
         return renderNumber(element);
     }
-    if (element == DocBookModel::MathML_MO) {
+    if (element == MathML_MO) {
         return renderOperator(element);
     }
-    if (element == DocBookModel::MathML_MText) {
+    if (element == MathML_MText) {
         return renderText(element);
     }
-    else if (element == DocBookModel::MathML_MSqrt) {
+    else if (element == MathML_MSqrt) {
         return renderSqrt(element);
     }
-    else if (element == DocBookModel::MathML_MFrac) {
+    else if (element == MathML_MFrac) {
         return renderFrac(element);
     }
-    else if (element == DocBookModel::MathML_MSup) {
+    else if (element == MathML_MSup) {
         return renderSup(element);
     }
     else {
@@ -103,7 +103,7 @@ QImage MathMLRenderer::renderIdentifier(ModelPtr element)
 
     ModelPtr textElement;
     foreach (ModelPtr child, element->children()) {
-        if (child == DocBookModel::Text) {
+        if (child == Text) {
             textElement = child;
             break;
         }
@@ -133,7 +133,7 @@ QImage MathMLRenderer::renderOperator(ModelPtr element)
 {
     ModelPtr textElement;
     foreach (ModelPtr child, element->children()) {
-        if (child == DocBookModel::Text) {
+        if (child == Text) {
             textElement = child;
             break;
         }

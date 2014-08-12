@@ -25,29 +25,34 @@ DocBookFactory::DocBookFactory()
     reader_->setErrorHandler(this);
 }
 
-Document DocBookFactory::parseDocument(const QUrl &url, QString *error) const
+Document DocBookFactory::parseDocument(const QMap<ModelType,QString> roleValues, const QUrl &url, QString *error) const
 {
     // TODO network url loading
     const QString fileName = url.toLocalFile();
     ModelPtr content;
     QFile file(fileName);
     if (file.open(QIODevice::ReadOnly)) {
-        content = parseDocument(&file, url, error);
+        content = parseDocument(roleValues, &file, url, error);
         file.close();
     }
     return Document(url, content);
 }
 
-ModelPtr DocBookFactory::parseDocument(QIODevice *stream,
-                                       const QUrl & url,
-                                       QString *error) const
+ModelPtr DocBookFactory::parseDocument(
+        const QMap<ModelType,QString> & roles,
+        QIODevice *stream,
+        const QUrl & url,
+        QString *error
+        ) const
 {
+    roles_ = roles;
     url_ = url;
     QXmlInputSource source(stream);
     if (reader_->parse(source)) {
         if (error)
             error->clear();
         filterByOs(doc_);
+        filterByRoles(roles, doc_);
         return doc_;
     }
     else {
@@ -91,9 +96,31 @@ void DocBookFactory::filterByOs(ModelPtr root) const
         }
         if (!toDelete) {
             newList.push_back(child);
-        }
-        else {
             filterByOs(child);
+        }
+    }
+    root->children_ = newList;
+}
+
+void DocBookFactory::filterByRoles(const QMap<ModelType, QString> &roles, ModelPtr root) const
+{
+    if (!root)
+        return;
+    QList<ModelPtr> newList;
+    for (ModelIterator it = root->children_.begin();
+         it!=root->children_.end();
+         it++)
+    {
+        ModelPtr child = *it;
+        bool toDelete = false;
+        if (child->role_.length() > 0 && roles.contains(child->modelType_)) {
+            const QString & matchRole = roles[child->modelType_];
+            const QString & childRole = child->role_;
+            toDelete = childRole.toLower() != matchRole;
+        }
+        if (!toDelete) {
+            newList.push_back(child);
+            filterByRoles(roles, child);
         }
     }
     root->children_ = newList;
@@ -117,134 +144,134 @@ bool DocBookFactory::startElement(
     static const QRegExp MathML("http://www.w3.org/\\d+/Math/MathML");
     DocBookModel * model = 0;
     if (element == "article") {
-        model = new DocBookModel(root_, DocBookModel::Article);
+        model = new DocBookModel(root_, Article);
     }
     else if (element == "book") {
-        model = new DocBookModel(root_, DocBookModel::Book);
+        model = new DocBookModel(root_, Book);
     }
     else if (element == "set") {
-        model = new DocBookModel(root_, DocBookModel::Set);
+        model = new DocBookModel(root_, Set);
     }
     else if (element == "abstract") {
-        model = new DocBookModel(root_, DocBookModel::Abstract);
+        model = new DocBookModel(root_, Abstract);
     }
     else if (element == "preface") {
-        model = new DocBookModel(root_, DocBookModel::Preface);
+        model = new DocBookModel(root_, Preface);
     }
     else if (element == "chapter") {
-        model = new DocBookModel(root_, DocBookModel::Chapter);
+        model = new DocBookModel(root_, Chapter);
     }
     else if (element == "section") {
-        model = new DocBookModel(root_, DocBookModel::Section);
+        model = new DocBookModel(root_, Section);
     }
     else if (element == "para") {
-        model = new DocBookModel(root_, DocBookModel::Para);
+        model = new DocBookModel(root_, Para);
     }
     else if (element == "programlisting") {
-        model = new DocBookModel(root_, DocBookModel::ProgramListing);
+        model = new DocBookModel(root_, ProgramListing);
     }
     else if (element == "code") {
-        model = new DocBookModel(root_, DocBookModel::Code);
+        model = new DocBookModel(root_, Code);
     }
     else if (element == "example") {
-        model = new DocBookModel(root_, DocBookModel::Example);
+        model = new DocBookModel(root_, Example);
     }
     else if (element == "orderedlist") {
-        model = new DocBookModel(root_, DocBookModel::OrderedList);
+        model = new DocBookModel(root_, OrderedList);
     }
     else if (element == "itemizedlist") {
-        model = new DocBookModel(root_, DocBookModel::ItemizedList);
+        model = new DocBookModel(root_, ItemizedList);
     }
     else if (element == "listitem") {
-        model = new DocBookModel(root_, DocBookModel::ListItem);
+        model = new DocBookModel(root_, ListItem);
     }
     else if (element == "emphasis") {
-        model = new DocBookModel(root_, DocBookModel::Emphasis);
+        model = new DocBookModel(root_, Emphasis);
         model->role_ = atts.value("role");
     }
     else if (element == "keycombo") {
-        model = new DocBookModel(root_, DocBookModel::KeyCombo);
+        model = new DocBookModel(root_, KeyCombo);
     }
     else if (element == "keysym") {
-        model = new DocBookModel(root_, DocBookModel::KeySym);
+        model = new DocBookModel(root_, KeySym);
     }
     else if (element == "table") {
-        model = new DocBookModel(root_, DocBookModel::Table);
+        model = new DocBookModel(root_, Table);
     }
     else if (element == "informaltable") {
-        model = new DocBookModel(root_, DocBookModel::InformalTable);
+        model = new DocBookModel(root_, InformalTable);
     }
     else if (element == "thead") {
-        model = new DocBookModel(root_, DocBookModel::THead);
+        model = new DocBookModel(root_, THead);
     }
     else if (element == "tbody") {
-        model = new DocBookModel(root_, DocBookModel::TBody);
+        model = new DocBookModel(root_, TBody);
     }
     else if (element == "row") {
-        model = new DocBookModel(root_, DocBookModel::Row);
+        model = new DocBookModel(root_, Row);
     }
     else if (element == "entry") {
-        model = new DocBookModel(root_, DocBookModel::Entry);
+        model = new DocBookModel(root_, Entry);
     }
     else if (element == "mediaobject") {
-        model = new DocBookModel(root_, DocBookModel::MediaObject);
+        model = new DocBookModel(root_, MediaObject);
     }
     else if (element == "caption") {
-        model = new DocBookModel(root_, DocBookModel::Caption);
+        model = new DocBookModel(root_, Caption);
     }
     else if (element == "inlinemediaobject") {
-        model = new DocBookModel(root_, DocBookModel::InlineMediaObject);
+        model = new DocBookModel(root_, InlineMediaObject);
     }
     else if (element == "imageobject") {
-        model = new DocBookModel(root_, DocBookModel::ImageObject);
+        model = new DocBookModel(root_, ImageObject);
     }
     else if (element == "imagedata") {
-        model = new DocBookModel(root_, DocBookModel::ImageData);
+        model = new DocBookModel(root_, ImageData);
     }
     else if (element == "subscript") {
-        model = new DocBookModel(root_, DocBookModel::Subscript);
+        model = new DocBookModel(root_, Subscript);
     }
     else if (element == "superscript") {
-        model = new DocBookModel(root_, DocBookModel::Superscript);
+        model = new DocBookModel(root_, Superscript);
     }
     else if (element == "funcsynopsis") {
-        model = new DocBookModel(root_, DocBookModel::FuncSynopsys);
+        model = new DocBookModel(root_, FuncSynopsys);
     }
     else if (element == "funcsynopsisinfo") {
-        model = new DocBookModel(root_, DocBookModel::FuncSynopsysInfo);
+        model = new DocBookModel(root_, FuncSynopsysInfo);
     }
     else if (element == "funcprototype") {
-        model = new DocBookModel(root_, DocBookModel::FuncPrototype);
+        model = new DocBookModel(root_, FuncPrototype);
     }
     else if (element == "funcdef") {
-        model = new DocBookModel(root_, DocBookModel::FuncDef);
+        model = new DocBookModel(root_, FuncDef);
     }
     else if (element == "function") {
-        model = new DocBookModel(root_, DocBookModel::Function);
+        model = new DocBookModel(root_, Function);
     }
     else if (element == "paramdef") {
-        model = new DocBookModel(root_, DocBookModel::ParamDef);
+        model = new DocBookModel(root_, ParamDef);
     }
     else if (element == "parameter") {
-        model = new DocBookModel(root_, DocBookModel::Parameter);
+        model = new DocBookModel(root_, Parameter);
     }
     else if (element == "type") {
-        model = new DocBookModel(root_, DocBookModel::Type);
+        model = new DocBookModel(root_, Type);
     }
     else if (element == "package") {
-        model = new DocBookModel(root_, DocBookModel::Package);
+        model = new DocBookModel(root_, Package);
     }
     else if (element == "guimenu") {
-        model = new DocBookModel(root_, DocBookModel::GuiMenu);
+        model = new DocBookModel(root_, GuiMenu);
     }
     else if (element == "guimenuitem") {
-        model = new DocBookModel(root_, DocBookModel::GuiMenuItem);
+        model = new DocBookModel(root_, GuiMenuItem);
     }
     else if (element == "guibutton") {
-        model = new DocBookModel(root_, DocBookModel::GuiButton);
+        model = new DocBookModel(root_, GuiButton);
     }
     else if (element == "xref") {
-        model = new DocBookModel(root_, DocBookModel::Xref);
+        model = new DocBookModel(root_, Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
         model->xrefEndTerm_ = atts.value("endterm");
     }
@@ -262,7 +289,7 @@ bool DocBookFactory::startElement(
                 DocBookFactory* innerFactory = new DocBookFactory();
                 QString localError;
                 ModelPtr include =
-                        innerFactory->parseDocument(&file, hrefUrl, &localError);
+                        innerFactory->parseDocument(roles_, &file, hrefUrl, &localError);
                 if (include) {
                     if (root_) {
                         include->parent_ = root_;
@@ -278,39 +305,39 @@ bool DocBookFactory::startElement(
         }
     }
     else if (element == "math" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_Math);
+        model = new DocBookModel(root_, MathML_Math);
     }
     else if (element == "mrow" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MRow);
+        model = new DocBookModel(root_, MathML_MRow);
     }
     else if (element == "msqrt" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MSqrt);
+        model = new DocBookModel(root_, MathML_MSqrt);
     }
     else if (element == "mfrac" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MFrac);
+        model = new DocBookModel(root_, MathML_MFrac);
     }
     else if (element == "mi" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MI);
+        model = new DocBookModel(root_, MathML_MI);
     }
     else if (element == "mn" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MN);
+        model = new DocBookModel(root_, MathML_MN);
     }
     else if (element == "mo" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MO);
+        model = new DocBookModel(root_, MathML_MO);
     }
     else if (element == "mtext" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MText);
+        model = new DocBookModel(root_, MathML_MText);
     }
     else if (element == "msup" && MathML.indexIn(namespaceURI) != -1) {
-        model = new DocBookModel(root_, DocBookModel::MathML_MSup);
+        model = new DocBookModel(root_, MathML_MSup);
     }    
     else {
-        model = new DocBookModel(root_, DocBookModel::Unknown);
+        model = new DocBookModel(root_, Unknown);
         buffer_.clear();
     }
     if (model) {
         if (root_ && buffer_.length() > 0) {
-            DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
+            DocBookModel* text = new DocBookModel(root_, Text);
             text->text_ = buffer_;
             root_->children_.append(ModelPtr(text));
             buffer_.clear();
@@ -319,13 +346,13 @@ bool DocBookFactory::startElement(
         model->os_ = atts.value("os");
         model->role_ = atts.value("role");
         if (atts.value("language").length() > 0) {
-            if (model->modelType_==DocBookModel::ProgramListing ||
-                    model->modelType_==DocBookModel::Code)
+            if (model->modelType_==ProgramListing ||
+                    model->modelType_==Code)
             {
                 model->role_ = atts.value("language");
             }
         }
-        if (model->modelType() == DocBookModel::ImageData) {
+        if (model->modelType() == ImageData) {
             model->format_ = atts.value("format");
             const QString href = atts.value("fileref");
             if (href.length() > 0) {
@@ -348,8 +375,8 @@ bool DocBookFactory::startElement(
 bool DocBookFactory::characters(const QString &ch)
 {
     bool preformatMode = root_ &&
-            ( root_->modelType_ == DocBookModel::ProgramListing ||
-              root_->modelType_ == DocBookModel::Code );
+            ( root_->modelType_ == ProgramListing ||
+              root_->modelType_ == Code );
     if (preformatMode) {
         buffer_ += ch;
     }
@@ -425,10 +452,10 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
     }
     else if (root_) {
         if (root_->title().isEmpty()) {
-            if (root_ == DocBookModel::Example || root_ == DocBookModel::FuncSynopsys) {
+            if (root_ == Example || root_ == FuncSynopsys) {
                 ModelPtr parent = root_->parent();
                 while (parent) {
-                    if (parent == DocBookModel::Section
+                    if (parent == Section
                             && !parent->title().isEmpty())
                     {
                         root_->title_ = parent->title();
@@ -439,9 +466,9 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
             }
         }
         if (buffer_.length() > 0) {
-            DocBookModel* text = new DocBookModel(root_, DocBookModel::Text);
+            DocBookModel* text = new DocBookModel(root_, Text);
             text->text_ = buffer_;
-            if (root_ == DocBookModel::Code) {
+            if (root_ == Code) {
                 text->text_.replace(' ', QChar(QChar::Nbsp));
             }
             root_->children_.append(ModelPtr(text));
@@ -486,7 +513,7 @@ bool DocBookFactory::warning(const QXmlParseException &exception)
 
 QList<ModelPtr> DocBookFactory::findEntriesOfType(
         ModelPtr root,
-        DocBookModel::ModelType findType
+        ModelType findType
         )
 {
     QList<ModelPtr> result;
@@ -502,8 +529,8 @@ QList<ModelPtr> DocBookFactory::findEntriesOfType(
 }
 
 ModelPtr DocBookFactory::createListOfEntries(ModelPtr root,
-                                             DocBookModel::ModelType resType,
-                                             DocBookModel::ModelType findType)
+                                             ModelType resType,
+                                             ModelType findType)
 {
     ModelPtr result;
     QList<ModelPtr> entries = findEntriesOfType(root, findType);
@@ -523,20 +550,20 @@ QMap<QString, ModelPtr> & DocBookFactory::updateListOfAlgorithms(
         ModelPtr root,
         QMap<QString, ModelPtr> &result)
 {
-    QList<ModelPtr> allItems = findEntriesOfType(root, DocBookModel::FuncSynopsys);
+    QList<ModelPtr> allItems = findEntriesOfType(root, FuncSynopsys);
 
     foreach (ModelPtr item, allItems) {
         QString moduleName;
         QList<ModelPtr> infos = findEntriesOfType(item,
-                                                  DocBookModel::FuncSynopsysInfo);
+                                                  FuncSynopsysInfo);
         if (infos.size() > 0) {
             ModelPtr info = infos.first();
             QList<ModelPtr> packages = findEntriesOfType(info,
-                                                         DocBookModel::Package);
+                                                         Package);
             if (packages.size() > 0) {
                 ModelPtr package = packages.first();
                 foreach (ModelPtr packageChild, package->children()) {
-                    if (packageChild == DocBookModel::Text) {
+                    if (packageChild == Text) {
                         if (moduleName.length() > 0)
                             moduleName += " ";
                         moduleName += packageChild->text().trimmed();
@@ -552,7 +579,7 @@ QMap<QString, ModelPtr> & DocBookFactory::updateListOfAlgorithms(
         else {
             moduleRoot = ModelPtr(new DocBookModel(
                                       ModelPtr(),
-                                      DocBookModel::ListOfFunctions
+                                      ListOfFunctions
                                       )
                                   );
             result[moduleName] = moduleRoot;

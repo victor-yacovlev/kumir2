@@ -27,6 +27,7 @@ static int process_file(const string & input_file_name,
 
     QString parse_error;
     Document document = DocBookFactory::self()->parseDocument(
+                QMap<ModelType,QString>(),
                 input_url,
                 &parse_error
                 );
