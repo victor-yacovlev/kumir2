@@ -89,9 +89,9 @@ bool DocBookView::hasAlgorithm(const QString &name) const
     return pImpl_->hasAlgorithm(name);
 }
 
-void DocBookView::selectAlgorithm(const QString &name)
+void DocBookView::navigateToApiFunction(const QString &package, const QString & function)
 {
-    pImpl_->selectAlgorithm(name);
+    pImpl_->navigateToApiFunction(package, function);
 }
 
 QStringList DocBookView::booksList() const

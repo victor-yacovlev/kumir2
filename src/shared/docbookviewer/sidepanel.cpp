@@ -311,16 +311,26 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
                 itemsOfModels_[algorithm] = algItem;
                 modelsOfItems_[algItem] = algorithm;
                 algItem->setText(0, algorithm->title());
-                algorithmsIndex_[algorithm->title()] = algorithm;
+                FunctionName fn(key, algorithm->title());
+                functionsIndex_[fn] = algorithm;
             }
         }
     }
 }
 
-ModelPtr SidePanel::findAlgorithm(const QString &name) const
+ModelPtr SidePanel::findApiFunction(const QString &name) const
 {
-    if (algorithmsIndex_.contains(name)) {
-        return algorithmsIndex_[name];
+    foreach (const FunctionName &fn, functionsIndex_.keys()) {
+        if (fn.second==name)
+            return functionsIndex_[fn];
+    }
+    return ModelPtr();
+}
+
+ModelPtr SidePanel::findApiFunction(const QString &package, const QString &function) const
+{
+    if (functionsIndex_.contains(FunctionName(package, function))) {
+        return functionsIndex_[FunctionName(package, function)];
     }
     else {
         return ModelPtr();

@@ -40,7 +40,7 @@ public:
 
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     bool hasAlgorithm(const QString & name) const;
-    void selectAlgorithm(const QString & name);
+    void navigateToApiFunction(const QString & package, const QString & function);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;

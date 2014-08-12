@@ -73,7 +73,7 @@ private /*fields*/:
     int currentPosition_;
     bool teacherMode_;
 
-private /*methods*/:
+public /*methods*/:
     void checkForEmitImportsSignal();
 
     void parseImport(int str);
@@ -193,6 +193,7 @@ private /*methods*/:
     bool findAlgorithm(const QString &name
                        , const AST::ModulePtr currentModule
                        , const AST::AlgorithmPtr currentAlgorithm
+                       , AST::ModulePtr & module
                        , AST::AlgorithmPtr & algorhitm
                        , QVariantList & templateParameters
                        ) const;

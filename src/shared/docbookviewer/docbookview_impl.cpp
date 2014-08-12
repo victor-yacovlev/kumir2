@@ -252,15 +252,15 @@ Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index
 
 bool DocBookViewImpl::hasAlgorithm(const QString &name) const
 {
-    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    const ModelPtr algorithm = sidePanel_->findApiFunction(name);
     return ! algorithm.isNull();
 }
 
-void DocBookViewImpl::selectAlgorithm(const QString &name)
+void DocBookViewImpl::navigateToApiFunction(const QString & package, const QString &function)
 {
-    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    const ModelPtr algorithm = sidePanel_->findApiFunction(package, function);
     if (algorithm) {
-        sidePanel_->selectItem(algorithm, name);
+        sidePanel_->selectItem(algorithm, function);
         showAnItem(algorithm);
     }
 }

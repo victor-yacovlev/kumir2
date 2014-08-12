@@ -97,6 +97,21 @@ struct AnalizerPrivate
                                       , AST::AlgorithmPtr & alg
                                       );
 
+    /** Find instruction in AST by source text position
+     * @param IN data - AST
+     * @param IN statements - list of lexem groups
+     * @param IN lineNo - line number in source text
+     * @param IN colNo - column number in source text line
+     * @return pointer to lexem group and lexem, or null pointers pair if not found
+     */
+    static QPair<TextStatementPtr,LexemPtr> findSourceLexemContext(AST::DataPtr data
+                                , const QList<TextStatementPtr> statements
+                                , int lineNo
+                                , int colNo
+                                , bool includeRightBound
+                                );
+
+
     enum CompilationStage {
         CS_StructureAndNames, CS_Contents
     };

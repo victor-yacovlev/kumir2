@@ -337,7 +337,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(mainWindow_->ui->actionUsage, SIGNAL(triggered()),
-            helpWindow_, SLOT(activate()));
+            mainWindow_, SLOT(showHelp()));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondaryWindows_ << helpWindow_;
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;

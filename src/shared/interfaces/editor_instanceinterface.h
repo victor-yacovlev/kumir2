@@ -4,6 +4,7 @@
 #include "dataformats/kumfile.h"
 #include "interfaces/analizer_instanceinterface.h"
 #include "interfaces/analizer_sourcefileinterface.h"
+#include "interfaces/analizer_helperinterface.h"
 
 #include <QWidget>
 #include <QList>
@@ -41,6 +42,9 @@ public:
     virtual void appendMarginText(int lineNo, const QString & text) = 0;
     virtual void setMarginText(int lineNo, const QString & text, const QColor & fgColor) = 0;
     virtual void clearMarginText(int fromLine = 0, int toLine = -1) = 0;
+
+    virtual bool supportsContextHelp() const = 0;
+    inline virtual Analizer::ApiHelpItem contextHelpItem() const { return Analizer::ApiHelpItem(); }
 
     virtual QWidget * widget() = 0;
     virtual QList<QMenu*> menus() const = 0;

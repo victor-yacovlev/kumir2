@@ -636,8 +636,8 @@ void EditorInstance::createConnections()
     connect(cursor_, SIGNAL(updateRequest()), plane_, SLOT(updateCursor()));
     connect(cursor_, SIGNAL(updateRequest(int,int)), plane_, SLOT(updateText(int,int)));
 
-    connect(autocompleteWidget_.data(), SIGNAL(requestHelpForAlgorithm(QString)),
-            this, SIGNAL(requestHelpForAlgorithm(QString)));
+    connect(autocompleteWidget_.data(), SIGNAL(requestHelpForAlgorithm(QString,QString)),
+            this, SIGNAL(requestHelpForAlgorithm(QString,QString)));
     connect(autocompleteWidget_.data(), SIGNAL(hidden()), plane_, SIGNAL(enableInsertActions()));
     connect(autocompleteWidget_.data(), SIGNAL(acceptedSuggestion(QString)),
             plane_, SLOT(finishAutoCompletion(QString)));
@@ -652,6 +652,25 @@ QScrollBar * EditorInstance::scrollBar(Qt::Orientation orientation)
     else {
         return verticalScrollBar_;
     }
+}
+
+Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
+{
+    typedef Shared::Analizer::ApiHelpItem ResType;
+
+    ResType result;
+
+    if (analizerInstance_ && analizerInstance_->helper()) {
+        int row = cursor()->row();
+        int col = cursor()->column();
+        const QString & text = document()->textAt(row);
+        if (!analizerPlugin_->indentsSignificant()) {
+            col -= document()->indentAt(row) * 2;
+        }
+        result = analizerInstance_->helper()->itemUnderCursor(text, row, col, true);
+    }
+
+    return result;
 }
 
 void EditorInstance::paintEvent(QPaintEvent * e)
