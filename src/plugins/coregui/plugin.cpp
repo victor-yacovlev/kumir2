@@ -346,6 +346,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         helpViewer_->setRole(DocBookViewer::FuncSynopsys, apiHelpListingRole);
         helpViewer_->setRole(DocBookViewer::Section, apiHelpListingRole);
         helpViewer_->setRole(DocBookViewer::Type, apiHelpListingRole);
+        helpViewer_->setRole(DocBookViewer::Code, apiHelpListingRole);
     }
 
     indexFileName = helpPath + indexFileName;
