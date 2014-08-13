@@ -446,8 +446,9 @@ QString ContentView::programTextForLanguage(const QString &source,
     }
     else if (language.toLower() == "python") {
         keywordsList = QString::fromLatin1("from,import,as,def,class,try,except,"
-                                         "is,assert,if,elif,else,for,in"
-                                         "and,or,not,str,int,float,bool,list,dict,tuple"
+                                         "is,assert,if,elif,else,for,in,"
+                                         "and,or,not,str,int,float,bool,list,dict,tuple,"
+                                         "True,False,None"
                                          ).split(",");
         inlineCommentSymbol = "#";
     }
@@ -905,7 +906,13 @@ QString ContentView::renderFuncPrototype(ModelPtr data) const
     if (funcdef)
         result += renderFuncDef(funcdef);
 
-    const QString lang = data->role().toLower().trimmed();
+    QString lang = data->role().toLower().trimmed();
+    if (lang.isEmpty()) {
+        // try to get from parent FuncSynopsis
+        if (data->parent() && FuncSynopsys==data->parent()->modelType()) {
+            lang = data->parent()->role().toLower().trimmed();
+        }
+    }
     bool requireBraces = lang=="c" || lang=="c++" || lang=="python";
 
     if (paramdefs.size() > 0 || requireBraces)
