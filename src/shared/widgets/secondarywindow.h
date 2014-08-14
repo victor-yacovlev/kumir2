@@ -18,8 +18,8 @@ class WIDGETS_EXPORT SecondaryWindow
 {
     Q_OBJECT
 public:
-    class SecondaryWindowImplementationInterface * dockContainer();
-    class SecondaryWindowImplementationInterface * windowContainer();
+    class SecondaryWindowImplementationInterface * dockContainer() const;
+    class SecondaryWindowImplementationInterface * windowContainer() const;
 
     const QString & settingsKey() const;
 
@@ -34,6 +34,7 @@ public:
             );
 
     void changeDockPlace(class DockWindowPlace * dockPlace);
+    bool isSeparateWindow() const;
 
 
 
@@ -66,7 +67,7 @@ private /*methods*/:
             class DockWindowPlace * dockPlace
             );
 
-    class SecondaryWindowImplementationInterface * currentContainer();
+    class SecondaryWindowImplementationInterface * currentContainer() const;
 
 private /*fields*/:
     class SecondaryWindowImplementationInterface * dockContainer_;

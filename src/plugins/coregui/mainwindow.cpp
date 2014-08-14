@@ -1795,7 +1795,7 @@ void MainWindow::showHelp()
         }
     }
     m_plugin->helpWindow_->activate();
-    if (twe->editor() && twe->editor()->supportsContextHelp()) {
+    if (twe->editor() && twe->editor()->supportsContextHelp() && !m_plugin->helpWindow_->isSeparateWindow()) {
         // Return focus back to editor in case if context menu
         twe->editor()->widget()->activateWindow();
         twe->editor()->widget()->setFocus(Qt::MouseFocusReason);
