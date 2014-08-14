@@ -500,6 +500,15 @@ bool DocBookFactory::skippedEntity(const QString &name)
     else if (name == "larr") {
         buffer_.push_back(QChar(0x2190));
     }
+    else if (name.startsWith("#")) {
+        const QString sCode = name.mid(1);
+        bool ok = false;
+        unsigned int code = sCode.toUInt(&ok);
+        if (ok) {
+            const QChar symbol(code);
+            buffer_.push_back(symbol);
+        }
+    }
     return true;
 }
 
