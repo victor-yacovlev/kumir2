@@ -6,6 +6,8 @@
 // Qt includes
 #include <QtCore>
 #include <QtXml>
+#include <QApplication>
+#include <QPalette>
 
 namespace DocBookViewer {
 
@@ -358,11 +360,11 @@ bool DocBookFactory::startElement(
             if (href.length() > 0) {
                 model->href_ = url_.resolved(href);
                 if (model->format()=="png") {
-                    model->cachedImage_ = QImage(model->href().toLocalFile());
+                    model->cachedImage_ = loadAndPreprocessPng(model->href().toLocalFile());
                 }
                 else if (model->format()=="svg") {
                     model->svgRenderer_ = SvgRendererPtr(
-                                new QSvgRenderer(model->href().toLocalFile())
+                                new QSvgRenderer(loadAndPreprocessSvg(model->href().toLocalFile()))
                                 );
                 }
             }
@@ -370,6 +372,74 @@ bool DocBookFactory::startElement(
         root_ = ModelPtr(model);
     }
     return true;
+}
+
+QByteArray DocBookFactory::loadAndPreprocessSvg(const QString &fileName)
+{
+    QByteArray result;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return result;
+    }
+    result = file.readAll();
+    file.close();
+    QCoreApplication * app = qApp->instance();
+    QApplication * guiApp = qobject_cast<QApplication*>(app);
+    if (guiApp) {
+        static const QPalette palette = QApplication::palette();
+        static const QByteArray foreground =
+                palette.brush(QPalette::Text).color().name().toLatin1();
+        static const QByteArray background =
+                palette.brush(QPalette::Base).color().name().toLatin1();
+        result.replace("fill:foreground", "fill:" + foreground);
+        result.replace("fill:background", "fill:"+background);
+    }
+    return result;
+}
+
+QImage DocBookFactory::loadAndPreprocessPng(const QString &fileName)
+{
+    QImage source(fileName);
+    QImage result;
+    if (source.allGray()) {
+        QCoreApplication * app = qApp->instance();
+        QApplication * guiApp = qobject_cast<QApplication*>(app);
+        if (guiApp) {
+            static const QPalette palette = QApplication::palette();
+            static const QRgb foreground =
+                    palette.brush(QPalette::Text).color().rgba();
+            static const QRgb background =
+                    palette.brush(QPalette::Base).color().rgba();
+            static int normRed = qRed(foreground)-qRed(background);
+            static int normBlue = qBlue(foreground)-qBlue(background);
+            static int normGreen = qGreen(foreground)-qGreen(background);
+            static int bgRed = qRed(background);
+            static int bgBlue = qBlue(background);
+            static int bgGreen = qGreen(background);
+            result = QImage(source.size(), QImage::Format_ARGB32);
+            result.fill(0);
+            for (int y=0; y<source.height(); y++) {
+                for (int x=0; x<source.width(); x++) {
+                    QRgb sourcePixel = source.pixel(QPoint(x, y));
+                    int sourceAlpha = qAlpha(sourcePixel);
+                    qreal sourceIntensivity = 1.0 -
+                            (qRed(sourcePixel) + qGreen(sourcePixel) + qBlue(sourcePixel)) /
+                            (3.0 * 255.0) ;
+                    int resultRed = bgRed + normRed * sourceIntensivity;
+                    int resultBlue = bgBlue + normBlue * sourceIntensivity;
+                    int resultGreen = bgGreen + normGreen * sourceIntensivity;
+                    QRgb resultPixel = qRgba(resultRed, resultGreen, resultBlue, sourceAlpha);
+                    result.setPixel(QPoint(x, y), resultPixel);
+                }
+            }
+        }
+    }
+
+    if (result.isNull()) {
+        result = source;
+    }
+
+    return result;
 }
 
 bool DocBookFactory::characters(const QString &ch)
