@@ -67,6 +67,9 @@ private /*methods*/:
                                              ModelType findType
                                              );
 
+    static QByteArray loadAndPreprocessSvg(const QString & fileName);
+    static QImage loadAndPreprocessPng(const QString & fileName);
+
 
 private /*fields*/:
     mutable QXmlSimpleReader* reader_;
