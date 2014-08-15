@@ -333,8 +333,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     }
 #endif
 
+#ifndef Q_OS_MACX
     QString indexFileName = applicationName + ".xml";
     indexFileName.replace("kumir2-", "index-");
+#else
+    QString indexFileName = "index-macx.xml";
+#endif
 
     Shared::AnalizerInterface * analizerPlugin =
             ExtensionSystem::PluginManager::instance()
