@@ -9,5 +9,5 @@
     <xi:include href="session/session.xml"/>
     <xi:include href="editor/editor.xml"/>
     <xi:include href="run/run.xml"/>
-    <xi:include href="courses/courses.xml"/>
+    <xi:include href="cources/cources.xml"/>
 </book>
