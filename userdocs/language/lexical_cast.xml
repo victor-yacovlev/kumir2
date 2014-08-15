@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        [
+                <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
+                <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
+                ]>
+<section>
+    <title>Текстовое представление чисел</title>
+    <section>
+        <title>цел_в_лит</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг лит <function>цел_в_лит</function></funcdef>
+                <paramdef>цел <parameter>число</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Возвращает строковое представление <parameter>число</parameter>.
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+цел а
+  лит б
+  а := 5
+  б := цел_в_лит(а)
+  вывод б
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+    <section>
+        <title>вещ_в_лит</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг лит <function>вещ_в_лит</function></funcdef>
+                <paramdef>вещ <parameter>число</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Возвращает строковое представление <parameter>число</parameter>.
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  вещ а
+  лит б
+  а := 5.9999
+  б := вещ_в_лит(а)
+  вывод б
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+    <section>
+        <title>лит_в_вещ</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг вещ <function>лит_в_вещ</function></funcdef>
+                <paramdef>лит <parameter>строка</parameter></paramdef>
+                <paramdef>рез лог <parameter>успех</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Переводит строку <parameter>строка</parameter> в вещественное представление.
+            Если <parameter>строка</parameter> содержит только вещественное число, то в
+            <parameter>успех</parameter> записывается <code language="kumir">да</code>
+            алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
+            записывается <code language="kumir">нет</code> и алгоритм возвращает значение
+            <code>0.0</code>.
+
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит а
+  вещ б
+  лог усп
+  а := "5.9999"
+  б := лит_в_вещ(а, усп)
+  вывод б, " ", усп
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+    <section>
+        <title>лит_в_цел</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг цел <function>лит_в_цел</function></funcdef>
+                <paramdef>лит <parameter>строка</parameter></paramdef>
+                <paramdef>рез лог <parameter>успех</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Переводит строку <parameter>строка</parameter> в целочисленное представление.
+            Если <parameter>строка</parameter> содержит только целое число, то в
+            <parameter>успех</parameter> записывается <code language="kumir">да</code>
+            алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
+            записывается <code language="kumir">нет</code> и алгоритм возвращает значение
+            <code>0</code>.
+
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит а
+  цел б
+  лог усп
+  а := "5"
+  б := лит_в_цел(а, усп)
+  вывод б, " ", усп
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+</section>

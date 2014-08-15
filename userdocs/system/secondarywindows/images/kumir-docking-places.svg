@@ -2650,14 +2650,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="190.35892"
-     inkscape:cy="167.76319"
+     inkscape:cx="201.17699"
+     inkscape:cy="162.82416"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1680"
-     inkscape:window-height="994"
-     inkscape:window-x="-2"
+     inkscape:window-height="990"
+     inkscape:window-x="-4"
      inkscape:window-y="-3"
      inkscape:window-maximized="1"
      fit-margin-top="0"
@@ -2672,7 +2672,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -2863,8 +2863,8 @@
          y="100.93359"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B">Программа Редактирование Вставка Выполнение Окна Практикум Робот Рисователь Инфо</tspan></text>
     <path
-       style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:5, 2.5, 1.25, 2.5;stroke-dashoffset:0"
-       d="m 321.42857,307.99061 0,-167.25688"
+       style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4.99999997, 2.49999999, 1.24999999, 2.49999999;stroke-dashoffset:0"
+       d="m 321.42857,343.9193 0,-203.05181"
        id="path3043-9-9-1-5-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -2939,7 +2939,7 @@
          id="tspan5623">кон</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 76.428572,308.16917 0,-167.25687"
+       d="m 76.428572,344.80233 0,-203.75365"
        id="path3043-9-9-1-5-0-4"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -3152,25 +3152,11 @@
        x="448.96426"
        y="140.60153" />
     <rect
-       style="fill:url(#pattern12029);fill-opacity:1;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
-       id="rect11891-2"
-       width="106.4142"
-       height="130.97488"
-       x="50.262405"
-       y="308.27829" />
-    <rect
-       style="fill:url(#pattern12421);fill-opacity:1;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
-       id="rect11891-2-7"
-       width="365.92239"
-       height="130.97488"
-       x="156.27043"
-       y="308.27829" />
-    <rect
-       style="fill:url(#pattern12816);fill-opacity:1;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       style="fill:url(#pattern12816);fill-opacity:1;stroke:#000000;stroke-width:1.24999988;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect11891-2-7-8"
-       width="173.92514"
+       width="247.46423"
        height="130.97488"
-       x="522.45331"
+       x="448.91418"
        y="308.27829" />
     <rect
        style="fill:#ffffff;stroke:none"
@@ -3178,113 +3164,98 @@
        width="187"
        height="78"
        x="478.96429"
-       y="183.0764"
+       y="185.0764"
        ry="31"
        rx="31" />
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:Sans"
        x="571.46869"
-       y="215.04004"
+       y="205.04004"
        id="text13079"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan13081"
          x="571.46869"
-         y="215.04004"
+         y="205.04004"
          style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic">Облать для прикрепления</tspan><tspan
          sodipodi:role="line"
          x="571.46869"
-         y="237.54004"
+         y="227.54004"
          style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
-         id="tspan13083">окна справочной системы</tspan></text>
+         id="tspan13083">окна справочной системы,</tspan><tspan
+         sodipodi:role="line"
+         x="571.46869"
+         y="250.04004"
+         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
+         id="tspan5867">Практикума и окна величин</tspan></text>
     <rect
        style="fill:#ffffff;stroke:none"
        id="rect13077-0"
        width="136"
        height="78"
-       x="541.46429"
-       y="330.25"
+       x="503.46429"
+       y="332.25"
        ry="31"
        rx="31" />
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:Sans"
-       x="607.96869"
-       y="352.51819"
+       x="569.96869"
+       y="354.51819"
        id="text13079-7"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan13081-9"
-         x="607.96869"
-         y="352.51819"
+         x="569.96869"
+         y="354.51819"
          style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic">Облать для</tspan><tspan
          sodipodi:role="line"
-         x="607.96869"
-         y="375.01819"
+         x="569.96869"
+         y="377.01819"
          style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
          id="tspan13112">прикрепления</tspan><tspan
          sodipodi:role="line"
-         x="607.96869"
-         y="397.51819"
+         x="569.96869"
+         y="399.51819"
          style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
          id="tspan13083-2">окон исполнителей</tspan></text>
-    <rect
-       style="fill:#ffffff;stroke:none"
-       id="rect13077-9"
-       width="187"
-       height="78"
-       x="247.57909"
-       y="330.25"
-       ry="31"
-       rx="31" />
     <text
        xml:space="preserve"
        style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:Sans"
-       x="340.08347"
-       y="362.21365"
-       id="text13079-1"
+       x="59.855667"
+       y="362.52029"
+       id="text5560-6-1"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan13081-0"
-         x="340.08347"
-         y="362.21365"
-         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic">Облать для прикрепления</tspan><tspan
+         x="59.855667"
+         y="362.52029"
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B TT;-inkscape-font-specification:OpenGost Type B TT"
+         id="tspan5570-5-6">&gt;&gt; <tspan
+   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B TT;-inkscape-font-specification:OpenGost Type B TT Italic"
+   id="tspan5735">12:00:00 - Новая программа - Начало выполнения</tspan></tspan><tspan
          sodipodi:role="line"
-         x="340.08347"
-         y="384.71365"
-         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
-         id="tspan13083-7">окна Практикума</tspan></text>
-    <rect
-       style="fill:#ffffff;stroke:none"
-       id="rect13077-0-3"
-       width="92.159378"
-       height="78"
-       x="57.331837"
-       y="330.25"
-       ry="31"
-       rx="31.000002" />
-    <text
-       xml:space="preserve"
-       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:Sans"
-       x="103.83623"
-       y="352.51819"
-       id="text13079-7-3"
-       sodipodi:linespacing="125%"><tspan
+         x="59.855667"
+         y="384.13794"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B TT;-inkscape-font-specification:OpenGost Type B TT"
+         id="tspan5623-8">Привет, Мир!</tspan><tspan
          sodipodi:role="line"
-         id="tspan13081-9-6"
-         x="103.83623"
-         y="352.51819"
-         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic">Облать для</tspan><tspan
+         x="59.855667"
+         y="406.63794"
+         style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B TT;-inkscape-font-specification:OpenGost Type B TT"
+         id="tspan5729">ОШИБКА ВЫПОЛНЕНИЯ: Имя не объявлено</tspan><tspan
          sodipodi:role="line"
-         x="103.83623"
-         y="375.01819"
-         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
-         id="tspan13112-5">прикрепления</tspan><tspan
-         sodipodi:role="line"
-         x="103.83623"
-         y="397.51819"
-         style="font-size:18px;font-style:italic;text-align:center;text-anchor:middle;-inkscape-font-specification:OpenGost Type A Italic"
-         id="tspan13083-2-5">окна величин</tspan></text>
+         x="59.855667"
+         y="425.02029"
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B TT;-inkscape-font-specification:OpenGost Type B TT"
+         id="tspan5731">&gt;&gt; <tspan
+   style="font-style:italic;-inkscape-font-specification:OpenGost Type B TT Italic"
+   id="tspan5733">12:00:01 - Новая программа - Выполнение завершено</tspan></tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:4.99999996, 2.49999998, 1.25000001, 2.49999998;stroke-dashoffset:0"
+       d="m 53.467793,344.69515 394.106627,0"
+       id="path3043-9-9-1-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>

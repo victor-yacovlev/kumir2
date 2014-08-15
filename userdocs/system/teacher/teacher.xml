@@ -38,10 +38,10 @@
         <para>
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="kumir-teacher-mode.png"/>
+                    <imagedata format="PNG" fileref="images/kumir-teacher-mode.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="kumir-teacher-mode.pdf"/>
+                    <imagedata format="PDF" fileref="images/kumir-teacher-mode.pdf"/>
                 </imageobject>
                 <caption>Окно системы в конфигурации &qout;Для учителей&quot;</caption>
             </mediaobject>
@@ -67,10 +67,10 @@
             Линейка, предназначенная для разделения текста, может быть перемещена в текст с помощью мыши.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="kumir-teacher-mode-hidden.png"/>
+                    <imagedata format="PNG" fileref="images/kumir-teacher-mode-hidden.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="kumir-teacher-mode-hidden.pdf"/>
+                    <imagedata format="PDF" fileref="images/kumir-teacher-mode-hidden.pdf"/>
                 </imageobject>
                 <caption>Скрытие фрагмента программы</caption>
             </mediaobject>
@@ -84,10 +84,10 @@
             который отображается при наведении курсора в область слева от номеров строк.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="kumir-teacher-mode-protected.png"/>
+                    <imagedata format="PNG" fileref="images/kumir-teacher-mode-protected.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="kumir-teacher-mode-protected.pdf"/>
+                    <imagedata format="PDF" fileref="images/kumir-teacher-mode-protected.pdf"/>
                 </imageobject>
                 <caption>Скрытые и защищенные строки</caption>
             </mediaobject>

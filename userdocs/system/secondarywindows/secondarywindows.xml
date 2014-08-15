@@ -13,10 +13,10 @@
             семантику кнопок окна.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="secondary-window-title.png"/>
+                    <imagedata format="PNG" fileref="images/secondary-window-title.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="secondary-window-title.pdf"/>
+                    <imagedata format="PDF" fileref="images/secondary-window-title.pdf"/>
                 </imageobject>
                 <caption>Заголовок дополнительных окон</caption>
             </mediaobject>
@@ -51,34 +51,30 @@
             Прикрепление дополнительных окон
         </title>
         <para>Все дополнительные окна, за исключением окон пультов, могут быть прикреплены к главному окну системы.</para>
-        <para>Для прикрепления окон в главном окне предусмотрены слудующие области.
+        <para>Для прикрепления окон в главном окне предусмотрены следующие области.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="kumir-docking-places.png"/>
+                    <imagedata format="PNG" fileref="images/kumir-docking-places.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="kumir-docking-places.pdf"/>
+                    <imagedata format="PDF" fileref="images/kumir-docking-places.pdf"/>
                 </imageobject>
                 <caption>Заголовок дополнительных окон</caption>
             </mediaobject>
             <orderedlist>
                 <listitem><para>
-                    Область справа от редактора программ. Здесь может располагаться окно справочной системы
-                </para></listitem>
-                <listitem><para>
-                    Область слева от области ввода-вывода. Здесь может располагаться окно отображения значений величин
+                    Область справа от редактора программ. Здесь может располагаться окно справочной системы, окно
+                    Практикума и окно отображения значений величин. При закреплении
+                    нескольких окон, они занимают одну и ту же область, перекрывая друг друга; переключение
+                    отображения между прикрепленными исполнителями осуществляется с помощью &quot;вкладок&quot;
                 </para></listitem>
                 <listitem><para>
                     Область справа от области ввода-вывода. Здесь могут располагаться окна исполнителей. При закреплении
                     нескольких окон исполнителей, они занимают одну и ту же область, перекрывая друг друга; переключение
-                    отображения между прикрепленными исполнителями осуществляется с помощью &quot;вкладок&quot;
-                </para></listitem>
-                <listitem><para>
-                    Область, совпадающая с областью ввода-вывода. Здесь может располагаться окно Практикума.
-                    При закреплении окна Практикума, переключение отображения между Практикумом и областью ввода-вывода
-                    осуществляется с помощью &quot;вкладок&quot;.
+                    отображения между прикрепленными исполнителями осуществляется с помощью &quot;вкладок&quot;.
                 </para></listitem>
             </orderedlist>
         </para>
+        <para>Границу между областями прикрепления дополнительных окон можно перемещать с помощью мыши.</para>
     </section>
 </chapter>

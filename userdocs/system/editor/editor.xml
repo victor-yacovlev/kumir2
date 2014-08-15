@@ -166,10 +166,10 @@
             В области поиска вводится искомый текст, который, если будет найден, становится выделенным.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="edit-find.png"/>
+                    <imagedata format="PNG" fileref="images/edit-find.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="edit-find.pdf"/>
+                    <imagedata format="PDF" fileref="images/edit-find.pdf"/>
                 </imageobject>
                 <caption>Область поиска</caption>
             </mediaobject>
@@ -181,10 +181,10 @@
             <guibutton>Дополнительные параметры</guibutton> отображает расширенный вариант области поиска.
             <mediaobject>
                 <imageobject>
-                    <imagedata format="PNG" fileref="edit-replace.png"/>
+                    <imagedata format="PNG" fileref="images/edit-replace.png"/>
                 </imageobject>
                 <imageobject>
-                    <imagedata format="PDF" fileref="edit-replace.pdf"/>
+                    <imagedata format="PDF" fileref="images/edit-replace.pdf"/>
                 </imageobject>
                 <caption>Область поиска -- расширенный вариант</caption>
             </mediaobject>

@@ -69,10 +69,10 @@
         </para>
         <mediaobject>
             <imageobject>
-                <imagedata format="PNG" fileref="mode_edit.png"/>
+                <imagedata format="PNG" fileref="images/mode_edit.png"/>
             </imageobject>
             <imageobject>
-                <imagedata format="PDF" fileref="mode_edit.pdf"/>
+                <imagedata format="PDF" fileref="images/mode_edit.pdf"/>
             </imageobject>
             <caption>Строка статуса главного окна в состоянии системы &quot;Редактирование&quot;</caption>
         </mediaobject>
@@ -91,10 +91,10 @@
         </para>
         <mediaobject>
             <imageobject>
-                <imagedata format="PNG" fileref="mode_run.png"/>
+                <imagedata format="PNG" fileref="images/mode_run.png"/>
             </imageobject>
             <imageobject>
-                <imagedata format="PDF" fileref="mode_run.pdf"/>
+                <imagedata format="PDF" fileref="images/mode_run.pdf"/>
             </imageobject>
             <caption>Строка статуса главного окна в состоянии системы &quot;Выполнение&quot;</caption>
         </mediaobject>
@@ -122,10 +122,10 @@
         </para>
         <mediaobject>
             <imageobject>
-                <imagedata format="PNG" fileref="mode_analysis.png"/>
+                <imagedata format="PNG" fileref="images/mode_analysis.png"/>
             </imageobject>
             <imageobject>
-                <imagedata format="PDF" fileref="mode_analysis.pdf"/>
+                <imagedata format="PDF" fileref="images/mode_analysis.pdf"/>
             </imageobject>
             <caption>Строка статуса главного окна в состоянии системы &quot;Анализ&quot;</caption>
         </mediaobject>
@@ -150,10 +150,10 @@
         </para>
         <mediaobject>
             <imageobject>
-                <imagedata format="PNG" fileref="mode_pause.png"/>
+                <imagedata format="PNG" fileref="images/mode_pause.png"/>
             </imageobject>
             <imageobject>
-                <imagedata format="PDF" fileref="mode_pause.pdf"/>
+                <imagedata format="PDF" fileref="images/mode_pause.pdf"/>
             </imageobject>
             <caption>Строка статуса главного окна в состоянии системы &quot;Пауза&quot;</caption>
         </mediaobject>
