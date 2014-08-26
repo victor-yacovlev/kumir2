@@ -1,14 +1,21 @@
 #ifndef WIDGETS_ICONPROVIDER_H
 #define WIDGETS_ICONPROVIDER_H
 
+#include <QtGlobal>
 #include <QString>
 #include <QImage>
 #include <QIcon>
 #include <QMap>
 
+#ifdef WIDGETS_LIBRARY
+#define WIDGETS_EXPORT Q_DECL_EXPORT
+#else
+#define WIDGETS_EXPORT Q_DECL_IMPORT
+#endif
+
 namespace Widgets {
 
-class IconProvider
+class WIDGETS_EXPORT IconProvider
 {
 public:
     static IconProvider* self();
