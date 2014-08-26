@@ -53,6 +53,8 @@ KumirRunPlugin::KumirRunPlugin()
     , common_(nullptr)
     , console_(nullptr)
     , gui_(nullptr)
+    , simulatedInputBuffer_(nullptr)
+    , simulatedOutputBuffer_(nullptr)
 {
     connect (this, SIGNAL(finishInput(QVariantList)), pRun_, SIGNAL(finishInput(QVariantList)));
 
@@ -446,6 +448,10 @@ void KumirRunPlugin::terminateAndWaitForStopped()
 
 void KumirRunPlugin::handleThreadFinished()
 {
+    if (simulatedInputBuffer_) {
+        delete simulatedInputBuffer_;
+        simulatedInputBuffer_ = 0;
+    }
     if (pRun_->error().length()>0) {
         done_ = true;
         emit stopped(Shared::RunInterface::SR_Error);
@@ -532,10 +538,8 @@ void KumirRunPlugin::prepareConsoleRun()
     pRun_->vm->setFunctor(&console_->output);
     pRun_->vm->setFunctor(&console_->getMainArgument);
     pRun_->vm->setFunctor(&console_->returnMainValue);
-    pRun_->vm->setConsoleInputBuffer(&console_->input);
-    pRun_->vm->setConsoleOutputBuffer(&console_->output);
-
-
+    defaultInputBuffer_ = &console_->input;
+    defaultOutputBuffer_ = &console_->output;
 }
 
 void KumirRunPlugin::prepareGuiRun()
@@ -573,8 +577,30 @@ void KumirRunPlugin::prepareGuiRun()
     pRun_->vm->setFunctor(&gui_->returnMainValue);
     pRun_->vm->setFunctor(&gui_->pause);
     pRun_->vm->setFunctor(&gui_->delay);
-    pRun_->vm->setConsoleInputBuffer(&gui_->input);
-    pRun_->vm->setConsoleOutputBuffer(&gui_->output);
+    defaultInputBuffer_ = &gui_->input;
+    defaultOutputBuffer_ = &gui_->output;
+}
+
+void KumirRunPlugin::setStdInTextStream(QTextStream *stream)
+{
+    if (simulatedInputBuffer_) {
+        delete simulatedInputBuffer_;
+        simulatedInputBuffer_ = 0;
+    }
+    if (stream) {
+        simulatedInputBuffer_ = new Gui::SimulatedInputBuffer(stream);
+    }
+}
+
+void KumirRunPlugin::setStdOutTextStream(QTextStream *stream)
+{
+    if (simulatedOutputBuffer_) {
+        delete simulatedOutputBuffer_;
+        simulatedOutputBuffer_ = 0;
+    }
+    if (stream) {
+        simulatedOutputBuffer_ = new Gui::SimulatedOutputBuffer(stream);
+    }
 }
 
 QList<ExtensionSystem::CommandLineParameter>
@@ -728,6 +754,8 @@ void KumirRunPlugin::checkForErrorInConsole()
 void KumirRunPlugin::start()
 {
     if (pRun_->programLoaded) {
+        pRun_->vm->setConsoleInputBuffer(simulatedInputBuffer_? simulatedInputBuffer_ : defaultInputBuffer_);
+        pRun_->vm->setConsoleOutputBuffer(simulatedOutputBuffer_? simulatedOutputBuffer_ : defaultOutputBuffer_);
         if (!ExtensionSystem::PluginManager::instance()->isGuiRequired()) {
             pRun_->reset();
             pRun_->start();

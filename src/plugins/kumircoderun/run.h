@@ -6,6 +6,7 @@
 #include "vm/vm.hpp"
 #include "interfaces/actorinterface.h"
 #include "kumvariablesmodel.h"
+#include "guirun.h"
 #include <memory>
 
 namespace KumirCodeRun {
@@ -144,6 +145,8 @@ protected :
     mutable class std::shared_ptr<Mutex> VMMutex_;
     KumVariablesModel * variablesModel_;
     QString programLoadError_;
+
+    Gui::SimulatedInputBuffer * stdInBuffer_;
 
 };
 

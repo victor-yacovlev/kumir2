@@ -193,6 +193,37 @@ bool InputFunctor::readRawChar(Kumir::Char &ch)
     return true;
 }
 
+void SimulatedInputBuffer::clear()
+{
+    lastChar_ = prevChar_ = QChar::Null;
+}
+
+bool SimulatedInputBuffer::readRawChar(Char &ch)
+{
+    if (QChar::Null != prevChar_) {
+        ch = prevChar_.unicode();
+        lastChar_ = prevChar_;
+        prevChar_ = QChar::Null;
+        return true;
+    }
+    else {
+        const QString s = io_->read(1);
+        if (s.isEmpty()) {
+            return false;
+        }
+        else {
+            lastChar_ = s[0];
+            ch = lastChar_.unicode();
+            return true;
+        }
+    }
+}
+
+void SimulatedInputBuffer::pushLastCharBack()
+{
+    prevChar_ = lastChar_;
+}
+
 OutputFunctor::OutputFunctor()
     : QObject(0)
     , converter_(nullptr)
@@ -252,6 +283,13 @@ void OutputFunctor::writeRawString(const String &s)
     const QString data = QString::fromStdWString(s);
     emit requestOutput(data);
     Util::SleepFunctions::msleep(10);
+}
+
+void SimulatedOutputBuffer::writeRawString(const String &s)
+{
+    const QString data = QString::fromStdWString(s);
+    *io_ << data;
+    io_->flush();
 }
 
 GetMainArgumentFunctor::GetMainArgumentFunctor()

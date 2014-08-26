@@ -4,8 +4,12 @@
 #include <QtCore>
 #include "extensionsystem/kplugin.h"
 #include "interfaces/runinterface.h"
+#include "commonrun.h"
+#include "consolerun.h"
+#include "guirun.h"
 
 namespace KumirCodeRun {
+
 
 class KumirRunPlugin
         : public ExtensionSystem::KPlugin
@@ -58,6 +62,9 @@ public:
     bool isTestingRun() const;
     inline void updateSettings(const QStringList &) {}
 
+    void setStdInTextStream(QTextStream *);
+    void setStdOutTextStream(QTextStream *);
+
 public slots:
     void runBlind();
     void runContinuous();
@@ -109,6 +116,13 @@ private:
     struct CommonFunctors * common_;
     struct ConsoleFunctors * console_;
     struct GuiFunctors * gui_;
+
+    Gui::SimulatedInputBuffer * simulatedInputBuffer_;
+    Kumir::AbstractInputBuffer * defaultInputBuffer_;
+
+    Gui::SimulatedOutputBuffer * simulatedOutputBuffer_;
+    Kumir::AbstractOutputBuffer * defaultOutputBuffer_;
+
 
 };
 
