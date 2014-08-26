@@ -30,6 +30,8 @@ public /*methods*/:
     inline bool hasPostRunSource() const { QMutexLocker l(mutex_); return postRunSource_.length() > 0; }
     QAbstractItemModel * variablesModel() const;
     inline bool canStepOut() const { QMutexLocker l(mutex_); return canStepOut_; }
+    void setStdInStream(QTextStream * stream);
+    void setStdOutStream(QTextStream * stream);
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);

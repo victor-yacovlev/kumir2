@@ -7,6 +7,8 @@ namespace Python3Language {
 InterpreterCallback::InterpreterCallback(QObject *parent)
     : QObject(parent)
     , mutex_(new QMutex)
+    , overridenStdIn_(0)
+    , overridenStdOut_(0)
 {
 }
 
@@ -56,7 +58,12 @@ PyObject* InterpreterCallback::write_output(PyObject *, PyObject *args)
     self->mutex_->lock();
     self->outputBuffer_ += message;
     self->mutex_->unlock();
-    Q_EMIT self->outputMessageRequest(message);
+    if (self->overridenStdOut_) {
+        *self->overridenStdOut_ << message;
+    }
+    else {
+        Q_EMIT self->outputMessageRequest(message);
+    }
     Py_RETURN_NONE;
 }
 
@@ -81,6 +88,10 @@ PyObject* InterpreterCallback::read_input(PyObject *, PyObject *)
         self->simulatingInputBuffer_.pop_front();
         line += "\n";
         self->mutex_->unlock();
+        result = QStringToPyUnicode(line);
+    }
+    else if (self->overridenStdIn_) {
+        const QString line = self->overridenStdIn_->readLine();
         result = QStringToPyUnicode(line);
     }
     else {

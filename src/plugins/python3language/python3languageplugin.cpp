@@ -100,6 +100,16 @@ Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
     return analizerInstances_.last();
 }
 
+void Python3LanguagePlugin::setStdInTextStream(QTextStream *stream)
+{
+    runner_->setStdInStream(stream);
+}
+
+void Python3LanguagePlugin::setStdOutTextStream(QTextStream *stream)
+{
+    runner_->setStdOutStream(stream);
+}
+
 
 bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {

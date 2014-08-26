@@ -66,6 +66,16 @@ void PythonRunThread::reset()
     canStepOut_ = false;
 }
 
+void PythonRunThread::setStdInStream(QTextStream *stream)
+{
+    callback_->setStdInStream(stream);
+}
+
+void PythonRunThread::setStdOutStream(QTextStream *stream)
+{
+    callback_->setStdOutStream(stream);
+}
+
 void PythonRunThread::releaseSemaphores()
 {
     if (!runPauseSemaphore_->available()) {
@@ -210,6 +220,8 @@ void PythonRunThread::run()
     mutex_->unlock();
     Q_EMIT stopped(exitStatus);
     setTestingMode(false);
+    setStdInStream(0);
+    setStdOutStream(0);
 }
 
 int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int what, PyObject *arg)

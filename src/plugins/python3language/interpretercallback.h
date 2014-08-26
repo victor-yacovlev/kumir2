@@ -5,6 +5,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QStringList>
+#include <QTextStream>
 
 extern "C" {
 #include <Python.h>
@@ -37,6 +38,8 @@ public:
         simulatingInputBuffer_.clear();
     }
     inline void setInputString(const QString & text) { QMutexLocker l(mutex_); inputString_ = text; }
+    inline void setStdInStream(QTextStream * stream) { QMutexLocker l(mutex_); overridenStdIn_ = stream; }
+    inline void setStdOutStream(QTextStream * stream) { QMutexLocker l(mutex_); overridenStdOut_ = stream; }
 
 Q_SIGNALS:
     void outputMessageRequest(const QString & text);
@@ -52,6 +55,8 @@ private /*fields*/:
     QString inputString_;
     QString outputBuffer_;
     QStringList simulatingInputBuffer_;
+    QTextStream * overridenStdIn_;
+    QTextStream * overridenStdOut_;
 };
 
 } // namespace Python3Language
