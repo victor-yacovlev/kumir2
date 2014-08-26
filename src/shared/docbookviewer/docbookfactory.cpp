@@ -54,6 +54,7 @@ ModelPtr DocBookFactory::parseDocument(
         if (error)
             error->clear();
         filterByOs(doc_);
+        filterByConfiguration(doc_);
         filterByRoles(roles, doc_);
         return doc_;
     }
@@ -99,6 +100,41 @@ void DocBookFactory::filterByOs(ModelPtr root) const
         if (!toDelete) {
             newList.push_back(child);
             filterByOs(child);
+        }
+    }
+    root->children_ = newList;
+}
+
+void DocBookFactory::filterByConfiguration(ModelPtr root) const
+{
+    if (!root)
+        return;
+
+    static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
+    QString confName =
+            applicationLanucher.startsWith(qApp->applicationDirPath())
+            ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
+            : applicationLanucher;
+#ifdef Q_OS_WIN32
+    if (confName.endsWith(".exe")) {
+        confName.remove(confName.length()-4, 4);
+    }
+#endif
+    confName.remove("kumir2-");
+    QList<ModelPtr> newList;
+    for (ModelIterator it = root->children_.begin();
+         it!=root->children_.end();
+         it++)
+    {
+        ModelPtr child = *it;
+        bool toDelete = false;
+        if (child->configuration_.length()) {
+            const QString & childConf = child->configuration_;
+            toDelete = childConf.toLower() != confName;
+        }
+        if (!toDelete) {
+            newList.push_back(child);
+            filterByConfiguration(child);
         }
     }
     root->children_ = newList;
@@ -347,6 +383,7 @@ bool DocBookFactory::startElement(
         model->id_ = atts.value("id");
         model->os_ = atts.value("os");
         model->role_ = atts.value("role");
+        model->configuration_ = atts.value("configuration");
         if (atts.value("language").length() > 0) {
             if (model->modelType_==ProgramListing ||
                     model->modelType_==Code)
@@ -499,6 +536,15 @@ bool DocBookFactory::skippedEntity(const QString &name)
     }
     else if (name == "larr") {
         buffer_.push_back(QChar(0x2190));
+    }
+    else if (name.startsWith("#")) {
+        const QString sCode = name.mid(1);
+        bool ok = false;
+        unsigned int code = sCode.toUInt(&ok);
+        if (ok) {
+            const QChar symbol(code);
+            buffer_.push_back(symbol);
+        }
     }
     return true;
 }

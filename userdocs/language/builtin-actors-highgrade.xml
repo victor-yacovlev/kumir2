@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        []>
+<article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Исполнители "Строки" и "Файлы"</title>
+    <subtitle>Обработка строк и работа с файлами</subtitle>
+    <para>
+        В версиях Кумир для старших классов и Кумир для олимпиад
+        исполнители <code role="кумир">Строки</code> и <code role="кумир">Файлы</code>
+        входят в базовую часть языка программирования.
+    </para>
+    <para>
+        Таким образом, явное подключение этих исполнителя с помощью оператора
+        <code role="кумир">использовать</code> не требуется. В то же время, явное использование не будет
+        считаться ошибкой.
+    </para>
+    <para>Описание алгоритмов работы со строками находятся в описании языка Кумир
+        <xref linkend="string-utils"></xref>.
+    </para>
+    <para>Описание алгоритмов работы с файлами находится в описании языка Кумир
+        <xref linkend="files"></xref>.
+    </para>
+</article>

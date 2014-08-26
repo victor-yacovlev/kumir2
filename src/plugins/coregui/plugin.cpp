@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 #include "statusbar.h"
 #include "tabwidget.h"
+#include "widgets/iconprovider.h"
 
 #include "guisettingspage.h"
 
@@ -333,8 +334,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     }
 #endif
 
+#ifndef Q_OS_MACX
     QString indexFileName = applicationName + ".xml";
     indexFileName.replace("kumir2-", "index-");
+#else
+    QString indexFileName = "index-macx.xml";
+#endif
 
     Shared::AnalizerInterface * analizerPlugin =
             ExtensionSystem::PluginManager::instance()
@@ -388,7 +393,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         coursesWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
                     courseManager_->mainWindow(),
                     tr("Courses"),
-                    QIcon(), // TODO courses icon
+                    QIcon(),
                     mainWindow_,
                     mainWindow_->helpAndCoursesPlace_,
                     "CoursesWindow",
@@ -404,11 +409,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         showCourses->setObjectName("window-courses");
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-        const QString courseIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/course.png";
+//        const QString courseIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/course.png";
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-        QIcon courseIcon(courseIconFileName);
+//        QIcon courseIcon(courseIconFileName);
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-        showCourses->setIcon(courseIcon);
+        showCourses->setIcon(Widgets::IconProvider::self()->iconForName("window-cources"));
+//        showCourses->setIcon(courseIcon);
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
         mainWindow_->gr_otherActions->addAction(showCourses);
@@ -457,6 +463,15 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             bool resizableY = vert != QSizePolicy::Fixed;
             bool resizable = resizableX && resizableY;
 
+            QIcon themeProvidedIcon = Widgets::IconProvider::self()->iconForName(
+                        QString::fromLatin1("window-")+
+                        QString::fromLatin1(actor->asciiModuleName().toLower())
+                        );
+
+            if (!themeProvidedIcon.isNull()) {
+                mainIcon = themeProvidedIcon;
+            }
+
             Widgets::SecondaryWindow * actorWindow =
                     Widgets::SecondaryWindow::createSecondaryWindow(
                         actorWidget,
@@ -495,6 +510,15 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 QIcon pultIcon = QIcon(iconFileName);
                 if (QFile::exists(smallIconFileName))
                     pultIcon.addFile(smallIconFileName, QSize(22,22));
+                QIcon themeProvidedIcon = Widgets::IconProvider::self()->iconForName(
+                            QString::fromLatin1("window-")+
+                            QString::fromLatin1(actor->asciiModuleName().toLower())+
+                            QString::fromLatin1("-control")
+                            );
+
+                if (!themeProvidedIcon.isNull()) {
+                    pultIcon = themeProvidedIcon;
+                }
 
                 Widgets::SecondaryWindow * pultWindow =
                         Widgets::SecondaryWindow::createSecondaryWindow(

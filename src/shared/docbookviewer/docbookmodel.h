@@ -68,6 +68,7 @@ protected /*fields*/:
     QString text_;
     QString id_;
     QString os_;
+    QString configuration_;
     QString xrefLinkEnd_;
     QString xrefEndTerm_;
     QString role_;

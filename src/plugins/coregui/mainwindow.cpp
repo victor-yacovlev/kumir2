@@ -10,6 +10,7 @@
 #include "tabwidget.h"
 #include "systemopenfilesettings.h"
 #include "guisettingspage.h"
+#include "widgets/iconprovider.h"
 
 #include <algorithm>
 #include <QSharedPointer>
@@ -80,15 +81,18 @@ MainWindow::MainWindow(Plugin * p) :
             + "/icons/from_qtcreator/";
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
+//    ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
+    ui->actionNewProgram->setIcon(Widgets::IconProvider::self()->iconForName("file-new"));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionNewProgram->setObjectName("file-new");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
+//    ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
+    ui->actionOpen->setIcon(Widgets::IconProvider::self()->iconForName("file-open"));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionOpen->setObjectName("file-open");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
+//    ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
+    ui->actionSave->setIcon(Widgets::IconProvider::self()->iconForName("file-save"));
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionSave->setObjectName("file-save");
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
@@ -1327,6 +1331,7 @@ void MainWindow::showPreferences()
 
 QIcon MainWindow::actionIcon(const QString &name)
 {
+
     const QString iconsPath = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/";
     return QIcon::fromTheme(name, QIcon(iconsPath+name+".png"));
 }
@@ -1795,7 +1800,7 @@ void MainWindow::showHelp()
         }
     }
     m_plugin->helpWindow_->activate();
-    if (twe->editor() && twe->editor()->supportsContextHelp()) {
+    if (twe->editor() && twe->editor()->supportsContextHelp() && !m_plugin->helpWindow_->isSeparateWindow()) {
         // Return focus back to editor in case if context menu
         twe->editor()->widget()->activateWindow();
         twe->editor()->widget()->setFocus(Qt::MouseFocusReason);

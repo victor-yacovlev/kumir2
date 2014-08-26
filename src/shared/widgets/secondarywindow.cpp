@@ -120,13 +120,13 @@ SecondaryWindow::createDockContainer(const QString &title,
 }
 
 SecondaryWindowImplementationInterface *
-SecondaryWindow::dockContainer()
+SecondaryWindow::dockContainer() const
 {
     return dockContainer_;
 }
 
 SecondaryWindowImplementationInterface *
-SecondaryWindow::windowContainer()
+SecondaryWindow::windowContainer() const
 {
     return windowContainer_;
 }
@@ -144,7 +144,12 @@ void SecondaryWindow::activate()
     }
 }
 
-SecondaryWindowImplementationInterface * SecondaryWindow::currentContainer()
+bool SecondaryWindow::isSeparateWindow() const
+{
+    return currentContainer() == windowContainer();
+}
+
+SecondaryWindowImplementationInterface * SecondaryWindow::currentContainer() const
 {
     SecondaryWindowImplementationInterface * result = nullptr;
     if (windowContainer_ && windowContainer_->hasWidgetOwnership()) {

@@ -62,6 +62,7 @@ private /*methods*/:
     void filterByOs(ModelPtr root) const;
     void filterByRoles(const QMap<ModelType,QString> & roles,
                        ModelPtr root) const;
+    void filterByConfiguration(ModelPtr root) const;
 
     static QList<ModelPtr> findEntriesOfType(ModelPtr root,
                                              ModelType findType

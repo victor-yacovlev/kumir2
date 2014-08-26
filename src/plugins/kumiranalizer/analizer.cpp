@@ -1105,7 +1105,13 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
     QPair<TextStatementPtr,LexemPtr> context = AnalizerPrivate::findSourceLexemContext(
                 d->ast, d->statements, lineNo, colNo, includeRightBound
                 );    
+
+    ApiHelpItem result;
+
     TextStatementPtr st = context.first;
+    if (!st)
+        return result;
+
     AST::ModulePtr contextModule = st->mod;
     AST::AlgorithmPtr contextAlgorithm = st->alg;
 
@@ -1132,8 +1138,6 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
             break;
         }
     }
-
-    ApiHelpItem result;
 
     if (st && lx) {
         QString name = lx->data.trimmed();

@@ -1239,7 +1239,9 @@ QString ContentView::renderText(ModelPtr data) const
         }
         parent = parent->parent();
     }
-    return isPreformat? data->text() : normalizeText(data->text());
+    QString result = isPreformat? data->text() : normalizeText(data->text());
+    result.replace("<", "&lt;").replace(">", "&gt;");
+    return result;
 }
 
 QString ContentView::renderSection(ModelPtr data) const

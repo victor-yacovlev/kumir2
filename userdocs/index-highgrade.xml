@@ -4,6 +4,7 @@
                     []>
 <set xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Справка</title>
-    <xi:include href="language/index.xml"/>
-    <xi:include href="system/index.xml"/>
+    <xi:include href="language/index-highgrade.xml"/>
+    <xi:include href="system/index-highgrade.xml"/>
+    <xi:include href="language/builtin-actors-highgrade.xml"/>
 </set>
