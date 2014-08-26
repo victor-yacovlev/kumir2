@@ -3,6 +3,7 @@
 #include "interfaces/actorinterface.h"
 #include "dataformats/ast_algorhitm.h"
 #include "interfaces/coursesinterface.h"
+#include "widgets/iconprovider.h"
 
 namespace CoreGUI {
 
@@ -39,7 +40,8 @@ void KumirProgram::createActions()
     regularRunAction_->setObjectName("run-regular");
     const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
             + "/icons/from_qtcreator/";
-    regularRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
+//    regularRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
+    regularRunAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-regular"));
     connect(regularRunAction_, SIGNAL(triggered()), this, SLOT(regularRun()));
 #ifndef Q_OS_MAC
     regularRunAction_->setShortcut(QKeySequence("F9"));
@@ -55,7 +57,8 @@ void KumirProgram::createActions()
 
     stepRunAction_ = new QAction(tr("Step over"), this);
     stepRunAction_->setObjectName("run-step-over");
-    stepRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
+//    stepRunAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
+    stepRunAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-step-over"));
     connect(stepRunAction_, SIGNAL(triggered()), this, SLOT(stepRun()));
 #ifndef Q_OS_MAC
     stepRunAction_->setShortcut(QKeySequence("F8"));
@@ -66,7 +69,8 @@ void KumirProgram::createActions()
 
     stepInAction_ = new QAction(tr("Step in"), this);
     stepInAction_->setObjectName("run-step-in");
-    stepInAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
+    stepInAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-step-in"));
+//    stepInAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
     connect(stepInAction_, SIGNAL(triggered()), this, SLOT(stepIn()));
 #ifndef Q_OS_MAC
     stepInAction_->setShortcut(QKeySequence("F7"));
@@ -76,8 +80,9 @@ void KumirProgram::createActions()
     stepInAction_->setToolTip(tr("Do small step")+" <b>"+stepInAction_->shortcut().toString()+"</b>");
 
     stepOutAction_ = new QAction(tr("Step to end"), this);
-    stepOutAction_->setObjectName("run-step-out");
-    stepOutAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
+//    stepOutAction_->setObjectName("run-step-out");
+    stepOutAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-step-out"));
+//    stepOutAction_->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
     connect(stepOutAction_, SIGNAL(triggered()), this, SLOT(stepOut()));
 #ifndef Q_OS_MAC
     stepOutAction_->setShortcut(QKeySequence("Shift+F8"));
@@ -88,7 +93,8 @@ void KumirProgram::createActions()
 
     stopAction_ = new QAction(tr("Stop"), this);
     stopAction_->setObjectName("run-stop");
-    stopAction_->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
+//    stopAction_->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
+    stopAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-stop"));
     connect(stopAction_, SIGNAL(triggered()), this, SLOT(stop()));
 #ifndef Q_OS_MAC
     stopAction_->setShortcut(QKeySequence("Esc"));
@@ -110,7 +116,8 @@ void KumirProgram::createActions()
 
     blindRunAction_ = new QAction(tr("Blind run"), this);
     blindRunAction_->setObjectName("run-blind");
-    blindRunAction_->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
+    blindRunAction_->setIcon(Widgets::IconProvider::self()->iconForName("run-blind"));
+//    blindRunAction_->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
     connect(blindRunAction_, SIGNAL(triggered()), this, SLOT(blindRun()));
 #ifndef Q_OS_MAC
     blindRunAction_->setShortcut(QKeySequence("Shift+F9"));

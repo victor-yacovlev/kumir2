@@ -37,6 +37,7 @@ set(SOURCES
     declarativesettingspage_impl.cpp
     secondarywindow_generic.cpp
     utf8textbrowser.cpp
+    iconprovider.cpp
 )
 
 set(MOC_HEADERS

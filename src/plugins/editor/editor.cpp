@@ -15,6 +15,8 @@
 #include "macroeditor.h"
 #include "macrolisteditor.h"
 #include "extensionsystem/pluginmanager.h"
+#include "widgets/iconprovider.h"
+
 namespace Editor {
 
 using namespace Shared;
@@ -726,7 +728,8 @@ void EditorInstance::createActions()
     copy_ = new QAction(plane_);
     copy_->setObjectName("edit-copy");
     copy_->setText(QObject::tr("Copy selection to clipboard"));
-    copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
+//    copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
+    copy_->setIcon(Widgets::IconProvider::self()->iconForName("edit-copy"));
     copy_->setShortcut(QKeySequence(QKeySequence::Copy));
     copy_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(copy_, SIGNAL(triggered()), plane_, SLOT(copy()));
@@ -734,7 +737,8 @@ void EditorInstance::createActions()
     cut_ = new QAction(plane_);
     cut_->setObjectName("edit-cut");
     cut_->setText(QObject::tr("Cut selection to clipboard"));
-    cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
+//    cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
+    cut_->setIcon(Widgets::IconProvider::self()->iconForName("edit-cut"));
     cut_->setShortcut(QKeySequence(QKeySequence::Cut));
     cut_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(cut_, SIGNAL(triggered()), plane_, SLOT(cut()));
@@ -742,7 +746,8 @@ void EditorInstance::createActions()
     paste_ = new QAction(plane_);
     paste_->setObjectName("edit-paste");
     paste_->setText(QObject::tr("Paste from clipboard"));
-    paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
+//    paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
+    paste_->setIcon(Widgets::IconProvider::self()->iconForName("edit-paste"));
     paste_->setShortcut(QKeySequence(QKeySequence::Paste));
     paste_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(paste_, SIGNAL(triggered()), plane_, SLOT(paste()));
@@ -779,7 +784,8 @@ void EditorInstance::createActions()
     undo_->setEnabled(false);
     undo_->setObjectName("edit-undo");
     undo_->setText(QObject::tr("Undo last action"));
-    undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
+//    undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
+    undo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-undo"));
     undo_->setShortcut(QKeySequence::Undo);
     undo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(undoAvailable(bool)), undo_, SLOT(setEnabled(bool)));
@@ -789,7 +795,8 @@ void EditorInstance::createActions()
     redo_->setEnabled(false);
     redo_->setObjectName("edit-redo");
     redo_->setText(QObject::tr("Redo last undoed action"));
-    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
+//    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
+    redo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-redo"));
     redo_->setShortcut(QKeySequence::Redo);
     redo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
