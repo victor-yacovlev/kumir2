@@ -87,7 +87,10 @@ QImage IconProvider::centerizeToSize(const QImage &source, const QSize & size)
     QImage result = QImage(size, QImage::Format_ARGB32);
     result.fill(0);
     QPainter painter(&result);
-    const int x = (size.width() - source.width()) / 2;
+    int x = (size.width() - source.width()) / 2;
+    if (source.size().width() % 2 !=0 && source.width() < size.width() && source.size().width() + x < size.width()-1) {
+        x += 1;
+    }
     const int y = (size.height() - source.height()) / 2;
     painter.drawImage(x, y, source);
     painter.end();
