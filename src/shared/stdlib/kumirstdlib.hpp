@@ -2624,7 +2624,7 @@ public:
     // Actual functions to be in use while input from stream
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
-        if (fromStdIn) {
+        if (fromStdIn && fileNo.getType()!=FileType::Console) {
             return InputStream(Files::getAssignedIn(), LOCALE_ENCODING);
         }
         else if (fileNo.getType() == FileType::Console) {

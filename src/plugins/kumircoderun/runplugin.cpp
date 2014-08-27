@@ -420,6 +420,12 @@ void KumirRunPlugin::runTesting()
     if (done_) {
         pRun_->setEntryPointToTest();
         pRun_->reset();
+        if (simulatedInputBuffer_) {
+            pRun_->vm->setConsoleInputBuffer(simulatedInputBuffer_);
+        }
+        if (simulatedOutputBuffer_) {
+            pRun_->vm->setConsoleOutputBuffer(simulatedOutputBuffer_);
+        }
         done_ = false;
     }
     pRun_->runBlind();
@@ -452,6 +458,8 @@ void KumirRunPlugin::handleThreadFinished()
         delete simulatedInputBuffer_;
         simulatedInputBuffer_ = 0;
     }
+    pRun_->vm->setConsoleInputBuffer(nullptr);
+    pRun_->vm->setConsoleOutputBuffer(nullptr);
     if (pRun_->error().length()>0) {
         done_ = true;
         emit stopped(Shared::RunInterface::SR_Error);

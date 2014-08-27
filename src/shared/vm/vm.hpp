@@ -114,10 +114,16 @@ public /*methods*/:
             return error_;
     }
 
-    inline void setConsoleInputBuffer(Kumir::AbstractInputBuffer * b) { consoleInputBuffer_=b; }
+    inline void setConsoleInputBuffer(Kumir::AbstractInputBuffer * b) {
+        consoleInputBuffer_=b;
+        Kumir::Files::setConsoleInputBuffer(b);
+    }
     inline Kumir::AbstractInputBuffer * consoleInputBuffer() const { return consoleInputBuffer_; }
 
-    inline void setConsoleOutputBuffer(Kumir::AbstractOutputBuffer * b) { consoleOutputBuffer_=b; }
+    inline void setConsoleOutputBuffer(Kumir::AbstractOutputBuffer * b) {
+        consoleOutputBuffer_=b;
+        Kumir::Files::setConsoleOutputBuffer(b);
+    }
     inline Kumir::AbstractOutputBuffer * consoleOutputBuffer() const { return consoleOutputBuffer_; }
 
     /** Debug control methods */
@@ -1862,7 +1868,10 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         if (stacksMutex_) stacksMutex_->unlock();
         bool hasInput = false;
-        if (input_&& !fileIO && !Kumir::Files::overloadedStdIn()) {
+        if (consoleInputBuffer_) {
+            fileReference.setType(Kumir::FileType::Console);
+        }
+        if (input_&& !fileIO && !Kumir::Files::overloadedStdIn() && !consoleInputBuffer_) {
             // input functor works like input operator here
             try {
                 hasInput = (*input_)(references);

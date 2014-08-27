@@ -93,9 +93,9 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
             {
                 Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
                 QFile* field_data=new QFile(task->field(isps.at(i), field_no));
-               
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
                 QTextStream * stdInStream = new QTextStream(field_data);
-                //TODO Доделать в кумире
+                stdInStream->setAutoDetectUnicode(true);
                 runner->setStdInTextStream(stdInStream);
                 continue;
             }
@@ -153,8 +153,9 @@ void Plugin::selectNext(KumZadanie* task)
             {
                 Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
                 QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
-                
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
                 QTextStream * stdInStream = new QTextStream(field_data);
+                stdInStream->setAutoDetectUnicode(true);
                 //TODO Доделать в кумире
                 runner->setStdInTextStream(stdInStream);
 
