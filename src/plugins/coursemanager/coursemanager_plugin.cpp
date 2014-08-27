@@ -45,7 +45,8 @@ QString Plugin::getText()
 
 void Plugin::setPreProgram(QVariant param)
 {
-  if(param.toString().right(4)==".kum")
+    Shared::AnalizerInterface* analizer = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    if (param.toString().endsWith("." + analizer->defaultDocumentFileNameSuffix()))
   {
       setTextFromFile(param.toString());
   }
