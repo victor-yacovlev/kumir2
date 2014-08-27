@@ -2,7 +2,7 @@
 #include <dataformats/kumfile.h>
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
-
+#include "interfaces/runinterface.h"
 namespace CourseManager {
 
    
@@ -45,7 +45,8 @@ QString Plugin::getText()
 
 void Plugin::setPreProgram(QVariant param)
 {
-  if(param.toString().right(4)==".kum")
+    Shared::AnalizerInterface* analizer = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    if (param.toString().endsWith("." + analizer->defaultDocumentFileNameSuffix()))
   {
       setTextFromFile(param.toString());
   }
@@ -88,6 +89,19 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
         field_no=0;      
         for(int i=0;i<isps.count();i++)
         {
+            
+            if(isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(isps.at(i), field_no));
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
+                QTextStream * stdInStream = new QTextStream(field_data);
+                stdInStream->setAutoDetectUnicode(true);
+                runner->setStdInTextStream(stdInStream);
+                continue;
+            }
+               
+            
             AI* actor=getActor(isps.at(i));
             if(!actor)
             {
@@ -136,6 +150,18 @@ void Plugin::selectNext(KumZadanie* task)
        
         for(int i=0;i<task->isps.count();i++)
         {
+            if(task->isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
+                QTextStream * stdInStream = new QTextStream(field_data);
+                stdInStream->setAutoDetectUnicode(true);
+                //TODO Доделать в кумире
+                runner->setStdInTextStream(stdInStream);
+
+                continue;
+            }
             AI* actor=getActor(task->isps.at(i));
             if(!actor)
             {
