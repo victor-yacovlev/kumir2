@@ -2142,9 +2142,12 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         courseManagerTab->setCourseManagerTab(true);
         courseManagerTab->setCourseTitle(data.title);
     }
-    if (data.language == ST::Kumir) {
+
         Shared::Analizer::SourceFileInterface::Data src = data.content;
-        src.canonicalSourceLanguageName = "kum";
+        src.canonicalSourceLanguageName =
+                ExtensionSystem::PluginManager::instance()
+                ->findPlugin<Shared::AnalizerInterface>()
+                ->defaultDocumentFileNameSuffix();
 
         if (courseManagerTab) {
             // Reuse existing tab
@@ -2168,7 +2171,6 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         }
         courseManagerTab->setCourseTitle(data.title);
 
-    }
     tabWidget_->setCurrentWidget(courseManagerTab);
     return courseManagerTab;
 }

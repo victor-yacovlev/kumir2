@@ -56,8 +56,13 @@ void Plugin::setPreProgram(QVariant param)
               ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
    Shared::GuiInterface::ProgramSourceText text;
    text.content=analizer->sourceFileHandler()->fromString(param.toString());
-   text.content=KumFile::insertTeacherMark(text.content);
-   text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+   if (analizer->defaultDocumentFileNameSuffix()=="kum") {
+    text.content=KumFile::insertTeacherMark(text.content);
+    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+   }
+   else if (analizer->defaultDocumentFileNameSuffix()=="py") {
+       text.language = Shared::GuiInterface::ProgramSourceText::Python;
+   }
    gui->setProgramSource(text);
      
       ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
@@ -78,8 +83,13 @@ bool Plugin::setTextFromFile(QString fname)
     Shared::GuiInterface::ProgramSourceText text;
     text.content = analizer->sourceFileHandler()->fromBytes(file.readAll());
     file.close();
-    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
-    text.content=KumFile::insertTeacherMark(text.content);
+    if (fname.endsWith(".kum")) {
+        text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+        text.content=KumFile::insertTeacherMark(text.content);
+    }
+    else if (fname.endsWith(".py")) {
+        text.language = Shared::GuiInterface::ProgramSourceText::Python;
+    }
     gui->setProgramSource(text);
     return true;
 }
