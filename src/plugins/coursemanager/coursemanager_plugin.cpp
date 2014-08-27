@@ -149,6 +149,17 @@ void Plugin::selectNext(KumZadanie* task)
        
         for(int i=0;i<task->isps.count();i++)
         {
+            if(task->isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+                
+                QTextStream * stdInStream = new QTextStream(field_data);
+                //TODO Доделать в кумире
+                runner->setStdInTextStream(stdInStream);
+
+                continue;
+            }
             AI* actor=getActor(task->isps.at(i));
             if(!actor)
             {
