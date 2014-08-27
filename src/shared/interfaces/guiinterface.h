@@ -14,7 +14,7 @@ class GuiInterface
     Q_ENUMS(Shared::GuiInterface::ProgramSourceText::Language)
 public:
     struct ProgramSourceText {
-        enum Language { Kumir, Pascal, etc = 255 };
+        enum Language { Kumir, Pascal, Python, etc = 255 };
 
         Language language;
         QDateTime saved;
