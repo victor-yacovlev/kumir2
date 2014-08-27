@@ -2,7 +2,7 @@
 #include <dataformats/kumfile.h>
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
-
+#include "interfaces/runinterface.h"
 namespace CourseManager {
 
    
@@ -88,6 +88,19 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
         field_no=0;      
         for(int i=0;i<isps.count();i++)
         {
+            
+            if(isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(isps.at(i), field_no));
+               
+                QTextStream * stdInStream = new QTextStream(field_data);
+                //TODO Доделать в кумире
+                runner->setStdInTextStream(stdInStream);
+                continue;
+            }
+               
+            
             AI* actor=getActor(isps.at(i));
             if(!actor)
             {
