@@ -55,6 +55,7 @@ void PythonRunThread::reset()
 {
     QMutexLocker l(mutex_);
     lineNumber_ = -1;
+    forcedGlobalValues_.clear();
     errorText_.clear();
     testingResult_.clear();
     stepsCounted_ = 0;
@@ -64,6 +65,12 @@ void PythonRunThread::reset()
     runPauseSemaphore_->acquire();
     runInputSemaphore_->acquire();
     canStepOut_ = false;
+}
+
+void PythonRunThread::forceGlobalVariableValue(const QByteArray &name, PyObject *value)
+{
+    QMutexLocker l(mutex_);
+    forcedGlobalValues_[name] = value;
 }
 
 void PythonRunThread::setStdInStream(QTextStream *stream)
@@ -305,6 +312,15 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
             }
             self->mutex_->unlock();
         }
+        self->mutex_->lock();
+        if (!self->forcedGlobalValues_.isEmpty()) {
+            PyObject * globals = frame->f_globals;
+            Q_FOREACH(const QByteArray & forcedName, self->forcedGlobalValues_.keys()) {
+                PyObject * value = self->forcedGlobalValues_[forcedName];
+                PyDict_SetItemString(globals, forcedName.constData(), value);
+            }
+        }
+        self->mutex_->unlock();
     }
 
     self->mutex_->lock();

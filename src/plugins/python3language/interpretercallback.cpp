@@ -1,6 +1,7 @@
 #include "interpretercallback.h"
 #include "actorshandler.h"
 #include "pyutils.h"
+#include "pythonrunthread.h"
 
 namespace Python3Language {
 
@@ -31,6 +32,7 @@ PyObject* InterpreterCallback::__init__()
         { "actor_call", actor_call, METH_VARARGS, "Call actor method" },
         { "get_output_buffer", get_output_buffer, METH_VARARGS, "Get output buffer text" },
         { "simulate_input", simulate_input, METH_VARARGS, "Pushes a value to be read from stdin" },
+        { "force_global_variable_value", force_global_variable_value, METH_VARARGS, "Overrides global variable value and protects from user change" },
         { 0, 0, 0, 0 }
     };
 
@@ -149,6 +151,20 @@ PyObject* InterpreterCallback::actor_call(PyObject *, PyObject *args)
     }
     PyTuple_SetItem(pyCallResult, 1, pyResult);
     return pyCallResult;
+}
+
+PyObject* InterpreterCallback::force_global_variable_value(PyObject *, PyObject *args)
+{
+    if (PyTuple_Size(args)==2) {
+        PyObject * pyName = PyTuple_GetItem(args, 0);
+        PyObject * pyValue = PyTuple_GetItem(args, 1);
+        if (PyUnicode_Check(pyName)) {
+            Py_INCREF(pyValue);
+            const QByteArray qName = PyUnicodeToQString(pyName).toLatin1();
+            PythonRunThread::instance()->forceGlobalVariableValue(qName, pyValue);
+        }
+    }
+    Py_RETURN_NONE;
 }
 
 

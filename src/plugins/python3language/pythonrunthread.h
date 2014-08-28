@@ -32,6 +32,7 @@ public /*methods*/:
     inline bool canStepOut() const { QMutexLocker l(mutex_); return canStepOut_; }
     void setStdInStream(QTextStream * stream);
     void setStdOutStream(QTextStream * stream);
+    void forceGlobalVariableValue(const QByteArray & name, PyObject * value);
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -96,6 +97,7 @@ private /*fields*/:
     QString postRunSource_;
     VariablesModel* variablesModel_;
     bool canStepOut_;
+    QMap<QByteArray,PyObject*> forcedGlobalValues_;
 };
 
 } // namespace Python3Language

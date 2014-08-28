@@ -30,6 +30,7 @@ public:
     static PyObject* actor_call(PyObject *, PyObject * args);
     static PyObject* get_output_buffer(PyObject *, PyObject *);
     static PyObject* simulate_input(PyObject*, PyObject *args);
+    static PyObject* force_global_variable_value(PyObject*, PyObject *args);
 
     inline void reset() {
         QMutexLocker l(mutex_);
