@@ -421,7 +421,7 @@ void KumirProgram::handleRunnerStopped(int rr)
     typedef RunInterface RI;
     RI * runner =
             ExtensionSystem::PluginManager::instance()->findPlugin<RI>();
-    if (courseManager && runner->isTestingRun() && courseManagerRequest_) {
+    if (courseManager && /*runner->isTestingRun() &&*/ courseManagerRequest_) {
         if (reason == Shared::RunInterface::SR_UserTerminated) {
             courseManager->setTestingResult(CI::UserTerminated, 0);
         }
