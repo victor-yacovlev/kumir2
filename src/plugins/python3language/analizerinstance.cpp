@@ -146,6 +146,7 @@ void PythonAnalizerInstance::queryLineProperties() {
     Q_ASSERT(py_result.type() == QVariant::List);
     const QVariantList alist = py_result.toList();
     QList<LineProp> result;
+    QStringList sourceLines = currentSourceText_.split('\n');
     Q_FOREACH(const QVariant & item, alist) {
         Q_ASSERT(item.type() == QVariant::List);
         const QVariantList py_prop = item.toList();
@@ -153,7 +154,20 @@ void PythonAnalizerInstance::queryLineProperties() {
         for (int i=0; i<py_prop.size(); i++) {
             prop[i] = (LexemType) py_prop[i].toUInt();
         }
+        if (prop.isEmpty()) {
+            // in case if not implemented in Python-side
+            prop.resize(sourceLines[alist.indexOf(item)].length());
+            prop.fill(LxTypeEmpty, prop.size());
+        }
         result.append(prop);
+    }
+    if (result.isEmpty()) {
+        // in case if not implemented in Python-side
+        Q_FOREACH(const QString & line, sourceLines) {
+            LineProp fake(line.length());
+            fake.fill(LxTypeEmpty, line.length());
+            result.append(fake);
+        }
     }
     lineProperties_ = result;
 }
