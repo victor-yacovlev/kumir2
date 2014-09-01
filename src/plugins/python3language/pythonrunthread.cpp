@@ -34,6 +34,7 @@ PythonRunThread::PythonRunThread(QObject *parent, const QString & extraPythonPat
     , runInputSemaphore_(new QSemaphore(0))
     , variablesModel_(new VariablesModel(this))
     , canStepOut_(false)
+    , testRunCount_(1u)
 {
     qDebug() << "Run thread: connecting signals/slots";
     connect(callback_, SIGNAL(errorMessageRequest(QString)),
@@ -96,125 +97,178 @@ void PythonRunThread::releaseSemaphores()
 
 void PythonRunThread::run()
 {
-    // Clear states
-    reset();
-    callback_->reset();
-    actorsHandler_->reset();
-    variablesModel_->resetModel();
+    testRunCount_ = 1u;
+    bool firstRun = true;
 
-    // Initialize interpreter in current thread
-    PyGILState_Ensure();
-    PyThreadState * py = Py_NewInterpreter();
-#ifdef Q_OS_WIN32
-    prepareBundledSysPath();
-#else
-    appendToSysPath(pythonPath_);   
-#endif
-    PyObject* py_run_wrapper = PyImport_ImportModule("run_wrapper");
-    if (!py_run_wrapper) { printPythonTraceback(); return; }    
-    PyEval_ReleaseThread(py);
+    while (testRunCount_) {
+        // Clear states
+        reset();
+        callback_->reset();
+        actorsHandler_->reset();
+        variablesModel_->resetModel();
 
-    // Create actor 'modules'
-    clearCreatedModules();
-    for (int i=0; i<actorsHandler_->size(); i++) {
-        const QString source = actorsHandler_->moduleWrapper(i);
-        const QString name = actorsHandler_->moduleName(i);
-        createModuleFromSource(py, name, source);
-    }
-
-    // Prepare pre-run and post-run program code
-    mutex_->lock();
-    PyEval_AcquireThread(py);
-    PyObject * preCode = 0;
-    if (preRunSource_.trimmed().length() > 0)
-        preCode = compileModule(
-                QString("<hidden>"),
-                preRunSource_,
-                &lineNumber_,
-                &errorText_
-                );
-    PyObject * postCode = 0;
-    if (postRunSource_.trimmed().length() > 0)
-        postCode = compileModule(
-                QString("<hidden>"),
-                postRunSource_,
-                &lineNumber_,
-                &errorText_
-                );
-    PyEval_ReleaseThread(py);
-    mutex_->unlock();
-
-    // Prepare main program code
-    mutex_->lock();
-    PyEval_AcquireThread(py);
-    PyObject * code = compileModule(
-                sourceProgramPath_.isEmpty()
-                ? QString("<program>") : sourceProgramPath_,
-                sourceProgram_,
-                &lineNumber_,
-                &errorText_
-                );
-    PyEval_ReleaseThread(py);
-    bool testingMode = testingMode_;
-    mutex_->unlock();
-
-    if (!code) {
-        // There is fatal syntax error in program
-        Q_EMIT stopped(RunInterface::SR_Error);
-    }
-    else {
-        PyEval_AcquireThread(py);
-        // Set interpreter tracing
-        PyEval_SetTrace(&python_trace_dispatch, 0);
-
-        // Create main module
-        // NOTE in this stage name must be '__main__' to ensure builtins available
-        PyObject *mainModule = PyImport_AddModule("__main__");
-
-        // Prepare globals
-        PyObject *globals = PyModule_GetDict(mainModule);
-        if (testingMode) {
-            PyDict_SetItemString(globals, "__name__", QStringToPyUnicode("__testing__"));
-        }
-
-        // In tesing mode call __pre_run__ if present
-        if (testingMode && preCode) {
-            PyEval_EvalCode(preCode, globals, globals);
-            PyObject * emptyArgs = PyTuple_New(0);
-            PyObject * emptyKwds = PyDict_New();
-            PyObject * __pre_run__ = PyObject_GetAttrString(mainModule, "__pre_run__");
-            PyObject_Call(__pre_run__, emptyArgs, emptyKwds);
-        }
-
-        // Evaluate
-        PyEval_EvalCode(code, globals, globals);
-
-        // In tesing mode call __post_run__ if present
-        if (testingMode && postCode) {
-            PyEval_EvalCode(postCode, globals, globals);
-            PyObject * __post_run__ = PyObject_GetAttrString(mainModule, "__post_run__");
-            PyObject * emptyArgs = PyTuple_New(0);
-            PyObject * emptyKwds = PyDict_New();
-            PyObject * pyTestResult = PyObject_Call(__post_run__, emptyArgs, emptyKwds);
-            if (pyTestResult && PyLong_Check(pyTestResult)) {
-                int testingResult = PyLong_AsLong(pyTestResult);
-                mutex_->lock();
-                testingResult_ = QVariant(testingResult);
-                qDebug() << "Testing result = " << testingResult;
-                mutex_->unlock();
-            }
-        }
-
-        // Unset interpreter tracing
-        PyEval_SetTrace(0 ,0);
+        // Initialize interpreter in current thread
+        PyGILState_Ensure();
+        PyThreadState * py = Py_NewInterpreter();
+    #ifdef Q_OS_WIN32
+        prepareBundledSysPath();
+    #else
+        appendToSysPath(pythonPath_);
+    #endif
+        PyObject* py_run_wrapper = PyImport_ImportModule("run_wrapper");
+        if (!py_run_wrapper) { printPythonTraceback(); return; }
         PyEval_ReleaseThread(py);
-    }
 
-    // Finalize interpreter
-    PyEval_AcquireThread(py);
-    Py_EndInterpreter(py);
-    py = 0;
-    PyEval_ReleaseLock();
+        // Create actor 'modules'
+        clearCreatedModules();
+        for (int i=0; i<actorsHandler_->size(); i++) {
+            const QString source = actorsHandler_->moduleWrapper(i);
+            const QString name = actorsHandler_->moduleName(i);
+            createModuleFromSource(py, name, source);
+        }
+
+        // Prepare pre-run and post-run program code
+        mutex_->lock();
+        PyEval_AcquireThread(py);
+        PyObject * preTestCode = 0;
+        PyObject * postTestCode = 0;
+        PyObject * preCode = 0;
+        if (preTestSource_.trimmed().length() > 0)
+            preTestCode = compileModule(
+                    QString("<hidden>"),
+                    preTestSource_,
+                    &lineNumber_,
+                    &errorText_
+                    );
+        if (postTestSource_.trimmed().length() > 0)
+            postTestCode = compileModule(
+                    QString("<hidden>"),
+                    postTestSource_,
+                    &lineNumber_,
+                    &errorText_
+                    );
+        if (preRunSource_.trimmed().length() > 0)
+            preCode = compileModule(
+                    QString("<hidden>"),
+                    preRunSource_,
+                    &lineNumber_,
+                    &errorText_
+                    );
+        PyObject * postCode = 0;
+        if (postRunSource_.trimmed().length() > 0)
+            postCode = compileModule(
+                    QString("<hidden>"),
+                    postRunSource_,
+                    &lineNumber_,
+                    &errorText_
+                    );
+        PyEval_ReleaseThread(py);
+        mutex_->unlock();
+
+        // Prepare main program code
+        mutex_->lock();
+        PyEval_AcquireThread(py);
+        PyObject * code = compileModule(
+                    sourceProgramPath_.isEmpty()
+                    ? QString("<program>") : sourceProgramPath_,
+                    sourceProgram_,
+                    &lineNumber_,
+                    &errorText_
+                    );
+        PyEval_ReleaseThread(py);
+        bool testingMode = testingMode_;
+        mutex_->unlock();
+
+        if (!code) {
+            // There is fatal syntax error in program
+            Q_EMIT stopped(RunInterface::SR_Error);
+        }
+        else {
+            PyEval_AcquireThread(py);
+            // Set interpreter tracing
+            PyEval_SetTrace(&python_trace_dispatch, 0);
+
+            // Create main module
+            // NOTE in this stage name must be '__main__' to ensure builtins available
+            PyObject *mainModule = PyImport_AddModule("__main__");
+
+            // Prepare globals
+            PyObject *globals = PyModule_GetDict(mainModule);
+            if (testingMode) {
+                PyDict_SetItemString(globals, "__name__", QStringToPyUnicode("__testing__"));
+            }
+
+            // In testing mode call __pre_test__ if present, once before all
+            if (testingMode && preTestCode && firstRun) {
+                PyEval_EvalCode(preTestCode, globals, globals);
+                PyObject * emptyArgs = PyTuple_New(0);
+                PyObject * emptyKwds = PyDict_New();
+                PyObject * __pre_test__ = PyObject_GetAttrString(mainModule, "__pre_test__");
+                PyObject_Call(__pre_test__, emptyArgs, emptyKwds);
+            }
+
+            // In tesing mode call __pre_run__ if present
+            if (testingMode && preCode) {
+                PyEval_EvalCode(preCode, globals, globals);
+                PyObject * emptyArgs = PyTuple_New(0);
+                PyObject * emptyKwds = PyDict_New();
+                PyObject * __pre_run__ = PyObject_GetAttrString(mainModule, "__pre_run__");
+                PyObject_Call(__pre_run__, emptyArgs, emptyKwds);
+            }
+
+            // Evaluate
+            PyEval_EvalCode(code, globals, globals);
+
+            // In tesing mode call __post_run__ if present
+            if (testingMode && postCode) {
+                PyEval_EvalCode(postCode, globals, globals);
+                PyObject * __post_run__ = PyObject_GetAttrString(mainModule, "__post_run__");
+                PyObject * emptyArgs = PyTuple_New(0);
+                PyObject * emptyKwds = PyDict_New();
+                PyObject * pyTestResult = PyObject_Call(__post_run__, emptyArgs, emptyKwds);
+                if (pyTestResult && PyLong_Check(pyTestResult)) {
+                    const int currentTestingResult = PyLong_AsLong(pyTestResult);
+                    const int testingResult = firstRun
+                            ? currentTestingResult
+                            : qMin(testingResult, currentTestingResult);
+                    mutex_->lock();
+                    testingResult_ = QVariant(testingResult);
+                    qDebug() << "Testing result = " << testingResult;
+                    mutex_->unlock();
+                }
+            }
+
+            // In testing mode call __post_test__ if present after all
+            if (testingMode && postTestCode && 1u==testRunCount_) {
+                PyEval_EvalCode(postTestCode, globals, globals);
+                PyObject * __post_test__ = PyObject_GetAttrString(mainModule, "__post_test__");
+                PyObject * emptyArgs = PyTuple_New(0);
+                PyObject * emptyKwds = PyDict_New();
+                PyObject * pyTestResult = PyObject_Call(__post_test__, emptyArgs, emptyKwds);
+                if (PyLong_CheckExact(pyTestResult)) {
+                    // In case of __post_test__ returns integer value,
+                    // use it as group mark
+                    const int testingResult = PyLong_AsLong(pyTestResult);
+                    mutex_->lock();
+                    testingResult_ = QVariant(testingResult);
+                    mutex_->unlock();
+                }
+            }
+
+            // Unset interpreter tracing
+            PyEval_SetTrace(0 ,0);
+            PyEval_ReleaseThread(py);
+        }
+
+        // Finalize interpreter
+        PyEval_AcquireThread(py);
+        Py_EndInterpreter(py);
+        py = 0;
+        PyEval_ReleaseLock();
+
+        firstRun = false;
+        testRunCount_ --;
+    } // end while (testRunCount_)
 
     Q_EMIT updateStepsCounter(stepsCounted_);
 

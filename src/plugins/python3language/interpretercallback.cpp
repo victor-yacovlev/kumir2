@@ -32,7 +32,15 @@ PyObject* InterpreterCallback::__init__()
         { "actor_call", actor_call, METH_VARARGS, "Call actor method" },
         { "get_output_buffer", get_output_buffer, METH_VARARGS, "Get output buffer text" },
         { "simulate_input", simulate_input, METH_VARARGS, "Pushes a value to be read from stdin" },
+
         { "force_global_variable_value", force_global_variable_value, METH_VARARGS, "Overrides global variable value and protects from user change" },
+
+        { "set_permanent_value", set_permanent_value, METH_VARARGS, "" },
+        { "get_permanent_value", get_permanent_value, METH_VARARGS, "" },
+        { "del_permanent_value", del_permanent_value, METH_VARARGS, "" },
+
+        { "set_test_run_count", set_test_run_count, METH_VARARGS, "" },
+        { "get_test_runs_left", get_test_runs_left, METH_VARARGS, "" },
         { 0, 0, 0, 0 }
     };
 
@@ -48,7 +56,15 @@ PyObject* InterpreterCallback::__init__()
 PyObject* InterpreterCallback::debug(PyObject *, PyObject *args)
 {
     PyObject * msg = PyTuple_GetItem(args, 0);
-    QString message = PyUnicodeToQString(msg);
+    QString message;
+    if (PyUnicode_Check(msg)) {
+        message = PyUnicodeToQString(msg);
+    }
+    else {
+        PyObject * repr = PyObject_Repr(msg);
+        message = PyUnicodeToQString(repr);
+        Py_XDECREF(repr);
+    }
     qDebug() << message;
     Py_RETURN_NONE;
 }
@@ -165,6 +181,82 @@ PyObject* InterpreterCallback::force_global_variable_value(PyObject *, PyObject 
         }
     }
     Py_RETURN_NONE;
+}
+
+PyObject* InterpreterCallback::set_permanent_value(PyObject *, PyObject *args)
+{
+    if (PyTuple_Size(args)==2) {
+        PyObject * pyName = PyTuple_GetItem(args, 0);
+        PyObject * pyValue = PyTuple_GetItem(args, 1);
+        if (PyUnicode_Check(pyName)) {
+            QVariant value = PyObjectToQVariant(pyValue);
+            const QString qName = PyUnicodeToQString(pyName);
+            self->permanentStorage_.insert(qName, value);
+        }
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* InterpreterCallback::get_permanent_value(PyObject *, PyObject *args)
+{
+    if (PyTuple_Size(args)>=1) {
+        PyObject * pyName = PyTuple_GetItem(args, 0);
+        if (PyUnicode_Check(pyName)) {
+            const QString qName = PyUnicodeToQString(pyName);
+            PyObject * pyValue = 0;
+            if (self->permanentStorage_.contains(qName)) {
+                pyValue = QVariantToPyObject(self->permanentStorage_[qName]);
+            }
+            else if (PyTuple_Size(args) > 1) {
+                pyValue = PyTuple_GetItem(args, 1);
+            }
+            else {
+                Py_INCREF(Py_None);
+                pyValue = Py_None;
+            }
+            return pyValue;
+        }
+        else {
+            Py_RETURN_NONE;
+        }
+    }
+    else {
+        Py_RETURN_NONE;
+    }
+}
+
+PyObject* InterpreterCallback::del_permanent_value(PyObject *, PyObject *args)
+{
+    if (PyTuple_Size(args)>=1) {
+        PyObject * pyName = PyTuple_GetItem(args, 0);
+        if (PyUnicode_Check(pyName)) {
+            const QString qName = PyUnicodeToQString(pyName);
+            if (self->permanentStorage_.contains(qName)) {
+                self->permanentStorage_.remove(qName);
+            }
+        }
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* InterpreterCallback::set_test_run_count(PyObject *, PyObject *args)
+{
+    if (PyTuple_Size(args)>=1) {
+        PyObject * pyCount = PyTuple_GetItem(args, 0);
+        if (PyLong_Check(pyCount)) {
+            unsigned long count = PyLong_AsUnsignedLong(pyCount);
+            PythonRunThread::instance()->setTestRunCount(count);
+        }
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject* InterpreterCallback::get_test_runs_left(PyObject *, PyObject *)
+{
+    unsigned long left = PythonRunThread::instance()->testRunsLeft();
+    PyObject * result = PyLong_FromUnsignedLong(left);
+    Py_INCREF(result);
+    return result;
 }
 
 

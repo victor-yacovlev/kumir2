@@ -32,7 +32,10 @@ public /*methods*/:
     inline bool canStepOut() const { QMutexLocker l(mutex_); return canStepOut_; }
     void setStdInStream(QTextStream * stream);
     void setStdOutStream(QTextStream * stream);
+
     void forceGlobalVariableValue(const QByteArray & name, PyObject * value);
+    inline void setTestRunCount(quint32 n) { QMutexLocker l(mutex_); testRunCount_ = n; }
+    inline unsigned long testRunsLeft() const { QMutexLocker l(mutex_); return testRunCount_; }
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -47,13 +50,17 @@ public Q_SLOTS:
             const QString & fileName,
             const QString & source,
             const QString & preRunSource,
-            const QString & postRunSource
+            const QString & postRunSource,
+            const QString & preTestSource,
+            const QString & postTestSource
             )
     {
         sourceProgramPath_ = fileName;
         sourceProgram_ = source;
         preRunSource_ = preRunSource;
         postRunSource_ = postRunSource;
+        preTestSource_ = preTestSource;
+        postTestSource_ = postTestSource;
     }
 
     void startOrContinue(const RunMode runMode);
@@ -95,9 +102,12 @@ private /*fields*/:
     QVariant testingResult_;
     QString preRunSource_;
     QString postRunSource_;
+    QString preTestSource_;
+    QString postTestSource_;
     VariablesModel* variablesModel_;
     bool canStepOut_;
     QMap<QByteArray,PyObject*> forcedGlobalValues_;
+    quint32 testRunCount_;
 };
 
 } // namespace Python3Language

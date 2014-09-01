@@ -6,6 +6,8 @@
 #include <QMutexLocker>
 #include <QStringList>
 #include <QTextStream>
+#include <QMap>
+#include <QVariant>
 
 extern "C" {
 #include <Python.h>
@@ -31,6 +33,11 @@ public:
     static PyObject* get_output_buffer(PyObject *, PyObject *);
     static PyObject* simulate_input(PyObject*, PyObject *args);
     static PyObject* force_global_variable_value(PyObject*, PyObject *args);
+    static PyObject* set_permanent_value(PyObject*, PyObject *args);
+    static PyObject* get_permanent_value(PyObject*, PyObject *args);
+    static PyObject* del_permanent_value(PyObject*, PyObject *args);
+    static PyObject* set_test_run_count(PyObject*, PyObject *args);
+    static PyObject* get_test_runs_left(PyObject*, PyObject *);
 
     inline void reset() {
         QMutexLocker l(mutex_);
@@ -58,6 +65,7 @@ private /*fields*/:
     QStringList simulatingInputBuffer_;
     QTextStream * overridenStdIn_;
     QTextStream * overridenStdOut_;
+    QMap<QString, QVariant> permanentStorage_;
 };
 
 } // namespace Python3Language

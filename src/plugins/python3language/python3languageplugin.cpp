@@ -116,7 +116,9 @@ bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
     const QString programSource = fileHandler_->toString(fileHandler_->fromBytes(program.executableData));
     const QString preRunSource = extractFunction(programSource, "__pre_run__");
     const QString postRunSource = extractFunction(programSource, "__post_run__");
-    runner_->loadProgram(program.sourceFileName, programSource, preRunSource, postRunSource);
+    const QString preTestSource = extractFunction(programSource, "__pre_test__");
+    const QString postTestSource = extractFunction(programSource, "__post_test__");
+    runner_->loadProgram(program.sourceFileName, programSource, preRunSource, postRunSource, preTestSource, postTestSource);
     loadedProgramVersion_ = QDateTime::currentDateTime();
     return true;
 }
