@@ -212,10 +212,24 @@ extern QVariant PyObjectToQVariant(PyObject *object)
 extern PyObject* QVariantToPyObject(const QVariant & value)
 {
     PyObject* result = 0;
-    if (QVariant::Int==value.type())
+    if (
+            QVariant::Int==value.type() ||
+            QVariant::LongLong==value.type() ||
+            QByteArray(value.typeName())=="int" ||
+            QByteArray(value.typeName())=="long"
+            )
+    {
         result = PyLong_FromLong(value.toInt());
-    else if (QVariant::UInt==value.type())
+    }
+    else if (
+             QVariant::UInt==value.type() ||
+             QVariant::ULongLong==value.type() ||
+             QByteArray(value.typeName())=="uint" ||
+             QByteArray(value.typeName())=="ulong"
+             )
+    {
         result = PyLong_FromUnsignedLong(value.toUInt());
+    }
     else if (QVariant::Double==value.type())
         result = PyFloat_FromDouble(value.toDouble());
     else if (QVariant::Bool==value.type())
