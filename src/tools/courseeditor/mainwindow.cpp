@@ -524,7 +524,7 @@ void MainWindowTask::startTask()
      }
 
      QString progFile=course->progFile(curTaskIdx.internalId());
-interface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
+     csInterface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
      task.isps=course->Modules(curTaskIdx.internalId());
        qDebug()<<"ISPS"<<task.isps;
        for(int i=0;i<task.isps.count();i++)
@@ -544,14 +544,16 @@ interface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
         qDebug()<<"Fields!!!!"<<task.fields;
         }
        qDebug()<<"MODULES:"<<course->Modules(curTaskIdx.internalId());
-  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId())))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
+        if(!csInterface->startNewTask(course->Modules(curTaskIdx.internalId())))
+            QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
   if(course->getUserText(curTaskIdx.internalId())!="")
   {
-      interface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));
+      csInterface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));
       ui->actionReset->setEnabled(true);
   }
    else
-      if(!progFile.isEmpty())interface->setPreProgram(QVariant(curDir+'/'+progFile));
+      if(!progFile.isEmpty())
+          csInterface->setPreProgram(QVariant(curDir+'/'+progFile));
 
 
 
@@ -578,7 +580,7 @@ if(!cursWorkFile.exists()){
     saveCourse();
       };
 course->setMark(curTaskIdx.internalId(),0);
-   interface->startProgram(QVariant("TODO LOAD SCRIPT"));
+   csInterface->startProgram(QVariant("TODO LOAD SCRIPT"));
  ui->treeView->setEnabled(false);
    ui->loadCurs->setEnabled(true);
  };
@@ -683,7 +685,7 @@ void MainWindowTask::markProgChange()
 
     qDebug()<<"Dummy call MainWindowTask::markProgChange()";
     return;
-    course->setUserText(curTaskIdx,interface->getText());
+    course->setUserText(curTaskIdx,csInterface->getText());
     if(progChange.indexOf(curTaskIdx.internalId())==-1)progChange.append(curTaskIdx.internalId());
     if(!cursWorkFile.exists())
     {
@@ -743,7 +745,7 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
 };
 void MainWindowTask::returnTested()
 {
-   interface->setPreProgram(QVariant(course->getUserTestedText(curTaskIdx.internalId())));
+   csInterface->setPreProgram(QVariant(course->getUserTestedText(curTaskIdx.internalId())));
 };
 QString MainWindowTask::loadTestAlg(QString file_name)
 {

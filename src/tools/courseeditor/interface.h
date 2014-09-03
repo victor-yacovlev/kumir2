@@ -11,7 +11,7 @@ class ControlInterface: public QObject,public  taskControlInterface
 
      void start(QString csName);
      void setCSmode(int mode);
-     void setCSinterface(class CSInterface* interface);
+     void setCSinterface(class CSInterface* csInterface);
      inline void setWindowGeometry(QRect rect){w.setGeometry(rect);}
      inline void show(){w.showNormal();}
      void checkFinished(int mark);

@@ -33,7 +33,7 @@ class MainWindowTask : public QMainWindow {
 public:
     MainWindowTask(QWidget *parent = 0);
     ~MainWindowTask();
-    void setInterface(CSInterface * csInterface){interface=csInterface;};
+    void setInterface(CSInterface * csInterface){this->csInterface=csInterface;};
     void setCS(QString cs){CS=cs;};
     KumZadanie task;
     void setup();
@@ -103,7 +103,7 @@ private:
     QString curDir;
     courseModel* course;
     QModelIndex curTaskIdx;
-    CSInterface * interface;
+    CSInterface * csInterface;
     QString CS;
     bool onTask;
     courseChanges changes;

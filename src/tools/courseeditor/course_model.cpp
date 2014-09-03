@@ -143,7 +143,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
        QDomNode child_n=nodeById(child.internalId(),root);
       // if(child_n.isNull())return QModelIndex();
        QDomNode par=child_n.parentNode();
-       if(par.toElement().attribute("id").toInt()==0) return createIndex(0,0,0);
+       if(par.toElement().attribute("id").toInt()==0) return QModelIndex();
        return createIndex(domRow(par),0,idByNode(par));
     };
     int courseModel::columnCount(const QModelIndex &parent)const
@@ -207,7 +207,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      }
      QModelIndex courseModel::createMyIndex(int row,int column,QModelIndex parent) const
      {
-         if(!parent.isValid())return createIndex(0,0,0);
+         if(!parent.isValid())return QModelIndex();
       int id=parent.internalId();
       if(id<0)return QModelIndex();
       QDomNode par=nodeById(id,root);
