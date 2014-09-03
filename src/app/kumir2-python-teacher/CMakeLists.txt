@@ -10,6 +10,10 @@ if(${USE_QT} GREATER 4)
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
     include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
+    if(WIN32)
+        set(QT_LIBRARIES ${QT_LIBRARIES} ${Qt5Core_QTMAIN_LIBRARIES})
+    endif()
+    
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
