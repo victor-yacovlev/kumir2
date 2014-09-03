@@ -35,16 +35,15 @@
                     <listitem>
                         <para>
                             <code>альфа-бета</code>
-                            (
-                            <code>-</code>
+                            ([символ "минус"]
                             -- недопустимый символ);
                         </para>
                     </listitem>
                     <listitem>
                         <para>
-                            <code language="kumir">альфа или омега</code>
+                            <code language="кумир">альфа или омега</code>
                             (
-                            <code language="kumir">или</code>
+                            <code language="кумир">или</code>
                             -- ключевое слово).
                         </para>
                     </listitem>
@@ -52,7 +51,7 @@
             </para>
             <para>
                 Примечание. Ключевое слово
-                <code language="kumir">не</code>
+                <code language="кумир">не</code>
                 можно вставлять внутрь
                 многословных логических имен.
             </para>
@@ -90,33 +89,33 @@
             <para>
                 <emphasis>Ключевые слова</emphasis>
                 языка Кумир -- это:
-                <code language="kumir">алг</code>,<code language="kumir">нач</code>,<code language="kumir">кон</code>,
-                <code language="kumir">исп</code>,<code language="kumir">кон_исп</code>,<code language="kumir">
-                дано</code>,<code language="kumir">надо</code>,<code language="kumir">арг</code>,<code language="kumir">
+                <code language="кумир">алг</code>,<code language="кумир">нач</code>,<code language="кумир">кон</code>,
+                <code language="кумир">исп</code>,<code language="кумир">кон_исп</code>,<code language="кумир">
+                дано</code>,<code language="кумир">надо</code>,<code language="кумир">арг</code>,<code language="кумир">
                 рез</code>,
-                <code language="kumir">аргрез</code>,<code language="kumir">знач</code>,<code language="kumir">
-                цел</code>,<code language="kumir">вещ</code>,<code language="kumir">лог</code>,<code language="kumir">
-                сим</code>,<code language="kumir">лит</code>,<code language="kumir">таб</code>,<code language="kumir">
-                целтаб</code>,<code language="kumir">вещтаб</code>,<code language="kumir">логтаб</code>,<code
-                    language="kumir">симтаб</code>,<code language="kumir">литтаб</code>,<code language="kumir">и</code>,
-                <code language="kumir">или</code>,
-                <code language="kumir">не</code>,<code language="kumir">да</code>,<code language="kumir">нет</code>,
-                <code language="kumir">утв</code>,<code language="kumir">выход</code>,
-                <code language="kumir">ввод</code>
-                ,<code language="kumir">вывод</code>,<code language="kumir">нс</code>,
-                <code language="kumir">если</code>
-                ,<code language="kumir">то</code>,<code language="kumir">иначе</code>,<code language="kumir">все</code>,
-                <code language="kumir">выбор</code>,<code language="kumir">при</code>,<code language="kumir">нц</code>,
-                <code language="kumir">кц</code>,<code language="kumir">кц_при</code>,
-                <code language="kumir">раз</code>,<code language="kumir">пока</code>,<code language="kumir">для</code>,
-                <code language="kumir">от</code>,<code language="kumir">до</code>,<code language="kumir">шаг</code>.
+                <code language="кумир">аргрез</code>,<code language="кумир">знач</code>,<code language="кумир">
+                цел</code>,<code language="кумир">вещ</code>,<code language="кумир">лог</code>,<code language="кумир">
+                сим</code>,<code language="кумир">лит</code>,<code language="кумир">таб</code>,<code language="кумир">
+                целтаб</code>,<code language="кумир">вещтаб</code>,<code language="кумир">логтаб</code>,<code
+                    language="kumir">симтаб</code>,<code language="кумир">литтаб</code>,<code language="кумир">и</code>,
+                <code language="кумир">или</code>,
+                <code language="кумир">не</code>,<code language="кумир">да</code>,<code language="кумир">нет</code>,
+                <code language="кумир">утв</code>,<code language="кумир">выход</code>,
+                <code language="кумир">ввод</code>
+                ,<code language="кумир">вывод</code>,<code language="кумир">нс</code>,
+                <code language="кумир">если</code>
+                ,<code language="кумир">то</code>,<code language="кумир">иначе</code>,<code language="кумир">все</code>,
+                <code language="кумир">выбор</code>,<code language="кумир">при</code>,<code language="кумир">нц</code>,
+                <code language="кумир">кц</code>,<code language="кумир">кц_при</code>,
+                <code language="кумир">раз</code>,<code language="кумир">пока</code>,<code language="кумир">для</code>,
+                <code language="кумир">от</code>,<code language="кумир">до</code>,<code language="кумир">шаг</code>.
             </para>
         </section>
         <section>
             <title>Многословные не-имена</title>
             <para>
                 В отрицаниях логических величин, таблиц и алгоритмов функций ключевое слово
-                <code language="kumir">не</code>
+                <code language="кумир">не</code>
                 можно вставлять между словами многословного имени.
             </para>
             <example>
@@ -135,7 +134,7 @@
                 <code>л</code>
                 значение, противоположное значению
                 логической величины<code>завтра будет четверг</code>. Четвертая строка синтаксически неверна --
-                <code language="kumir">не</code>
+                <code language="кумир">не</code>
                 нельзя
                 ставить после имени. Последняя строка также неверна: нельзя использовать более одного<code
                     language="kumir">не</code>.
@@ -151,18 +150,18 @@
             <itemizedlist>
                 <listitem>
                     <para>
-                        <code language="kumir">цел</code>
+                        <code language="кумир">цел</code>
                         -- принимает целые значения от
-                        <code language="kumir">-МАКСЦЕЛ-1</code>
-                        до<code language="kumir">МАКСЦЕЛ</code>, где<code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647;
+                        <code language="кумир">-МАКСЦЕЛ-1</code>
+                        до<code language="кумир">МАКСЦЕЛ</code>, где<code>МАКСЦЕЛ</code>&nbsp;=&nbsp;2147483647;
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        <code language="kumir">вещ</code>
+                        <code language="кумир">вещ</code>
                         -- принимает вещественные значения от
-                        <code language="kumir">-МАКСВЕЩ</code>
-                        до<code language="kumir">МАКСВЕЩ</code>,
+                        <code language="кумир">-МАКСВЕЩ</code>
+                        до<code language="кумир">МАКСВЕЩ</code>,
                         где
                         <code>МАКСВЕЩ</code>
                         -- это число, немного меньшее, чем
@@ -171,22 +170,22 @@
                 </listitem>
                 <listitem>
                     <para>
-                        <code language="kumir">лог</code>
+                        <code language="кумир">лог</code>
                         -- принимает значения
-                        <code language="kumir">да</code>
-                        или<code language="kumir">нет</code>;
+                        <code language="кумир">да</code>
+                        или<code language="кумир">нет</code>;
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        <code language="kumir">сим</code>
+                        <code language="кумир">сим</code>
                         -- значением может быть любой литеральный символ
                         <xref linkend="aaa"/>;
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        <code language="kumir">лит</code>
+                        <code language="кумир">лит</code>
                         -- значением может быть строка литеральных символов.
                     </para>
                 </listitem>
@@ -194,23 +193,23 @@
         </para>
         <para>
             Типы
-            <code language="kumir">цел</code>
+            <code language="кумир">цел</code>
             и
-            <code language="kumir">вещ</code>
+            <code language="кумир">вещ</code>
             называются числовыми;
             типы
-            <code language="kumir">сим</code>
+            <code language="кумир">сим</code>
             и
-            <code language="kumir">лит</code>
+            <code language="кумир">лит</code>
             -- текстовыми.
         </para>
         <para>
             Значения величин
-            <code language="kumir">МАКСЦЕЛ</code>
+            <code language="кумир">МАКСЦЕЛ</code>
             и
-            <code language="kumir">МАКСВЕЩ</code>
+            <code language="кумир">МАКСВЕЩ</code>
             определяются
-            способом представления чисел в современных компьютерах и примерно одинаковая в большинстве
+            способом представления чисел в современных компьютерах и примерно одинаковые в большинстве
             современных языков программирования.
         </para>
         <para>
@@ -263,8 +262,8 @@
         <section>
             <title>Логические константы</title>
             <para>
-                Логическая константа — это одно из ключевых слов<code language="kumir">да</code>,
-                <code language="kumir">нет</code>.
+                Логическая константа — это одно из ключевых слов<code language="кумир">да</code>,
+                <code language="кумир">нет</code>.
             </para>
         </section>
         <section>
@@ -459,7 +458,7 @@
                         </para>
                     </listitem>
                     <listitem>
-                        <para><code language="kumir">да или нет</code>;
+                        <para><code language="кумир">да или нет</code>;
                         </para>
                     </listitem>
                     <listitem>
@@ -478,14 +477,14 @@
                         <para>в индексе таблицы;</para>
                     </listitem>
                     <listitem>
-                        <para>в аргументе (типа<code language="kumir">арг</code>) вызова функции;
+                        <para>в аргументе (типа<code language="кумир">арг</code>) вызова функции;
                         </para>
                     </listitem>
                     <listitem>
                         <para>в качестве подвыражения другого выражения;</para>
                     </listitem>
                     <listitem>
-                        <para>в команде<code language="kumir">вывод</code>.
+                        <para>в команде<code language="кумир">вывод</code>.
                         </para>
                     </listitem>
                 </itemizedlist>
@@ -533,17 +532,17 @@
                     </listitem>
                     <listitem>
                         <para>сравнение арифметическое (аргументы -- числового типа, результат --
-                            <code language="kumir">лог</code>);
+                            <code language="кумир">лог</code>);
                         </para>
                     </listitem>
                     <listitem>
                         <para>сравнение текстовое (аргументы -- текстового типа, результат --
-                            <code language="kumir">лог</code>);
+                            <code language="кумир">лог</code>);
                         </para>
                     </listitem>
                     <listitem>
-                        <para>логические операции (аргументы --<code language="kumir">лог</code>, результат --
-                            <code language="kumir">лог</code>);
+                        <para>логические операции (аргументы --<code language="кумир">лог</code>, результат --
+                            <code language="кумир">лог</code>);
                         </para>
                     </listitem>
                     <listitem>
@@ -602,9 +601,9 @@
                     -- описанные в программе алгоритмы-функции.
                 </para>
                 <para>
-                    Это должны быть функции числового типа. Если обе они имеют тип<code language="kumir">цел</code>,
-                    то и все выражение имеет тип<code language="kumir">цел</code>. В противном случае выражение имеет
-                    тип<code language="kumir">вещ</code>.
+                    Это должны быть функции числового типа. Если обе они имеют тип<code language="кумир">цел</code>,
+                    то и все выражение имеет тип<code language="кумир">цел</code>. В противном случае выражение имеет
+                    тип<code language="кумир">вещ</code>.
                 </para>
             </example>
         </section>
@@ -612,14 +611,14 @@
             <title>Вырезка из строки</title>
             <para>
                 Операция вырезки из строки имеет 3 аргумента:
-                <code language="kumir">лит</code>
+                <code language="кумир">лит</code>
                 строка,
-                <code language="kumir">цел</code>
+                <code language="кумир">цел</code>
                 старт,
-                <code language="kumir">цел</code>
+                <code language="кумир">цел</code>
                 финиш и
                 результат:
-                <code language="kumir">лит</code>
+                <code language="кумир">лит</code>
                 вырезка. В отличие от базовых операций, аргументы вырезки
                 из строки имеют разные типы. Поэтому способ записи вырезки из строки отличается от способа,
                 принятого для базовых операций.
