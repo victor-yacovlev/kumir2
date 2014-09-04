@@ -45,6 +45,9 @@
          <kerning>false</kerning>
         </font>
        </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="showDropIndicator" stdset="0">
         <bool>false</bool>
        </property>

@@ -286,7 +286,7 @@ void MainWindowTask::loadCourse()
            
         return;
     };
-
+    this->showNormal();
 
      baseKursFile=fi;
      curDir=fi.absolutePath ();
@@ -310,12 +310,13 @@ void MainWindowTask::loadCourse()
                 createDefaultWorkFile=false;
                 
             };
+    
      cursWorkFile.setFileName("");
      loadCourseData(fileName);
      isReadOnly=false;
      interface->setPreProgram(QVariant(""));
      QString cText=course->courceDescr();
-     
+  
 
   if(cText.right(4)==".htm" ||cText.right(5)==".html" )
   {
@@ -339,6 +340,7 @@ void MainWindowTask::loadCourse()
     {
         saveCourse();
     };
+    
 };
 
 
