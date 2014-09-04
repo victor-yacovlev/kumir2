@@ -91,6 +91,9 @@ public:
      void setTeacher(bool mode);
     QList<QAction*> getActions();
 
+Q_SIGNALS:
+    void activateRequest();
+
 public slots:
     void aboutToQuit ();
 
