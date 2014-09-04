@@ -298,7 +298,8 @@ void MainWindowTask::loadCourse()
      {
          isReadOnly=false;
          loadMarks(fileName);
-         this->show();
+         Q_EMIT activateRequest();
+//         this->show();
          return;
      }
     bool createDefaultWorkFile=true;
@@ -327,7 +328,8 @@ void MainWindowTask::loadCourse()
     updateLastFiles(fileName);
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
-    this->show();
+    Q_EMIT activateRequest();
+//    this->show();
     if(createDefaultWorkFile)
     {
         markProgChange();

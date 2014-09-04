@@ -65,6 +65,10 @@ SecondaryWindow * SecondaryWindow::createSecondaryWindow(
         connect(centralWidget, SIGNAL(resizeRequest(QSize)),
                 window->toWidget(), SLOT(handleResizeRequest(QSize)));
     }
+    if (meta->indexOfSignal("activateRequest()") != -1) {
+        connect(centralWidget, SIGNAL(activateRequest()),
+                result, SLOT(activate()));
+    }
 
     return result;
 }
