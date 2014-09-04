@@ -69,7 +69,7 @@
         <para>
             Переводит строку <parameter>строка</parameter> в вещественное представление.
             Если <parameter>строка</parameter> содержит только вещественное число, то в
-            <parameter>успех</parameter> записывается <code language="кумир">да</code>
+            <parameter>успех</parameter> записывается <code language="кумир">да</code> и 
             алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
             записывается <code language="кумир">нет</code> и алгоритм возвращает значение
             <code>0.0</code>.
