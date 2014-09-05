@@ -60,7 +60,7 @@ cursFile="";
            editRoot=new QLineEdit(ui->treeView);
            editRoot->hide();
            connect(editRoot,SIGNAL(editingFinished ()),this,SLOT(endRootEdit()));
-           ui->treeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+           ui->treeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 isTeacher=false;
        onTask=false;
        cursFile="";
