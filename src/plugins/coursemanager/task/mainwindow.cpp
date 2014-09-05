@@ -485,7 +485,7 @@ void MainWindowTask::startTask()
          QMessageBox::about(NULL, trUtf8("Не выбрано задание"),trUtf8("Необходимо выбрать задание"));
          return;
      }
-     if(course->csName(curTaskIdx.internalId())!=CS)
+     if(course->csName(curTaskIdx.internalId()).toLower()!=CS)
      {
          QMessageBox::about(NULL, trUtf8("Неправильное окружение"),trUtf8("Необходим ")+course->csName(curTaskIdx.internalId()));
          return;

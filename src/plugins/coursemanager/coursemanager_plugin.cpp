@@ -344,7 +344,13 @@ QString Plugin::initialize(const QStringList &configurationArguments,
             courseMenu->addMenu(rescentMenu);
         }
     }
-    MW->setCS(trUtf8("Кумир"));
+    Shared::AnalizerInterface * analizer =
+    ExtensionSystem::PluginManager::instance()
+    ->findPlugin<Shared::AnalizerInterface>();
+    const QString languageName =
+    analizer->languageName().toLower();
+    
+    MW->setCS(languageName);
     MW->setInterface(this);
     qRegisterMetaType<Shared::CoursesInterface::ProgramRunStatus>
             ("CourseManager.ProgramRunStatus");
