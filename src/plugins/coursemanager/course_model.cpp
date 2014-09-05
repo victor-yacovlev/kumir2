@@ -112,7 +112,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
        // qDebug()<<"Draw Mark id"<<index.internalId();
          if(nodeM.toElement().attribute("root")=="true")
          {
-             qDebug()<<"Folder";
+           //  qDebug()<<"Folder";
          }
      return iconByMark(taskMark(index.internalId()),nodeM.toElement().attribute("root")=="true");
      //NUZHNO IKONKI ISPOLNITELEY
@@ -121,7 +121,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      {
         return QBrush(QColor(255,255,255));
      }
-     qDebug()<<"No" << role<< "role";
+  //   qDebug()<<"No" << role<< "role";
      return QVariant();
 };
     QVariant courseModel::headerData(int section, Qt::Orientation orientation,
@@ -170,7 +170,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      QDomNode courseModel::nodeByRowColumn(int row,int column,QDomNode *parent) const
      {
       if(!parent)return root;
-   qDebug()<<"nodeByRowColumn";
+  // qDebug()<<"nodeByRowColumn";
           return parent->childNodes().at(row);
 
       return root;
@@ -231,7 +231,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
       bool ok;
       int new_id=childs.at(row).toElement().attribute("id","").toInt(&ok);
       if(!ok){
-          qDebug()<<"Bad ID";
+       //   qDebug()<<"Bad ID";
           return createIndex(-10,-10,-10);
 
             }

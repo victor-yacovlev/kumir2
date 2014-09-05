@@ -96,7 +96,7 @@ Q_SIGNALS:
 
 public slots:
     void aboutToQuit ();
-
+    void openRescent();
     void loadCourse();
     void loadCourseFromFile(const QString & file);
     void returnTested();

@@ -99,8 +99,9 @@ void MainWindowTask::changeEvent(QEvent *e)
 }
 void MainWindowTask::updateLastFiles(const QString newFile )
 {
-    QStringList lastFiles= settings->value("Courses/LastFiles","").toString().split(";");
+      QStringList lastFiles= settings->value("Courses/LastFiles","").toString().split(";");
     qDebug()<<lastFiles;
+     qDebug()<<settings->locationDirectory();
     if(lastFiles.indexOf(newFile)<0)lastFiles.prepend(newFile);
     int max_fid=std::min(lastFiles.count(),10);
     QString sett="";
@@ -108,7 +109,8 @@ void MainWindowTask::updateLastFiles(const QString newFile )
     {
         sett+= lastFiles.at(i)+";";
     }
-    settings->setValue("Courses/LastFiles",sett); 
+    settings->setValue("Courses/LastFiles",sett);
+    interface->rebuildRescentMenu();
 };
 void MainWindowTask::loadCourseData(const QString fileName)
 {
@@ -182,7 +184,7 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
 }
 
 QString fileN=fileEl.attribute("fileName");
-qDebug()<<"KURS ZAGRUZILI";
+//qDebug()<<"KURS ZAGRUZILI";
 if(cursFile!=krsFile){
     QMessageBox::information( 0, "", trUtf8("Не наеден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
     fileN=getFileName(krsFile);
@@ -192,7 +194,7 @@ if(cursFile!=krsFile){
 QFileInfo fi_kurs=QFileInfo(krsFile);
 curDir=fi_kurs.absolutePath();
 QDomNodeList marksElList=root.elementsByTagName("MARK"); //Оценки
-qDebug()<<"Loading marks "<<marksElList.count();
+//qDebug()<<"Loading marks "<<marksElList.count();
 for(int i=0;i<marksElList.count();i++)
  {
  int taskId=marksElList.at(i).toElement().attribute("testId").toInt();
@@ -279,7 +281,7 @@ void MainWindowTask::loadCourse()
 //     if(!dialog.exec())return;
 
 
-     QString	File=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), dir, "(*.kurs.xml *.work.xml)");
+     QString	File=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), dir, "Xml (*.xml)");
      QFileInfo fi(File);
     if(!fi.exists())
     {
@@ -337,6 +339,7 @@ void MainWindowTask::loadCourse()
         qDebug()<<curDir;
 
         cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        
         saveCourseFile();
     }else
     {
@@ -345,7 +348,21 @@ void MainWindowTask::loadCourse()
     
 };
 
+void MainWindowTask::openRescent()
+{
+    
 
+    
+    QAction *s = qobject_cast<QAction*>(sender());
+    QString txt = s->text();
+    txt.remove(0,1);
+    QStringList words = txt.split(" ");
+    if(words.count()<2)return;
+    QString RobotFile=words[1];
+    loadCourseFromFile(RobotFile);
+  //  if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
+    
+};
 
 void MainWindowTask::setUpDown(QModelIndex index)
 {
@@ -593,16 +610,18 @@ void MainWindowTask::saveCourse()
 {
     editRoot->hide();
    markProgChange();
-    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir, "(*.work.xml)");
+    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir, "Work files(*.work.xml);;All files (*)");
+    dialog.setDefaultSuffix("work.xml");
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     if(!dialog.exec())return;
     QFileInfo fi(dialog.selectedFiles().first());
     //curDir=fi.absolutePath ();
     qDebug()<<"curDir"<<curDir;
     QString fileName=dialog.selectedFiles().first();
-    QString type=fileName.right(9);
-    if(type!=".work.xml")fileName+=".work.xml";
+   // QString type=fileName.right(9);
+   // if(type!=".work.xml")fileName+=".work.xml";
     cursWorkFile.setFileName(fileName);
+    updateLastFiles(fileName);
     saveCourseFile();
 
 };

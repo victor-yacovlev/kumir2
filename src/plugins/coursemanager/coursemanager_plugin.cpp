@@ -16,9 +16,13 @@ Plugin::Plugin()
 {
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
+    rescentMenu=new QMenu(trUtf8("Недавние тетради..."));
+    // m_actionCourseLoadRescent->setMenu(rescentMenu);
     MW=new MainWindowTask();
     MW->setup(myResourcesDir(), mySettings());
+   
     mainWindow_=MW;
+   
     field_no=0;
     prevFld=new QAction(trUtf8("Предыдущая обстановка"),this);
     nextFld=new QAction(trUtf8("Следующая обстановка"),this);
@@ -26,13 +30,29 @@ Plugin::Plugin()
     connect(prevFld,SIGNAL(triggered()),this,SLOT(prevField()));
     nextFld->setEnabled(false);
     prevFld->setEnabled(false);
-}
+    
+    }
 QList<QMenu*>  Plugin::menus()const
 {
     
     return MenuList; 
 }; 
+void Plugin::rebuildRescentMenu()
+    {
+        rescentMenu->clear();
+        qDebug()<<mySettings()->locationDirectory();
+        QStringList lastFiles= mySettings()->value("Courses/LastFiles","").toString().split(";");
+        qDebug()<<lastFiles;
+        if(lastFiles.count()==0)rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
+        
+        
+        for(int i=0;i<lastFiles.count();i++) {
+            if(lastFiles[i]=="")continue;
+            QAction *action = rescentMenu->addAction("&"+QString::number(i+1)+" "+lastFiles[i],MW,SLOT(openRescent()));
+            Q_UNUSED(action);
+        }
 
+    };
 QString Plugin::getText()
 {
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
@@ -318,7 +338,11 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)
     {
-        courseMenu->addAction(actions.at(i));  
+        courseMenu->addAction(actions.at(i));
+        if(i==0)
+        {
+            courseMenu->addMenu(rescentMenu);
+        }
     }
     MW->setCS(trUtf8("Кумир"));
     MW->setInterface(this);
@@ -329,6 +353,8 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     field_no=0;
     courseMenu->addAction(nextFld);
     courseMenu->addAction(prevFld);
+    rebuildRescentMenu();
+
     return error;
 }
 
@@ -338,6 +364,7 @@ void Plugin::updateSettings(const QStringList & keys)
         settingsEditorPage_->setSettingsObject(mySettings());
     }
     MW->updateSettings(keys, mySettings());
+    rebuildRescentMenu();
 }
 
 

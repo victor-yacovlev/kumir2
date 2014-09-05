@@ -35,6 +35,7 @@ public:
     ~MainWindowTask();
     void setInterface(CSInterface * csInterface){this->csInterface=csInterface;};
     void setCS(QString cs){CS=cs;};
+
     KumZadanie task;
     void setup();
      QString getFileName(QString fileName);
@@ -106,6 +107,7 @@ private:
     CSInterface * csInterface;
     QString CS;
     bool onTask;
+    QMenu * practMenu;
     courseChanges changes;
     QString cursFile;
     QList<int> progChange;
