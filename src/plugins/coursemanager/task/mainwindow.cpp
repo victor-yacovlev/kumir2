@@ -354,12 +354,8 @@ void MainWindowTask::openRescent()
 
     
     QAction *s = qobject_cast<QAction*>(sender());
-    QString txt = s->text();
-    txt.remove(0,1);
-    QStringList words = txt.split(" ");
-    if(words.count()<2)return;
-    QString RobotFile=words[1];
-    loadCourseFromFile(RobotFile);
+    
+    loadCourseFromFile(s->property ( "fullName" ).toString());
   //  if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
     
 };

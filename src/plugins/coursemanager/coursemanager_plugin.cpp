@@ -44,14 +44,20 @@ void Plugin::rebuildRescentMenu()
         QStringList lastFiles= mySettings()->value("Courses/LastFiles","").toString().split(";");
         qDebug()<<lastFiles;
         if(lastFiles.count()==0)rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
-        
+        bool hasAnyItem=false;
         
         for(int i=0;i<lastFiles.count();i++) {
-            if(lastFiles[i]=="")continue;
-            QAction *action = rescentMenu->addAction("&"+QString::number(i+1)+" "+lastFiles[i],MW,SLOT(openRescent()));
+            if(lastFiles[i].trimmed()=="")continue;
+     
+
+            
+            QAction *action = rescentMenu->addAction(QFileInfo(lastFiles[i]).fileName(),MW,SLOT(openRescent()));
+            action->setProperty("fullName", lastFiles[i]);
+             hasAnyItem = true;
             Q_UNUSED(action);
         }
-
+ rescentMenu->setEnabled(hasAnyItem);
+        
     };
 QString Plugin::getText()
 {
