@@ -740,8 +740,24 @@ void MainWindowTask::Close()
     saveBaseKurs();
     close();
 };
+void MainWindowTask::showEvent(QShowEvent * event)
+{
+    ui->splitter->restoreState(settings->value("/SpliterState")
+                 .toByteArray());
+    QByteArray settlist=settings->value("/SpliterPos").toByteArray();
+    qDebug()<<settlist;
+    ui->splitter->restoreGeometry(settlist);
+};
+
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
+    
+   
+    
+    settings->setValue("/SpliterPos",ui->splitter->saveGeometry());
+    settings->setValue("/SpliterState",ui->splitter->saveState());
+    qDebug()<<ui->splitter->saveGeometry();
+    qDebug()<<"CLOSE TASK WINDOW";
   if(!course)return;
   qDebug()<<"START CLOSE TASK WINDOW";
   if(!cursWorkFile.exists())

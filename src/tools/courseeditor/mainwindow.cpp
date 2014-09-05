@@ -713,8 +713,28 @@ void MainWindowTask::Close()
     //saveBaseKurs();
     close();
 };
+void MainWindowTask::showEvent(QShowEvent * event)
+{
+  QStringList settlist=settings->value("SpliterPos").toString().split(" ");
+    QList<int>  sizes;
+    for(int i=0;i<settlist.count();i++ )
+    {
+        sizes.append(settlist.at(i).toInt());
+    }
+    ui->splitter->setSizes(sizes);
+};
+
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
+   
+    QString sizes="";
+    for(int i=0;i<ui->splitter->sizes().count();i++ )
+    {
+        sizes+=QString::number(ui->splitter->sizes().at(i))+" ";
+    }
+    
+    settings->setValue("SpliterPos",sizes);
+    qDebug()<<"CLOSE TASK WINDOW";
     if(!course)
     {close();
         return;
@@ -738,8 +758,8 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
 
               saveBaseKurs();
     }
-         ;
-          qDebug()<<"CLOSE TASK WINDOW";
+
+    
           close();
 
 };

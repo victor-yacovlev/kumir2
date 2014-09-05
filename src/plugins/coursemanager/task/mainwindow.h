@@ -133,7 +133,7 @@ public slots:
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
-
+    void showEvent(QShowEvent * event);
 private:
     void markProgChange();
     void createMoveMenu();

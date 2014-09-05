@@ -85,7 +85,7 @@ public slots:
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
-
+    void showEvent(QShowEvent * event);
 private:
     bool checkInList(int id,QModelIndexList list);//Поиск id среди списка индексов
     void enableMkSect(bool flag);
