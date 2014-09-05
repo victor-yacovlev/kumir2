@@ -8,6 +8,9 @@
 #include <QSharedPointer>
 #include <QResizeEvent>
 #include <QWheelEvent>
+#include <QContextMenuEvent>
+#include <QMenu>
+#include <QAction>
 
 namespace DocBookViewer {
 
@@ -31,6 +34,7 @@ signals:
 private:
     void resizeEvent(QResizeEvent *e);
     void wheelEvent(QWheelEvent *e);
+    void contextMenuEvent(QContextMenuEvent *e);
 
     QString wrapHTML(const QString & body) const;
     QString renderModel(ModelPtr data) const;
@@ -135,6 +139,8 @@ private /*fields*/:
     bool ignoreClearAnchorUrl_;
 
     static bool ExtraFontsLoaded_;
+    QMenu * contextMenu_;
+    QAction * actionCopyToClipboard_;
 
 private slots:
     void clearLastAnchorUrl();

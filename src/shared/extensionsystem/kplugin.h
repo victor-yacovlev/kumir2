@@ -36,11 +36,14 @@ public:
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
     inline virtual QWidget* settingsEditorPage() { return 0; }
-    SettingsPtr pluginSettings() const { return mySettings(); }
-    virtual ~KPlugin();
 
+    inline static SettingsPtr pluginSettings() { return self->mySettings(); }
     SettingsPtr mySettings() const;
+
+    inline static QDir pluginResourcesDir() { return self->myResourcesDir(); }
     QDir myResourcesDir() const;
+
+    virtual ~KPlugin();
 
 protected:
     inline virtual void saveSession() const { }
@@ -69,6 +72,7 @@ protected:
 private:
     SettingsPtr settings_;
     QString resourcesDir_;
+    static KPlugin* self;
 
 };
 

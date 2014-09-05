@@ -4,9 +4,9 @@
 <context>
     <name>DocBookViewer::ContentView</name>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="511"/>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="524"/>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1403"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="619"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="632"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1544"/>
         <source>Table&amp;nbsp;%1. </source>
         <translation>Таблица&amp;nbsp;%1. </translation>
     </message>
@@ -15,54 +15,64 @@
         <translation type="obsolete">Контекст:</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="667"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="67"/>
+        <source>Copy</source>
+        <translation>Скопировать</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="493"/>
+        <source>Copy example</source>
+        <translation>Скопировать пример</translation>
+    </message>
+    <message>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="775"/>
         <source>See %1 for more details.</source>
         <translation>Подробное описание см. в %1</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="687"/>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="706"/>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1402"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="795"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="814"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1543"/>
         <source>Example&amp;nbsp;%1. </source>
         <translation>Пример&amp;nbsp;%1. </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="727"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="835"/>
         <source>Algorithm </source>
         <translation>Алгоритм</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="758"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="866"/>
         <source>Synopsis:</source>
         <translation>Синтаксис:</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="992"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1106"/>
         <source>Figure&amp;nbsp;%1 </source>
         <translation>Рисунок&amp;nbsp;%1. </translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1227"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1358"/>
         <source>(see&amp;nbsp;&lt;a href=&quot;%1&quot;&gt;%2&lt;/a&gt;)</source>
         <translation>(см.&amp;nbsp;&lt;a href=&quot;%1&quot;&gt;%2&lt;/a&gt;)</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1334"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1472"/>
         <source>List of examples in &quot;%1&quot;</source>
         <translation>Список примеров в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1337"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1475"/>
         <source>List of tables in &quot;%1&quot;</source>
         <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1341"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1479"/>
         <source>List of Standard Library algorithms</source>
         <translation>Список встроенных алгоритмов</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1343"/>
+        <location filename="../../../src/shared/docbookviewer/contentview.cpp" line="1481"/>
         <source>List of algorithms of module &quot;%1&quot;</source>
         <translation>Список алгоритмов исполнителя &quot;%1&quot;</translation>
     </message>
@@ -70,22 +80,22 @@
 <context>
     <name>DocBookViewer::DocBookViewImpl</name>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="80"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="84"/>
         <source>Hide side bar</source>
         <translation>Скрыть панель навигации</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="81"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="85"/>
         <source>Show side bar</source>
         <translation>Показать панель навигации</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="219"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="223"/>
         <source>Toggle sidebar visible</source>
         <translation>Показывать боковую панель</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="222"/>
+        <location filename="../../../src/shared/docbookviewer/docbookview_impl.cpp" line="226"/>
         <source>Print...</source>
         <translation>Печать...</translation>
     </message>
@@ -209,10 +219,10 @@
         <translation>Алгоритмы</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="138"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="180"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="222"/>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="264"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="143"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="190"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="237"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.ui" line="284"/>
         <source>Filter:</source>
         <translation>&amp;Фильтр:</translation>
     </message>
@@ -235,17 +245,17 @@
         <translation type="obsolete">Искать:</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="231"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="232"/>
         <source>List of examples in &quot;%1&quot;</source>
         <translation>Список примеров в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="259"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="260"/>
         <source>List of tables in &quot;%1&quot;</source>
         <translation>Список таблиц в &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="279"/>
+        <location filename="../../../src/shared/docbookviewer/sidepanel.cpp" line="280"/>
         <source>Standard Library functions</source>
         <translation>Встроенные алгоритмы</translation>
     </message>

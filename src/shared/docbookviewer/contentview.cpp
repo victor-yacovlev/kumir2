@@ -3,6 +3,7 @@
 #include "mathmlrenderer.h"
 
 #include "extensionsystem/pluginmanager.h"
+#include "widgets/iconprovider.h"
 
 #include <QUrl>
 #include <QtCore>
@@ -59,6 +60,15 @@ ContentView::ContentView(QWidget *parent)
         ExtraFontsLoaded_ = true;
     }
 #endif
+
+    contextMenu_ = new QMenu(this);
+    actionCopyToClipboard_ = contextMenu_->addAction(
+                Widgets::IconProvider::self()->iconForName("edit-copy"),
+                tr("Copy"),
+                this, SLOT(copy())
+                );
+    actionCopyToClipboard_->setEnabled(false);
+    connect(this, SIGNAL(copyAvailable(bool)), actionCopyToClipboard_, SLOT(setEnabled(bool)));
 }
 
 QSize ContentView::minimumSizeHint() const
@@ -463,8 +473,27 @@ QString ContentView::programTextForLanguage(const QString &source,
 
 QString ContentView::renderProgramListing(ModelPtr data) const
 {
-    QString result = "<pre align='left' class='code'>";
+    QString result;
+    bool parentIsExample = false;
+    ModelPtr p = data->parent();
+    while (p) {
+        if (Example==p->modelType()) {
+            parentIsExample = true;
+            break;
+        }
+        p = p->parent();
+    }
     const QString programText = renderChilds(data);
+    if (parentIsExample) {
+        const QByteArray b64Text = programText.toUtf8().toBase64();
+        const QString href = QString::fromLatin1("to_clipboard:%1")
+                .arg(QString::fromLatin1(b64Text));
+        result += "<div align='right'><a href='" + href + "'>";
+        result += "<img src='icon:edit-copy:16'/>&nbsp;";
+        result += tr("Copy example");
+        result += "</a></div>\n";
+    }
+    result += "<pre align='left' class='code'>";
     result += programTextForLanguage(programText, data->role());
     result += "</pre>\n";
     return result;
@@ -1189,6 +1218,21 @@ QVariant ContentView::loadResource(int type, const QUrl &name)
                 }
             }
         }
+        else if (link.startsWith("icon:")) {
+            const QStringList parts = link.split(":");
+            if (parts.count() > 1) {
+                QSize iconSize(16, 16);
+                if (parts.count() > 2) {
+                    iconSize = QSize(parts[2].toInt(), parts[2].toInt());
+                }
+                const QIcon icon = Widgets::IconProvider::self()
+                        ->iconForName(parts[1]);
+                if (!icon.isNull()) {
+                    ignore = false;
+                    result = icon.pixmap(iconSize).toImage();
+                }
+            }
+        }
     }
     if (ignore) {
         return QTextBrowser::loadResource(type, name);
@@ -1535,6 +1579,13 @@ void ContentView::handleInternalLink(const QUrl &url)
         ds >> ptr;
         emit itemRequest(findModelByRawPtr(ptr));
     }
+    else if (url.toEncoded().startsWith("to_clipboard:")) {
+        const QByteArray b64 = url.toEncoded().mid(13);
+        const QByteArray u8 = QByteArray::fromBase64(b64);
+        const QString text = QString::fromUtf8(u8).trimmed();
+        QClipboard * clipboard = QApplication::clipboard();
+        clipboard->setText(text);
+    }
 }
 
 ModelPtr ContentView::findModelByRawPtr(quintptr raw) const
@@ -1685,6 +1736,12 @@ void ContentView::wheelEvent(QWheelEvent *e)
     if (e->buttons() == Qt::NoButton) {
         clearLastAnchorUrl();
     }
+}
+
+void ContentView::contextMenuEvent(QContextMenuEvent *e)
+{
+    contextMenu_->exec(e->globalPos());
+    e->accept();
 }
 
 void ContentView::clearLastAnchorUrl()
