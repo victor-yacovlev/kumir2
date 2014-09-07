@@ -33,7 +33,7 @@ set(SOURCES
 )
 
 set(HEADERS
-    data.h
+    pictomir_data.h
     parser.h
     generator.h
     options.h

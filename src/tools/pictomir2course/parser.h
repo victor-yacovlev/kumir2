@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "data.h"
+#include "pictomir_data.h"
 
 #include <boost/property_tree/ptree.hpp>
 
