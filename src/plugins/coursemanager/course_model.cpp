@@ -95,13 +95,13 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      {
          return QVariant(Qt::AlignLeft |Qt::AlignVCenter );
      }
-     if(role==Qt::ForegroundRole)
-     {
-         if(isTeacher)QVariant(QBrush(QColor(0,0,0)));
-        if(!taskAvailable(node))
-            return QVariant(QBrush(QColor(150,150,150)));
-       return QVariant(QBrush(QColor(0,0,0)));
-     }
+//     if(role==Qt::ForegroundRole)
+//     {
+//         if(isTeacher)QVariant(QBrush(QColor(0,0,0)));
+//        if(!taskAvailable(node))
+//            return QVariant(QBrush(QColor(150,150,150)));
+//       return QVariant(QBrush(QColor(0,0,0)));
+//     }
      if(role==Qt::CheckStateRole)
      {
         return QVariant();
@@ -117,10 +117,10 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      return iconByMark(taskMark(index.internalId()),nodeM.toElement().attribute("root")=="true");
      //NUZHNO IKONKI ISPOLNITELEY
      }
-     if(role==Qt::BackgroundRole)
-     {
-        return QBrush(QColor(255,255,255));
-     }
+//     if(role==Qt::BackgroundRole)
+//     {
+//        return QBrush(QColor(255,255,255));
+//     }
   //   qDebug()<<"No" << role<< "role";
      return QVariant();
 };
