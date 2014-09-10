@@ -34,7 +34,14 @@ set(HEADERS
     newkursdialog.h
     taskControlInterface.h
 )
-set(MOC_HEADERS ${HEADERS})
+set(MOC_HEADERS
+    course_model.h
+    editdialog.h
+    interface.h
+    kumfiledialog.h
+    mainwindow.h
+    newkursdialog.h
+)
 set(SOURCES
     course_model.cpp
     csInterface.cpp
