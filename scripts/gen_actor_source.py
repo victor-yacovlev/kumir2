@@ -3493,7 +3493,7 @@ if(${USE_QT} GREATER 4)
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
     include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-    set(MOC_PARAMS "-I${_qt5Core_install_prefix}/include/QtCore")
+    set(MOC_PARAMS "-I/usr/include/qt5/QtCore" "-I${_qt5Core_install_prefix}/include/QtCore")
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
@@ -3539,8 +3539,8 @@ add_custom_target(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
-        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
+        ${MOC_PARAMS}
         -o${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
@@ -3549,8 +3549,8 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
-        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
+        ${MOC_PARAMS}
         -o${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
