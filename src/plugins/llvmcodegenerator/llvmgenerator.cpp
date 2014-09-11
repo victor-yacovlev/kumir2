@@ -36,9 +36,13 @@
 #endif
 
 #include <llvm/Bitcode/ReaderWriter.h>
-#include <llvm/Support/system_error.h>
+//#include <llvm/Support/system_error.h>
 #include <llvm/Support/raw_os_ostream.h>
+#if LLVM_VERSION_MINOR >= 5
+#include <llvm/Linker/Linker.h>
+#else
 #include <llvm/Linker.h>
+#endif
 
 #include <string>
 #include <iostream>
@@ -98,9 +102,19 @@ void LLVMGenerator::reset(bool addMainEntryPoint,
 void LLVMGenerator::createStdLibModule()
 {
     std::string error;
-    stdlibModule_ = llvm::ParseBitcodeFile(stdlibContents_.data(),
-                                               *context_,
-                                               &error);
+    stdlibModule_ = 0;
+#if LLVM_VERSION_MINOR >= 5
+    llvm::ErrorOr<llvm::Module*> errorOrModule =
+            llvm::parseBitcodeFile(stdlibContents_.data(), *context_);
+    if (!errorOrModule) {
+        error = errorOrModule.getError().message();
+    }
+    else {
+        stdlibModule_ = errorOrModule.get();
+    }
+#else
+    stdlibModule = llvm::ParseBitcodeFile(stdlibContents_.data(), *context_, &error);
+#endif
     if (!error.empty()) {
         qDebug() << QString::fromStdString(error);
     }
@@ -224,7 +238,11 @@ void LLVMGenerator::addGlobalVariable(llvm::IRBuilder<> & builder, const AST::Va
                 *currentModule_,
                 ty,
                 constant,
+#if LLVM_VERSION_MINOR < 5
                 llvm::GlobalValue::LinkerPrivateLinkage,
+#else
+                llvm::GlobalValue::PrivateLinkage,
+#endif
                 llvm::ConstantStruct::getNullValue(ty),
                 name
                 );
@@ -449,7 +467,11 @@ void LLVMGenerator::addFunction(const AST::AlgorithmPtr kfunc, bool createBody)
         lfn = llvm::Function::Create(
                 lft,
                 kfunc->header.name.isEmpty() || kfunc->header.name.startsWith("_")
+#if LLVM_VERSION_MINOR < 5
                 ? llvm::GlobalValue::LinkerPrivateLinkage
+#else
+                ? llvm::GlobalValue::PrivateLinkage
+#endif
                 : llvm::GlobalValue::ExternalLinkage,
                 name,
                 currentModule_
