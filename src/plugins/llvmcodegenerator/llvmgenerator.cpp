@@ -113,7 +113,7 @@ void LLVMGenerator::createStdLibModule()
         stdlibModule_ = errorOrModule.get();
     }
 #else
-    stdlibModule = llvm::ParseBitcodeFile(stdlibContents_.data(), *context_, &error);
+    stdlibModule_ = llvm::ParseBitcodeFile(stdlibContents_.data(), *context_, &error);
 #endif
     if (!error.empty()) {
         qDebug() << QString::fromStdString(error);
