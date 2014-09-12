@@ -16,12 +16,13 @@ class ToolbarContextMenu : public QWidget
     Q_OBJECT
 public:
     explicit ToolbarContextMenu(QWidget *parent = 0);
-    void addProxy(Widgets::ActionProxy * proxyItem);
+    void addProxy(QAction * proxyItem);
     void addSeparator();
     void finalize();
 
     void setSettingsObject(ExtensionSystem::SettingsPtr settings, const QString &settingsPrefix);
     void setExplicitImportNames(const QSet<QString> explicitItemNames);
+    inline QAction * showAction() const { return showAction_; }
 
     void saveSettings() const;
     void loadSettings();
@@ -37,10 +38,11 @@ protected Q_SLOTS:
     void toggleProxyButtonVisible(int iState);
     void reset();
     void showAll();
+    void showMe();
 
 protected:
     void paintEvent(QPaintEvent *event);
-    QList<Widgets::ActionProxy*> items_;
+    QList<QAction*> items_;
     QSet<QString> forcedItemNames_;
 
     QGridLayout * grid_;
@@ -53,6 +55,7 @@ protected:
     QString settingsPrefix_;
     QSet<QString> explicitImportNames_;
     bool ignoreStateChange_;
+    QAction* showAction_;
 
 };
 

@@ -386,8 +386,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (courseManager_) {
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         foreach (QMenu* menu, courseManager_->menus()) {
-            qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-            mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
+            qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;            
+            menu->setObjectName("menu-CourseManager");
+            mainWindow_->addMenuBeforeHelp(menu);
         }
         qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         coursesWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
@@ -501,7 +502,8 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             }
 
             foreach (QMenu* menu, actorMenus) {
-                mainWindow_->ui->menubar->insertMenu(mainWindow_->ui->menuHelp->menuAction(), menu);
+                menu->setObjectName("menu-Actor" + QString::fromLatin1(Shared::actorCanonicalName(actor->asciiModuleName())));
+                mainWindow_->addMenuBeforeHelp(menu);
             }
 
             if (actor->pultWidget()) {
@@ -662,7 +664,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         ipcShm_->unlock();
         startTimer(250);
     }
-#endif
+#endif    
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     return "";
 }
@@ -847,6 +849,7 @@ void Plugin::start()
         }
     }
     PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
+    mainWindow_->setupMenuBarContextMenu();
     mainWindow_->show();
     if (fileNameToOpenOnReady_.length() > 0) {
         mainWindow_->loadFromUrl(QUrl::fromLocalFile(fileNameToOpenOnReady_), true);

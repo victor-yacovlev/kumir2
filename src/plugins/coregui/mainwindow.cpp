@@ -11,6 +11,7 @@
 #include "systemopenfilesettings.h"
 #include "guisettingspage.h"
 #include "widgets/iconprovider.h"
+#include "toolbarcontextmenu.h"
 
 #include <algorithm>
 #include <QSharedPointer>
@@ -25,7 +26,8 @@ MainWindow::MainWindow(Plugin * p) :
     m_plugin(p),
     statusBar_(new StatusBar),
     tabWidget_(0),
-    prevBottomSize_(DefaultConsoleHeight)
+    prevBottomSize_(DefaultConsoleHeight),
+    menubarContextMenu_(0)
 {   
 
     qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
@@ -299,6 +301,60 @@ MainWindow::MainWindow(Plugin * p) :
     ui->actionMake_native_executable->setVisible(manager->isPluginLoaded("LLVMCodeGenerator"));
     connect(ui->actionMake_native_executable, SIGNAL(triggered()),
             this, SLOT(makeNativeExecutable()));
+
+    menubarContextMenu_ = new ToolbarContextMenu(this);
+    ui->menubar->setContextMenuWidget(menubarContextMenu_);
+    topLevelMenus_ << ui->menuFile << ui->menuEdit << ui->menuInsert
+                   << ui->menuRun << ui->menuRun << ui->menuHelp;
+    ui->menubar->addAction(menubarContextMenu_->showAction());
+}
+
+void MainWindow::addMenuBeforeHelp(QMenu *menu)
+{
+    ui->menubar->insertMenu(ui->menuHelp->menuAction(), menu);
+    int helpIndex = topLevelMenus_.indexOf(ui->menuHelp);
+    if (-1 != helpIndex) {
+        topLevelMenus_.insert(helpIndex, menu);
+    }
+    else {
+        topLevelMenus_.append(menu);
+    }
+}
+
+void MainWindow::setupMenuBarContextMenu()
+{
+
+    menubarContextMenu_->setSettingsObject(m_plugin->mySettings(), "MenuBarItems");
+
+    Q_FOREACH(QMenu* menu, topLevelMenus_) {
+        QAction * menuAction = menu->menuAction();
+        const QString objectName = menu->objectName();
+        menuAction->setObjectName(objectName);
+        menubarContextMenu_->addProxy(menuAction);
+    }
+
+    menubarContextMenu_->finalize();
+}
+
+void MainWindow::updateVisibleMenus()
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(sender());
+    if (twe && twe == tabWidget_->currentWidget()) {
+        updateVisibleMenus(twe);
+    }
+}
+
+void MainWindow::updateVisibleMenus(int index)
+{
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(index));
+    if (twe) {
+        updateVisibleMenus(twe);
+    }
+}
+
+void MainWindow::updateVisibleMenus(TabWidgetElement *twe)
+{
+    menubarContextMenu_->setExplicitImportNames(twe->availableMenuNames());
 }
 
 //QString MainWindow::StatusbarWidgetCSS =
@@ -1459,6 +1515,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
 
     connect(element, SIGNAL(documentCleanChanged(bool)), this, SLOT(handleDocumentCleanChanged(bool)));
     connect(element, SIGNAL(titleChanged(QString)), this, SLOT(handleTabTitleChanged()));
+    connect(element, SIGNAL(explicitImportNamesRequest()), this, SLOT(updateVisibleMenus()));
     createTopLevelMenus(menus, true);
     tabWidget_->addTab(element, title);
     return element;
@@ -1500,7 +1557,7 @@ void MainWindow::createTopLevelMenus(const QList<QMenu*> & c, bool tabDependent)
                 }
                 menu->addActions(actions);
             }
-            mb->insertMenu(ui->menuWindow->menuAction(), menu);
+            addMenuBeforeHelp(menu);
         }
     }
 }
@@ -1602,6 +1659,7 @@ void MainWindow::loadSettings(const QStringList & keys)
         ui->splitter->setSizes(sizes);
         ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
     }    
+    menubarContextMenu_->loadSettings();
 }
 
 void MainWindow::saveSettings()
@@ -1616,6 +1674,7 @@ void MainWindow::saveSettings()
     settings_->setValue("SavedBottomSize", prevBottomSize_);
     centralSide_->save();
     secondarySide_->save();
+    menubarContextMenu_->saveSettings();
 }
 
 void MainWindow::restoreSession()
