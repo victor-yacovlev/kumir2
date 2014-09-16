@@ -1427,6 +1427,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
             }
+            else {
+                editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
+                editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
+            }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
             bool checkForIndent = !editor_->cursor()->hasSelection() &&
