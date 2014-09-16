@@ -357,7 +357,7 @@ void MainWindowTask::openRescent()
     
     loadCourseFromFile(s->property ( "fullName" ).toString());
   //  if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
-    
+Q_EMIT activateRequest();
 };
 
 void MainWindowTask::setUpDown(QModelIndex index)
