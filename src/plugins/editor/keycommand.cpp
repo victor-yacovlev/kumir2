@@ -32,6 +32,7 @@ static const QString sSelectAll = "SelectAll";
 static const QString sCopy = "Copy";
 
 static const QString sInsertText = "InsertText";
+static const QString sInsertImport = "InsertImport";
 static const QString sBackspace = "Backspace";
 static const QString sDelete = "Delete";
 static const QString sRemoveLine = "RemoveLine";
@@ -70,6 +71,7 @@ extern QString dumpKeyCommandType(KeyCommand::Type type)
     case KeyCommand::Copy: return sCopy;
 
     case KeyCommand::InsertText: return sInsertText;
+    case KeyCommand::InsertImport: return sInsertImport;
     case KeyCommand::Backspace: return sBackspace;
     case KeyCommand::Delete: return sDelete;
     case KeyCommand::RemoveLine: return sRemoveLine;
@@ -110,6 +112,7 @@ KeyCommand::Type loadKeyCommandType(const QString &s)
     else if (s.toLower()==sCopy.toLower()) return KeyCommand::Copy;
 
     else if (s.toLower()==sInsertText.toLower()) return KeyCommand::InsertText;
+    else if (s.toLower()==sInsertImport.toLower()) return KeyCommand::InsertImport;
     else if (s.toLower()==sBackspace.toLower()) return KeyCommand::Backspace;
     else if (s.toLower()==sDelete.toLower()) return KeyCommand::Delete;
     else if (s.toLower()==sRemoveLine.toLower()) return KeyCommand::RemoveLine;

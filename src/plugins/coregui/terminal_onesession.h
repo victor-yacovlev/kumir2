@@ -23,9 +23,10 @@ struct VisibleLine {
     bool * endSelected;
     size_t from;
     size_t to;
+    size_t sourceLineNumber;
 
-    inline explicit VisibleLine(const QString &tx, const LineProp &lp, bool * es, size_t f, size_t t)
-        : text(tx), prop(lp), endSelected(es), from(f), to(t) {}
+    inline explicit VisibleLine(const QString &tx, const LineProp &lp, bool * es, size_t f, size_t t, size_t n)
+        : text(tx), prop(lp), endSelected(es), from(f), to(t), sourceLineNumber(n) {}
 
     inline VisibleLine& operator=(const VisibleLine & other)
     {
@@ -56,7 +57,7 @@ public:
                          ) const;
     uint drawMainText(QPainter &p, const QPoint & topLeft, const QRect & dirtyRect) const;
     void drawCursor(QPainter &p) const;
-    void triggerTextSelection(const QPoint & fromPos, const QPoint & toPos);
+    void triggerTextSelection(const QPoint & fromPos, const QPoint & toPos);    
     void clearSelection();
     inline void setFont(const QFont &font) { font_ = font; }
     inline QFont font() const { return font_; }
@@ -84,6 +85,7 @@ signals:
     void inputDone(const QVariantList &);
 private:    
     QPoint cursorPositionByVisiblePosition(const QPoint & pos) const;
+    void updateSelectionFromVisibleToRealLines();
     QString headerText() const;
     QString footerText() const;
     QFont utilityFont() const;

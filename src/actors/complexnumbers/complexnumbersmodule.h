@@ -10,7 +10,11 @@ You should change it corresponding to functionality.
 #define COMPLEXNUMBERSMODULE_H
 
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 #include "extensionsystem/kplugin.h"
 #include "complexnumbersmodulebase.h"
 

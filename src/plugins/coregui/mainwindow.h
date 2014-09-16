@@ -111,6 +111,12 @@ private slots:
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
     void checkForConsoleHiddenBySplitter(int, int);
+    void setupMenuBarContextMenu();
+    void addMenuBeforeHelp(QMenu * menu);
+
+    void updateVisibleMenus();
+    void updateVisibleMenus(int index);
+    void updateVisibleMenus(class TabWidgetElement*);
 
 
 private:
@@ -171,6 +177,8 @@ private:
     ExtensionSystem::SettingsPtr settings_;
     int prevBottomSize_;
     Widgets::SecondaryWindow * debuggerWindow_; // changes place on layout change
+    class ToolbarContextMenu * menubarContextMenu_;
+    QList<QMenu*> topLevelMenus_;
 };
 
 
