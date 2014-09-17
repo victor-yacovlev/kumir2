@@ -438,6 +438,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     actors += loadedPlugins("st_funct");
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    QList<QUrl> actorHelpFiles;
     foreach (ExtensionSystem::KPlugin* o, actors) {
         ActorInterface * actor = qobject_cast<ActorInterface*>(o);
         const QString actorName = Shared::actorCanonicalName(actor->localizedModuleName(QLocale::Russian));
@@ -446,7 +447,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         QWidget * w = 0;
         const QString actorHelpFile = helpPath + o->pluginSpec().name + ".xml";
         if (!actor->localizedModuleName(QLocale::Russian).startsWith("_") && QFile(actorHelpFile).exists()) {
-            helpViewer_->addDocument(QUrl::fromLocalFile(actorHelpFile));
+            actorHelpFiles.append(QUrl::fromLocalFile(actorHelpFile));
         }
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
@@ -552,6 +553,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         }
 
     }
+    helpViewer_->addDocuments(tr("Actor's References"), actorHelpFiles);
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {

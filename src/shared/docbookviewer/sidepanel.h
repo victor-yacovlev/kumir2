@@ -23,7 +23,7 @@ class SidePanel : public QWidget
 public:
     explicit SidePanel(QWidget *parent = 0);
 
-    void addDocument(Document document);    
+    void addDocument(Document document, bool bookSetItemsAsTopLevel);
     QList<ModelPtr> loadedDocuments() const;
     void saveState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);
     void restoreState(ExtensionSystem::SettingsPtr  settings, const QString & prefix);

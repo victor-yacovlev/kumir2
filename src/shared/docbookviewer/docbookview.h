@@ -51,11 +51,8 @@ public:
 
     ~DocBookView();
 
-    Document addDocument(
-            const QUrl & url,
-            QString * error = 0,
-            int index = -1
-            );
+    Document addDocument(const QUrl & url, QString * error = 0);
+    Document addDocuments(const QString & groupName, const QList<QUrl> & urls, QString * error = 0);
 
     void removeDocument(const Document & existingDocument);
 

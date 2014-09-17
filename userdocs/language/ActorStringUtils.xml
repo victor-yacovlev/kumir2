@@ -3,10 +3,9 @@
         "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
         []>
 <article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <title>Исполнитель "Строки"</title>
-    <subtitle>Алгоритмы обработки строк</subtitle>
+    <title>Алгоритмы обработки строк</title>
     <section>
-        <title>Использование исполнителя</title>
+        <title>Использование исполнителя "Строки"</title>
         <para>
             В версиях Кумир для начальных и средних классов алгоритмы работы со строками
             находятся в исполнителе <code role="кумир">Строки</code>.

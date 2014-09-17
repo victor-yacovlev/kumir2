@@ -42,7 +42,7 @@ private:
     QString renderSet(ModelPtr data) const;
     QString renderChapter(ModelPtr data) const;
     QString renderArticle(ModelPtr data) const;
-    QString renderAbstract(ModelPtr data) const;
+    QString renderAbstract(ModelPtr data, bool wrapInDivClassAbstract) const;
     QString renderTOC(ModelPtr data) const;
     QString renderTOCElement(ModelPtr data, quint8 level, bool enumerate) const;
     QString renderPlainPage(ModelPtr data) const;
