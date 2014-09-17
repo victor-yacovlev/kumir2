@@ -1559,6 +1559,25 @@ void EditorPlane::doAutocomplete()
     }
 }
 
+static unsigned int findNumberOfOverlappingTrailingCharacters(
+        const QString & source, const QString & pattern
+        )
+{
+    /* Find count of X'es:
+     * ........XXXXPPPPPPPP  -- pattern string
+     * SSSSSSSSXXXX........  -- source string
+     */
+    unsigned int result = 0u;
+    for (int i=1; i<source.size(); i++) {
+        const QString tail = source.mid(source.size()-i);
+        if (pattern.startsWith(tail)) {
+            result = (unsigned int) i;
+            break;
+        }
+    }
+    return result;
+}
+
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
 #ifdef QT_DEBUG
@@ -1580,12 +1599,13 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     int leftPart = 0;
     QString text;
     if (!suggestion.startsWith(' ')) {
-        for (int i=before.length()-1; i>=0; i--) {
-            if (Delimeters.contains(before[i]))
-                break;
-            else
-                leftPart += 1;
-        }
+        leftPart = findNumberOfOverlappingTrailingCharacters(before, suggestion);
+//        for (int i=before.length()-1; i>=0; i--) {
+//            if (Delimeters.contains(before[i]))
+//                break;
+//            else
+//                leftPart += 1;
+//        }
         text = suggestion;
     }
     else if (before.length()>0) {
