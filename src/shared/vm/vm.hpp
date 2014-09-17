@@ -3149,27 +3149,29 @@ void KumirVM::do_inrange()
 
 void KumirVM::do_pause(uint16_t )
 {
-    if (stacksMutex_) stacksMutex_->lock();
-    ContextRunMode prevRunMode = CRM_OneStep;
-    if (contextsStack_.size()>0) {
-        prevRunMode = currentContext().runMode;
-        currentContext().runMode = CRM_OneStep;
-    }
-    blindMode_ = false;
-    if (prevRunMode!=CRM_OneStep) {
-        if (debugHandler_) {
-            debugHandler_->noticeOnLineChanged(currentContext().lineNo,
-                                               currentContext().columnStart,
-                                               currentContext().columnEnd);
+    if (EP_Main == entryPoint_) {
+        if (stacksMutex_) stacksMutex_->lock();
+        ContextRunMode prevRunMode = CRM_OneStep;
+        if (contextsStack_.size()>0) {
+            prevRunMode = currentContext().runMode;
+            currentContext().runMode = CRM_OneStep;
         }
-        (*pause_)();
-        if (debugHandler_) {
-            debugHandler_->noticeOnLineChanged(currentContext().lineNo,
-                                               currentContext().columnStart,
-                                               currentContext().columnEnd);
+        blindMode_ = false;
+        if (prevRunMode!=CRM_OneStep) {
+            if (debugHandler_) {
+                debugHandler_->noticeOnLineChanged(currentContext().lineNo,
+                                                   currentContext().columnStart,
+                                                   currentContext().columnEnd);
+            }
+            (*pause_)();
+            if (debugHandler_) {
+                debugHandler_->noticeOnLineChanged(currentContext().lineNo,
+                                                   currentContext().columnStart,
+                                                   currentContext().columnEnd);
+            }
         }
+        if (stacksMutex_) stacksMutex_->unlock();
     }
-    if (stacksMutex_) stacksMutex_->unlock();
     nextIP();
 }
 
