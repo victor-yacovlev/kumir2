@@ -16,7 +16,7 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Возвращает строковое представление <parameter>число</parameter>.
+			Возвращает строковое представление параметра <parameter>число</parameter>.
         </para>
         <example>
             <programlisting role="кумир"><![CDATA[
@@ -41,7 +41,7 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Возвращает строковое представление <parameter>число</parameter>.
+			Возвращает строковое представление параметра <parameter>число</parameter>.
         </para>
         <example>
             <programlisting role="кумир"><![CDATA[
@@ -69,9 +69,9 @@
         <para>
             Переводит строку <parameter>строка</parameter> в вещественное представление.
             Если <parameter>строка</parameter> содержит только вещественное число, то в
-            <parameter>успех</parameter> записывается <code language="кумир">да</code> и 
+            <parameter>успех</parameter> записывается <code language="kumir">да</code>
             алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
-            записывается <code language="кумир">нет</code> и алгоритм возвращает значение
+            записывается <code language="kumir">нет</code> и алгоритм возвращает значение
             <code>0.0</code>.
 
         </para>
@@ -102,9 +102,9 @@
         <para>
             Переводит строку <parameter>строка</parameter> в целочисленное представление.
             Если <parameter>строка</parameter> содержит только целое число, то в
-            <parameter>успех</parameter> записывается <code language="кумир">да</code>
+            <parameter>успех</parameter> записывается <code language="kumir">да</code>
             алгоритм возвращает вещественное значение, иначе в <parameter>успех</parameter>
-            записывается <code language="кумир">нет</code> и алгоритм возвращает значение
+            записывается <code language="kumir">нет</code> и алгоритм возвращает значение
             <code>0</code>.
 
         </para>
