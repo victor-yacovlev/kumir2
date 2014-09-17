@@ -1061,6 +1061,7 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
         const Shared::Analizer::Suggestion & s = result.at(i_sugg);
         if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
             // suggest only if suggestion bounds by a keyword
+            // or contains a space inside itself
             if (s.kind==Shared::Analizer::Suggestion::SecondaryKeyword ||
                     (lastStatement!=nullptr
                      && lastStatement->data.size()>0 &&
@@ -1071,7 +1072,13 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
                         )
                      )
                     )
+            {
                 filteredResult.push_back(s);
+            }
+            else if (s.value.contains(' '))
+            {
+                filteredResult.push_back(s);
+            }
         }
         else {
             // regular case -- suggest it (already filtered by name)
