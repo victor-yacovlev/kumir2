@@ -757,7 +757,7 @@ namespace ActorRobot {
         radSpinBox=new QDoubleSpinBox();
         radSpinBox->setRange(0, 99);
         tempSpinBox=new QSpinBox();
-        tempSpinBox->setRange(0, 171);
+        tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
         
