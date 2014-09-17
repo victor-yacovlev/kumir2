@@ -50,13 +50,18 @@ b[i,j]:=-b[j,i]
         </para>
         <para>
             Формат вызова:
-            <programlisting role="кумир"><![CDATA[
-утв ЛОГ ВЫРАЖЕНИЕ
-дано ЛОГ ВЫРАЖЕНИЕ
-надо ЛОГ ВЫРАЖЕНИЕ
-]]>
-            </programlisting>
-        </para>
+		</para>
+			<itemizedlist>
+				<listitem>
+					<para><code role="кумир">утв ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+				<listitem>
+					<para><code role="кумир">дано ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+				<listitem>
+					<para><code role="кумир">надо ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+			</itemizedlist>
         <para>
             Все три команды выполняются так.
             <orderedlist>
