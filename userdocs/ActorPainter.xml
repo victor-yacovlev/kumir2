@@ -380,77 +380,21 @@ from painter import *
                 </itemizedlist>
             </para>
         </section>
-        <section id="CMYKA">
-            <title>CMYKA</title>
-            <funcsynopsis role="кумир">
-                <funcsynopsisinfo>
-                    <package>Рисователь</package>
-                </funcsynopsisinfo>
-                <funcprototype>
-                    <funcdef>алг
-                        <type>цвет</type>
-                        <function>CMYKA</function>
-                    </funcdef>
-                    <paramdef>цел
-                        <parameter>c</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>m</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>y</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>k</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>a</parameter>
-                    </paramdef>
-                </funcprototype>
-            </funcsynopsis>
-            <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели CMYK и
-                значения альфа-канала:
-                <itemizedlist>
-                    <listitem>
-                        <para>
-                            <parameter>c</parameter>
-                            -- величина бирюзовой составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>m</parameter>
-                            -- величина пурпурной составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>y</parameter>
-                            -- величина желтой составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>k</parameter>
-                            -- величина черной составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>a</parameter>
-                            -- значение непрозрачности цвета (&alpha;-значение).
-                        </para>
-                    </listitem>
-                </itemizedlist>
-                Все значения состовляющих должны быть от
-                <code>0</code>
-                до<code>255</code>.
-            </para>
-        </section>
-        <section id="RGBA">
-            <title>RGBA</title>
-            <funcsynopsis role="кумир">
+		<section id="additional_algo">
+			<title>
+				Алгоритмы RGBA, CMYKA, HSLA и HSVA
+			</title>
+			<para>
+				У алгоритмов <code role="кумир">RGB</code>, <code role="кумир">CMYK</code>, <code role="кумир">HSL</code> и <code role="кумир">HSV</code> 
+				существуют аналоги <code role="кумир">RGBA</code>, <code role="кумир">CMYKA</code>, <code role="кумир">HSLA</code> и 
+				<code role="кумир">HSVA</code>, которые учитывают значения непрозрачности цвета. 
+				В список аргументов этих алгоритмов добавляется параметр <code role="кумир">цел а</code>, описывающий значение непрозрачности цвета 
+				(альфа-значение) и может принимать значения от <code role="кумир">0</code> до <code role="кумир">255</code>. При вызове такого алгоритма значение <code role="кумир">а</code> в списке параметров 
+				нужно записывать последним.
+			</para>
+			<para>
+				Например, синтаксис алгоритма <code role="кумир">RGBA</code> будет выглядеть так:
+				<funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -468,181 +412,13 @@ from painter import *
                     <paramdef>цел
                         <parameter>b</parameter>
                     </paramdef>
-                    <paramdef>цел
-                        <parameter>a</parameter>
-                    </paramdef>
+					<paramdef>цел
+						<parameter>а</parameter>
+					</paramdef>
                 </funcprototype>
             </funcsynopsis>
-            <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели RGB и 
-				значения альфа-канала:
-                <itemizedlist>
-                    <listitem>
-                        <para>
-                            <parameter>r</parameter>
-                            -- величина красной составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>g</parameter>
-                            -- величина зеленой составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>b</parameter>
-                            -- величина синей составляющей цвета;
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>a</parameter>
-                            -- значение непрозрачности цвета (&alpha;-значение).
-                        </para>
-                    </listitem>
-                </itemizedlist>
-                Все значения состовляющих должны быть от
-                <code>0</code>
-                до<code>255</code>.
-            </para>
-        </section>
-        <section id="HSLA">
-            <title>HSLA</title>
-            <funcsynopsis role="кумир">
-                <funcsynopsisinfo>
-                    <package>Рисователь</package>
-                </funcsynopsisinfo>
-                <funcprototype>
-                    <funcdef>алг
-                        <type>цвет</type>
-                        <function>HSLA</function>
-                    </funcdef>
-                    <paramdef>цел
-                        <parameter>h</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>s</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>l</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>a</parameter>
-                    </paramdef>
-                </funcprototype>
-            </funcsynopsis>
-            <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
-				значения альфа-канала:
-                <itemizedlist>
-                    <listitem>
-                        <para>
-                            <parameter>h</parameter>
-                            -- тон цвета (значения в градусах от
-                            <code>0</code>
-                            до
-                            <code>359</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>s</parameter>
-                            -- значение насыщенности цвета (от
-                            <code>0</code>
-                            до
-                            <code>255</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>l</parameter>
-                            -- значение интенсивности цвета (от
-                            <code>0</code>
-                            до
-                            <code>255</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>a</parameter>
-                            -- значение непрозрачности цвета (&alpha;-значение,
-                            от
-                            <code>0</code>
-                            до<code>255</code>).
-                        </para>
-                    </listitem>
-                </itemizedlist>
-            </para>
-        </section>
-        <section id="HSVA">
-            <title>HSVA</title>
-            <funcsynopsis role="кумир">
-                <funcsynopsisinfo>
-                    <package>Рисователь</package>
-                </funcsynopsisinfo>
-                <funcprototype>
-                    <funcdef>алг
-                        <type>цвет</type>
-                        <function>HSVA</function>
-                    </funcdef>
-                    <paramdef>цел
-                        <parameter>h</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>s</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>v</parameter>
-                    </paramdef>
-                    <paramdef>цел
-                        <parameter>a</parameter>
-                    </paramdef>
-                </funcprototype>
-            </funcsynopsis>
-            <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
-				значения альфа-канала:
-                <itemizedlist>
-                    <listitem>
-                        <para>
-                            <parameter>h</parameter>
-                            -- тон цвета (значения в градусах от
-                            <code>0</code>
-                            до
-                            <code>359</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>s</parameter>
-                            -- значение насыщенности цвета (от
-                            <code>0</code>
-                            до
-                            <code>255</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>v</parameter>
-                            -- значение яркости цвета (от
-                            <code>0</code>
-                            до
-                            <code>255</code>);
-                        </para>
-                    </listitem>
-                    <listitem>
-                        <para>
-                            <parameter>a</parameter>
-                            -- значение непрозрачности цвета (&alpha;-значение,
-                            от
-                            <code>0</code>
-                            до<code>255</code>).
-                        </para>
-                    </listitem>
-                </itemizedlist>
-            </para>
-        </section>
+			</para>
+		</section>
     </section>
     <section id="Информационные алгоритмы">
         <title>Информационные алгоритмы</title>
