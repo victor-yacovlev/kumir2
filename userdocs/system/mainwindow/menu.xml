@@ -263,7 +263,7 @@
         <para>
 		</para>
     </section>
-	<section>
+	<remark><section>
 		<title>
 			Меню "Водолей"
 		</title>
@@ -302,7 +302,7 @@
 				</listitem>
 			</orderedlist>
 		</para>
-	</section>
+	</section></remark>
 	<section>
 		<title>
 			Меню "Робот"
@@ -356,7 +356,7 @@
 			</orderedlist>
 		</para>
 	</section>
-	<section>
+	<remark><section>
 		<title>
 			Меню "Рисователь"
 		</title>
@@ -443,7 +443,7 @@
 				</listitem>
 			</orderedlist>
 		</para>
-	</section>
+	</section></remark>
 	<section>
 		<title>
 			Меню "Вертун"
@@ -467,7 +467,7 @@
 			</orderedlist>
 		</para>
 	</section>
-	<section>
+	<remark><section>
 		<title>
 			Меню "Кузнечик"
 		</title>
@@ -495,7 +495,7 @@
 				</listitem>
 			</orderedlist>
 		</para>
-	</section>
+	</section></remark>
 	<section>
 		<title>
 			Меню "Чертёжник"
