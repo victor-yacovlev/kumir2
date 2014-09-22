@@ -12,6 +12,9 @@ Expression::Expression()
     , isStringPart(false)
     , operatorr(AST::OpNone)
     , dimension(0)
+    , keepInCache(false)
+    , useFromCache(false)
+    , clearCacheOnFailure(false)
 {    
 }
 
@@ -25,6 +28,10 @@ Expression::Expression(const ExpressionPtr src)
     , isStringPart(src->isStringPart)
     , operatorr(src->operatorr)
     , dimension(src->dimension)
+    , keepInCache(src->keepInCache)
+    , useFromCache(src->useFromCache)
+    , clearCacheOnFailure(src->clearCacheOnFailure)
+    , cacheReference(src->cacheReference)
 {
     for (int i=0; i<src->operands.size(); i++) {
         operands << src->operands[i];
