@@ -1890,7 +1890,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         if (stacksMutex_) stacksMutex_->unlock();
         bool hasInput = false;
-        if (consoleInputBuffer_) {
+        if (consoleInputBuffer_ && !fileIO) {
             fileReference.setType(Kumir::FileType::Console);
         }
         if (input_&& !fileIO && !Kumir::Files::overloadedStdIn() && !consoleInputBuffer_) {
