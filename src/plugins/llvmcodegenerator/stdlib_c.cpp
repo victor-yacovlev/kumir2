@@ -2150,19 +2150,20 @@ static T __eat(const char ** pdata)
     const char * data = *pdata;
     const T * idata = reinterpret_cast<const T*> (data);
     T val = idata[0];
+//    std::cerr << "Eat: " << val << std::endl;
     idata++;
     data = reinterpret_cast<const char*>(idata);
     *pdata = data;
     return val;
 }
 
-static void __kumir_fill_array_1(__kumir_array array, const char *data, const __kumir_scalar_type type)
+static void __kumir_fill_array_1(__kumir_array *array, const char *data, const __kumir_scalar_type type)
 {
     const char * p = data;
     __kumir_int isz = __eat<__kumir_int>(&p);
-//    std::cerr << "Size = " << isz << "\n";
+//    std::cerr << "Size = " << isz << std::endl;
     size_t index = 0u;
-    __kumir_scalar * adata = reinterpret_cast<__kumir_scalar*>(array.data);
+    __kumir_scalar * adata = reinterpret_cast<__kumir_scalar*>(array->data);
     while (isz) {
         adata[index].defined = __eat<__kumir_bool>(&p);
 //        std::cerr << "defined = " << adata[index].defined << "\n";
@@ -2186,30 +2187,76 @@ static void __kumir_fill_array_1(__kumir_array array, const char *data, const __
     }
 }
 
-
-EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data)
+static unsigned char __kumir_hex_to_byte(const char c)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_INT);
+    switch (c) {
+    case '0': return 0x0u;
+    case '1': return 0x1u;
+    case '2': return 0x2u;
+    case '3': return 0x3u;
+    case '4': return 0x4u;
+    case '5': return 0x5u;
+    case '6': return 0x6u;
+    case '7': return 0x7u;
+    case '8': return 0x8u;
+    case '9': return 0x9u;
+    case 'a': case 'A': return 0xAu;
+    case 'b': case 'B': return 0xBu;
+    case 'c': case 'C': return 0xCu;
+    case 'd': case 'D': return 0xDu;
+    case 'e': case 'E': return 0xEu;
+    case 'f': case 'F': return 0xFu;
+    default: return 0u;
+    }
 }
 
-EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data)
+static char* __kumir_deserialize_hex(const char *s)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_REAL);
+    const size_t buffer_size = (strlen(s)+1) / 3;
+    char * bytes = reinterpret_cast<char*>(malloc(buffer_size));
+    for (size_t i=0; i<buffer_size; ++i) {
+        unsigned char h = __kumir_hex_to_byte(s[i*3]);
+        unsigned char l = __kumir_hex_to_byte(s[i*3+1]);
+        unsigned char byte = h << 4 | l;
+        bytes[i] = byte;
+    }
+    return bytes;
 }
 
-EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_i(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_BOOL);
+//    std::cerr << data << std::endl;
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_INT);
+    free(buffer);
 }
 
-EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_r(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_CHAR);
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_REAL);
+    free(buffer);
 }
 
-EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_b(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_STRING);
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_BOOL);
+    free(buffer);
+}
+
+EXTERN void __kumir_fill_array_c(__kumir_array *array, const char * data)
+{
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_CHAR);
+    free(buffer);
+}
+
+EXTERN void __kumir_fill_array_s(__kumir_array *array, const char * data)
+{
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_STRING);
+    free(buffer);
 }
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,

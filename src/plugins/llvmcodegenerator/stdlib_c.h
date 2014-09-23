@@ -138,11 +138,11 @@ EXTERN void __kumir_create_array_copy_3(__kumir_array * result,
 EXTERN void __kumir_link_array(__kumir_array * result, const __kumir_array * from);
 EXTERN void __kumir_free_array(__kumir_array * array);
 
-EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data);
+EXTERN void __kumir_fill_array_i(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_r(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_b(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_c(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_s(__kumir_array * array, const char * data);
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,
                                         bool value_expected,

@@ -1768,6 +1768,20 @@ llvm::Value * LLVMGenerator::createConstant(llvm::IRBuilder<> & builder, const A
     return tmp;
 }
 
+static std::string convertByteArrayToHexCoding(const QByteArray & data)
+{
+    std::string result;
+    for (int i=0; i<data.size(); i++) {
+        if (i>0) result.push_back(' ');
+        char b = data[i];
+        QByteArray n = QByteArray::number((unsigned int)(b), 16);
+        if (n.size() < 2)
+            n.prepend('0');
+        result += std::string(n.data());
+    }
+    return result;
+}
+
 llvm::Value * LLVMGenerator::createArrayConstant(llvm::IRBuilder<> &builder, const AST::VariableBaseType bt, const uint8_t dim, const QVariant &value)
 {
     QByteArray data;
@@ -1775,8 +1789,7 @@ llvm::Value * LLVMGenerator::createArrayConstant(llvm::IRBuilder<> &builder, con
     else if (2u == dim) data = createArray_2_ConstantData(bt, value.toList());
     else if (3u == dim) data = createArray_3_ConstantData(bt, value.toList());
 
-    std::string cdata(data.constData(), data.size());
-    llvm::Value * ldata = builder.CreateGlobalStringPtr(cdata);
+    llvm::Value * ldata = builder.CreateGlobalStringPtr(convertByteArrayToHexCoding(data));
     return ldata;
 }
 
