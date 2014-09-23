@@ -1135,12 +1135,18 @@ class Settings:
             assert isinstance(entry, SettingsEntry)
             result += entry.get_entry_cpp_implementation("entries")
         result += """
-%s = new Widgets::DeclarativeSettingsPage(
+bool guiAvailable = true;
+#ifdef Q_WS_X11
+guiAvailable = 0 != getenv("DISPLAY");
+#endif
+if (guiAvailable) {
+    %s = new Widgets::DeclarativeSettingsPage(
                             Shared::actorCanonicalName(localizedModuleName(QLocale::Russian)),
                             mySettings(),
                             entries
                           );
-connect(%s, SIGNAL(settingsChanged(QStringList)), this, SLOT(handleSettingsChangedCppImplementation(QStringList)));
+    connect(%s, SIGNAL(settingsChanged(QStringList)), this, SLOT(handleSettingsChangedCppImplementation(QStringList)));
+}
 
         """ % (variable_name, variable_name)
         return result
