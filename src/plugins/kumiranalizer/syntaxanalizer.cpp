@@ -4086,9 +4086,23 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<LexemPtr> &constant,
         maxDim = 0;
         ct = testConst(constant, localErr);
         if ( ct==AST::TypeNone ) {
+            QString errorText = _("Not a constant value");
+            if  (constant.size() > 1) {
+                bool allLiterals = true;
+                for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                    LexemPtr lx = *it;
+                    if (LxConstLiteral != lx->type) {
+                        allLiterals = false;
+                        break;
+                    }
+                }
+                if (allLiterals) {
+                    errorText = _("Too many qoutes in constant");
+                }
+            }
             for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                 LexemPtr lx = *it;
-                lx->error = _("Not a constant value");
+                lx->error = errorText;
             }
             return QVariant::Invalid;
         }
