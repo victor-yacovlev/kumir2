@@ -4,6 +4,7 @@
         []>
 <article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
     <title>Исполнитель "Файлы"</title>
+    <titleabbrev>Файлы</titleabbrev>
     <subtitle>Чтение и запись файлов</subtitle>
     <section>
         <title>Использование исполнителя</title>
