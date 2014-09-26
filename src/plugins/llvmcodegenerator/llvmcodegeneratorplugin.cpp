@@ -209,7 +209,8 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     std::string buf;
     llvm::raw_string_ostream ostream(buf);
 
-
+//    llvm::raw_os_ostream debug(std::cerr);
+//    lmainModule->print(debug, 0);
     lmainModule->print(ostream, 0);
     buf = ostream.str();
     QByteArray bufData(buf.c_str(), buf.size());

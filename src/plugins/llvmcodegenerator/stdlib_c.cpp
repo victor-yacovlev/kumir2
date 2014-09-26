@@ -117,6 +117,24 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
     result->data.s[wstr.length()] = L'\0';
 }
 
+EXTERN void __kumir_convert_char_to_string(__kumir_scalar * result, const __kumir_scalar * source)
+{
+    __kumir_check_value_defined(source);
+    result->type = __KUMIR_STRING;
+    result->defined = true;
+    result->data.s = (__kumir_string)malloc(2*sizeof(__kumir_char));
+    result->data.s[0] = source->data.c;
+    result->data.s[1] = 0;
+}
+
+EXTERN void __kumir_convert_int_to_real(__kumir_scalar * result, const __kumir_scalar * source)
+{
+    __kumir_check_value_defined(source);
+    result->type = __KUMIR_REAL;
+    result->defined = true;
+    result->data.r = static_cast<__kumir_real>(source->data.i);
+}
+
 EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type)
 {
     __kumir_variant lvalue;
@@ -1064,7 +1082,7 @@ EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_s
                 );
 }
 
-EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_symbol(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     result->defined = true;
@@ -1289,6 +1307,26 @@ EXTERN void Files_close(const __kumir_scalar * handle)
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     Kumir::Files::close(f);
+}
+
+EXTERN void Files_operator_neq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    Kumir::FileType af = __kumir_scalar_to_file_type(*a);
+    Kumir::FileType bf = __kumir_scalar_to_file_type(*b);
+    bool equal = af.fullPath == bf.fullPath;
+    __kumir_create_bool(result, !equal);
+}
+
+EXTERN void Files_operator_eq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    Kumir::FileType af = __kumir_scalar_to_file_type(*a);
+    Kumir::FileType bf = __kumir_scalar_to_file_type(*b);
+    bool equal = af.fullPath == bf.fullPath;
+    __kumir_create_bool(result, equal);
 }
 
 EXTERN void Files_start_reading(const __kumir_scalar * handle)
