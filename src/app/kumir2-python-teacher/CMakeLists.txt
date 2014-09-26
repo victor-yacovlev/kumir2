@@ -23,7 +23,7 @@ else()
 endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Actor*,Editor\(teacher\),Browser,Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
+    "CourseManager,Actor*,Editor\(teacher\),Python3Language,!CoreGUI\(notabs,icon=python,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/python.png"
