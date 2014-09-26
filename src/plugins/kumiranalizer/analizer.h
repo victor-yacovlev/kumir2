@@ -59,6 +59,8 @@ public slots:
 
     QList<Shared::Analizer::LineProp> lineProperties() const;
 
+    bool multipleStatementsInLine(int lineNo) const;
+
     Shared::Analizer::LineProp lineProp(int lineNo, const QString & text) const;
 
     QStringList algorithmsAvailabaleForModule(const AST::ModulePtr currentModule) const;

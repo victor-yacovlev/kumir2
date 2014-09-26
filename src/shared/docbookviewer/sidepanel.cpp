@@ -41,11 +41,11 @@ SidePanel::SidePanel(QWidget *parent) :
 
 }
 
-void SidePanel::addDocument(Document document)
+void SidePanel::addDocument(Document document, bool bookSetItemsAsTopLevel)
 {
     QList<ModelPtr> topLevelItems;
     if (document.root_) {
-        if (document.root_->modelType() == Set) {
+        if (document.root_->modelType() == Set && bookSetItemsAsTopLevel) {
             topLevelItems = document.root_->children();
         }
         else {
@@ -59,8 +59,11 @@ void SidePanel::addDocument(Document document)
         QTreeWidgetItem * item =
                 new QTreeWidgetItem(ui->contentsNavigator);
         ui->contentsNavigator->addTopLevelItem(item);
-        item->setText(0, model->title());
-        item->setToolTip(0, model->subtitle());
+        item->setText(0, model->titleAbbrev());
+        item->setToolTip(0, model->titleAbbrev() == model->title()
+                         ? model->subtitle()
+                         : model->title()
+                           );
         createNavigationItems(item, model);
         createListOfExamples(model);
         createListOfTables(model);
@@ -206,8 +209,10 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
         ModelPtr child = model->children()[i];
         if (child->isSectioningNode()) {
             QTreeWidgetItem * childItem = new QTreeWidgetItem(item);
-            childItem->setText(0, child->title());
-            childItem->setToolTip(0, child->subtitle());
+            childItem->setText(0, child->titleAbbrev());
+            childItem->setToolTip(0, child->titleAbbrev() == child->title()
+                                  ? child->subtitle()
+                                  : child->title());
             modelsOfItems_[childItem] = child;
             itemsOfModels_[child] = childItem;
             createNavigationItems(childItem, child);
@@ -228,7 +233,7 @@ void SidePanel::createListOfExamples(ModelPtr root)
     if (listOfExamples) {
         QTreeWidgetItem * topLevelItem =
                 new QTreeWidgetItem(ui->examplesNavigator);
-        topLevelItem->setText(0, listOfExamples->title());
+        topLevelItem->setText(0, listOfExamples->titleAbbrev());
         topLevelItem->setToolTip(0, tr("List of examples in \"%1\"")
                                  .arg(listOfExamples->title()));
         ui->examplesNavigator->addTopLevelItem(topLevelItem);
@@ -256,7 +261,7 @@ void SidePanel::createListOfTables(ModelPtr root)
     if (listOfTables) {
         QTreeWidgetItem * topLevelItem =
                 new QTreeWidgetItem(ui->tablesNavigator);
-        topLevelItem->setText(0, listOfTables->title());
+        topLevelItem->setText(0, listOfTables->titleAbbrev());
         topLevelItem->setToolTip(0, tr("List of tables in \"%1\"")
                                  .arg(listOfTables->title()));
         ui->tablesNavigator->addTopLevelItem(topLevelItem);

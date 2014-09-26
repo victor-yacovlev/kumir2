@@ -53,6 +53,11 @@ void Settings::flush()
     mutex_->unlock();
 }
 
+Settings::~Settings()
+{
+    flush();
+}
+
 void Settings::changeWorkingDirectory(const QString &workDirPath)
 {
     workDirPath_ = workDirPath;

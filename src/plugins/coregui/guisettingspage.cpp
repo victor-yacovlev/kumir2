@@ -8,6 +8,8 @@
 #include "kumirprogram.h"
 #include "interfaces/actorinterface.h"
 
+#include "widgets/iconprovider.h"
+
 namespace CoreGUI {
 
 const QString GUISettingsPage::LayoutKey = "MainWindowLayout";
@@ -32,11 +34,13 @@ GUISettingsPage::GUISettingsPage(ExtensionSystem::SettingsPtr settings, QWidget 
 
 void GUISettingsPage::createVisibleIconsGrid()
 {
-    static const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
-            + "/icons/from_qtcreator/";
+//    static const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
+//            + "/icons/from_qtcreator/";
 
     static const QString iconsRoot = ExtensionSystem::PluginManager::instance()->sharePath()
             + "/icons/";
+
+    Widgets::IconProvider* icons = Widgets::IconProvider::self();
 
     static const int MaxColumns = 2;
 
@@ -49,20 +53,20 @@ void GUISettingsPage::createVisibleIconsGrid()
     c->setLayout(l);
 
     toolbarVisibleItems_ << new QCheckBox(MainWindow::tr("New program"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     toolbarVisibleItems_.last()->setObjectName("file-new");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(MainWindow::tr("Open..."), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
     toolbarVisibleItems_.last()->setObjectName("file-open");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(MainWindow::tr("Save"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
     toolbarVisibleItems_.last()->setObjectName("file-save");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
@@ -77,20 +81,20 @@ void GUISettingsPage::createVisibleIconsGrid()
     row ++; col = 0;
 
     toolbarVisibleItems_ << new QCheckBox(tr("Cut selection to clipboard"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
     toolbarVisibleItems_.last()->setObjectName("edit-cut");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(tr("Copy selection to clipboard"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
     toolbarVisibleItems_.last()->setObjectName("edit-copy");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(tr("Paste from clipboard"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
     toolbarVisibleItems_.last()->setObjectName("edit-paste");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
@@ -105,14 +109,14 @@ void GUISettingsPage::createVisibleIconsGrid()
     row ++; col = 0;
 
     toolbarVisibleItems_ << new QCheckBox(tr("Undo last action"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
     toolbarVisibleItems_.last()->setObjectName("edit-undo");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(tr("Redo last undoed action"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
     toolbarVisibleItems_.last()->setObjectName("edit-redo");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
@@ -127,20 +131,20 @@ void GUISettingsPage::createVisibleIconsGrid()
     row ++; col = 0;
 
     toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Blind run"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"run.png"));
     toolbarVisibleItems_.last()->setObjectName("run-blind");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Regular run"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"debugger_start.png"));
     toolbarVisibleItems_.last()->setObjectName("run-regular");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Stop"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
     toolbarVisibleItems_.last()->setObjectName("run-stop");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
@@ -155,20 +159,20 @@ void GUISettingsPage::createVisibleIconsGrid()
     row ++; col = 0;
 
     toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Step over"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"debugger_steponeproc_small.png"));
     toolbarVisibleItems_.last()->setObjectName("run-step-over");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
     toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Step in"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepinto_small.png"));
     toolbarVisibleItems_.last()->setObjectName("run-step-in");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
-    toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Step to end"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(qtcreatorIconsPath+"debugger_stepoverproc_small.png"));
+    toolbarVisibleItems_ << new QCheckBox(KumirProgram::tr("Step to end"), this);    
     toolbarVisibleItems_.last()->setObjectName("run-step-out");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName(toolbarVisibleItems_.last()->objectName()));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 
@@ -183,8 +187,8 @@ void GUISettingsPage::createVisibleIconsGrid()
     row ++; col = 0;
 
     toolbarVisibleItems_ << new QCheckBox(Plugin::tr("Courses"), this);
-    toolbarVisibleItems_.last()->setIcon(QIcon(iconsRoot+"course.png"));
     toolbarVisibleItems_.last()->setObjectName("window-courses");
+    toolbarVisibleItems_.last()->setIcon(icons->iconForName("window-cources"));
     l->addWidget(toolbarVisibleItems_.last(), row, col, 1, 1, Qt::AlignLeft|Qt::AlignVCenter);
     if (++col >= MaxColumns) {row++; col = 0;}
 

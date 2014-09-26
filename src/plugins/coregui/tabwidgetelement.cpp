@@ -122,6 +122,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
                 }
             }
             toolbarContextMenu_->finalize();
+            tb->addAction(toolbarContextMenu_->showAction());
         }
 
     }
@@ -146,6 +147,7 @@ void TabWidgetElement::updateCompilerImportsList(const QStringList &localizedNam
     using Shared::actorCanonicalName;
 
     QSet<QString> availableWindowNames;
+    availableMenuNames_.clear();
 
     QList<ActorInterface*> actors = PluginManager::instance()->findPlugins<ActorInterface>();
     Q_FOREACH(ActorInterface* actor, actors) {
@@ -159,11 +161,15 @@ void TabWidgetElement::updateCompilerImportsList(const QStringList &localizedNam
             if (actor->pultWidget()) {
                 availableWindowNames.insert(QString("window-control-%1").arg(QString(actorObjectName)));
             }
+            if (actor->moduleMenus().size() > 0) {
+                availableMenuNames_.insert("menu-Actor"+actorCanonicalName(actor->asciiModuleName()));
+            }
         }
     }
     if (toolbarContextMenu_) {
         toolbarContextMenu_->setExplicitImportNames(availableWindowNames);
     }
+    Q_EMIT explicitImportNamesRequest();
 }
 
 void TabWidgetElement::updateSettingsObject(SettingsPtr settings)
@@ -177,7 +183,18 @@ bool TabWidgetElement::eventFilter(QObject *obj, QEvent *evt)
 {
     if (QEvent::ContextMenu==evt->type()) {
         QContextMenuEvent * event = static_cast<QContextMenuEvent*>(evt);
-        toolbarContextMenu_->move(event->globalPos());
+        const QPoint position = event->globalPos();
+        QRect contextRect(position, toolbarContextMenu_->size());
+        QDesktopWidget* screen = qApp->desktop();
+        const QRect screenRect = screen->availableGeometry(this);
+        if (contextRect.right() > screenRect.right()) {
+            contextRect.moveRight(screenRect.right());
+        }
+        if (contextRect.left() < screenRect.left()) {
+            contextRect.moveLeft(screenRect.left());
+        }
+
+        toolbarContextMenu_->move(contextRect.topLeft());
         toolbarContextMenu_->show();
         return true;
     }

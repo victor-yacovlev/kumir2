@@ -19,8 +19,13 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/FormattedStream.h>
+#if LLVM_VERSION_MINOR >= 5
+#include <llvm/Linker/Linker.h>
+#include <llvm/AsmParser/Parser.h>
+#else
 #include <llvm/Linker.h>
 #include <llvm/Assembly/Parser.h>
+#endif
 #include <llvm/Support/SourceMgr.h>
 
 #include <llvm/Target/TargetMachine.h>
@@ -138,10 +143,16 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
                         unitStrData,
                         std::string(bcFileName.toUtf8().constData())
                         );
-
-            llvm::Module * unitModule = llvm::ParseBitcodeFile(
-                        unitBuffer, llvm::getGlobalContext(), 0
-                        );
+            llvm::Module * unitModule = 0;
+#if LLVM_VERSION_MINOR >= 5
+            llvm::ErrorOr<llvm::Module*> errorOrUnitModule =
+                    llvm::parseBitcodeFile(unitBuffer, llvm::getGlobalContext());
+            if (errorOrUnitModule) {
+                unitModule = errorOrUnitModule.get();
+            }
+#else
+            unitModule = llvm::ParseBitcodeFile(unitBuffer, llvm::getGlobalContext(), 0);
+#endif
 
             if (!unitModule)
             {
@@ -198,7 +209,8 @@ void LLVMCodeGeneratorPlugin::generateExecuable(
     std::string buf;
     llvm::raw_string_ostream ostream(buf);
 
-
+//    llvm::raw_os_ostream debug(std::cerr);
+//    lmainModule->print(debug, 0);
     lmainModule->print(ostream, 0);
     buf = ostream.str();
     QByteArray bufData(buf.c_str(), buf.size());
@@ -352,8 +364,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
     static const QString LLC = "llc";
-    static const QString AS = "as";
-    static const QString LD = "gcc"; // libstdc++ might have several names in Linux, use GCC to find it
+    static const QString AS = "clang"; // GNU as in most linux distros doesn't accept llvm-3.5 generated syntax
+    static const QString LD = "clang"; // libstdc++ might have several names in Linux, use GCC to find it
 #endif
 
     // ====== Write bitcode to external file

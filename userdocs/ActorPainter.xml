@@ -7,6 +7,7 @@
                 ]>
 <article>
     <title>Исполнитель "Рисователь"</title>
+    <titleabbrev>Рисователь</titleabbrev>
     <abstract>
         <para>
             Рисователь -- исполнитель системы Кумир. Назначение Рисователя -- создавать
@@ -348,7 +349,7 @@ from painter import *
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSV:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -474,7 +475,8 @@ from painter import *
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели RGB:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели RGB и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -532,7 +534,8 @@ from painter import *
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -599,7 +602,8 @@ from painter import *
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>

@@ -185,7 +185,7 @@ public:
              QDomAttr userPrg=courceXml.createAttribute("prg");
              userPrg.setValue(text);
              userTextEl.setAttributeNode(userPrg);
-             qDebug()<<"SET USER PRG"<<index.internalId()<<" test "<<text;
+            // qDebug()<<"SET USER PRG"<<index.internalId()<<" test "<<text;
          }
          void setUserText(int id,const QString &text)
          {
@@ -201,7 +201,7 @@ public:
              QDomAttr userPrg=courceXml.createAttribute("prg");
              userPrg.setValue(text);
              userTextEl.setAttributeNode(userPrg);
-             qDebug()<<"SET USER PRG"<<id << " "<<text;
+           //  qDebug()<<"SET USER PRG"<<id << " "<<text;
          }
          void setUserTestedText(int id,const QString &text)
          {
@@ -217,7 +217,7 @@ public:
              QDomAttr userPrg=courceXml.createAttribute("prg");
              userPrg.setValue(text);
              userTextEl.setAttributeNode(userPrg);
-             qDebug()<<"SET TESTED PRG"<<id;
+          //   qDebug()<<"SET TESTED PRG"<<id;
          }
 
          QString getUserText(int curTaskId)
@@ -271,7 +271,7 @@ public:
               QDomElement readyEl=node.firstChildElement(tag);
               if (readyEl.isNull())
               {
-                  qDebug()<<"Create NEW"<<tag;
+                //  qDebug()<<"Create NEW"<<tag;
                   QDomElement markEl=courceXml.createElement(tag);
                   node.appendChild(markEl);
                   readyEl=node.firstChildElement(tag);
@@ -280,7 +280,7 @@ public:
               QDomText text=courceXml.createTextNode(data);
               for(int i=0;i<readyEl.childNodes().count();i++)
                  {
-                  qDebug()<<"SWAP"<<tag;
+                //  qDebug()<<"SWAP"<<tag;
                   if(readyEl.childNodes().at(i).isText())
                     {
                      QDomNode elText=readyEl.childNodes().at(i);
@@ -337,7 +337,7 @@ public:
               return 0;
               qDebug()<<"Node is null;";
                 };
-          qDebug()<<"MRK:"<<readyEl.text();
+         // qDebug()<<"MRK:"<<readyEl.text();
          return readyEl.text().toInt();
 
          };
@@ -389,7 +389,7 @@ public:
               readyEl.appendChild(text);
           }
 
-          qDebug()<<"Task "<<id<<" mark"<<taskMark(node)<<" set"<<mark;
+       //   qDebug()<<"Task "<<id<<" mark"<<taskMark(node)<<" set"<<mark;
             setParMark(node.parentNode().toElement());
          };
 
@@ -424,12 +424,12 @@ public:
                 {
                   Childs.at(i).toElement().setAttribute("id",first_id+cur_off);
                   QDomNodeList dep_list=Childs.at(i).toElement().elementsByTagName ("DEPEND");
-                  qDebug()<<"Dep count"<<dep_list.count();
+                 // qDebug()<<"Dep count"<<dep_list.count();
                   Childs.at(i).toElement().removeChild(Childs.at(i).firstChildElement ("DEPEND"));
                   for(int j=0;j<dep_list.count();j++)
                   {
 
-                      qDebug()<<"dep remove";
+                     // qDebug()<<"dep remove";
                   };
 
                   cur_off=cur_off+setChildsId(Childs.at(i),cur_off+1);

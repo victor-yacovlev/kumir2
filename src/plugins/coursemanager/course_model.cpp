@@ -95,13 +95,13 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      {
          return QVariant(Qt::AlignLeft |Qt::AlignVCenter );
      }
-     if(role==Qt::ForegroundRole)
-     {
-         if(isTeacher)QVariant(QBrush(QColor(0,0,0)));
-        if(!taskAvailable(node))
-            return QVariant(QBrush(QColor(150,150,150)));
-       return QVariant(QBrush(QColor(0,0,0)));
-     }
+//     if(role==Qt::ForegroundRole)
+//     {
+//         if(isTeacher)QVariant(QBrush(QColor(0,0,0)));
+//        if(!taskAvailable(node))
+//            return QVariant(QBrush(QColor(150,150,150)));
+//       return QVariant(QBrush(QColor(0,0,0)));
+//     }
      if(role==Qt::CheckStateRole)
      {
         return QVariant();
@@ -112,16 +112,16 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
        // qDebug()<<"Draw Mark id"<<index.internalId();
          if(nodeM.toElement().attribute("root")=="true")
          {
-             qDebug()<<"Folder";
+           //  qDebug()<<"Folder";
          }
      return iconByMark(taskMark(index.internalId()),nodeM.toElement().attribute("root")=="true");
      //NUZHNO IKONKI ISPOLNITELEY
      }
-     if(role==Qt::BackgroundRole)
-     {
-        return QBrush(QColor(255,255,255));
-     }
-     qDebug()<<"No" << role<< "role";
+//     if(role==Qt::BackgroundRole)
+//     {
+//        return QBrush(QColor(255,255,255));
+//     }
+  //   qDebug()<<"No" << role<< "role";
      return QVariant();
 };
     QVariant courseModel::headerData(int section, Qt::Orientation orientation,
@@ -170,7 +170,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
      QDomNode courseModel::nodeByRowColumn(int row,int column,QDomNode *parent) const
      {
       if(!parent)return root;
-   qDebug()<<"nodeByRowColumn";
+  // qDebug()<<"nodeByRowColumn";
           return parent->childNodes().at(row);
 
       return root;
@@ -231,7 +231,7 @@ QVariant courseModel::data(const QModelIndex &index, int role) const
       bool ok;
       int new_id=childs.at(row).toElement().attribute("id","").toInt(&ok);
       if(!ok){
-          qDebug()<<"Bad ID";
+       //   qDebug()<<"Bad ID";
           return createIndex(-10,-10,-10);
 
             }

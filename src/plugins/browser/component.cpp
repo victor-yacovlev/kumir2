@@ -62,6 +62,12 @@ void Component::addJavaScriptObjects()
     }
 }
 
+void Component::setContent(const QString &data)
+{
+    setHtml(data);
+    pageAction(QWebPage::Back)->setEnabled(false);
+}
+
 void Component::go(const QUrl &url)
 {
     setUrl(url);

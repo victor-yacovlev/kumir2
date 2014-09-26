@@ -36,6 +36,7 @@ public:
     ModelType modelType() const;
     const QString & id() const;
     const QString & title() const;
+    QString titleAbbrev() const;
     const QString & subtitle() const;
     const QString & text() const;
     const QString & role() const;
@@ -52,6 +53,8 @@ public:
 
     ModelPtr self() const;
 
+    ModelPtr findChildrenOfType(const ModelType modelType) const;
+
 
 protected /*methods*/:
     explicit DocBookModel(ModelPtr parent, const ModelType modelType);
@@ -64,6 +67,7 @@ protected /*fields*/:
     ModelType modelType_;
     unsigned short sectionLevel_;
     QString title_;
+    QString titleAbbrev_;
     QString subtitle_;
     QString text_;
     QString id_;

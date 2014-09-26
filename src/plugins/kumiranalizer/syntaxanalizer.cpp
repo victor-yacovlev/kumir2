@@ -4086,9 +4086,23 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<LexemPtr> &constant,
         maxDim = 0;
         ct = testConst(constant, localErr);
         if ( ct==AST::TypeNone ) {
+            QString errorText = _("Not a constant value");
+            if  (constant.size() > 1) {
+                bool allLiterals = true;
+                for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                    LexemPtr lx = *it;
+                    if (LxConstLiteral != lx->type) {
+                        allLiterals = false;
+                        break;
+                    }
+                }
+                if (allLiterals) {
+                    errorText = _("Too many qoutes in constant");
+                }
+            }
             for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                 LexemPtr lx = *it;
-                lx->error = _("Not a constant value");
+                lx->error = errorText;
             }
             return QVariant::Invalid;
         }
@@ -5261,11 +5275,28 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
         }
     }
     result = makeExpressionTree(subexpression, mod);
+    convertDuplicateOperandsToCacheItems(result);
     if (result)
         result->lexems = lexems;
     return result;
 }
 
+static void convertDuplicateOperandsToCacheItems_r(AST::ExpressionPtr root, QSet<AST::ExpressionPtr> & cache)
+{
+    cache.insert(root);
+    Q_FOREACH(AST::ExpressionPtr child, root->operands) {
+
+        convertDuplicateOperandsToCacheItems_r(child, cache);
+    }
+}
+
+void SyntaxAnalizer::convertDuplicateOperandsToCacheItems(AST::ExpressionPtr root) const
+{
+    if (!root) return;
+    using namespace AST;
+    QSet<AST::ExpressionPtr> cache;
+    convertDuplicateOperandsToCacheItems_r(root, cache);
+}
 
 static QStringList possibleModuleImports(
         const QString & nameToFind,
@@ -6182,6 +6213,7 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
 
 #define IS_NUMERIC(x) ( x==AST::TypeInteger || x==AST::TypeReal )
 #define IS_LITERAL(x) ( x==AST::TypeCharect || x==AST::TypeString )
+#define IS_BOOLEAN(x) ( x==AST::TypeBoolean )
 
 bool IS_NUMERIC_LIST(const QList<AST::ExpressionPtr> & list) {
     bool result = true;
@@ -6204,6 +6236,23 @@ bool IS_LITERAL_LIST(const QList<AST::ExpressionPtr> & list) {
     bool result = true;
     for (int i=0; i<list.size(); i++) {
         result = result && IS_LITERAL(list[i]->baseType.kind);
+    }
+    return result;
+}
+
+bool IS_BOOLEAN_LIST(const QList<AST::ExpressionPtr> & list) {
+    bool result = true;
+    for (int i=0; i<list.size(); i++) {
+        bool c = true;
+        if (list[i]->baseType.kind==AST::TypeBoolean &&
+                list[i]->kind==AST::ExprSubexpression)
+        {
+            c = IS_BOOLEAN_LIST(list[i]->operands);
+        }
+        else {
+            c = IS_BOOLEAN(list[i]->baseType.kind);
+        }
+        result = result && c;
     }
     return result;
 }
@@ -6606,12 +6655,20 @@ AST::Type resType(const AST::Type & a
 
 }
 
-AST::ExpressionPtr  findRightmostCNFSubexpression(AST::ExpressionPtr  e)
+struct CNFReference {
+    AST::ExpressionPtr comparision;
+    AST::ExpressionPtr operand;
+};
+
+static CNFReference findRightmostCNFSubexpression(AST::ExpressionPtr  e)
 {
     static const QSet<AST::ExpressionOperator> ComparisonOperators = QSet<AST::ExpressionOperator>()
             << AST::OpLess << AST::OpLessOrEqual << AST::OpEqual << AST::OpNotEqual << AST::OpGreaterOrEqual << AST::OpGreater;
     if (ComparisonOperators.contains(e->operatorr)) {
-        return e->operands.last();
+        CNFReference result;
+        result.comparision = e;
+        result.operand = e->operands.last();
+        return result;
     }
     else {
         return findRightmostCNFSubexpression(e->operands.last());
@@ -6662,20 +6719,27 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
         AST::Type tailType = tailExpr->baseType;
         static const QSet<LexemType> ComparisonOperators = QSet<LexemType>()
                 << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater << LxPriAssign;
+        static const QSet<LexemType> CheckEqualOperators = QSet<LexemType>()
+                << LxOperBoolEqual << LxOperBoolNotEqual;
 
         bool tailIsNumeric = IS_NUMERIC(tailType.kind);
         bool headIsBool = headType.kind==AST::TypeBoolean;
         bool hasHeadExpr = headExpr != NULL;
-        bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression;
+        bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression && headExpr->operands.size() >= 2;
         bool isComparision = ComparisonOperators.contains(s[l].o->type);
+        bool isEqualCheck = CheckEqualOperators.contains(s[l].o->type);
         bool numericOperands = headExpr && IS_NUMERIC_LIST(headExpr->operands);
         bool tailIsLiteral = IS_LITERAL(tailType.kind);
+        bool tailIsBoolean = IS_BOOLEAN(tailType.kind);
         bool literalOperands = headExpr && IS_LITERAL_LIST(headExpr->operands);
+        bool booleanOperands = headExpr && IS_BOOLEAN_LIST(headExpr->operands);
 
-        bool makeCNF = headIsBool && headIsSubexpr && isComparision && (
-                    (tailIsNumeric && numericOperands)
+        bool makeCNF = headIsBool && headIsSubexpr && (
+                    (isComparision && tailIsNumeric && numericOperands)
                     ||
-                    (tailIsLiteral && literalOperands)
+                    (isComparision && tailIsLiteral && literalOperands)
+                    ||
+                    (isEqualCheck && tailIsBoolean && booleanOperands)
                     );
 
         if (headExpr && headExpr->expressionIsClosed)
@@ -6691,7 +6755,16 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
             subRes->kind = AST::ExprSubexpression;
             subRes->baseType.kind = AST::TypeBoolean;
 //            subRes->operands << new AST::Expression(headExpr->operands.last());
-            subRes->operands << findRightmostCNFSubexpression(AST::ExpressionPtr(new AST::Expression(headExpr)));
+            CNFReference cnfReference = findRightmostCNFSubexpression(headExpr);
+            AST::ExpressionPtr cacheReference = cnfReference.operand;
+            AST::ExpressionPtr comparisionReference = cnfReference.comparision;
+            AST::ExpressionPtr firstOperand = AST::ExpressionPtr(new AST::Expression(cacheReference));
+            subRes->operands << firstOperand;
+            firstOperand->useFromCache = true;
+            cacheReference->keepInCache = true;
+            comparisionReference->clearCacheOnFailure = true;
+            firstOperand->cacheReference = cacheReference.toWeakRef();
+//            subRes->operands << findRightmostCNFSubexpression(AST::ExpressionPtr(new AST::Expression(headExpr)));
             subRes->operands << tailExpr;
             subRes->operatorr = operatorByLexem(s[l].o);            
             res->operands << subRes;

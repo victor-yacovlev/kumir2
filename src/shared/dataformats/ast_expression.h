@@ -28,6 +28,7 @@ typedef QSharedPointer<struct Algorithm> AlgorithmPtr;
 typedef QSharedPointer<struct Variable> VariablePtr;
 
 typedef QSharedPointer<struct Expression> ExpressionPtr;
+typedef QWeakPointer<struct Expression> ExpressionWPtr;
 
 typedef QSharedPointer<struct Statement> StatementPtr;
 
@@ -117,6 +118,11 @@ struct ABSTRACTSYNTAXTREE_EXPORT Expression {
 
     /** Operator in case of kind==StSubexpression, emty otherwise */
     enum ExpressionOperator operatorr;
+
+    bool keepInCache;
+    bool useFromCache;
+    bool clearCacheOnFailure;
+    ExpressionWPtr cacheReference;
 
     /** Expression source lexems */
     QList<LexemPtr> lexems;

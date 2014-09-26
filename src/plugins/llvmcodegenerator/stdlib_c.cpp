@@ -117,6 +117,24 @@ EXTERN void __kumir_create_string(__kumir_scalar  * result, const char * utf8)
     result->data.s[wstr.length()] = L'\0';
 }
 
+EXTERN void __kumir_convert_char_to_string(__kumir_scalar * result, const __kumir_scalar * source)
+{
+    __kumir_check_value_defined(source);
+    result->type = __KUMIR_STRING;
+    result->defined = true;
+    result->data.s = (__kumir_string)malloc(2*sizeof(__kumir_char));
+    result->data.s[0] = source->data.c;
+    result->data.s[1] = 0;
+}
+
+EXTERN void __kumir_convert_int_to_real(__kumir_scalar * result, const __kumir_scalar * source)
+{
+    __kumir_check_value_defined(source);
+    result->type = __KUMIR_REAL;
+    result->defined = true;
+    result->data.r = static_cast<__kumir_real>(source->data.i);
+}
+
 EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type)
 {
     __kumir_variant lvalue;
@@ -1064,7 +1082,7 @@ EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_s
                 );
 }
 
-EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value)
+EXTERN void Kumir_Standard_Library_symbol(__kumir_scalar * result, const __kumir_scalar * value)
 {
     __kumir_check_value_defined(value);
     result->defined = true;
@@ -1289,6 +1307,26 @@ EXTERN void Files_close(const __kumir_scalar * handle)
     __kumir_check_value_defined(handle);
     Kumir::FileType f = __kumir_scalar_to_file_type(*handle);
     Kumir::Files::close(f);
+}
+
+EXTERN void Files_operator_neq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    Kumir::FileType af = __kumir_scalar_to_file_type(*a);
+    Kumir::FileType bf = __kumir_scalar_to_file_type(*b);
+    bool equal = af.fullPath == bf.fullPath;
+    __kumir_create_bool(result, !equal);
+}
+
+EXTERN void Files_operator_eq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b)
+{
+    __kumir_check_value_defined(a);
+    __kumir_check_value_defined(b);
+    Kumir::FileType af = __kumir_scalar_to_file_type(*a);
+    Kumir::FileType bf = __kumir_scalar_to_file_type(*b);
+    bool equal = af.fullPath == bf.fullPath;
+    __kumir_create_bool(result, equal);
 }
 
 EXTERN void Files_start_reading(const __kumir_scalar * handle)
@@ -2150,19 +2188,20 @@ static T __eat(const char ** pdata)
     const char * data = *pdata;
     const T * idata = reinterpret_cast<const T*> (data);
     T val = idata[0];
+//    std::cerr << "Eat: " << val << std::endl;
     idata++;
     data = reinterpret_cast<const char*>(idata);
     *pdata = data;
     return val;
 }
 
-static void __kumir_fill_array_1(__kumir_array array, const char *data, const __kumir_scalar_type type)
+static void __kumir_fill_array_1(__kumir_array *array, const char *data, const __kumir_scalar_type type)
 {
     const char * p = data;
     __kumir_int isz = __eat<__kumir_int>(&p);
-//    std::cerr << "Size = " << isz << "\n";
+//    std::cerr << "Size = " << isz << std::endl;
     size_t index = 0u;
-    __kumir_scalar * adata = reinterpret_cast<__kumir_scalar*>(array.data);
+    __kumir_scalar * adata = reinterpret_cast<__kumir_scalar*>(array->data);
     while (isz) {
         adata[index].defined = __eat<__kumir_bool>(&p);
 //        std::cerr << "defined = " << adata[index].defined << "\n";
@@ -2186,30 +2225,76 @@ static void __kumir_fill_array_1(__kumir_array array, const char *data, const __
     }
 }
 
-
-EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data)
+static unsigned char __kumir_hex_to_byte(const char c)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_INT);
+    switch (c) {
+    case '0': return 0x0u;
+    case '1': return 0x1u;
+    case '2': return 0x2u;
+    case '3': return 0x3u;
+    case '4': return 0x4u;
+    case '5': return 0x5u;
+    case '6': return 0x6u;
+    case '7': return 0x7u;
+    case '8': return 0x8u;
+    case '9': return 0x9u;
+    case 'a': case 'A': return 0xAu;
+    case 'b': case 'B': return 0xBu;
+    case 'c': case 'C': return 0xCu;
+    case 'd': case 'D': return 0xDu;
+    case 'e': case 'E': return 0xEu;
+    case 'f': case 'F': return 0xFu;
+    default: return 0u;
+    }
 }
 
-EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data)
+static char* __kumir_deserialize_hex(const char *s)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_REAL);
+    const size_t buffer_size = (strlen(s)+1) / 3;
+    char * bytes = reinterpret_cast<char*>(malloc(buffer_size));
+    for (size_t i=0; i<buffer_size; ++i) {
+        unsigned char h = __kumir_hex_to_byte(s[i*3]);
+        unsigned char l = __kumir_hex_to_byte(s[i*3+1]);
+        unsigned char byte = h << 4 | l;
+        bytes[i] = byte;
+    }
+    return bytes;
 }
 
-EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_i(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_BOOL);
+//    std::cerr << data << std::endl;
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_INT);
+    free(buffer);
 }
 
-EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_r(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_CHAR);
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_REAL);
+    free(buffer);
 }
 
-EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data)
+EXTERN void __kumir_fill_array_b(__kumir_array *array, const char * data)
 {
-    if      (1u == array.dim) __kumir_fill_array_1(array, data, __KUMIR_STRING);
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_BOOL);
+    free(buffer);
+}
+
+EXTERN void __kumir_fill_array_c(__kumir_array *array, const char * data)
+{
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_CHAR);
+    free(buffer);
+}
+
+EXTERN void __kumir_fill_array_s(__kumir_array *array, const char * data)
+{
+    char* buffer = __kumir_deserialize_hex(data);
+    if      (1u == array->dim) __kumir_fill_array_1(array, buffer, __KUMIR_STRING);
+    free(buffer);
 }
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,

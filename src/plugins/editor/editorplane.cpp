@@ -976,7 +976,13 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.drawLine(highlightRightRect.bottomLeft(),
                    highlightRightRect.bottomRight());
 
-        if (highlightedTextColumnStartNumber_ != highlightedTextColumnEndNumber_) {
+        bool drawInLineRect = false;
+        if (highlightedTextLineNumber_ < editor_->document()->linesCount()) {
+            const TextLine & textLine = editor_->document()->at(highlightedTextLineNumber_);
+            drawInLineRect = textLine.multipleStatementsInLine;
+        }
+
+        if (drawInLineRect && highlightedTextColumnStartNumber_ != highlightedTextColumnEndNumber_) {
             // Draw a rect around statement
             QPen pen;
             pen.setColor(highlightedTextLineColor_);
@@ -1427,6 +1433,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
             }
+            else {
+                editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
+                editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
+            }
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
             bool checkForIndent = !editor_->cursor()->hasSelection() &&
@@ -1555,6 +1565,25 @@ void EditorPlane::doAutocomplete()
     }
 }
 
+static unsigned int findNumberOfOverlappingTrailingCharacters(
+        const QString & source, const QString & pattern
+        )
+{
+    /* Find count of X'es:
+     * ........XXXXPPPPPPPP  -- pattern string
+     * SSSSSSSSXXXX........  -- source string
+     */
+    unsigned int result = 0u;
+    for (int i=1; i<source.size()+1; i++) {
+        const QString tail = source.mid(source.size()-i);
+        if (pattern.startsWith(tail)) {
+            result = (unsigned int) i;
+            break;
+        }
+    }
+    return result;
+}
+
 void EditorPlane::finishAutoCompletion(const QString &suggestion)
 {
 #ifdef QT_DEBUG
@@ -1576,12 +1605,13 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     int leftPart = 0;
     QString text;
     if (!suggestion.startsWith(' ')) {
-        for (int i=before.length()-1; i>=0; i--) {
-            if (Delimeters.contains(before[i]))
-                break;
-            else
-                leftPart += 1;
-        }
+        leftPart = findNumberOfOverlappingTrailingCharacters(before, suggestion);
+//        for (int i=before.length()-1; i>=0; i--) {
+//            if (Delimeters.contains(before[i]))
+//                break;
+//            else
+//                leftPart += 1;
+//        }
         text = suggestion;
     }
     else if (before.length()>0) {

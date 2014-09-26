@@ -238,6 +238,8 @@ public /*methods*/:
     void updateSliceDSCall(AST::ExpressionPtr expr, AST::VariablePtr var) const;
     AST::ExpressionPtr parseElementAccess(const QList<LexemPtr> &lexems, const AST::ModulePtr mod, const AST::AlgorithmPtr alg) const;
     AST::ExpressionPtr makeExpressionTree(const QList<SubexpressionElement> & s, const AST::ModulePtr currentModule) const;
+    void convertDuplicateOperandsToCacheItems(AST::ExpressionPtr root) const;
+
     template <typename List1, typename List2>
     inline static void splitLexemsByOperator(
             const List1 &s

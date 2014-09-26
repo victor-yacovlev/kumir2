@@ -17,7 +17,12 @@
 #define KUMFILEDIALOG_H
 
 #include <QFileDialog>
+#include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 /**
 	@author Victor Yacovlev <V.Yacovlev@gmail.com>

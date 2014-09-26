@@ -33,6 +33,8 @@ public:
     QString locationDirectory() const;
     void flush();
 
+    ~Settings();
+
 protected:
     explicit Settings(const QString & pluginName_);
     void changeWorkingDirectory(const QString & workDirPath);

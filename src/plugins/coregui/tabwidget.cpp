@@ -6,11 +6,11 @@ namespace CoreGUI {
 TabWidget::TabWidget(QWidget *parent) :
     QTabWidget(parent)
 {
-    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     TabBar * tb = new TabBar(this);
-    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setTabBar(tb);
-    qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 }
 
 QSize TabWidget::minimumSizeHint() const
@@ -35,7 +35,7 @@ void TabWidget::paintEvent(QPaintEvent * e)
 #ifdef Q_WS_X11
     if (!tabBar()->isVisible()) {
         QPainter painter(this);
-        painter.setPen(QPen(palette().brush(QPalette::WindowText).color()));
+        painter.setPen(QPen(palette().brush(QPalette::Window).color()));
         painter.drawLine(0, 0, width(), 0);
     }
 #endif

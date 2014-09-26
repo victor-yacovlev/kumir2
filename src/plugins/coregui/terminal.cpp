@@ -10,6 +10,7 @@ namespace Terminal {
 Term::Term(QWidget *parent) :
     QWidget(parent)
 {
+    setCursor(Qt::IBeamCursor);
     setWindowTitle(tr("Input/Output"));
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 //    setMinimumWidth(450);

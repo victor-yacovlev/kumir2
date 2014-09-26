@@ -14,10 +14,10 @@ void ControlInterface::setCSmode(int mode)
     qDebug()<<"DUMMY call ControlInterface::setCSmode";
 
 };
-void ControlInterface::setCSinterface(CSInterface* interface)
+void ControlInterface::setCSinterface(CSInterface* csInterface)
 {
-    csInterface=interface;
-    w.setInterface(interface);
+    this->csInterface=csInterface;
+    w.setInterface(csInterface);
 };
 QString ControlInterface::ispName()
 {
@@ -29,4 +29,6 @@ void ControlInterface::checkFinished(int mark)
     qDebug()<<" ControlInterface::checkFinished calls duumy w.setMark(mark)";
     //w.setMark(mark);
  }
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(controlInterface,ControlInterface);
+#endif

@@ -40,6 +40,18 @@ Document DocBookFactory::parseDocument(const QMap<ModelType,QString> roleValues,
     return Document(url, content);
 }
 
+Document DocBookFactory::createNamedSet(const QString &name, const QList<Document> documents) const
+{
+    ModelPtr namedSetRoot(new DocBookModel(ModelPtr(), Set));
+    namedSetRoot->title_ = name;
+    Q_FOREACH(const Document & doc, documents) {
+        namedSetRoot->children_.append(doc.root_);
+        doc.root_->parent_ = namedSetRoot;
+    }
+
+    return Document(QUrl(), namedSetRoot);
+}
+
 ModelPtr DocBookFactory::parseDocument(
         const QMap<ModelType,QString> & roles,
         QIODevice *stream,
@@ -313,7 +325,7 @@ bool DocBookFactory::startElement(
         model->xrefLinkEnd_ = atts.value("linkend");
         model->xrefEndTerm_ = atts.value("endterm");
     }
-    else if (element == "title" || element == "subtitle") {
+    else if (element == "title" || element == "subtitle" || element == "titleabbrev") {
         buffer_.clear();
     }
     else if (element == "include" && XInclude.indexIn(namespaceURI)!=-1) {
@@ -557,6 +569,10 @@ bool DocBookFactory::endElement(const QString &namespaceURI,
     static const QRegExp XInclude("http://www.w3.org/\\d+/XInclude");
     if (root_ && element == "title") {
         root_->title_ = buffer_;
+        buffer_.clear();
+    }
+    else if (root_ && element == "titleabbrev") {
+        root_->titleAbbrev_ = buffer_;
         buffer_.clear();
     }
     else if (root_ && element == "subtitle") {

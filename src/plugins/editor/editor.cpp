@@ -278,19 +278,22 @@ void EditorInstance::loadMacros()
     systemMacros_ = loadFromFile(systemMacrosPath);
 
     // Actor-specific macros
-    if (analizerName == "kum") {
+
         const QList<const KPlugin*> actorPlugins =
                 PluginManager::instance()->loadedConstPlugins("Actor*");
 
         foreach (const KPlugin* plugin, actorPlugins) {
+            ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
+            const QString canonicalName = actorCanonicalName<QString>(actor->asciiModuleName());
             const QString actorMacrosFileName = plugin_->myResourcesDir().absoluteFilePath(
-                        "editor/macros-" + plugin->pluginSpec().name + ".xml");
+                        "macros-" + analizerName + "-" + canonicalName + ".xml"
+                        );
             if (QFile::exists(actorMacrosFileName)) {
                 systemMacros_.push_back(Macro());
                 systemMacros_ += loadFromFile(actorMacrosFileName);
             }
         }
-    }
+
 
     // Import macros
     if (analizerName == "kum") {
@@ -306,20 +309,20 @@ void EditorInstance::loadMacros()
             }
         }
 
-        if (!availableActorNames.empty()) {
-            systemMacros_.push_back(Macro());
-            for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
-                const QString & actorName = availableActorNames.at(i);
-                const QString insertText = tr("import %1").arg(actorName);
-                Macro macro;
-                macro.title = insertText;
-                macro.key = QString::number(i+1).at(0);
-                macro.commands.push_back(
-                            KeyCommand(KeyCommand::InsertImport, actorName)
-                            );
-                systemMacros_.push_back(macro);
-            }
-        }
+//        if (!availableActorNames.empty()) {
+//            systemMacros_.push_back(Macro());
+//            for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
+//                const QString & actorName = availableActorNames.at(i);
+//                const QString insertText = tr("import %1").arg(actorName);
+//                Macro macro;
+//                macro.title = insertText;
+//                macro.key = QString::number(i+1).at(0);
+//                macro.commands.push_back(
+//                            KeyCommand(KeyCommand::InsertImport, actorName)
+//                            );
+//                systemMacros_.push_back(macro);
+//            }
+//        }
     }
 
 
@@ -489,6 +492,7 @@ void EditorInstance::updateFromAnalizer()
         if (i<props.size()) {
             doc_->setHighlightAt(i, props[i].toList());
         }
+        doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
         int newIndent = doc_->indentAt(i);
         int diffIndent = newIndent - oldIndent;

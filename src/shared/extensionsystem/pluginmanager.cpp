@@ -144,7 +144,11 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
         QList<PluginSpec>::iterator it;
         for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
             PluginSpec spec = (*it);
-            if (spec.gui) {
+            bool forceLoad = false;
+            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
+                forceLoad = true;
+            }
+            if (spec.gui && !forceLoad) {
                 names.removeAll(spec.name);
                 QList<PluginRequest>::iterator rit;
                 for (rit=requests.begin(); rit!=requests.end(); ) {
@@ -223,6 +227,7 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
                 .arg(loader.errorString());
     }
     KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+    plugin->self = plugin;
     if (!plugin) {
         return QString("Plugin is not valid (does not implement interface KPlugin)");
         loader.unload();

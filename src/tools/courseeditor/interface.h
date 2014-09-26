@@ -11,23 +11,23 @@ class ControlInterface: public QObject,public  taskControlInterface
 
      void start(QString csName);
      void setCSmode(int mode);
-     void setCSinterface(CSInterface* interface);
-     void setWindowGeometry(QRect rect){w.setGeometry(rect);};
-     void show(){w.showNormal();}
+     void setCSinterface(class CSInterface* csInterface);
+     inline void setWindowGeometry(QRect rect){w.setGeometry(rect);}
+     inline void show(){w.showNormal();}
      void checkFinished(int mark);
-     KumZadanie* Task(){return &w.task;};
-     QString Isp(int no){return w.task.Isp(no);};
+     inline KumZadanie* Task(){return &w.task;}
+     inline QString Isp(int no){return w.task.Isp(no);}
      QString ispName();
 
-     QString CSName(){return CSname;};
+     inline QString CSName(){return CSname;}
 
     MainWindowTask w;
 
 public:
-    CSInterface*  Interface(){return csInterface;};
+    inline class CSInterface*  Interface(){return csInterface;}
 private:
     QString CSname;
-     CSInterface* csInterface;
+     class CSInterface* csInterface;
      int Mark;
 
 

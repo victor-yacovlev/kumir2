@@ -6,6 +6,10 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QStyleOptionMenuItem>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QMenuBar>
+#include <QToolBar>
 
 namespace CoreGUI {
 
@@ -20,6 +24,7 @@ ToolbarContextMenu::ToolbarContextMenu(QWidget *parent)
     , btnReset_(0)
     , btnShowAll_(0)
     , ignoreStateChange_(true)
+    , showAction_(0)
 {
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setWindowFlags(Qt::Popup);
@@ -31,9 +36,11 @@ ToolbarContextMenu::ToolbarContextMenu(QWidget *parent)
 //    grid_->setContentsMargins(0, 0, 0, 0);
     grid_->setSpacing(0);
     setLayout(grid_);
+    showAction_ = new QAction(QString(QChar(0x00BB)), this);
+    connect(showAction_, SIGNAL(triggered()), this, SLOT(showMe()));
 }
 
-void ToolbarContextMenu::addProxy(Widgets::ActionProxy *proxyItem)
+void ToolbarContextMenu::addProxy(QAction *proxyItem)
 {
     items_.append(proxyItem);
     QCheckBox * toggle = new QCheckBox(proxyItem->text(), this);
@@ -99,7 +106,7 @@ void ToolbarContextMenu::setExplicitImportNames(const QSet<QString> explicitItem
 {
     explicitImportNames_ = explicitItemNames;
     ignoreStateChange_ = true;
-    Q_FOREACH(Widgets::ActionProxy * target, items_) {
+    Q_FOREACH(QAction* target, items_) {
         quintptr togglePtr = target->property("toggle").toULongLong();
         QCheckBox * toggle = reinterpret_cast<QCheckBox*>(togglePtr);
         target->setVisible(isItemVisible(toggle->checkState(), target->objectName()));
@@ -122,6 +129,8 @@ void ToolbarContextMenu::toggleProxyButtonVisible(int iState)
 Qt::CheckState ToolbarContextMenu::defaultVisible(const QString &objectName)
 {
     static const QStringList standardItems = QStringList()
+
+            // Toolbar items
              << "file-new" << "file-open" << "file-save"
              << "edit-cut" << "edit-copy" << "edit-paste"
              << "edit-undo" << "edit-redo"
@@ -130,11 +139,22 @@ Qt::CheckState ToolbarContextMenu::defaultVisible(const QString &objectName)
              << "window-courses"
              << "window-actor-robot" << "window-control-robot"
              << "window-actor-draw"
+
+             // Menus
+             << "menuFile" << "menuEdit" << "menuInsert"
+             << "menuRun" << "menuWindow" << "menuHelp"
+             << "menu-CourseManager" << "menu-ActorRobot" << "menu-ActorDraw"
                 ;
     if (standardItems.contains(objectName))
         return Qt::Checked;
-    if (objectName.startsWith("window-actor-") || objectName.startsWith("window-control-"))
+    if (
+            objectName.startsWith("window-actor-") ||
+            objectName.startsWith("window-control-") ||
+            objectName.startsWith("menu-Actor")
+            )
+    {
         return Qt::PartiallyChecked;
+    }
     return Qt::Unchecked;
 }
 
@@ -169,7 +189,7 @@ void ToolbarContextMenu::loadSettings()
 {
     ignoreStateChange_ = true;
     if (!settings_) return;
-    Q_FOREACH(Widgets::ActionProxy * target, items_) {
+    Q_FOREACH(QAction * target, items_) {
         quintptr togglePtr = target->property("toggle").toULongLong();
         QCheckBox * toggle = reinterpret_cast<QCheckBox*>(togglePtr);
         if (target->objectName().startsWith("window-actor-") ||
@@ -195,7 +215,7 @@ void ToolbarContextMenu::loadSettings()
 void ToolbarContextMenu::saveSettings() const
 {
     if (!settings_) return;
-    Q_FOREACH(Widgets::ActionProxy * target, items_) {
+    Q_FOREACH(QAction * target, items_) {
         quintptr togglePtr = target->property("toggle").toULongLong();
         QCheckBox * toggle = reinterpret_cast<QCheckBox*>(togglePtr);
         const QString key = settingsPrefix_ + "/" + (
@@ -211,7 +231,7 @@ void ToolbarContextMenu::saveSettings() const
 void ToolbarContextMenu::reset()
 {
     ignoreStateChange_ = true;
-    Q_FOREACH(Widgets::ActionProxy * target, items_) {
+    Q_FOREACH(QAction * target, items_) {
         quintptr togglePtr = target->property("toggle").toULongLong();
         QCheckBox * toggle = reinterpret_cast<QCheckBox*>(togglePtr);
         toggle->setCheckState(defaultVisible(target->objectName()));
@@ -231,7 +251,7 @@ bool ToolbarContextMenu::isItemVisible(Qt::CheckState state, const QString &obje
 void ToolbarContextMenu::showAll()
 {
     ignoreStateChange_ = true;
-    Q_FOREACH(Widgets::ActionProxy * target, items_) {
+    Q_FOREACH(QAction * target, items_) {
         quintptr togglePtr = target->property("toggle").toULongLong();
         QCheckBox * toggle = reinterpret_cast<QCheckBox*>(togglePtr);
         toggle->setCheckState(Qt::Checked);
@@ -270,5 +290,59 @@ void ToolbarContextMenu::paintEvent(QPaintEvent *event)
     style()->drawPrimitive(QStyle::PE_FrameMenu, &frame, &p, this);
 }
 
+void ToolbarContextMenu::showMe()
+{
+    QWidget * widget = 0;
+    QList<QWidget*> widgets = showAction()->associatedWidgets();
+    if (widgets.size() > 0) {
+        widget = widgets.at(0);
+    }
+
+    QPoint position;
+
+    if (widget) {
+        QMenuBar * mb = qobject_cast<QMenuBar*>(widget);
+        QToolBar * tb = qobject_cast<QToolBar*>(widget);
+        if (mb) {
+            position = mb->mapToGlobal(mb->pos());
+            position.ry() += mb->height();
+            for (int x=0; x<mb->width(); x++) {
+                QAction * a = mb->actionAt(QPoint(x, mb->height()/2));
+                if (showAction() == a) {
+                    position.rx() += x;
+                    break;
+                }
+            }
+        }
+        else if (tb) {
+            position = tb->mapToGlobal(tb->pos());
+            position.ry() += tb->height();
+            for (int x=0; x<tb->width(); x++) {
+                QAction * a = tb->actionAt(QPoint(x, tb->height()/2));
+                if (showAction() == a) {
+                    position.rx() += x;
+                    break;
+                }
+            }
+        }
+        else {
+            position = widget->pos();
+        }
+    }
+
+    QRect contextRect(position, size());
+    QDesktopWidget* screen = qApp->desktop();
+    const QRect screenRect = screen->availableGeometry(this);
+    if (contextRect.right() > screenRect.right()) {
+        contextRect.moveRight(screenRect.right());
+    }
+    if (contextRect.left() < screenRect.left()) {
+        contextRect.moveLeft(screenRect.left());
+    }
+    move(contextRect.topLeft());
+
+    show();
+
+}
 
 } // namespace CoreGUI

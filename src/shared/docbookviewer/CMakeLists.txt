@@ -76,7 +76,7 @@ else()
 endif()
 
 add_library(DocBookViewer SHARED  ${SOURCES} ${MOC_SOURCES} ${UI_SOURCES})
-target_link_libraries(DocBookViewer ${QT_LIBRARIES} ExtensionSystem)
+target_link_libraries(DocBookViewer ${QT_LIBRARIES} ExtensionSystem Widgets)
 set_property(TARGET DocBookViewer APPEND PROPERTY COMPILE_DEFINITIONS LIBRARY_BUILD)
 
 if(${BUILD_AS_PART_OF_KUMIR})

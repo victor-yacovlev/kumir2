@@ -45,7 +45,7 @@ void IconProvider::loadToCache(const QString &name) const
 
 QImage IconProvider::loadAndPreprocess(const QString &fileName)
 {
-    QImage source(fileName);
+    QImage source(fileName);    
     QImage result;
 
     static const QPalette palette = QApplication::palette();
@@ -64,14 +64,33 @@ QImage IconProvider::loadAndPreprocess(const QString &fileName)
     for (int y=0; y<source.height(); y++) {
         for (int x=0; x<source.width(); x++) {
             QRgb sourcePixel = source.pixel(QPoint(x, y));
+            int sourceRed = qRed(sourcePixel);
+            int sourceGreen = qGreen(sourcePixel);
+            int sourceBlue = qBlue(sourcePixel);
             int sourceAlpha = qAlpha(sourcePixel);
+            static const int delta = 1;
+            int sourceRedMin = sourceRed - delta;
+            int sourceRedMax = sourceRed + delta;
+            bool isGray =
+                    sourceRedMin <= sourceGreen && sourceGreen <= sourceRedMax
+                    &&
+                    sourceRedMin <= sourceBlue && sourceGreen <= sourceRedMax
+                    ;
             qreal sourceIntensivity = 1.0 -
-                    (qRed(sourcePixel) + qGreen(sourcePixel) + qBlue(sourcePixel)) /
+                    (sourceRed + sourceGreen + sourceBlue) /
                     (3.0 * 255.0) ;
             int resultRed = bgRed + normRed * sourceIntensivity;
             int resultBlue = bgBlue + normBlue * sourceIntensivity;
             int resultGreen = bgGreen + normGreen * sourceIntensivity;
-            QRgb resultPixel = qRgba(resultRed, resultGreen, resultBlue, sourceAlpha);
+            QRgb resultPixel;
+            if (isGray) {
+                // Adopt to system theme
+                resultPixel = qRgba(resultRed, resultGreen, resultBlue, sourceAlpha);
+            }
+            else {
+                // Keep color unchanged
+                resultPixel = sourcePixel;
+            }
             result.setPixel(QPoint(x, y), resultPixel);
         }
     }

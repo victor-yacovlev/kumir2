@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <macros>
+    <macro title="использовать Робот" key="1">
+	<command name="InsertImport" text="Робот" />
+    </macro>
     <macro title="вверх" key="Up">
         <command name="InsertText" text="вверх\n" />
     </macro>
@@ -15,4 +18,5 @@
     <macro title="закрасить" key="Space">
         <command name="InsertText" text="закрасить\n" />
     </macro>
+
 </macros>
