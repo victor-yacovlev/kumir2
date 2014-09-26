@@ -45,6 +45,9 @@
          <kerning>false</kerning>
         </font>
        </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="showDropIndicator" stdset="0">
         <bool>false</bool>
        </property>
@@ -64,12 +67,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWebView" name="webView">
-       <property name="url">
-        <url>
-         <string>about:blank</string>
-        </url>
-       </property>
+      <widget class="QWidget" name="webView">
       </widget>
      </widget>
     </item>

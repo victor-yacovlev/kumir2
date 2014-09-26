@@ -102,7 +102,7 @@ void generator::renderData(ModelPtr data)
         geometry = geometry.replace("%%LEFTMARGIN%%", "lmargin");
         geometry = geometry.replace("%%RIGHTMARGIN%%", "rmargin");
     }
-    clazz = root_ == DocBookModel::Book ? "book" : "article";
+    clazz = root_ == Book ? "book" : "article";
 
     preambule.replace("%%paper%%", paper);
     preambule.replace("%%class%%", clazz);
@@ -115,7 +115,7 @@ void generator::renderData(ModelPtr data)
 //        twoColumnLayout_ = true;
     }
     data_ += DOCUMENT_BEGIN;
-    if (root_ == DocBookModel::Book) {
+    if (root_ == Book) {
         data_ += renderBookTitle();
     }
     else {
@@ -134,21 +134,21 @@ void generator::renderData(ModelPtr data)
 QString generator::renderElement(ModelPtr data)
 {
     QString result;
-    if (data == DocBookModel::Chapter) {
+    if (data == Chapter) {
         result = renderChapter(data);
     }
-    else if (data == DocBookModel::Section) {
+    else if (data == Section) {
         result = renderSection(data);
     }
-    else if (data == DocBookModel::Para) {
+    else if (data == Para) {
         result = renderPara(data);
     }
-    else if (data == DocBookModel::Emphasis) {
+    else if (data == Emphasis) {
         result = renderEmphasis(data);
     }
-    else if (data == DocBookModel::Text) {
-        if (data->parent() == DocBookModel::ProgramListing ||
-                data->parent() == DocBookModel::Code)
+    else if (data == Text) {
+        if (data->parent() == ProgramListing ||
+                data->parent() == Code)
         {
             result = data->text().trimmed();
             static QMap<QString,QString> replacements;
@@ -164,7 +164,7 @@ QString generator::renderElement(ModelPtr data)
             {
                 result.replace(key, replacements[key]);
             }
-            addSpace_ = data->parent() == DocBookModel::Code;
+            addSpace_ = data->parent() == Code;
         }
         else {
             QString normText = normalizeText(data->text());
@@ -177,94 +177,94 @@ QString generator::renderElement(ModelPtr data)
                     result.at(result.length()-1).isLetterOrNumber();
         }
     }
-    else if (data == DocBookModel::OrderedList) {
+    else if (data == OrderedList) {
         result = renderOrderedList(data);
     }
-    else if (data == DocBookModel::ItemizedList) {
+    else if (data == ItemizedList) {
         result = renderItemizedList(data);
     }
-    else if (data == DocBookModel::ListItem) {
+    else if (data == ListItem) {
         result = renderListItem(data);
     }
-    else if (data == DocBookModel::ProgramListing) {
+    else if (data == ProgramListing) {
         result = renderProgramListing(data);
     }
-    else if (data == DocBookModel::Code) {
+    else if (data == Code) {
         result = renderCode(data);
     }
-    else if (data == DocBookModel::Example) {
+    else if (data == Example) {
         result = renderExample(data);
     }
-    else if (data == DocBookModel::Table) {
+    else if (data == Table) {
         result = renderTable(data);
     }
-    else if (data == DocBookModel::Subscript) {
+    else if (data == Subscript) {
         result = renderSubscript(data);
     }
-    else if (data == DocBookModel::Superscript) {
+    else if (data == Superscript) {
         result = renderSuperscript(data);
     }
-    else if (data == DocBookModel::GuiMenu) {
+    else if (data == GuiMenu) {
         result = renderGuiMenu(data);
     }
-    else if (data == DocBookModel::GuiMenuItem) {
+    else if (data == GuiMenuItem) {
         result = renderGuiMenuItem(data);
     }
-    else if (data == DocBookModel::GuiButton) {
+    else if (data == GuiButton) {
         result = renderGuiButton(data);
     }
-    else if (data == DocBookModel::KeyCombo) {
+    else if (data == KeyCombo) {
         result = renderKeyCombo(data);
     }
-    else if (data == DocBookModel::KeySym) {
+    else if (data == KeySym) {
         result = renderKeySym(data);
     }
-    else if (data == DocBookModel::MathML_Math) {
+    else if (data == MathML_Math) {
         result = renderMath(data);
     }
-    else if (data == DocBookModel::MathML_MRow) {
+    else if (data == MathML_MRow) {
         result = renderMRow(data);
     }
-    else if (data == DocBookModel::MathML_MI) {
+    else if (data == MathML_MI) {
         result = renderMI(data);
     }
-    else if (data == DocBookModel::MathML_MN) {
+    else if (data == MathML_MN) {
         result = renderMN(data);
     }
-    else if (data == DocBookModel::MathML_MO) {
+    else if (data == MathML_MO) {
         result = renderMO(data);
     }
-    else if (data == DocBookModel::MathML_MSup) {
+    else if (data == MathML_MSup) {
         result = renderMSup(data);
     }
-    else if (data == DocBookModel::MathML_MSqrt) {
+    else if (data == MathML_MSqrt) {
         result = renderMSqrt(data);
     }
-    else if (data == DocBookModel::MathML_MFrac) {
+    else if (data == MathML_MFrac) {
         result = renderMFrac(data);
     }
-    else if (data == DocBookModel::FuncSynopsys) {
+    else if (data == FuncSynopsys) {
         result = renderFuncSynopsis(data);
     }
-    else if (data == DocBookModel::FuncPrototype) {
+    else if (data == FuncPrototype) {
         result = renderFuncPrototype(data);
     }
-    else if (data == DocBookModel::FuncDef) {
+    else if (data == FuncDef) {
         result = renderFuncDef(data);
     }
-    else if (data == DocBookModel::Function) {
+    else if (data == Function) {
         result = renderFunction(data);
     }
-    else if (data == DocBookModel::ParamDef) {
+    else if (data == ParamDef) {
         result = renderParamDef(data);
     }
-    else if (data == DocBookModel::Parameter) {
+    else if (data == Parameter) {
         result = renderParameter(data);
     }
-    else if (data == DocBookModel::Type) {
+    else if (data == Type) {
         result = renderType(data);
     }
-    else if (data == DocBookModel::MediaObject) {
+    else if (data == MediaObject) {
         result = renderMediaObject(data);
     }
     return result;
@@ -290,8 +290,8 @@ QString generator::renderSection(ModelPtr data)
 {
     QString result;
     QString sec =
-            (root_ == DocBookModel::Article && data->sectionLevel() == 1) ||
-            (root_ == DocBookModel::Book && data->sectionLevel() == 1)
+            (root_ == Article && data->sectionLevel() == 1) ||
+            (root_ == Book && data->sectionLevel() == 1)
             ? "section" : "subsection";
 
 
@@ -341,9 +341,9 @@ QString generator::renderFuncPrototype(ModelPtr data)
     ModelPtr funcDef;
     QList<ModelPtr> paramDefs;
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::FuncDef)
+        if (child == FuncDef)
             funcDef = child;
-        else if (child == DocBookModel::ParamDef)
+        else if (child == ParamDef)
             paramDefs.push_back(child);
     }
     if (funcDef) {
@@ -558,7 +558,7 @@ QString generator::renderMFrac(ModelPtr data)
     QString above, below;
     QList<ModelPtr> mrows;
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::MathML_MRow) {
+        if (child == MathML_MRow) {
             mrows << child;
         }
     }
@@ -723,11 +723,11 @@ QString generator::renderMediaObject(ModelPtr data)
     ModelPtr caption;
     QString imageUrl;
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::Caption)
+        if (child == Caption)
             caption = child;
-        else if (child == DocBookModel::ImageObject && imageUrl.length()==0) {
+        else if (child == ImageObject && imageUrl.length()==0) {
             if (child->children().size() > 0 &&
-                    child->children().at(0) == DocBookModel::ImageData)
+                    child->children().at(0) == ImageData)
             {
                 ModelPtr imageData = child->children().at(0);
                 imageUrl = imageData->href().toLocalFile();
@@ -738,9 +738,9 @@ QString generator::renderMediaObject(ModelPtr data)
     }
     if (imageUrl.length() == 0 && allowRasterImages_) {
         Q_FOREACH(ModelPtr child, data->children()) {
-            if (child == DocBookModel::ImageObject && imageUrl.length()==0) {
+            if (child == ImageObject && imageUrl.length()==0) {
                 if (child->children().size() > 0 &&
-                        child->children().at(0) == DocBookModel::ImageData)
+                        child->children().at(0) == ImageData)
                 {
                     ModelPtr imageData = child->children().at(0);
                     imageUrl = imageData->href().toLocalFile();
@@ -786,17 +786,17 @@ QString generator::renderTable(ModelPtr data)
     ModelPtr head;
     ModelPtr body;
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::THead)
+        if (child == THead)
             head = child;
-        else if (child == DocBookModel::TBody)
+        else if (child == TBody)
             body = child;
     }
-    if (head && head->children().count() > 0 && head->children().at(0) == DocBookModel::Row) {
+    if (head && head->children().count() > 0 && head->children().at(0) == Row) {
         result += renderTableRow(head->children().at(0));
         result += " \\\\\n\\hline\n";
     }
     Q_FOREACH(ModelPtr row, body->children()) {
-        if (row == DocBookModel::Row) {
+        if (row == Row) {
             result += renderTableRow(row);
             result += " \\\\[2ex]\n";
         }
@@ -820,7 +820,7 @@ QString generator::renderTableRow(ModelPtr data)
     int index = 0;
     addSpace_ = false;
     Q_FOREACH(ModelPtr col, data->children()) {
-        if (col == DocBookModel::Entry) {
+        if (col == Entry) {
             QString entry;
             Q_FOREACH(ModelPtr content, col->children()) {
                 entry += renderElement(content);
@@ -842,9 +842,9 @@ QString generator::renderTableRow(ModelPtr data)
 void generator::calculateTableColumnsCount(ModelPtr data)
 {
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::Row)
+        if (child == Row)
             tableColumns_ = max(tableColumns_, calculateRowColumnsCount(child));
-        else if (child == DocBookModel::THead || child == DocBookModel::TBody)
+        else if (child == THead || child == TBody)
             calculateTableColumnsCount(child);
     }
 }
@@ -853,7 +853,7 @@ size_t generator::calculateRowColumnsCount(ModelPtr data)
 {
     size_t result = 0u;
     Q_FOREACH(ModelPtr child, data->children()) {
-        if (child == DocBookModel::Entry) {
+        if (child == Entry) {
             result += 1u;
         }
     }
@@ -909,7 +909,7 @@ QString generator::renderArticleTitle()
 
     ModelPtr abstract;
     Q_FOREACH(ModelPtr child, root_->children()) {
-        if (child == DocBookModel::Abstract || child == DocBookModel::Preface)
+        if (child == Abstract || child == Preface)
             abstract = child;
     }
     if (abstract) {

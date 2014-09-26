@@ -330,6 +330,7 @@ string generator::create_desc_data(const task_t &task, const size_t task_index)
     const string title = "Задание&nbsp;" + lexical_cast<string>(1 + task_index);
     string result = string(
                 "<html>\n"
+                "   <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">\n"
                 "   <head><title>{%title%}</title></head>\n"
                 "   <body>\n"
                 "       <p>{%ext_title%}</p>\n"

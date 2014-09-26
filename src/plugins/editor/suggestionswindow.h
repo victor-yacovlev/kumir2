@@ -50,7 +50,7 @@ public:
     ~SuggestionsWindow();
     void updateSettings(const ExtensionSystem::SettingsPtr settings);
 signals:
-    void requestHelpForAlgorithm(const QString & text);
+    void requestHelpForAlgorithm(const QString & package, const QString & function);
     void acceptedSuggestion(const QString & text);
     void hidden();
 protected:

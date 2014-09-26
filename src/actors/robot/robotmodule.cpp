@@ -722,7 +722,7 @@ namespace ActorRobot {
     }
     
     RoboField::RoboField(QWidget *parent)
-	: QGraphicsScene(parent)
+    : QGraphicsScene(parent)
 	
     
     {
@@ -757,7 +757,7 @@ namespace ActorRobot {
         radSpinBox=new QDoubleSpinBox();
         radSpinBox->setRange(0, 99);
         tempSpinBox=new QSpinBox();
-        tempSpinBox->setRange(0, 171);
+        tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
         
@@ -3294,7 +3294,7 @@ namespace ActorRobot {
    
     
 RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
-	: RobotModuleBase(parent)
+    : RobotModuleBase(parent)
 {
     self = this;
 	/* TODO 

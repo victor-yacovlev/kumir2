@@ -23,6 +23,10 @@ EXTERN void __kumir_create_real(__kumir_scalar * result, const __kumir_real valu
 EXTERN void __kumir_create_bool(__kumir_scalar * result, const __kumir_bool value);
 EXTERN void __kumir_create_char(__kumir_scalar * result, const char * utf8);
 EXTERN void __kumir_create_string(__kumir_scalar * result, const char * utf8);
+
+EXTERN void __kumir_convert_char_to_string(__kumir_scalar * result, const __kumir_scalar * source);
+EXTERN void __kumir_convert_int_to_real(__kumir_scalar * result, const __kumir_scalar * source);
+
 EXTERN __kumir_variant __kumir_copy_variant(const __kumir_variant rvalue, __kumir_scalar_type type);
 EXTERN void __kumir_copy_scalar(__kumir_scalar  * lvalue_ptr, const __kumir_scalar * rvalue);
 EXTERN void __kumir_move_scalar(__kumir_scalar  * lvalue, __kumir_scalar * rvalue);
@@ -138,11 +142,11 @@ EXTERN void __kumir_create_array_copy_3(__kumir_array * result,
 EXTERN void __kumir_link_array(__kumir_array * result, const __kumir_array * from);
 EXTERN void __kumir_free_array(__kumir_array * array);
 
-EXTERN void __kumir_fill_array_i(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_r(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_b(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_c(__kumir_array array, const char * data);
-EXTERN void __kumir_fill_array_s(__kumir_array array, const char * data);
+EXTERN void __kumir_fill_array_i(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_r(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_b(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_c(__kumir_array * array, const char * data);
+EXTERN void __kumir_fill_array_s(__kumir_array * array, const char * data);
 
 EXTERN void __kumir_get_array_1_element(__kumir_scalar ** result,
                                         bool value_expected,
@@ -246,7 +250,7 @@ EXTERN void Kumir_Standard_Library_string_to_real(__kumir_scalar * result, const
 EXTERN void Kumir_Standard_Library_string_to_int(__kumir_scalar * result, const __kumir_scalar * value, __kumir_scalar * success);
 EXTERN void Kumir_Standard_Library_unicode(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void Kumir_Standard_Library_code(__kumir_scalar * result, const __kumir_scalar * value);
-EXTERN void Kumir_Standard_Library_simbol(__kumir_scalar * result, const __kumir_scalar * value);
+EXTERN void Kumir_Standard_Library_symbol(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void Kumir_Standard_Library_unisymbol(__kumir_scalar * result, const __kumir_scalar * value);
 EXTERN void Kumir_Standard_Library_Integer(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def);
 EXTERN void Kumir_Standard_Library_Real(__kumir_scalar * result, const __kumir_scalar * lexem, const __kumir_scalar * def);
@@ -286,6 +290,8 @@ EXTERN void Files_abspath(__kumir_scalar  * result, const __kumir_scalar * name)
 EXTERN void Files_eof(__kumir_scalar  * result, const __kumir_scalar * handle);
 EXTERN void Files_set_encoding(const __kumir_scalar * encoding);
 EXTERN void Files_get_console(__kumir_scalar * result);
+EXTERN void Files_operator_neq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
+EXTERN void Files_operator_eq(__kumir_scalar * result, const __kumir_scalar * a, const __kumir_scalar * b);
 
 
 

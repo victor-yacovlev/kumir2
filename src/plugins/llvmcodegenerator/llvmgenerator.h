@@ -27,6 +27,12 @@
 #include <cstdint>
 #include <stack>
 
+// For QMap key usage
+inline bool operator<(const AST::ExpressionWPtr & a, const AST::ExpressionWPtr & b)
+{
+    return a.data() < b.data();
+}
+
 namespace LLVMCodeGenerator {
 
 class NameTranslator;
@@ -44,6 +50,12 @@ public:
     llvm::Module * getStdLibModule();
     void createExternsTable(const llvm::Module * const source, const CString & prefix);
 private:
+    enum AllocaPlace {
+        AsIs,
+        BeforeTerminator,
+        FunctionBegin
+    };
+
     typedef llvm::IRBuilder<> Builder;
     void createStdLibModule();
 
@@ -72,32 +84,36 @@ private:
     void createBreak(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, const AST::AlgorithmPtr & alg);
     void createError(llvm::IRBuilder<> & builder, const AST::StatementPtr & st);
     llvm::Value* calculate(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue = false);
-    llvm::Value* createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant & value);
+    llvm::Value* createConstant(llvm::IRBuilder<> & builder, const AST::Type kty, const QVariant & value, AllocaPlace allocaPlace);
     QByteArray createArray_0_ConstantData(const AST::VariableBaseType bt, const QVariant & value, bool addDefFlag);
     QByteArray createArray_1_ConstantData(const AST::VariableBaseType bt, const QVariantList & list);
     QByteArray createArray_2_ConstantData(const AST::VariableBaseType bt, const QVariantList & list);
     QByteArray createArray_3_ConstantData(const AST::VariableBaseType bt, const QVariantList & list);
     llvm::Value* createArrayConstant(llvm::IRBuilder<> & builder, const AST::VariableBaseType bt, const uint8_t dim, const QVariant & value);
-    llvm::Value* createFunctionCall(llvm::IRBuilder<> & builder, const AST::AlgorithmPtr & alg, const QList<AST::ExpressionPtr> & arguments);
+    llvm::Value* createFunctionCall(llvm::IRBuilder<> & builder, const AST::AlgorithmPtr & alg, const QList<AST::ExpressionPtr> & arguments, AllocaPlace allocaPlace);
     llvm::Value* createSubExpession(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex);
-    llvm::Value* createShortCircuitOperation(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & left, const AST::ExpressionPtr & right, const AST::ExpressionOperator op);
-    llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
-    llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue);
+    llvm::Value* createShortCircuitOperation(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & left, const AST::ExpressionPtr & right, const AST::ExpressionOperator op, AllocaPlace allocaPlace);
+    llvm::Value* createArrayElementGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue, AllocaPlace allocaPlace);
+    llvm::Value* createStringSliceGet(llvm::IRBuilder<> & builder, const AST::ExpressionPtr & ex, bool isLvalue, AllocaPlace allocaPlace);
     llvm::Value* findVariableAtCurrentContext(const AST::VariablePtr & var);
     void createFreeTempScalars(llvm::IRBuilder<> & builder);
     void createOutputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
     void createInputValue(Builder & builder, const QString & name, llvm::Value * value, const AST::VariableBaseType type, const bool isArray);
 
-    llvm::AllocaInst * CreateAlloca(Builder & builder, llvm::Type * ty, const CString & name = CString());
+
+
+    llvm::AllocaInst * CreateAlloca(Builder & builder, llvm::Type * ty, const CString & name, AllocaPlace allocaPlace);
 
     llvm::Module* currentModule_;
     AST::ModulePtr currentKModule_;
     llvm::Function* currentFunction_;
-    llvm::BasicBlock * currentFunctionEntry_;
+    llvm::BasicBlock * currentFunctionEntry_;    
+    llvm::BasicBlock * functionEntryPoint_;
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
     QScopedPointer<NameTranslator> nameTranslator_;
     llvm::Module* stdlibModule_;
+    QMap<AST::AlgorithmPtr, llvm::Function*> functMap_;
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
     llvm::BasicBlock* currentBlock_;
     QStack<llvm::BasicBlock*> currentLoopEnd_;
@@ -146,6 +162,9 @@ private:
     llvm::Function* kumirGetStringSlice_;
     llvm::Function* kumirGetStringElementRef_;
     llvm::Function* kumirGetStringSliceRef_;
+
+    llvm::Function* kumirConvertCharToString_;
+    llvm::Function* kumirConvertIntToReal_;
 
     llvm::Function* kumirLoopForFromToInitCounter_;
     llvm::Function* kumirLoopForFromToStepInitCounter_;
@@ -211,6 +230,8 @@ private:
     Shared::GeneratorInterface::DebugLevel debugLevel_;
 
     QList<const llvm::Function*> externs_;
+    QMap<AST::ExpressionWPtr, llvm::Value*> calculateCache_;
+    int lastLineNumber_;
 
 
     /**

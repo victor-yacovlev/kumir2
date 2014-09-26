@@ -78,6 +78,25 @@ void Analizer::setSourceDirName(const QString &dirName)
     d->analizer->setSourceDirName(dirName);
 }
 
+bool Analizer::multipleStatementsInLine(int lineNo) const
+{
+    const QList<TextStatementPtr> & sts = d->statements;
+    QList<int> usedLineNumbers;
+    Q_FOREACH(TextStatementPtr st, sts) {
+        int statementLine = -1;
+        Q_FOREACH(LexemPtr lx, st->data) {
+            if (LxTypeComment != lx->type) {
+                statementLine = lx->lineNo;
+                break;
+            }
+        }
+        if (-1 != statementLine) {
+            usedLineNumbers.append(statementLine);
+        }
+    }
+    return usedLineNumbers.count(lineNo) > 1;
+}
+
 Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) const
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);
@@ -759,6 +778,43 @@ bool AnalizerPrivate::findInstructionsBlock(
     return findInstructionsBlock(data, nearbyStatements, lst, dummy, outPos, mod, alg);
 }
 
+QPair<TextStatementPtr,LexemPtr> AnalizerPrivate::findSourceLexemContext(DataPtr data
+                                                   , const QList<TextStatementPtr> statements
+                                                   , int lineNo
+                                                   , int colNo
+                                                   , bool includeRightBound
+                                                   )
+{
+    typedef QPair<TextStatementPtr,LexemPtr> ResultType;
+    ResultType result = ResultType(TextStatementPtr(), LexemPtr());
+    if (!data || statements.isEmpty())
+        return result;
+
+    foreach(TextStatementPtr st, statements) {
+        QList<LexemPtr> lexems = st->data;
+        for (int i=0; i<lexems.size(); i++) {
+            LexemPtr lx = lexems[i];
+            if (lineNo==lx->lineNo) {
+                const QChar lastSymbol = lx->data.length() > 0
+                        ? lx->data[lx->data.length()-1] : QChar();
+                const int lexemStart = lx->linePos;
+                const int lexemEnd = lx->linePos + lx->length +
+                        (
+                            includeRightBound && lastSymbol.isLetterOrNumber()
+                            ? 1
+                            : 0
+                        )
+                        ;
+                if (lexemStart <= colNo && colNo < lexemEnd) {
+                    result = ResultType(st, lx);
+                    return result;
+                }
+            }
+        }
+    }
+    return result;
+}
+
 void AnalizerPrivate::removeAllVariables(const AST::VariablePtr var)
 {
     foreach (AST::ModulePtr mod, ast->modules) {
@@ -1024,6 +1080,7 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
         const Shared::Analizer::Suggestion & s = result.at(i_sugg);
         if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
             // suggest only if suggestion bounds by a keyword
+            // or contains a space inside itself
             if (s.kind==Shared::Analizer::Suggestion::SecondaryKeyword ||
                     (lastStatement!=nullptr
                      && lastStatement->data.size()>0 &&
@@ -1034,7 +1091,13 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
                         )
                      )
                     )
+            {
                 filteredResult.push_back(s);
+            }
+            else if (s.value.contains(' '))
+            {
+                filteredResult.push_back(s);
+            }
         }
         else {
             // regular case -- suggest it (already filtered by name)
@@ -1058,6 +1121,78 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
     }
 
     return cleanResult;
+}
+
+Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, int lineNo, int colNo, bool includeRightBound) const
+{
+    using namespace Shared::Analizer;
+
+    // get context by line number
+    QPair<TextStatementPtr,LexemPtr> context = AnalizerPrivate::findSourceLexemContext(
+                d->ast, d->statements, lineNo, colNo, includeRightBound
+                );    
+
+    ApiHelpItem result;
+
+    TextStatementPtr st = context.first;
+    if (!st)
+        return result;
+
+    AST::ModulePtr contextModule = st->mod;
+    AST::AlgorithmPtr contextAlgorithm = st->alg;
+
+    // the compiled text line might be outdated, so use new one
+    QList<LexemPtr> lexems;
+    QStringList dummy;
+    d->lexer->splitIntoLexems(text, lexems, dummy);
+    LexemPtr lx;
+
+    for (int i=0; i<lexems.size(); i++) {
+        LexemPtr curLex = lexems[i];
+        const QChar lastSymbol = curLex->data.length() > 0
+                ? curLex->data[curLex->data.length()-1] : QChar();
+        const int lexemStart = curLex->linePos;
+        const int lexemEnd = curLex->linePos + curLex->length +
+                (
+                    includeRightBound && lastSymbol.isLetterOrNumber()
+                    ? 1
+                    : 0
+                )
+                ;
+        if (lexemStart <= colNo && colNo < lexemEnd) {
+            lx = curLex;
+            break;
+        }
+    }
+
+    if (st && lx) {
+        QString name = lx->data.trimmed();
+
+        if (LxTypePrimaryKwd & lx->type || LxTypeSecondaryKwd & lx->type) {
+            result.kind = ApiHelpItem::Keyword;
+            result.itemName = name;
+        }
+        else if (LxTypeName & lx->type) {
+            // try to find algorithm
+            AST::AlgorithmPtr resultAlgorithm;
+            AST::ModulePtr resultModule;
+            QVariantList templateParameters;
+            if (d->analizer->findAlgorithm(name,
+                                           contextModule, contextAlgorithm,
+                                           resultModule, resultAlgorithm,
+                                           templateParameters))
+            {
+                result.kind = ApiHelpItem::Function;
+                result.itemName = resultAlgorithm->header.name;
+                result.packageName = 0xF0==resultModule->builtInID
+                        ? QString()
+                        : resultModule->header.name
+                        ;
+            }
+        }
+    }
+
+    return result;
 }
 
 

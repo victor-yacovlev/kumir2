@@ -1236,7 +1236,13 @@ void Generator::ASSIGN(int modId, int algId, int level, const AST::StatementPtr 
 QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int level, const AST::ExpressionPtr st)
 {
     QList<Bytecode::Instruction> result;
-    if (st->kind==AST::ExprConst) {
+    if (st->useFromCache) {
+        Bytecode::Instruction instr;
+        memset(&instr, 0, sizeof(Bytecode::Instruction));
+        instr.type = Bytecode::CLOAD;
+        result << instr;
+    }
+    else if (st->kind==AST::ExprConst) {
         int constId = constantValue(valueType(st->baseType), st->dimension, st->constant,
                                     st->baseType.actor ? st->baseType.actor->localizedModuleName(QLocale::Russian) : "",
                                     st->baseType.name
@@ -1336,6 +1342,13 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
             QList<Bytecode::Instruction> operandInstrs = calculate(modId, algId, level, st->operands[i]);
             shiftInstructions(operandInstrs, result.size());
             result << operandInstrs;
+            // Drop cached value in case of compare-chains calculations and Z-flag
+            if (st->operands[i]->clearCacheOnFailure) {
+                Bytecode::Instruction clearCacheOnZ;
+                memset(&clearCacheOnZ, 0, sizeof(Bytecode::Instruction));
+                clearCacheOnZ.type = Bytecode::CDROPZ;
+                result << clearCacheOnZ;
+            }
             // Do short circuit calculation for AND and OR operations
             if (i==0 && (st->operatorr==AST::OpAnd || st->operatorr==AST::OpOr)) {
                 // Simple case: just JZ/JNZ to end
@@ -1383,6 +1396,16 @@ QList<Bytecode::Instruction> Generator::calculate(int modId, int algId, int leve
             result[index].arg = result.size();
         }
     }
+
+
+    if (st->keepInCache) {
+        Bytecode::Instruction instr;
+        memset(&instr, 0, sizeof(Bytecode::Instruction));
+        instr.type = Bytecode::CSTORE;
+        result << instr;
+    }
+
+
     return result;
 }
 

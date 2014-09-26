@@ -15,7 +15,7 @@ namespace Shared { namespace Analizer {
 typedef QPair<QString,quint32> TextAppend;
 
 struct Suggestion {
-    enum Kind { Local, Global, Algorithm, BuiltinModule, KumirModule, Statement, SecondaryKeyword, Other };
+    enum Kind { LocalVariable, GlobalVariable, Function, Module, BuiltinModule, Statement, PrimaryKeyword, SecondaryKeyword, Other };
     inline Suggestion() { kind = Other; showOnlyInFullList = false; }
     QString value;
     QString description;
@@ -23,11 +23,22 @@ struct Suggestion {
     Kind kind;
 };
 
+struct ApiHelpItem {
+    enum Kind { Empty, Keyword, Module, Function, GlobalVariable };
+
+    QString packageName;
+    QString itemName;
+    Kind kind;
+
+    inline ApiHelpItem() : kind(Empty) {}
+};
+
 class HelperInterface {
 public:
     virtual QList<Suggestion> suggestAutoComplete(int lineNo, const QString & before, const QString & after) const = 0;
     virtual TextAppend closingBracketSuggestion(int lineNo) const = 0;
-    virtual QStringList importModuleSuggestion(int lineNo) const = 0;
+    virtual QStringList importModuleSuggestion(int lineNo) const = 0;    
+    virtual ApiHelpItem itemUnderCursor(const QString & text, int lineNo, int colNo, bool includeRightBound) const = 0;
     virtual QStringList imports() const = 0;
     virtual QString createImportStatementLine(const QString &importName) const = 0;
     virtual QString suggestFileName() const = 0;

@@ -46,6 +46,8 @@ public:
      inline QStringList getListOfCourses() const { 
          return mySettings()->value("Courses/LastFiles","").toString().split(";",QString::SkipEmptyParts); 
      }
+    void rebuildRescentMenu();
+
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -72,6 +74,7 @@ private /*fields*/:
     Widgets::DeclarativeSettingsPage* settingsEditorPage_;
     QMenu* courseMenu;
     QList<QMenu*> MenuList;
+    QMenu* rescentMenu;
     MainWindowTask* MW;
     bool setTextFromFile(QString fname);
     void fixOldKumTeacherMark(QDataStream* ds);//Inserts into start program, techer part marker.

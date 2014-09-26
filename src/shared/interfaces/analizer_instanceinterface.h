@@ -41,6 +41,10 @@ public:
     virtual QList<QPoint> lineRanks() const = 0;
     virtual LineProp lineProp(int lineNo, const QString & text) const = 0;
 
+    inline virtual bool multipleStatementsInLine(int lineNo) const {
+        Q_UNUSED(lineNo); return false;
+    }
+
     inline virtual ASTCompilerInterface * compiler() {
         QObject * me = dynamic_cast<QObject*>(this);
         if (!me) return 0;

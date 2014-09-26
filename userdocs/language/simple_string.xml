@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        [
+                <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
+                <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
+                ]>
+<section>
+    <title>Обработка текста</title>
+    <section>
+        <title>длин</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг цел <function>длин</function></funcdef>
+                <paramdef>лит <parameter>s</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Возвращает количество символов в строке <parameter>s</parameter>.
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит а
+  цел ц
+  вывод "введите строку"
+  ввод а
+  ц := длин(а)
+  вывод ц
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+
+    <section>
+        <title>код</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг цел <function>код</function></funcdef>
+                <paramdef>сим <parameter>c</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Возвращает порядковый номер символа в таблице КОИ8-Р (в соответствии со стандартом
+            RFC&nbsp;1489).
+        </para>
+        <example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  сим а
+  цел ц
+  вывод "введите символ"
+  ввод а
+  ц := код(а)
+  вывод ц
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+
+    <section>
+        <title>юникод</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг цел <function>юникод</function></funcdef>
+                <paramdef>сим <parameter>c</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Возвращает порядковый номер символа в таблице Unicode.
+        </para>
+    </section>
+</section>

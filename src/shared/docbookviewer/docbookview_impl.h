@@ -28,15 +28,13 @@ class DocBookViewImpl
 public /* methods */:
     explicit DocBookViewImpl(class DocBookView * pClass);
     QAction * viewerAction(const DocBookView::DocBookViewAction type) const;
-    class Document addDocument(
-            const QUrl & url,
-            QString * error,
-            int index
-            );
+    class Document addDocument(const QUrl & url, QString * error);
+
+    class Document addDocuments(const QString & groupName, const QList<QUrl> & urls, QString * error = 0);
 
     void removeDocument(const Document & existingDocument);
     bool hasAlgorithm(const QString & name) const;
-    void selectAlgorithm(const QString & name);
+    void navigateToApiFunction(const QString & package, const QString & function);
 
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     void saveState(ExtensionSystem::SettingsPtr settings, const QString & prefix);
@@ -48,6 +46,9 @@ public /* methods */:
     bool isSideBarVisible() const;
 
     void createActions();
+
+    void setRole(ModelType category, const QString & value);
+    QString role(ModelType category) const;
 
 signals:
     void itemSelected(ModelPtr model);
@@ -88,6 +89,8 @@ private /* fields */:
     QWidget * filler_;
     QWidget * background_;
     QStackedWidget * splitterRightWidget_;
+
+    QMap<ModelType,QString> roleValues_;
 
     bool compactModeFlag_;
 

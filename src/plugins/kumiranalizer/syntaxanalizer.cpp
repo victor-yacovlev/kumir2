@@ -182,7 +182,7 @@ SyntaxAnalizer::suggestImportAutoComplete(
         Shared::Analizer::Suggestion suggestion;
         suggestion.value = "\""+fileName+"\"";
         suggestion.description = tr("Use file \"%1\" as module").arg(fileName);
-        suggestion.kind = Shared::Analizer::Suggestion::KumirModule;
+        suggestion.kind = Shared::Analizer::Suggestion::Module;
         result.push_back(suggestion);
     }
     foreach ( const QString fileName , programDir.entryList(QStringList() << "*.kod") ) {
@@ -191,7 +191,7 @@ SyntaxAnalizer::suggestImportAutoComplete(
             Shared::Analizer::Suggestion suggestion;
             suggestion.value = "\""+fileName+"\"";
             suggestion.description = tr("Use precompiled file \"%1\" as module").arg(fileName);
-            suggestion.kind = Shared::Analizer::Suggestion::KumirModule;
+            suggestion.kind = Shared::Analizer::Suggestion::Module;
             result.push_back(suggestion);
         }
     }
@@ -263,7 +263,7 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
                 // Filter values not to use built-in functions retvals
                 // to avoid unclosed files
                 const QString & name = s.value;
-                if (s.kind==Shared::Analizer::Suggestion::Algorithm) {
+                if (s.kind==Shared::Analizer::Suggestion::Function) {
                     bool deny = false;
                     foreach (const AST::AlgorithmPtr alg , filesMod->header.algorhitms) {
                         if (alg->header.name==name) {
@@ -300,19 +300,20 @@ SyntaxAnalizer::suggestInputOutputAutoComplete(
         // Filter values to match conditions:
         //   a) can't input algorithms
         //   b) can't input/output values of custom type
-        if (s.kind==Shared::Analizer::Suggestion::Local || s.kind==Shared::Analizer::Suggestion::Global
+        if (s.kind==Shared::Analizer::Suggestion::LocalVariable || s.kind==Shared::Analizer::Suggestion::GlobalVariable
                 || accessType==AST::AccessArgumentIn
                 ) {
             const QString & name = s.value;
             AST::VariablePtr var;
             AST::AlgorithmPtr alg;
+            AST::ModulePtr mmod;
             AST::Type type;
             QVariantList templateParameters;
             if (findVariable(name, contextModule, contextAlgorithm, var))
             {
                 type = var->baseType;
             }
-            else if (findAlgorithm(name, contextModule, contextAlgorithm, alg, templateParameters)) {
+            else if (findAlgorithm(name, contextModule, contextAlgorithm, mmod, alg, templateParameters)) {
                 type = alg->header.returnType;
             }
             if (type.kind!=AST::TypeUser && type.kind!=AST::TypeNone) {
@@ -498,11 +499,11 @@ SyntaxAnalizer::suggestLoopBeginAutoComplete(
                     // Filter values to match one of conditions:
                     //   a) local/global variable; or
                     //   b) in/out parameter
-                    if (ss.kind==Shared::Analizer::Suggestion::Global) {
+                    if (ss.kind==Shared::Analizer::Suggestion::GlobalVariable) {
                         ss.value += QString::fromUtf8(" от ");
                         result.push_back(ss);
                     }
-                    else if (ss.kind==Shared::Analizer::Suggestion::Local) {
+                    else if (ss.kind==Shared::Analizer::Suggestion::LocalVariable) {
                         AST::VariablePtr  var;
                         if (findVariable(ss.value, contextModule, contextAlgorithm, var)) {
                             if (var->accessType==AST::AccessRegular || var->accessType==AST::AccessArgumentInOut) {
@@ -736,8 +737,9 @@ QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestExpressionAutoComplet
                 }
                 algorithmName = algorithmName.simplified();
                 AST::AlgorithmPtr alg;
+                AST::ModulePtr mmod;
                 QVariantList templateParameters;
-                if (findAlgorithm(algorithmName, contextModule, contextAlgorithm, alg, templateParameters)) {
+                if (findAlgorithm(algorithmName, contextModule, contextAlgorithm, mmod, alg, templateParameters)) {
                     int argumentIndex = comasBefore;
                     if (argumentIndex<alg->header.arguments.size()) {
                         // Suggest a corresponding argument type value
@@ -899,7 +901,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                 {
                     // return-value
                     suggestion.value = QString::fromUtf8("знач");
-                    suggestion.kind = Shared::Analizer::Suggestion::Local;
+                    suggestion.kind = Shared::Analizer::Suggestion::LocalVariable;
                     suggestion.description = var->baseType.kind==AST::TypeUser
                             ? var->baseType.name
                             : lexer_->classNameByBaseType(var->baseType.kind);
@@ -913,8 +915,8 @@ SyntaxAnalizer::suggestValueAutoComplete(
                             : lexer_->classNameByBaseType(var->baseType.kind);
                     suggestion.description += " " + var->name;
                     suggestion.kind = contextModule->impl.globals.contains(var)
-                            ? Shared::Analizer::Suggestion::Global
-                            : Shared::Analizer::Suggestion::Local;
+                            ? Shared::Analizer::Suggestion::GlobalVariable
+                            : Shared::Analizer::Suggestion::LocalVariable;
                 }
                 result.push_back(suggestion);
             }
@@ -985,7 +987,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     }
                     suggestion.description += ")";
                 }
-                suggestion.kind = Shared::Analizer::Suggestion::Algorithm;
+                suggestion.kind = Shared::Analizer::Suggestion::Function;
                 result.push_back(suggestion);
             }
         }
@@ -2458,6 +2460,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
         }
         QString name;
         AST::AlgorithmPtr  dummyAlg;
+        AST::ModulePtr dummyMod;
         QVariantList templateParameters;
         for (int i=0; i<forr.size(); i++) {
             if (i>0) name += " "; name += forr[i]->data;
@@ -2468,7 +2471,7 @@ void SyntaxAnalizer::parseLoopBegin(int str)
         else if (findGlobalVariable(name, st.mod, st.statement->loop.forVariable)) {
 
         }
-        else if (findAlgorithm(name, st.mod, st.alg, dummyAlg, templateParameters)) {
+        else if (findAlgorithm(name, st.mod, st.alg, dummyMod, dummyAlg, templateParameters)) {
             foreach (LexemPtr l, forr) l->error = _("Algorithm can't be a loop variable");
             return;
         }
@@ -3008,8 +3011,9 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
 
     // Проверяем на повторное описание алгоритма
     AST::AlgorithmPtr  aa;
+    AST::ModulePtr mm;
     QVariantList aaTemplateParameters;
-    if (!isOperator && findAlgorithm(name,st.mod, AST::AlgorithmPtr(), aa, aaTemplateParameters) && aa!=alg)
+    if (!isOperator && findAlgorithm(name,st.mod, AST::AlgorithmPtr(), mm, aa, aaTemplateParameters) && aa!=alg)
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
@@ -3529,8 +3533,9 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 }
 
                 AST::AlgorithmPtr  aa;
+                AST::ModulePtr aaModule;
                 QVariantList aaTemplateParameters;
-                if (findAlgorithm(cName, mod, alg, aa, aaTemplateParameters)) {
+                if (findAlgorithm(cName, mod, alg, aaModule, aa, aaTemplateParameters)) {
                     group.lexems[nameStart]->error = _("Name is used by algorithm");
                     return result;
                 }
@@ -4081,9 +4086,23 @@ QVariant SyntaxAnalizer::parseConstant(const std::list<LexemPtr> &constant,
         maxDim = 0;
         ct = testConst(constant, localErr);
         if ( ct==AST::TypeNone ) {
+            QString errorText = _("Not a constant value");
+            if  (constant.size() > 1) {
+                bool allLiterals = true;
+                for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
+                    LexemPtr lx = *it;
+                    if (LxConstLiteral != lx->type) {
+                        allLiterals = false;
+                        break;
+                    }
+                }
+                if (allLiterals) {
+                    errorText = _("Too many qoutes in constant");
+                }
+            }
             for (std::list<LexemPtr>::const_iterator it = constant.begin(); it!=constant.end(); it++) {
                 LexemPtr lx = *it;
-                lx->error = _("Not a constant value");
+                lx->error = errorText;
             }
             return QVariant::Invalid;
         }
@@ -4310,13 +4329,15 @@ bool SyntaxAnalizer::findAlgorithm(
         const QString &name,
         const AST::ModulePtr currentModule,
         const AST::AlgorithmPtr currentAlgorithm,
+        AST::ModulePtr &module,
         AST::AlgorithmPtr &algorithm,
         QVariantList & templateParameters
         ) const
 {
     algorithm.clear();
+    module.clear();
     for (int i=0; i<ast_->modules.size(); i++) {
-        AST::ModulePtr module = ast_->modules[i];
+        module = ast_->modules[i];
         bool moduleAvailable =
                 module->builtInID == 0xF0 ||
                 module->isEnabledFor(currentModule) ||
@@ -4336,17 +4357,17 @@ bool SyntaxAnalizer::findAlgorithm(
                     )
             {
                 // The same module - find includes private members
-                if (findAlgorithmInModule(name, ast_->modules[i], true, true, algorithm, templateParameters))
+                if (findAlgorithmInModule(name, module, true, true, algorithm, templateParameters))
                     return true;
             }
             else {
                 // Find only public algorhitm
-                if (findAlgorithmInModule(name, ast_->modules[i], false, false, algorithm, templateParameters))
+                if (findAlgorithmInModule(name, module, false, false, algorithm, templateParameters))
                     return true;
             }
         }
     }
-
+    module.clear();
     return false;
 }
 
@@ -5254,11 +5275,28 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
         }
     }
     result = makeExpressionTree(subexpression, mod);
+    convertDuplicateOperandsToCacheItems(result);
     if (result)
         result->lexems = lexems;
     return result;
 }
 
+static void convertDuplicateOperandsToCacheItems_r(AST::ExpressionPtr root, QSet<AST::ExpressionPtr> & cache)
+{
+    cache.insert(root);
+    Q_FOREACH(AST::ExpressionPtr child, root->operands) {
+
+        convertDuplicateOperandsToCacheItems_r(child, cache);
+    }
+}
+
+void SyntaxAnalizer::convertDuplicateOperandsToCacheItems(AST::ExpressionPtr root) const
+{
+    if (!root) return;
+    using namespace AST;
+    QSet<AST::ExpressionPtr> cache;
+    convertDuplicateOperandsToCacheItems_r(root, cache);
+}
 
 static QStringList possibleModuleImports(
         const QString & nameToFind,
@@ -5346,8 +5384,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
     QList<LexemPtr> comas;
 
     AST::AlgorithmPtr  function;
+    AST::ModulePtr functionModule;
     QVariantList functionTemplateParameters;
-    if (!findAlgorithm(name, mod, alg, function, functionTemplateParameters)) {
+    if (!findAlgorithm(name, mod, alg, functionModule, function, functionTemplateParameters)) {
         if (openBracketIndex==-1)
             openBracketIndex = lexems.size();
         for (int i=0; i<openBracketIndex; i++) {
@@ -5553,10 +5592,11 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
 void SyntaxAnalizer::updateSliceDSCall(AST::ExpressionPtr  expr, AST::VariablePtr  var) const
 {
     static AST::AlgorithmPtr  strlenAlg;
+    static AST::ModulePtr strlenMod;
     static AST::ModulePtr  stdlibMod;
     static QVariantList functionTemplateParameters;
     if (!strlenAlg)
-        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg, functionTemplateParameters);
+        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenMod, strlenAlg, functionTemplateParameters);
     if (expr->kind==AST::ExprFunctionCall
             && expr->function==strlenAlg
             && expr->operands.size()==0)
@@ -5576,11 +5616,12 @@ void SyntaxAnalizer::updateSliceDSCall(AST::ExpressionPtr  expr, AST::VariablePt
 bool SyntaxAnalizer::checkWrongDSUsage(ExpressionPtr expression)
 {
     static AST::AlgorithmPtr  strlenAlg;
+    static AST::ModulePtr strlenMod;
     static AST::ModulePtr  stdlibMod;
     static QVariantList functionTemplateParameters;
     bool hasError = false;
     if (!strlenAlg)
-        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenAlg, functionTemplateParameters);
+        findAlgorithm(QString::fromUtf8("длин"), stdlibMod, AST::AlgorithmPtr(), strlenMod, strlenAlg, functionTemplateParameters);
     if (expression->kind==AST::ExprFunctionCall
             && expression->function==strlenAlg
             && expression->operands.size()==0)
@@ -5657,8 +5698,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseElementAccess(const QList<LexemPtr> &le
         }
         else {
             AST::AlgorithmPtr  a ;
+            AST::ModulePtr am;
             QVariantList aTemplateParameters;
-            if (findAlgorithm(name, mod, alg, a, aTemplateParameters)) {
+            if (findAlgorithm(name, mod, alg, am, a, aTemplateParameters)) {
                 int a = qMax(0, openBracketIndex);
                 for (int i=a; i<lexems.size(); i++) {
                     lexems[i]->error = _("'[...]' instead of '(...)'");
@@ -5903,8 +5945,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
         result->dimension = 0;
         result->lexems = QList<LexemPtr>::fromStdList(lexems);
         const AST::ModulePtr  dummy;        
+        AST::ModulePtr dummy2;
         QVariantList dummyTemplateParameters;
-        findAlgorithm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), result->function, dummyTemplateParameters);
+        findAlgorithm(QString::fromUtf8("длин"), dummy, AST::AlgorithmPtr(), dummy2, result->function, dummyTemplateParameters);
         return result;
     }
     if (lexems.size()>=1 &&
@@ -6052,6 +6095,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
         }
 
         AST::AlgorithmPtr  a;
+        AST::ModulePtr am;
         AST::VariablePtr  v;
         QVariantList aTemplateParameters;
 
@@ -6078,7 +6122,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseSimpleName(const std::list<LexemPtr> &l
             }
         }
         else {            
-            if (findAlgorithm(name, mod, alg, a, aTemplateParameters)) {
+            if (findAlgorithm(name, mod, alg, am, a, aTemplateParameters)) {
                 foreach (LexemPtr lx, lexems) lx->type = LxNameAlg;
                 if (a->header.arguments.size() - aTemplateParameters.size() > 0) {
                     err = _("No arguments");
@@ -6169,6 +6213,7 @@ int findOperatorByPriority(const QList<SubexpressionElement> & s)
 
 #define IS_NUMERIC(x) ( x==AST::TypeInteger || x==AST::TypeReal )
 #define IS_LITERAL(x) ( x==AST::TypeCharect || x==AST::TypeString )
+#define IS_BOOLEAN(x) ( x==AST::TypeBoolean )
 
 bool IS_NUMERIC_LIST(const QList<AST::ExpressionPtr> & list) {
     bool result = true;
@@ -6191,6 +6236,23 @@ bool IS_LITERAL_LIST(const QList<AST::ExpressionPtr> & list) {
     bool result = true;
     for (int i=0; i<list.size(); i++) {
         result = result && IS_LITERAL(list[i]->baseType.kind);
+    }
+    return result;
+}
+
+bool IS_BOOLEAN_LIST(const QList<AST::ExpressionPtr> & list) {
+    bool result = true;
+    for (int i=0; i<list.size(); i++) {
+        bool c = true;
+        if (list[i]->baseType.kind==AST::TypeBoolean &&
+                list[i]->kind==AST::ExprSubexpression)
+        {
+            c = IS_BOOLEAN_LIST(list[i]->operands);
+        }
+        else {
+            c = IS_BOOLEAN(list[i]->baseType.kind);
+        }
+        result = result && c;
     }
     return result;
 }
@@ -6593,12 +6655,20 @@ AST::Type resType(const AST::Type & a
 
 }
 
-AST::ExpressionPtr  findRightmostCNFSubexpression(AST::ExpressionPtr  e)
+struct CNFReference {
+    AST::ExpressionPtr comparision;
+    AST::ExpressionPtr operand;
+};
+
+static CNFReference findRightmostCNFSubexpression(AST::ExpressionPtr  e)
 {
     static const QSet<AST::ExpressionOperator> ComparisonOperators = QSet<AST::ExpressionOperator>()
             << AST::OpLess << AST::OpLessOrEqual << AST::OpEqual << AST::OpNotEqual << AST::OpGreaterOrEqual << AST::OpGreater;
     if (ComparisonOperators.contains(e->operatorr)) {
-        return e->operands.last();
+        CNFReference result;
+        result.comparision = e;
+        result.operand = e->operands.last();
+        return result;
     }
     else {
         return findRightmostCNFSubexpression(e->operands.last());
@@ -6649,20 +6719,27 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
         AST::Type tailType = tailExpr->baseType;
         static const QSet<LexemType> ComparisonOperators = QSet<LexemType>()
                 << LxOperLess << LxOperLessOrEqual << LxOperEqual << LxOperNotEqual << LxOperGreaterOrEqual << LxOperGreater << LxPriAssign;
+        static const QSet<LexemType> CheckEqualOperators = QSet<LexemType>()
+                << LxOperBoolEqual << LxOperBoolNotEqual;
 
         bool tailIsNumeric = IS_NUMERIC(tailType.kind);
         bool headIsBool = headType.kind==AST::TypeBoolean;
         bool hasHeadExpr = headExpr != NULL;
-        bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression;
+        bool headIsSubexpr = hasHeadExpr && headExpr->kind==AST::ExprSubexpression && headExpr->operands.size() >= 2;
         bool isComparision = ComparisonOperators.contains(s[l].o->type);
+        bool isEqualCheck = CheckEqualOperators.contains(s[l].o->type);
         bool numericOperands = headExpr && IS_NUMERIC_LIST(headExpr->operands);
         bool tailIsLiteral = IS_LITERAL(tailType.kind);
+        bool tailIsBoolean = IS_BOOLEAN(tailType.kind);
         bool literalOperands = headExpr && IS_LITERAL_LIST(headExpr->operands);
+        bool booleanOperands = headExpr && IS_BOOLEAN_LIST(headExpr->operands);
 
-        bool makeCNF = headIsBool && headIsSubexpr && isComparision && (
-                    (tailIsNumeric && numericOperands)
+        bool makeCNF = headIsBool && headIsSubexpr && (
+                    (isComparision && tailIsNumeric && numericOperands)
                     ||
-                    (tailIsLiteral && literalOperands)
+                    (isComparision && tailIsLiteral && literalOperands)
+                    ||
+                    (isEqualCheck && tailIsBoolean && booleanOperands)
                     );
 
         if (headExpr && headExpr->expressionIsClosed)
@@ -6678,7 +6755,16 @@ AST::ExpressionPtr  SyntaxAnalizer::makeExpressionTree(const QList<Subexpression
             subRes->kind = AST::ExprSubexpression;
             subRes->baseType.kind = AST::TypeBoolean;
 //            subRes->operands << new AST::Expression(headExpr->operands.last());
-            subRes->operands << findRightmostCNFSubexpression(AST::ExpressionPtr(new AST::Expression(headExpr)));
+            CNFReference cnfReference = findRightmostCNFSubexpression(headExpr);
+            AST::ExpressionPtr cacheReference = cnfReference.operand;
+            AST::ExpressionPtr comparisionReference = cnfReference.comparision;
+            AST::ExpressionPtr firstOperand = AST::ExpressionPtr(new AST::Expression(cacheReference));
+            subRes->operands << firstOperand;
+            firstOperand->useFromCache = true;
+            cacheReference->keepInCache = true;
+            comparisionReference->clearCacheOnFailure = true;
+            firstOperand->cacheReference = cacheReference.toWeakRef();
+//            subRes->operands << findRightmostCNFSubexpression(AST::ExpressionPtr(new AST::Expression(headExpr)));
             subRes->operands << tailExpr;
             subRes->operatorr = operatorByLexem(s[l].o);            
             res->operands << subRes;

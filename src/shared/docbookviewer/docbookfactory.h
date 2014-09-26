@@ -1,6 +1,7 @@
 #ifndef DOCBOOKFACTORY_H
 #define DOCBOOKFACTORY_H
 
+#include "docbookview.h"
 #include "document.h"
 #include "docbookmodel.h"
 
@@ -24,20 +25,23 @@ class EXTERN DocBookFactory
 
 public:
     static DocBookFactory* self();
-    Document parseDocument(const QUrl & url, QString * error = 0) const;
+    Document parseDocument(const QMap<ModelType,QString> roleValues, const QUrl & url, QString * error = 0) const;
     static ModelPtr createListOfEntries(ModelPtr root,
-                                        DocBookModel::ModelType resType,
-                                        DocBookModel::ModelType findType
+                                        ModelType resType,
+                                        ModelType findType
                                         );
     static QMap<QString,ModelPtr> &
     updateListOfAlgorithms(ModelPtr root, QMap<QString,ModelPtr> &result);
+    Document createNamedSet(const QString &name, const QList<Document> documents) const;
 
 
 
 private /*methods*/:
-    ModelPtr parseDocument(QIODevice * stream,
-                           const QUrl & url,
-                           QString * error = 0) const;
+    ModelPtr parseDocument(
+            const QMap<ModelType,QString> & roles,
+            QIODevice * stream,
+            const QUrl & url,
+            QString * error = 0) const;
 
     explicit DocBookFactory();
 
@@ -57,16 +61,23 @@ private /*methods*/:
     bool warning(const QXmlParseException &exception);
 
     void filterByOs(ModelPtr root) const;
+    void filterByRoles(const QMap<ModelType,QString> & roles,
+                       ModelPtr root) const;
+    void filterByConfiguration(ModelPtr root) const;
 
     static QList<ModelPtr> findEntriesOfType(ModelPtr root,
-                                             DocBookModel::ModelType findType
+                                             ModelType findType
                                              );
+
+    static QByteArray loadAndPreprocessSvg(const QString & fileName);
+    static QImage loadAndPreprocessPng(const QString & fileName);
 
 
 private /*fields*/:
     mutable QXmlSimpleReader* reader_;
     mutable ModelPtr doc_;
     mutable QUrl url_;
+    mutable QMap<ModelType,QString> roles_;
 
     ModelPtr root_;
     QString buffer_;

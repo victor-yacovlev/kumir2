@@ -15,6 +15,8 @@
 #include "macroeditor.h"
 #include "macrolisteditor.h"
 #include "extensionsystem/pluginmanager.h"
+#include "widgets/iconprovider.h"
+
 namespace Editor {
 
 using namespace Shared;
@@ -276,19 +278,22 @@ void EditorInstance::loadMacros()
     systemMacros_ = loadFromFile(systemMacrosPath);
 
     // Actor-specific macros
-    if (analizerName == "kum") {
+
         const QList<const KPlugin*> actorPlugins =
                 PluginManager::instance()->loadedConstPlugins("Actor*");
 
         foreach (const KPlugin* plugin, actorPlugins) {
+            ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
+            const QString canonicalName = actorCanonicalName<QString>(actor->asciiModuleName());
             const QString actorMacrosFileName = plugin_->myResourcesDir().absoluteFilePath(
-                        "editor/macros-" + plugin->pluginSpec().name + ".xml");
+                        "macros-" + analizerName + "-" + canonicalName + ".xml"
+                        );
             if (QFile::exists(actorMacrosFileName)) {
                 systemMacros_.push_back(Macro());
                 systemMacros_ += loadFromFile(actorMacrosFileName);
             }
         }
-    }
+
 
     // Import macros
     if (analizerName == "kum") {
@@ -304,20 +309,20 @@ void EditorInstance::loadMacros()
             }
         }
 
-        if (!availableActorNames.empty()) {
-            systemMacros_.push_back(Macro());
-            for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
-                const QString & actorName = availableActorNames.at(i);
-                const QString insertText = tr("import %1").arg(actorName);
-                Macro macro;
-                macro.title = insertText;
-                macro.key = QString::number(i+1).at(0);
-                macro.commands.push_back(
-                            KeyCommand(KeyCommand::InsertImport, actorName)
-                            );
-                systemMacros_.push_back(macro);
-            }
-        }
+//        if (!availableActorNames.empty()) {
+//            systemMacros_.push_back(Macro());
+//            for (size_t i=0; i<qMin(size_t(9), availableActorNames.size()); i++) {
+//                const QString & actorName = availableActorNames.at(i);
+//                const QString insertText = tr("import %1").arg(actorName);
+//                Macro macro;
+//                macro.title = insertText;
+//                macro.key = QString::number(i+1).at(0);
+//                macro.commands.push_back(
+//                            KeyCommand(KeyCommand::InsertImport, actorName)
+//                            );
+//                systemMacros_.push_back(macro);
+//            }
+//        }
     }
 
 
@@ -487,6 +492,7 @@ void EditorInstance::updateFromAnalizer()
         if (i<props.size()) {
             doc_->setHighlightAt(i, props[i].toList());
         }
+        doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
         int newIndent = doc_->indentAt(i);
         int diffIndent = newIndent - oldIndent;
@@ -636,8 +642,8 @@ void EditorInstance::createConnections()
     connect(cursor_, SIGNAL(updateRequest()), plane_, SLOT(updateCursor()));
     connect(cursor_, SIGNAL(updateRequest(int,int)), plane_, SLOT(updateText(int,int)));
 
-    connect(autocompleteWidget_.data(), SIGNAL(requestHelpForAlgorithm(QString)),
-            this, SIGNAL(requestHelpForAlgorithm(QString)));
+    connect(autocompleteWidget_.data(), SIGNAL(requestHelpForAlgorithm(QString,QString)),
+            this, SIGNAL(requestHelpForAlgorithm(QString,QString)));
     connect(autocompleteWidget_.data(), SIGNAL(hidden()), plane_, SIGNAL(enableInsertActions()));
     connect(autocompleteWidget_.data(), SIGNAL(acceptedSuggestion(QString)),
             plane_, SLOT(finishAutoCompletion(QString)));
@@ -652,6 +658,25 @@ QScrollBar * EditorInstance::scrollBar(Qt::Orientation orientation)
     else {
         return verticalScrollBar_;
     }
+}
+
+Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
+{
+    typedef Shared::Analizer::ApiHelpItem ResType;
+
+    ResType result;
+
+    if (analizerInstance_ && analizerInstance_->helper()) {
+        int row = cursor()->row();
+        int col = cursor()->column();
+        const QString & text = document()->textAt(row);
+        if (!analizerPlugin_->indentsSignificant()) {
+            col -= document()->indentAt(row) * 2;
+        }
+        result = analizerInstance_->helper()->itemUnderCursor(text, row, col, true);
+    }
+
+    return result;
 }
 
 void EditorInstance::paintEvent(QPaintEvent * e)
@@ -707,7 +732,8 @@ void EditorInstance::createActions()
     copy_ = new QAction(plane_);
     copy_->setObjectName("edit-copy");
     copy_->setText(QObject::tr("Copy selection to clipboard"));
-    copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
+//    copy_->setIcon(QIcon(qtcreatorIconsPath+"editcopy.png"));
+    copy_->setIcon(Widgets::IconProvider::self()->iconForName("edit-copy"));
     copy_->setShortcut(QKeySequence(QKeySequence::Copy));
     copy_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(copy_, SIGNAL(triggered()), plane_, SLOT(copy()));
@@ -715,7 +741,8 @@ void EditorInstance::createActions()
     cut_ = new QAction(plane_);
     cut_->setObjectName("edit-cut");
     cut_->setText(QObject::tr("Cut selection to clipboard"));
-    cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
+//    cut_->setIcon(QIcon(qtcreatorIconsPath+"editcut.png"));
+    cut_->setIcon(Widgets::IconProvider::self()->iconForName("edit-cut"));
     cut_->setShortcut(QKeySequence(QKeySequence::Cut));
     cut_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(cut_, SIGNAL(triggered()), plane_, SLOT(cut()));
@@ -723,7 +750,8 @@ void EditorInstance::createActions()
     paste_ = new QAction(plane_);
     paste_->setObjectName("edit-paste");
     paste_->setText(QObject::tr("Paste from clipboard"));
-    paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
+//    paste_->setIcon(QIcon(qtcreatorIconsPath+"editpaste.png"));
+    paste_->setIcon(Widgets::IconProvider::self()->iconForName("edit-paste"));
     paste_->setShortcut(QKeySequence(QKeySequence::Paste));
     paste_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     QObject::connect(paste_, SIGNAL(triggered()), plane_, SLOT(paste()));
@@ -760,7 +788,8 @@ void EditorInstance::createActions()
     undo_->setEnabled(false);
     undo_->setObjectName("edit-undo");
     undo_->setText(QObject::tr("Undo last action"));
-    undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
+//    undo_->setIcon(QIcon(qtcreatorIconsPath+"undo.png"));
+    undo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-undo"));
     undo_->setShortcut(QKeySequence::Undo);
     undo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(undoAvailable(bool)), undo_, SLOT(setEnabled(bool)));
@@ -770,7 +799,8 @@ void EditorInstance::createActions()
     redo_->setEnabled(false);
     redo_->setObjectName("edit-redo");
     redo_->setText(QObject::tr("Redo last undoed action"));
-    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
+//    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
+    redo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-redo"));
     redo_->setShortcut(QKeySequence::Redo);
     redo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));

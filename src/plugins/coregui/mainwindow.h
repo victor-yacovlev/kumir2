@@ -106,11 +106,17 @@ private slots:
     void setTitleForTab(int index);
     void handleTabTitleChanged();
     void checkCounterValue();
-    void showAlgorithmHelp(const QString & name);
+    void showAlgorithmHelp(const QString & package, const QString & function);
 
     void addToRecent(const QString &fileName);
     void handleDocumentCleanChanged(bool v);
     void checkForConsoleHiddenBySplitter(int, int);
+    void setupMenuBarContextMenu();
+    void addMenuBeforeHelp(QMenu * menu);
+
+    void updateVisibleMenus();
+    void updateVisibleMenus(int index);
+    void updateVisibleMenus(class TabWidgetElement*);
 
 
 private:
@@ -171,6 +177,8 @@ private:
     ExtensionSystem::SettingsPtr settings_;
     int prevBottomSize_;
     Widgets::SecondaryWindow * debuggerWindow_; // changes place on layout change
+    class ToolbarContextMenu * menubarContextMenu_;
+    QList<QMenu*> topLevelMenus_;
 };
 
 

@@ -41,6 +41,9 @@ public:
     virtual QVariant valueStackTopItem() const = 0;
     virtual unsigned long int stepsCounted() const = 0;
     virtual QAbstractItemModel * debuggerVariablesViewModel() const = 0;
+
+    virtual void setStdInTextStream(QTextStream *) = 0;
+    virtual void setStdOutTextStream(QTextStream *) = 0;
 };
 
 }

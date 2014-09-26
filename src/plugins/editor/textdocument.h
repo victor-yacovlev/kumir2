@@ -25,6 +25,7 @@ struct TextLine
         inserted = false;
         protecteed = false;
         hidden = false;
+        multipleStatementsInLine = false;
     }
     int indentStart;
     int indentEnd;
@@ -45,6 +46,7 @@ struct TextLine
 
     bool changed;
     bool inserted;
+    bool multipleStatementsInLine;
 };
 
 class TextDocument

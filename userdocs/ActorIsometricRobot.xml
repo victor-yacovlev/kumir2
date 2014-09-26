@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE article
+    PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+    "docbookV4.5/docbookx.dtd"
+    []
+>
+<article>
+    <title>Исполнитель "Вертун"</title>
+    <titleabbrev>Вертун</titleabbrev>
+    <section>
+        <title>Общие сведения</title>
+        <para>
+            Исполнитель Вертун является основным исполнителем системы ПиктоМир, его
+            наличие в КуМире необходимо для перехода от одной системы к другой.
+        </para>
+        <para>
+            Поле исполнителя - это прямоугольный участок на плоскости, ограниченный со
+            всех сторон стенами и возможно, имеющий стены внутри.
+        </para>
+        <para>
+            Поле разделено на квадратные клетки, которые могут быть отмеченными точкой
+            или закрашенными.
+        </para>
+        <para>
+            Исполнителю Вертун необходимо пройти по полю и закрасить те клетки, которые
+            отмечены точкой, но не закрашены.
+        </para>
+        <para>Вертун может перемещаться по полю, не натыкаясь на стены. Также он может
+            закрашивать клетки или проверять их закрашенность (в некоторых задачах это
+            требуется для определения местоположения Вертуна).
+        </para>
+    </section>
+    <section>
+        <title>Команды действий</title>
+        <section>
+            <title>вперед</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <function>вперед</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>go_forward</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Перемещает Вертуна на одну клетку вперед. Если перед
+                Вертуном находится стена, то возникает ошибка выполнения "Робот ударился об
+                стену".
+            </para>
+        </section>
+        <section>
+            <title>повернуть налево</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <function>повернуть налево</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>turn_left</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Поворачивает Вертуна на 90 градусов против часовой стрелки.
+            </para>
+        </section>
+        <section>
+            <title>повернуть направо</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <function>повернуть направо</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>turn_right</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Поворачивает Вертуна на 90 градусов по часовой стрелке.
+            </para>
+        </section>
+        <section>
+            <title>закрасить</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <function>закрасить</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>do_paint</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Закрашивает клетку, на которой находится Вертун.
+            </para>
+        </section>
+    </section>
+    <section>
+        <title>Команды опроса состояния</title>
+        <section>
+            <title>впереди стена</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>лог</type> <function>впереди стена</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>is_wall_ahead</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает <code role="кумир">да</code><code role="python">True</code>, если перед Вертуном находится
+                стена, или <code role="кумир">нет</code><code role="python">False</code>, если Вертун может спокойно пройти сквозь стену.
+            </para>
+        </section>
+        <section>
+            <title>впереди свободно</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>лог</type> <function>впереди свободно</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>is_free_ahead</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                если Вертун может спокойно пройти сквозь стену,
+                или <code role="кумир">нет</code><code role="python">False</code>,
+                если перед Вертуном находится стена.
+            </para>
+        </section>
+        <section>
+            <title>клетка закрашена</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>лог</type> <function>клетка закрашена</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>is_cell_painted</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                если клетка, на которой находится Вертун, закрашена,
+                или <code role="кумир">нет</code><code role="python">False</code>,
+                если клетка чистая.
+            </para>
+        </section>
+        <section>
+            <title>клетка чистая</title>
+            <funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг <type>лог</type> <function>клетка чистая</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <function>is_cell_clean</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+            <para>
+                Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                если клетка, на которой находится Вертун, чистая,
+                или <code role="кумир">нет</code><code role="python">False</code>,
+                если клетка закрашена.
+            </para>
+        </section>
+    </section>
+</article>

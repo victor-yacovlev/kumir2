@@ -66,6 +66,7 @@ QString PluginManagerImpl::loadPlugins()
                     .arg(loader.errorString());
         }
         KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+        plugin->self = plugin;
         if (!plugin) {
             return QString("Plugin %1 is not valid (does not implement interface KPlugin)");
             loader.unload();

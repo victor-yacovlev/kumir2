@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>261</height>
+    <height>259</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -122,6 +122,11 @@
    </item>
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
      <widget class="QWidget" name="pageContents">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
@@ -149,6 +154,11 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="contentsNavigator">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="indentation">
           <number>10</number>
          </property>
@@ -191,6 +201,11 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="algorithmsNavigator">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="indentation">
           <number>10</number>
          </property>
@@ -233,6 +248,11 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="examplesNavigator">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="indentation">
           <number>10</number>
          </property>
@@ -275,6 +295,11 @@
        </item>
        <item>
         <widget class="QTreeWidget" name="tablesNavigator">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
          <property name="indentation">
           <number>10</number>
          </property>

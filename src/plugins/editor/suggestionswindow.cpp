@@ -196,19 +196,19 @@ SuggestionItem::SuggestionItem(const Shared::Analizer::Suggestion &suggestion,
 {
     setText(suggestion.value);
     setToolTip(suggestion.description);
-    if (suggestion.kind==Shared::Analizer::Suggestion::Local) {
+    if (suggestion.kind==Shared::Analizer::Suggestion::LocalVariable) {
         setIcon(factory->icon_local_);
     }
-    else if (suggestion.kind==Shared::Analizer::Suggestion::Global) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::GlobalVariable) {
         setIcon(factory->icon_global_);
     }
-    else if (suggestion.kind==Shared::Analizer::Suggestion::Algorithm) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::Function) {
         setIcon(factory->icon_algorithm_);
     }
     else if (suggestion.kind==Shared::Analizer::Suggestion::BuiltinModule) {
         setIcon(factory->icon_module_);
     }
-    else if (suggestion.kind==Shared::Analizer::Suggestion::KumirModule) {
+    else if (suggestion.kind==Shared::Analizer::Suggestion::Module) {
         setIcon(factory->icon_kumfile_);
     }
     else if (suggestion.kind==Shared::Analizer::Suggestion::SecondaryKeyword) {
@@ -279,7 +279,7 @@ bool SuggestionsWindow::eventFilter(QObject *obj, QEvent *event)
                 if (item->hasHelpEntry()) {
                     const QString text = item->text().trimmed();
                     qDebug() << "Request help for " << text;
-                    emit requestHelpForAlgorithm(text);
+                    emit requestHelpForAlgorithm("", text); // TODO package text
                 }
             }
             return true;

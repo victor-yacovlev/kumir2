@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 //#include "interface.h"
 
+#include "interfaces/browserinterface.h"
+#include "interfaces/browser_instanceinterface.h"
+
 
 MainWindowTask::MainWindowTask(QWidget *parent) :
     QMainWindow(parent),
@@ -25,8 +28,8 @@ cursFile="";
      ui->treeView->setStyleSheet("icon-size: 25px;font-size: 14px;");
      settings = sett;
      customMenu.hide();
-     connect(ui->loadCurs,SIGNAL(activated()),this,SLOT(loadCourse()));
-     connect(ui->actionSave,SIGNAL(activated()),this,SLOT(saveCourse()));
+     connect(ui->loadCurs,SIGNAL(triggered()),this,SLOT(loadCourse()));
+     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(saveCourse()));
      connect(ui->treeView,SIGNAL(clicked(QModelIndex)),this,SLOT(showText(QModelIndex)));
        connect(ui->do_task,SIGNAL(triggered()),this,SLOT(startTask()));
        qDebug()<<"Check Connect tttttttttttttttttt";
@@ -60,16 +63,64 @@ cursFile="";
            editRoot=new QLineEdit(ui->treeView);
            editRoot->hide();
            connect(editRoot,SIGNAL(editingFinished ()),this,SLOT(endRootEdit()));
-           ui->treeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+           ui->treeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 isTeacher=false;
        onTask=false;
        cursFile="";
        setWindowIcon(QIcon(resourcesRoot.absoluteFilePath("10.png")));
-#ifdef QT_DEBUG
-     ui->webView->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-#endif
+        setupWebView();
        //ui->textBrowser->setVisible(false);
  };
+
+void MainWindowTask::setupWebView()
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    BrowserInterface * browserPlugin
+            = PluginManager::instance()->findPlugin<BrowserInterface>();
+
+    QWidget * webViewComponent = 0;
+    simpleBrowserWidget_ = 0;
+    browserPluginInstance_ = 0;
+
+    if (browserPlugin) {
+        browserPluginInstance_ = browserPlugin->createBrowser();
+        webViewComponent = browserPluginInstance_->widget();
+    }
+    else {
+        simpleBrowserWidget_ = new QTextBrowser();
+        webViewComponent = simpleBrowserWidget_;
+    }
+
+    webViewComponent->setParent(ui->webView);
+    webViewComponent->setMinimumWidth(200);
+    QVBoxLayout * l = new QVBoxLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    ui->webView->setLayout(l);
+    l->addWidget(webViewComponent);
+}
+
+void MainWindowTask::setTaskViewHtml(const QString &data)
+{
+    if (simpleBrowserWidget_) {
+        simpleBrowserWidget_->setHtml(data);
+    }
+    else if (browserPluginInstance_) {
+        browserPluginInstance_->setContent(data);
+    }
+}
+
+void MainWindowTask::setTaskViewUrl(const QUrl &url)
+{
+    if (simpleBrowserWidget_) {
+        simpleBrowserWidget_->setSource(url);
+    }
+    else if (browserPluginInstance_) {
+        browserPluginInstance_->go(url);
+    }
+}
+
 QList<QAction*> MainWindowTask::getActions()
 {
     QList<QAction*> toRet;
@@ -99,8 +150,9 @@ void MainWindowTask::changeEvent(QEvent *e)
 }
 void MainWindowTask::updateLastFiles(const QString newFile )
 {
-    QStringList lastFiles= settings->value("Courses/LastFiles","").toString().split(";");
+      QStringList lastFiles= settings->value("Courses/LastFiles","").toString().split(";");
     qDebug()<<lastFiles;
+     qDebug()<<settings->locationDirectory();
     if(lastFiles.indexOf(newFile)<0)lastFiles.prepend(newFile);
     int max_fid=std::min(lastFiles.count(),10);
     QString sett="";
@@ -108,7 +160,8 @@ void MainWindowTask::updateLastFiles(const QString newFile )
     {
         sett+= lastFiles.at(i)+";";
     }
-    settings->setValue("Courses/LastFiles",sett); 
+    settings->setValue("Courses/LastFiles",sett);
+    interface->rebuildRescentMenu();
 };
 void MainWindowTask::loadCourseData(const QString fileName)
 {
@@ -182,7 +235,7 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
 }
 
 QString fileN=fileEl.attribute("fileName");
-qDebug()<<"KURS ZAGRUZILI";
+//qDebug()<<"KURS ZAGRUZILI";
 if(cursFile!=krsFile){
     QMessageBox::information( 0, "", trUtf8("Не наеден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
     fileN=getFileName(krsFile);
@@ -192,7 +245,7 @@ if(cursFile!=krsFile){
 QFileInfo fi_kurs=QFileInfo(krsFile);
 curDir=fi_kurs.absolutePath();
 QDomNodeList marksElList=root.elementsByTagName("MARK"); //Оценки
-qDebug()<<"Loading marks "<<marksElList.count();
+//qDebug()<<"Loading marks "<<marksElList.count();
 for(int i=0;i<marksElList.count();i++)
  {
  int taskId=marksElList.at(i).toElement().attribute("testId").toInt();
@@ -257,7 +310,7 @@ for(int i=0;i<prgElListT.count();i++)
     if(cText.right(4)==".htm" ||cText.right(5)==".html" )
     {
         loadHtml(cText);
-    }else ui->webView->setHtml(cText);
+    }else setTaskViewHtml(cText);
     // if(isTeacher)ui->actionEdit->setEnabled(true);
     setWindowTitle(course->name()+trUtf8(" - Практикум"));
     updateLastFiles(fileName);
@@ -279,14 +332,14 @@ void MainWindowTask::loadCourse()
 //     if(!dialog.exec())return;
 
 
-     QString	File=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), dir, "(*.kurs.xml *.work.xml)");
+     QString	File=QFileDialog::getOpenFileName(this, QString::fromUtf8 ("Открыть файл"), dir, "Xml (*.xml)");
      QFileInfo fi(File);
     if(!fi.exists())
     {
            
         return;
     };
-
+    this->showNormal();
 
      baseKursFile=fi;
      curDir=fi.absolutePath ();
@@ -298,7 +351,8 @@ void MainWindowTask::loadCourse()
      {
          isReadOnly=false;
          loadMarks(fileName);
-         this->show();
+         Q_EMIT activateRequest();
+//         this->show();
          return;
      }
     bool createDefaultWorkFile=true;
@@ -310,23 +364,25 @@ void MainWindowTask::loadCourse()
                 createDefaultWorkFile=false;
                 
             };
+    
      cursWorkFile.setFileName("");
      loadCourseData(fileName);
      isReadOnly=false;
      interface->setPreProgram(QVariant(""));
      QString cText=course->courceDescr();
-     
+  
 
   if(cText.right(4)==".htm" ||cText.right(5)==".html" )
   {
       loadHtml(cText);
-  }else ui->webView->setHtml(cText);
+  }else setTaskViewHtml(cText);
  // if(isTeacher)ui->actionEdit->setEnabled(true);
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
     updateLastFiles(fileName);
     interface->lockContrls();
     ui->checkTask->setEnabled(false);
-    this->show();
+    Q_EMIT activateRequest();
+//    this->show();
     if(createDefaultWorkFile)
     {
         markProgChange();
@@ -334,14 +390,26 @@ void MainWindowTask::loadCourse()
         qDebug()<<curDir;
 
         cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        
         saveCourseFile();
     }else
     {
         saveCourse();
     };
+    
 };
 
+void MainWindowTask::openRescent()
+{
+    
 
+    
+    QAction *s = qobject_cast<QAction*>(sender());
+    
+    loadCourseFromFile(s->property ( "fullName" ).toString());
+  //  if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
+Q_EMIT activateRequest();
+};
 
 void MainWindowTask::setUpDown(QModelIndex index)
 {
@@ -418,7 +486,7 @@ void MainWindowTask::showText(const QModelIndex & index )
  if(taskText.right(4)==".htm" ||taskText.right(5)==".html" )
  {
      loadHtml(taskText);
- }else ui->webView->setHtml(taskText);
+ }else setTaskViewHtml(taskText);
   qDebug()<<"TaskText:"<<course->getTaskText(index);
  curTaskIdx=index;
 
@@ -440,20 +508,23 @@ void MainWindowTask::showText(const QModelIndex & index )
  };
 
 void MainWindowTask::loadHtml(QString fileName)
-{
-    qDebug()<<"LoadHtml"<<fileName;
-    if(fileName.isEmpty())return;
-    QFile inp(curDir+'/'+fileName);
-    if  (!inp.open(QIODevice::ReadOnly))
-    {
-    QMessageBox::information( 0, "", trUtf8("Ошибка чтения: ") + fileName, 0,0,0);
-    return;
-    };
-    QString htmlData=QString::fromUtf8(inp.readAll());
-    //ui->textBrowser->setHtml(htmlData);
+{    
+    const QString absolutePath = QDir(curDir).absoluteFilePath(fileName);
+    const QUrl url = QUrl::fromLocalFile(absolutePath);
+    setTaskViewUrl(url);
+//    qDebug()<<"LoadHtml"<<fileName;
+//    if(fileName.isEmpty())return;
+//    QFile inp(curDir+'/'+fileName);
+//    if  (!inp.open(QIODevice::ReadOnly))
+//    {
+//    QMessageBox::information( 0, "", trUtf8("Ошибка чтения: ") + fileName, 0,0,0);
+//    return;
+//    };
+//    QString htmlData=QString::fromUtf8(inp.readAll());
+//    //ui->textBrowser->setHtml(htmlData);
 
-    ui->webView->setHtml(htmlData,QUrl("file://"+curDir+'/'+fileName));
-    inp.close();
+//    ui->webView->setHtml(htmlData,QUrl("file://"+curDir+'/'+fileName));
+//    inp.close();
 
 };
 void MainWindowTask::startTask()
@@ -464,7 +535,7 @@ void MainWindowTask::startTask()
          QMessageBox::about(NULL, trUtf8("Не выбрано задание"),trUtf8("Необходимо выбрать задание"));
          return;
      }
-     if(course->csName(curTaskIdx.internalId())!=CS)
+     if(course->csName(curTaskIdx.internalId()).toLower()!=CS)
      {
          QMessageBox::about(NULL, trUtf8("Неправильное окружение"),trUtf8("Необходим ")+course->csName(curTaskIdx.internalId()));
          return;
@@ -589,16 +660,18 @@ void MainWindowTask::saveCourse()
 {
     editRoot->hide();
    markProgChange();
-    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir, "(*.work.xml)");
+    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir, "Work files(*.work.xml);;All files (*)");
+    dialog.setDefaultSuffix("work.xml");
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     if(!dialog.exec())return;
     QFileInfo fi(dialog.selectedFiles().first());
     //curDir=fi.absolutePath ();
     qDebug()<<"curDir"<<curDir;
     QString fileName=dialog.selectedFiles().first();
-    QString type=fileName.right(9);
-    if(type!=".work.xml")fileName+=".work.xml";
+   // QString type=fileName.right(9);
+   // if(type!=".work.xml")fileName+=".work.xml";
     cursWorkFile.setFileName(fileName);
+    updateLastFiles(fileName);
     saveCourseFile();
 
 };
@@ -721,8 +794,25 @@ void MainWindowTask::Close()
     saveBaseKurs();
     close();
 };
+void MainWindowTask::showEvent(QShowEvent * event)
+{
+    ui->splitter->restoreState(settings->value("Window/SpliterState")
+                 .toByteArray());
+    QByteArray settlist=settings->value("Window/SpliterPos").toByteArray();
+    qDebug()<<settlist;
+    ui->splitter->restoreGeometry(settlist);
+};
+
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
+    
+   
+    
+    settings->setValue("Window/SpliterPos",ui->splitter->saveGeometry());
+    settings->setValue("Window/SpliterState",ui->splitter->saveState());
+    settings->flush();
+    qDebug()<<ui->splitter->saveGeometry();
+    qDebug()<<"CLOSE TASK WINDOW";
   if(!course)return;
   qDebug()<<"START CLOSE TASK WINDOW";
   if(!cursWorkFile.exists())

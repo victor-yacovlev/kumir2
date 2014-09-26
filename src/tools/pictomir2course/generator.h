@@ -1,7 +1,7 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include "data.h"
+#include "pictomir_data.h"
 
 #include <string>
 #include <ostream>

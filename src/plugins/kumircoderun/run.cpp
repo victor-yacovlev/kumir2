@@ -32,6 +32,7 @@ Run::Run(QObject *parent) :
     algDoneMutex_ = new QMutex;
     interactDoneMutex_ = new QMutex;
     runMode_ = RM_ToEnd;
+    stdInBuffer_ = 0;
 
     vm->setDebuggingHandler(this);
 

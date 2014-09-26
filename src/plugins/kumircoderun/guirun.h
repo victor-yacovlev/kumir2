@@ -59,6 +59,23 @@ private /*fields*/:
     QChar rawBufferLastReadChar_;
 };
 
+class SimulatedInputBuffer
+        : public Kumir::AbstractInputBuffer
+{
+public:
+    inline explicit SimulatedInputBuffer(QTextStream * stream): io_(stream), prevChar_(QChar::Null), lastChar_(QChar::Null) {}
+
+    void clear();
+    bool readRawChar(Kumir::Char &ch);
+    void pushLastCharBack();
+
+private:
+    QTextStream *io_;
+    QChar prevChar_;
+    QChar lastChar_;
+
+};
+
 class OutputFunctor
         : private QObject
         , public VM::OutputFunctor
@@ -75,6 +92,16 @@ signals:
     void requestOutput(const QString & data);
 private:
     VM::CustomTypeToStringFunctor * converter_;
+};
+
+class SimulatedOutputBuffer
+        : public Kumir::AbstractOutputBuffer
+{
+public:
+    inline explicit SimulatedOutputBuffer(QTextStream * stream): io_(stream) {}
+    void writeRawString(const Kumir::String &);
+private:
+    QTextStream *io_;
 };
 
 class GetMainArgumentFunctor

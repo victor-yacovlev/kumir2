@@ -10,7 +10,7 @@
             <title>если-то-иначе-все</title>
             <para>
                 Общий вид команды:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если условие
   то серия1
   иначе серия2
@@ -19,9 +19,9 @@
                 </programlisting>
             </para>
             <para>
-                <code>серия2</code> вместе со служебным словом <code language="kumir">иначе</code> может отсутствовать.
+                <code>серия2</code> вместе со служебным словом <code language="кумир">иначе</code> может отсутствовать.
                 В этом случае команда имеет вид:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если условие
   то серия1
 все
@@ -29,19 +29,19 @@
                 </programlisting>
             </para>
             <para>
-                При выполнении команды <code language="kumir">если</code> Кумир сначала проверяет условие, записанное
-                между <code language="kumir">если</code> и <code language="kumir">то</code>. При соблюдении этого
+                При выполнении команды <code language="кумир">если</code> Кумир сначала проверяет условие, записанное
+                между <code language="кумир">если</code> и <code language="кумир">то</code>. При соблюдении этого
                 условия выполняется <code>серия1</code>, в противном случае -- <code>серия2</code> (если она есть),
-                после чего Кумир переходит к выполнению команд, записанных после слова <code language="kumir">все</code>.
+                после чего Кумир переходит к выполнению команд, записанных после слова <code language="кумир">все</code>.
             </para>
             <para>
-                Если условие не соблюдается, а <code>серия2</code> вместе с <code language="kumir">иначе</code>
+                Если условие не соблюдается, а <code>серия2</code> вместе с <code language="кумир">иначе</code>
                 отсутствует, то  Кумир сразу переходит к выполнению команд, записанных после слова
-                <code language="kumir">все</code>.
+                <code language="кумир">все</code>.
             </para>
             <example>
                 <title>Конструкция "если-то-иначе-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если a<b
   то b:=b-a; p:=p+q
   иначе a:=a-b; q:=q+p
@@ -51,7 +51,7 @@
             </example>
             <example>
                 <title>Конструкция "если-то-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 если x>m
   то
     m:=x
@@ -65,7 +65,7 @@
             <title>выбор-при-иначе-все</title>
             <para>
                 Общий вид команды:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при условие 1 : серия 1
   при условие 2 : серия 2
@@ -77,9 +77,9 @@
                 </programlisting>
             </para>
             <para>
-                Ключевое слово <code language="kumir">иначе</code> вместе с соответствующей серией команд
+                Ключевое слово <code language="кумир">иначе</code> вместе с соответствующей серией команд
                 может отсутствовать:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при условие_1 : серия_1
   при условие_2 : серия_2
@@ -92,22 +92,22 @@
             <para>
                 Кумир сначала проверяет <code>условие 1</code>. Если оно соблюдается, то Кумир выполняет
                 команды из <code>серии 1</code>, после чего переходит к выполнению команд, записанных после слова
-                <code language="kumir">все</code>. В противном случае Кумир делает то же самое с
+                <code language="кумир">все</code>. В противном случае Кумир делает то же самое с
                 <code>условием 2</code> и командами из <code>серии 2</code> и&nbsp;т.&nbsp;д.
             </para>
             <para>
-                Команды, записанные после слова <code language="kumir">иначе</code>, выполняются в том случае,
+                Команды, записанные после слова <code language="кумир">иначе</code>, выполняются в том случае,
                 когда не соблюдено ни одно из условий.
             </para>
             <para>
-                В команде  <code language="kumir">выбор</code> всегда выполняется не более одной серии команд, даже если
-                несколько условий окажутся истинными. Выполнение команды  <code language="kumir">выбор</code>
+                В команде  <code language="кумир">выбор</code> всегда выполняется не более одной серии команд, даже если
+                несколько условий окажутся истинными. Выполнение команды  <code language="кумир">выбор</code>
                 заканчивается после того, как найдено первое (по порядку следования) условие со значением
-                <code language="kumir">да</code> (и выполнена соответствующая серия команд).
+                <code language="кумир">да</code> (и выполнена соответствующая серия команд).
             </para>
             <example>
                 <title>Конструкция "выбор-при-иначе-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при а>1: i:=i+1
   при а<0: j:=j-1
@@ -118,7 +118,7 @@
             </example>
             <example>
                 <title>Конструкция "выбор-при-все"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 выбор
   при а[i]>1000 : b[i]:=3; c[i]:=3.141
   при а[i]>100 :
@@ -142,7 +142,7 @@
             <title>Цикл "для"</title>
             <para>
                 Общий вид цикла <emphasis>для</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от i1 до i2
   тело_цикла
 кц
@@ -150,17 +150,17 @@
                 </programlisting>
             </para>
             <para>
-                Здесь <code>i</code> -- величина типа <code language="kumir">цел</code> (она называется
+                Здесь <code>i</code> -- величина типа <code language="кумир">цел</code> (она называется
                 <emphasis>параметром цикла</emphasis>), а <code>i1</code> и <code>i2</code> -- целые
-                выражения, т.&nbsp;е. выражения типа <code language="kumir">цел</code>. При выполнении цикла
-                <code language="kumir">для</code> тело цикла выполняется последовательно
+                выражения, т.&nbsp;е. выражения типа <code language="кумир">цел</code>. При выполнении цикла
+                <code language="кумир">для</code> тело цикла выполняется последовательно
                 для <code>i = i1</code>, <code>i = i1 + 1</code>, ..., <code>i = i2</code>.
                 Если <code>i1 = i2</code>, то тело цикла выполнится один раз для <code>i = i1</code>.
                 Если же <code>i1 &gt; i2</code>, то тело цикла не выполнится ни разу.
             </para>
             <para>
                 Общий вид цикла <emphasis>для</emphasis> с <emphasis>шагом</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от i1 до i2 шаг d
   тело_цикла
 кц
@@ -175,7 +175,7 @@
             </para>
             <example>
                 <title>Цикл "для" без указания шага</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для j от 1 до длин(t)
   t1[j]:=t[длин(t)+1-j]
 кц
@@ -184,7 +184,7 @@
             </example>
             <example>
                 <title>Цикл "для" с положительным шагом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от 1 до 100 шаг 2
   а[i+1]:=a[i]
 кц
@@ -193,7 +193,7 @@
             </example>
             <example>
                 <title>Цикл "для" с отрицательным шагом</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц для i от 100 до 1 шаг -2
   а[i]:=a[i-1]
 кц
@@ -205,7 +205,7 @@
             <title>Цикл "пока"</title>
             <para>
                 Общий вид цикла <emphasis>пока</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц пока условие
   тело_цикла
 кц
@@ -213,17 +213,17 @@
                 </programlisting>
             </para>
             <para>
-                При выполнении цикла <code language="kumir">пока</code> Кумир циклически повторяет следующие действия:
+                При выполнении цикла <code language="кумир">пока</code> Кумир циклически повторяет следующие действия:
                 <itemizedlist>
                     <listitem>
                         <para>
-                            Проверяет записанное после служебного слова <code language="kumir">пока</code> условие.
+                            Проверяет записанное после служебного слова <code language="кумир">пока</code> условие.
                         </para>
                     </listitem>
                     <listitem>
                         <para>
                             Если условие не соблюдается, то выполнение цикла завершается и Кумир начинает
-                            выполнять команды, записанные после <code language="kumir">кц</code>.
+                            выполнять команды, записанные после <code language="кумир">кц</code>.
                         </para>
                         <para>
                             Если же условие соблюдается, то Кумир выполняет тело цикла, снова проверяет
@@ -234,7 +234,7 @@
             </para>
             <example>
                 <title>Цикл "пока"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц пока а<10
   а := а + 1
 кц
@@ -246,7 +246,7 @@
             <title>Цикл "до тех пор"</title>
             <para>
                 Общий вид цикла <emphasis>до тех пор</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
 · тело_цикла
 кц при условие
@@ -254,7 +254,7 @@
                 </programlisting>
             </para>
             <para>
-                При выполнении цикла <code language="kumir">до тех пор</code> Кумир циклически повторяет следующие
+                При выполнении цикла <code language="кумир">до тех пор</code> Кумир циклически повторяет следующие
                 действия:
                 <itemizedlist>
                     <listitem>
@@ -264,13 +264,13 @@
                     </listitem>
                     <listitem>
                         <para>
-                            Проверяет записанное после служебного слова <code language="kumir">пока</code> условие.
+                            Проверяет записанное после служебного слова <code language="кумир">пока</code> условие.
                         </para>
                     </listitem>
                     <listitem>
                         <para>
                             Если условие не соблюдается, то выполнение цикла завершается и Кумир начинает
-                            выполнять команды, записанные после <code language="kumir">кц</code>.
+                            выполнять команды, записанные после <code language="кумир">кц</code>.
                         </para>
                         <para>
                             Если же условие соблюдается, то Кумир выполняет тело цикла, снова проверяет
@@ -281,7 +281,7 @@
             </para>
             <example>
                 <title>Цикл "до тех пор"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   x := 2*x
 кц_при x>100
@@ -293,7 +293,7 @@
                 <emphasis>N раз</emphasis>.
                 <example>
                     <title>Цикл с условием "при"</title>
-                    <programlisting role="kumir"><![CDATA[
+                    <programlisting role="кумир"><![CDATA[
 нц 5 раз
   ввод x, y, z
   вывод нс, "Координаты:", x, y, z
@@ -303,16 +303,16 @@
                 </example>
             </para>
             <para>
-                В старых версиях системы Кумир использовалась запись <code language="kumir">кц_при</code>.
-                В новой версии Кумир записи <code language="kumir">кц_при</code> (с символом подчеркивания)
-                и <code language="kumir">кц при</code> (с пробелом) эквивалентны.
+                В старых версиях системы Кумир использовалась запись <code language="кумир">кц_при</code>.
+                В новой версии Кумир записи <code language="кумир">кц_при</code> (с символом подчеркивания)
+                и <code language="кумир">кц при</code> (с пробелом) эквивалентны.
             </para>
         </section>
         <section>
             <title>Цикл "N раз"</title>
             <para>
                 Общий вид цикла <emphasis>N раз</emphasis>:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц N раз
   тело_цикла
 кц
@@ -323,12 +323,22 @@
                 Здесь <code>N</code> -- целое выражение, задающее число повторений. При выполнении алгоритма
                 последовательность команд циклически повторяется указанное число раз.
             </para>
+            <example>
+                <title>Цикл "N раз"</title>
+                <programlisting role="кумир"><![CDATA[
+нц 4 раз
+  ввод x, y, z
+  вывод нс, "Координаты:", x, y, z
+кц
+]]>
+                </programlisting>
+            </example>
         </section>
         <section>
             <title>Цикл "нц-кц"</title>
             <para>
                 Общий вид цикла:
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   тело_цикла
 кц
@@ -337,7 +347,7 @@
             </para>
             <example>
                 <title>Цикл "нц-кц"</title>
-                <programlisting role="kumir"><![CDATA[
+                <programlisting role="кумир"><![CDATA[
 нц
   а := а + 1
   если а>100 то выход все
@@ -346,14 +356,14 @@
                 </programlisting>
             </example>
             <para>
-                Кумир не проверяет, встречается ли в теле цикла команда <code language="kumir">выход</code>.
+                Кумир не проверяет, встречается ли в теле цикла команда <code language="кумир">выход</code>.
                 Если такой команды нет, то цикл <emphasis>нц-кц</emphasis> будет выполняться до бесконечности.
             </para>
         </section>
         <section>
             <title>Принудительное завершение цикла</title>
             <para>
-                В теле любого из циклов может быть использована команда <code language="kumir">выход</code>
+                В теле любого из циклов может быть использована команда <code language="кумир">выход</code>
                 <xref linkend="command_exit"/>.
                 При выполнении этой команды, содержащий ее цикл будет завершен.
             </para>

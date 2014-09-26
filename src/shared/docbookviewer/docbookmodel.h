@@ -1,6 +1,9 @@
 #ifndef DOCBOOKMODEL_H
 #define DOCBOOKMODEL_H
 
+// self includes
+#include "modeltype.h"
+
 // Qt includes
 #include <QtGlobal>
 #include <QString>
@@ -27,82 +30,13 @@ class EXTERN DocBookModel
 {
     friend class DocBookFactory;
     friend class MathMLRenderer;
-public:
-    enum ModelType {
-        Unknown,
-
-        Text,
-        Book,
-        Article,
-        Set,
-        Chapter,
-        Section,
-        Preface,
-        Reference,
-        Abstract,
-        Para,
-        Example,
-        ProgramListing,
-        Code,
-        OrderedList,
-        ItemizedList,
-        ListItem,
-        Xref,
-        Emphasis,
-        XInfo,
-        KeywordSet,
-        Keyword,
-        Synopsis,
-        KeyCombo,
-        KeySym,
-        Table,
-        InformalTable,
-        THead,
-        TBody,
-        Row,
-        Entry,
-        MediaObject,
-        Caption,
-        InlineMediaObject,
-        ImageObject,
-        ImageData,
-        Subscript,
-        Superscript,
-
-        FuncSynopsys,
-        FuncSynopsysInfo,
-        FuncPrototype,
-        FuncDef,
-        ParamDef,
-        Function,
-        Parameter,
-        Package,
-        Type,
-
-        MathML_Math,
-        MathML_MRow,
-        MathML_MSqrt,
-        MathML_MFrac,
-        MathML_MI,
-        MathML_MN,
-        MathML_MO,
-        MathML_MText,
-        MathML_MSup,
-
-        GuiMenu,
-        GuiMenuItem,
-        GuiButton,
-
-        // virtual entries
-        ListOfExamples,
-        ListOfTables,
-        ListOfFunctions
-    };
+public:    
 
     quint8 sectionLevel() const;
     ModelType modelType() const;
     const QString & id() const;
     const QString & title() const;
+    QString titleAbbrev() const;
     const QString & subtitle() const;
     const QString & text() const;
     const QString & role() const;
@@ -119,6 +53,8 @@ public:
 
     ModelPtr self() const;
 
+    ModelPtr findChildrenOfType(const ModelType modelType) const;
+
 
 protected /*methods*/:
     explicit DocBookModel(ModelPtr parent, const ModelType modelType);
@@ -131,10 +67,12 @@ protected /*fields*/:
     ModelType modelType_;
     unsigned short sectionLevel_;
     QString title_;
+    QString titleAbbrev_;
     QString subtitle_;
     QString text_;
     QString id_;
     QString os_;
+    QString configuration_;
     QString xrefLinkEnd_;
     QString xrefEndTerm_;
     QString role_;
@@ -147,13 +85,13 @@ protected /*fields*/:
 }
 
 inline bool operator==(const DocBookViewer::ModelPtr & model,
-                DocBookViewer::DocBookModel::ModelType type)
+                DocBookViewer::ModelType type)
 {
     return model && model->modelType() == type;
 }
 
 inline bool operator!=(const DocBookViewer::ModelPtr & model,
-                DocBookViewer::DocBookModel::ModelType type)
+                DocBookViewer::ModelType type)
 {
     return ! (model && model->modelType() == type);
 }

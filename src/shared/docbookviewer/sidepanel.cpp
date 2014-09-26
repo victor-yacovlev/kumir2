@@ -41,11 +41,11 @@ SidePanel::SidePanel(QWidget *parent) :
 
 }
 
-void SidePanel::addDocument(Document document)
+void SidePanel::addDocument(Document document, bool bookSetItemsAsTopLevel)
 {
     QList<ModelPtr> topLevelItems;
     if (document.root_) {
-        if (document.root_->modelType() == DocBookModel::Set) {
+        if (document.root_->modelType() == Set && bookSetItemsAsTopLevel) {
             topLevelItems = document.root_->children();
         }
         else {
@@ -59,8 +59,11 @@ void SidePanel::addDocument(Document document)
         QTreeWidgetItem * item =
                 new QTreeWidgetItem(ui->contentsNavigator);
         ui->contentsNavigator->addTopLevelItem(item);
-        item->setText(0, model->title());
-        item->setToolTip(0, model->subtitle());
+        item->setText(0, model->titleAbbrev());
+        item->setToolTip(0, model->titleAbbrev() == model->title()
+                         ? model->subtitle()
+                         : model->title()
+                           );
         createNavigationItems(item, model);
         createListOfExamples(model);
         createListOfTables(model);
@@ -206,14 +209,16 @@ void SidePanel::createNavigationItems(QTreeWidgetItem *item,
         ModelPtr child = model->children()[i];
         if (child->isSectioningNode()) {
             QTreeWidgetItem * childItem = new QTreeWidgetItem(item);
-            childItem->setText(0, child->title());
-            childItem->setToolTip(0, child->subtitle());
+            childItem->setText(0, child->titleAbbrev());
+            childItem->setToolTip(0, child->titleAbbrev() == child->title()
+                                  ? child->subtitle()
+                                  : child->title());
             modelsOfItems_[childItem] = child;
             itemsOfModels_[child] = childItem;
             createNavigationItems(childItem, child);
             item->addChild(childItem);
-            const DocBookModel::ModelType type = child->modelType();
-            item->setExpanded(type == DocBookModel::Book);
+            const ModelType type = child->modelType();
+            item->setExpanded(type == Book);
         }
     }
 }
@@ -222,13 +227,13 @@ void SidePanel::createListOfExamples(ModelPtr root)
 {
     ModelPtr listOfExamples = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfExamples,
-                DocBookModel::Example
+                ListOfExamples,
+                Example
                 );
     if (listOfExamples) {
         QTreeWidgetItem * topLevelItem =
                 new QTreeWidgetItem(ui->examplesNavigator);
-        topLevelItem->setText(0, listOfExamples->title());
+        topLevelItem->setText(0, listOfExamples->titleAbbrev());
         topLevelItem->setToolTip(0, tr("List of examples in \"%1\"")
                                  .arg(listOfExamples->title()));
         ui->examplesNavigator->addTopLevelItem(topLevelItem);
@@ -250,13 +255,13 @@ void SidePanel::createListOfTables(ModelPtr root)
 {
     ModelPtr listOfTables = DocBookFactory::createListOfEntries(
                 root,
-                DocBookModel::ListOfTables,
-                DocBookModel::Table
+                ListOfTables,
+                Table
                 );
     if (listOfTables) {
         QTreeWidgetItem * topLevelItem =
                 new QTreeWidgetItem(ui->tablesNavigator);
-        topLevelItem->setText(0, listOfTables->title());
+        topLevelItem->setText(0, listOfTables->titleAbbrev());
         topLevelItem->setToolTip(0, tr("List of tables in \"%1\"")
                                  .arg(listOfTables->title()));
         ui->tablesNavigator->addTopLevelItem(topLevelItem);
@@ -311,16 +316,26 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
                 itemsOfModels_[algorithm] = algItem;
                 modelsOfItems_[algItem] = algorithm;
                 algItem->setText(0, algorithm->title());
-                algorithmsIndex_[algorithm->title()] = algorithm;
+                FunctionName fn(key, algorithm->title());
+                functionsIndex_[fn] = algorithm;
             }
         }
     }
 }
 
-ModelPtr SidePanel::findAlgorithm(const QString &name) const
+ModelPtr SidePanel::findApiFunction(const QString &name) const
 {
-    if (algorithmsIndex_.contains(name)) {
-        return algorithmsIndex_[name];
+    foreach (const FunctionName &fn, functionsIndex_.keys()) {
+        if (fn.second==name)
+            return functionsIndex_[fn];
+    }
+    return ModelPtr();
+}
+
+ModelPtr SidePanel::findApiFunction(const QString &package, const QString &function) const
+{
+    if (functionsIndex_.contains(FunctionName(package, function))) {
+        return functionsIndex_[FunctionName(package, function)];
     }
     else {
         return ModelPtr();

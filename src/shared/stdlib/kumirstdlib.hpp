@@ -2308,7 +2308,7 @@ public:
                     uint8_t oneSymbMark = firstByte >> 5;
                     uint8_t twoSymbMark = firstByte >> 4;
                     if (firstByte==255 && file_==Files::getAssignedIn()) {
-                        Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
+//                        Core::abort(Core::fromUtf8("Ошибка чтения данных: входной поток закончился"));
                         return false;
                     }
                     else if (firstByte==255) {
@@ -2624,7 +2624,7 @@ public:
     // Actual functions to be in use while input from stream
 
     static InputStream makeInputStream(FileType fileNo, bool fromStdIn) {
-        if (fromStdIn) {
+        if (fromStdIn && fileNo.getType()!=FileType::Console) {
             return InputStream(Files::getAssignedIn(), LOCALE_ENCODING);
         }
         else if (fileNo.getType() == FileType::Console) {

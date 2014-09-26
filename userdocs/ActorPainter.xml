@@ -7,6 +7,7 @@
                 ]>
 <article>
     <title>Исполнитель "Рисователь"</title>
+    <titleabbrev>Рисователь</titleabbrev>
     <abstract>
         <para>
             Рисователь -- исполнитель системы Кумир. Назначение Рисователя -- создавать
@@ -19,7 +20,28 @@
             Поляковым.
         </para>
     </abstract>
-    <section id="тип цвет">
+    <section id="общие сведения">
+        <title>Использование исполнителя</title>
+        <para>
+            Исполнитель "Рисователь" входит в Вашу поставку Кумир, но его функции не являются часть языка программирования.
+            Для его использования необходимо в программе явно указать использование данного исполнителя:
+            <programlisting role="кумир"><![CDATA[
+использовать Рисователь
+| теперь функции рисователя доступны
+| для использования в программе
+]]>
+            </programlisting>
+            <programlisting role="python"><![CDATA[
+import painter
+# функции доступны в виде 'painter.имя_функции'
+
+from painter import *
+# функции доступны в глобальном пространстве имен
+]]>
+            </programlisting>
+        </para>
+    </section>
+    <section id="тип цвет" role="кумир">
         <title>Тип величины "цвет"</title>
         <para>В исполнителе реализован новый тип величин --<type>цвет</type>.
             Значение величины типа
@@ -50,7 +72,7 @@
         </para>
         <example>
             <title>Рисователь рисует радугу</title>
-            <programlisting role="kumir"><![CDATA[
+            <programlisting role="кумир"><![CDATA[
 использовать Рисователь
 алг радуга
 нач
@@ -76,12 +98,21 @@
             </programlisting>
         </example>
     </section>
+    <section id="класс Color" role="python">
+        <title>Представление значения типа "цвет"</title>
+        <para>В исполнителе для представления цвета используется класс <type>Color</type>.
+            Значение величины типа
+            <type>Color</type>
+            может быть получено использованием одного из алгоритмов составления цвета из
+                        отдельных компонент.
+         </para>
+    </section>
     <section id="Алгоритмы для работы с цветом">
         <title>Алгоритмы для работы с цветом</title>
         <para></para>
         <section id="CMYK">
             <title>CMYK</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -104,8 +135,30 @@
                     </paramdef>
                 </funcprototype>
             </funcsynopsis>
+            <funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>painter</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def
+                        <function>CMYK</function>
+                    </funcdef>
+                    <paramdef>
+                        <parameter>c</parameter>
+                    </paramdef>
+                    <paramdef>
+                        <parameter>m</parameter>
+                    </paramdef>
+                    <paramdef>
+                        <parameter>y</parameter>
+                    </paramdef>
+                    <paramdef>
+                        <parameter>k</parameter>
+                    </paramdef>
+                </funcprototype>
+            </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели CMYK:
+                Возвращает величину типа <type role="кумир">цвет</type> <type role="python">Color</type>, составленную из компонент цветовой модели CMYK:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -158,7 +211,7 @@
         </section>
         <section id="RGB">
             <title>RGB</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -220,7 +273,7 @@
         </section>
         <section id="HSL">
             <title>HSL</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -275,7 +328,7 @@
         </section>
         <section id="HSV">
             <title>HSV</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -296,7 +349,7 @@
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSV:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -330,7 +383,7 @@
         </section>
         <section id="CMYKA">
             <title>CMYKA</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -398,7 +451,7 @@
         </section>
         <section id="RGBA">
             <title>RGBA</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -422,7 +475,8 @@
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели RGB:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели RGB и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -456,7 +510,7 @@
         </section>
         <section id="HSLA">
             <title>HSLA</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -480,7 +534,8 @@
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -523,7 +578,7 @@
         </section>
         <section id="HSVA">
             <title>HSVA</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -547,7 +602,8 @@
                 </funcprototype>
             </funcsynopsis>
             <para>
-                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL:
+                Возвращает величину типа<type>цвет</type>, составленную из компонент цветовой модели HSL и 
+				значения альфа-канала:
                 <itemizedlist>
                     <listitem>
                         <para>
@@ -595,7 +651,7 @@
         <para>Вызов одного из этих алгоритмов не меняет состояние рисователя.</para>
         <section id="высота листа">
             <title>высота листа</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -610,7 +666,7 @@
         </section>
         <section id="ширина листа">
             <title>ширина листа</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -625,7 +681,7 @@
         </section>
         <section id="центр x">
             <title>центр x</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -640,7 +696,7 @@
         </section>
         <section id="центр y">
             <title>центр y</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -655,7 +711,7 @@
         </section>
         <section id="ширина текста">
             <title>ширина текста</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -718,7 +774,7 @@
         </para>
         <section id="перо">
             <title>перо</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -753,7 +809,7 @@
         </section>
         <section id="кисть">
             <title>кисть</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>
@@ -780,7 +836,7 @@
         </section>
         <section id="шрифт">
             <title>шрифт</title>
-            <funcsynopsis role="kumir">
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo>
                     <package>Рисователь</package>
                 </funcsynopsisinfo>

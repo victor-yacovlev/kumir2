@@ -54,8 +54,8 @@ void PrintRenderer::renderData(ModelPtr data)
 PrintRenderer::Cursor& PrintRenderer::consumeData(Cursor &cursor)
 {
     if (cursor) {
-        if (cursor.item->modelType() == DocBookModel::Book ||
-                cursor.item->modelType() == DocBookModel::Article) {
+        if (cursor.item->modelType() == Book ||
+                cursor.item->modelType() == Article) {
             // Make title page
             Frame titleFrame = newFrame(FullWidthTextFrame);
             QString titleText = cursor.item->title();
@@ -147,7 +147,7 @@ bool PrintRenderer::isTwoColumnLayout() const
 {
     ModelPtr parent = currentRoot_;
     while (parent) {
-        if (parent->modelType() == DocBookModel::Article) {
+        if (parent->modelType() == Article) {
             return true;
         }
         parent = parent->parent();

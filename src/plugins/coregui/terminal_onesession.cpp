@@ -98,6 +98,20 @@ QSize OneSession::minimumSizeHint() const
     return QSize(qMax(minW, maxHeadingWidth), minH);
 }
 
+void OneSession::updateSelectionFromVisibleToRealLines()
+{
+    QMutexLocker lock(relayoutMutex_.data());
+    for (size_t visNum=0; visNum<visibleLines_.size(); ++visNum) {
+        const VisibleLine & visibleLine = visibleLines_.at(visNum);
+        const LineProp & visibleProp = visibleLine.prop;
+        LineProp & sourceProp = props_.at(visibleLine.sourceLineNumber);
+        Q_ASSERT(visibleProp.size() == sourceProp.size());
+        for (size_t x=visibleLine.from; x<visibleLine.to; ++x) {
+            sourceProp[x] = visibleProp[x];
+        }
+    }
+}
+
 void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
 {
     QMutexLocker lock(relayoutMutex_.data());
@@ -135,8 +149,11 @@ void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
                               prop,
                               selectedEnd,
                               currentOffset,
-                              qMin(currentOffset + charsInVisibleLine,
-                                   charsInLine)
+                              qMin(
+                                  currentOffset + charsInVisibleLine,
+                                  charsInLine
+                                  ),
+                              i
                               );
             visibleLines_.push_back(vline);
             maxLineLength_ = qMax(maxLineLength_, charsInVisibleLine);
@@ -379,6 +396,7 @@ void OneSession::clearSelection()
         }
         selectedLineEnds_[y] = false;
     }
+    relayout(parent_->width() - 2 * SessionMargin, 0, true);
 }
 
 bool OneSession::hasSelectedText() const
@@ -661,8 +679,10 @@ void OneSession::triggerTextSelection(const QPoint &fromPos, const QPoint &toPos
             }
         }
     }
+    updateSelectionFromVisibleToRealLines();
     emit updateRequest();
 }
+
 
 QPoint OneSession::cursorPositionByVisiblePosition(const QPoint &pos) const
 {

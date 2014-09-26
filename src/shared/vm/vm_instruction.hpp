@@ -40,6 +40,13 @@ enum InstructionType {
     INRANGE     = 0x28, // Pops 4 values ... a, b, c, x from stack and returns c>=0? a<x<=b : a<=x<b
     UPDARR      = 0x29, // Updates array bounds
 
+    CSTORE      = 0x30, // Copy value from stack head and push it to cache
+    CLOAD       = 0x31, // Pop value from cache to push it to main stack
+    CDROPZ      = 0x32, // Drop cache value in case of zero value in specified register
+
+    CACHEBEGIN  = 0x33, // Push begin marker into cache
+    CACHEEND    = 0x34, // Clear cache until marker
+
 
     // Common operations -- no comments need
 
@@ -81,7 +88,7 @@ enum LineSpecification {
     (or 0x0000 if not defined)
 */
 
-struct Instruction {
+struct Instruction {    
     InstructionType type;
     union {
         LineSpecification lineSpec;
@@ -138,6 +145,11 @@ inline std::string typeToString(const InstructionType & t)
     else if (t==CTL) return ("ctl");
     else if (t==INRANGE) return ("inrange");
     else if (t==UPDARR) return ("updarr");
+    else if (t==CLOAD) return ("cload");
+    else if (t==CSTORE) return ("cstore");
+    else if (t==CDROPZ) return ("cdropz");
+    else if (t==CACHEBEGIN) return ("cachebegin");
+    else if (t==CACHEEND) return ("cacheend");
     else return "nop";
 }
 
@@ -187,6 +199,11 @@ inline InstructionType typeFromString(const std::string & ss)
     else if (s=="ctl") return CTL;
     else if (s=="inrange") return INRANGE;
     else if (s=="updarr") return UPDARR;
+    else if (s=="cload") return CLOAD;
+    else if (s=="cstore") return CSTORE;
+    else if (s=="cdropz") return CDROPZ;
+    else if (s=="cachebegin") return CACHEBEGIN;
+    else if (s=="cacheend") return CACHEEND;
     else return NOP;
 }
 
@@ -255,7 +272,7 @@ inline std::string instructionToString(const Instruction &instr, const AS_Helper
     RegisterNoInstructions.insert(PUSH);
     RegisterNoInstructions.insert(JZ);
     RegisterNoInstructions.insert(JNZ);
-    RegisterNoInstructions.insert(SHOWREG);
+    RegisterNoInstructions.insert(SHOWREG);    
 
     static std::set<InstructionType> HasValueInstructions;
     HasValueInstructions.insert(CALL);

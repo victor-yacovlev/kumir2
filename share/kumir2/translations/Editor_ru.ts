@@ -848,7 +848,7 @@
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="714"/>
         <source>Select all text in editor</source>
-        <translation>Выбрать весь текст</translation>
+        <translation>Выделить все</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="721"/>

@@ -2,7 +2,11 @@
 #define TABWIDGETELEMENT_H
 
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 
 #include "extensionsystem/settings.h"
 #include "mainwindow.h"
@@ -42,10 +46,12 @@ public:
     QString title() const;
     inline void setCourseTitle(const QString & title) { courseTitle_ = title; }
     void updateSettingsObject(ExtensionSystem::SettingsPtr settings);
+    inline QSet<QString> availableMenuNames() const { return availableMenuNames_; }
 
 signals:
     void titleChanged(const QString &);
     void documentCleanChanged(bool v);
+    void explicitImportNamesRequest();
 protected:
     inline void focusInEvent(QFocusEvent *e) {
         QWidget::focusInEvent(e);
@@ -65,6 +71,7 @@ private:
     bool documentHasChanges_;
     QAction * actionSave_;
     class ToolbarContextMenu * toolbarContextMenu_;
+    QSet<QString> availableMenuNames_;
 };
 }
 

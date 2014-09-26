@@ -1,4 +1,4 @@
-#include "data.h"
+#include "pictomir_data.h"
 #include "parser.h"
 #include "generator.h"
 #include "options.h"

@@ -2,7 +2,7 @@
 #include <dataformats/kumfile.h>
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
-
+#include "interfaces/runinterface.h"
 namespace CourseManager {
 
    
@@ -16,9 +16,13 @@ Plugin::Plugin()
 {
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
+    rescentMenu=new QMenu(trUtf8("Недавние тетради..."));
+    // m_actionCourseLoadRescent->setMenu(rescentMenu);
     MW=new MainWindowTask();
     MW->setup(myResourcesDir(), mySettings());
+   
     mainWindow_=MW;
+   
     field_no=0;
     prevFld=new QAction(trUtf8("Предыдущая обстановка"),this);
     nextFld=new QAction(trUtf8("Следующая обстановка"),this);
@@ -26,13 +30,35 @@ Plugin::Plugin()
     connect(prevFld,SIGNAL(triggered()),this,SLOT(prevField()));
     nextFld->setEnabled(false);
     prevFld->setEnabled(false);
-}
+    
+    }
 QList<QMenu*>  Plugin::menus()const
 {
     
     return MenuList; 
 }; 
+void Plugin::rebuildRescentMenu()
+    {
+        rescentMenu->clear();
+        qDebug()<<mySettings()->locationDirectory();
+        QStringList lastFiles= mySettings()->value("Courses/LastFiles","").toString().split(";");
+        qDebug()<<lastFiles;
+        if(lastFiles.count()==0)rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
+        bool hasAnyItem=false;
+        
+        for(int i=0;i<lastFiles.count();i++) {
+            if(lastFiles[i].trimmed()=="")continue;
+     
 
+            
+            QAction *action = rescentMenu->addAction(QFileInfo(lastFiles[i]).fileName(),MW,SLOT(openRescent()));
+            action->setProperty("fullName", lastFiles[i]);
+             hasAnyItem = true;
+            Q_UNUSED(action);
+        }
+ rescentMenu->setEnabled(hasAnyItem);
+        
+    };
 QString Plugin::getText()
 {
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
@@ -45,7 +71,8 @@ QString Plugin::getText()
 
 void Plugin::setPreProgram(QVariant param)
 {
-  if(param.toString().right(4)==".kum")
+    Shared::AnalizerInterface* analizer = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+    if (param.toString().endsWith("." + analizer->defaultDocumentFileNameSuffix()))
   {
       setTextFromFile(param.toString());
   }
@@ -55,8 +82,13 @@ void Plugin::setPreProgram(QVariant param)
               ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
    Shared::GuiInterface::ProgramSourceText text;
    text.content=analizer->sourceFileHandler()->fromString(param.toString());
-   text.content=KumFile::insertTeacherMark(text.content);
-   text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+   if (analizer->defaultDocumentFileNameSuffix()=="kum") {
+    text.content=KumFile::insertTeacherMark(text.content);
+    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+   }
+   else if (analizer->defaultDocumentFileNameSuffix()=="py") {
+       text.language = Shared::GuiInterface::ProgramSourceText::Python;
+   }
    gui->setProgramSource(text);
      
       ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
@@ -77,8 +109,13 @@ bool Plugin::setTextFromFile(QString fname)
     Shared::GuiInterface::ProgramSourceText text;
     text.content = analizer->sourceFileHandler()->fromBytes(file.readAll());
     file.close();
-    text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
-    text.content=KumFile::insertTeacherMark(text.content);
+    if (fname.endsWith(".kum")) {
+        text.language=Shared::GuiInterface::ProgramSourceText::Kumir;
+        text.content=KumFile::insertTeacherMark(text.content);
+    }
+    else if (fname.endsWith(".py")) {
+        text.language = Shared::GuiInterface::ProgramSourceText::Python;
+    }
     gui->setProgramSource(text);
     return true;
 }
@@ -88,6 +125,19 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
         field_no=0;      
         for(int i=0;i<isps.count();i++)
         {
+            
+            if(isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(isps.at(i), field_no));
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
+                QTextStream * stdInStream = new QTextStream(field_data);
+                stdInStream->setAutoDetectUnicode(true);
+                runner->setStdInTextStream(stdInStream);
+                continue;
+            }
+               
+            
             AI* actor=getActor(isps.at(i));
             if(!actor)
             {
@@ -136,6 +186,18 @@ void Plugin::selectNext(KumZadanie* task)
        
         for(int i=0;i<task->isps.count();i++)
         {
+            if(task->isps.at(i)==trUtf8("Файл ввода"))
+            {
+                Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+                QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+                field_data->open(QIODevice::ReadOnly|QIODevice::Text);
+                QTextStream * stdInStream = new QTextStream(field_data);
+                stdInStream->setAutoDetectUnicode(true);
+                //TODO Доделать в кумире
+                runner->setStdInTextStream(stdInStream);
+
+                continue;
+            }
             AI* actor=getActor(task->isps.at(i));
             if(!actor)
             {
@@ -282,9 +344,19 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)
     {
-        courseMenu->addAction(actions.at(i));  
+        courseMenu->addAction(actions.at(i));
+        if(i==0)
+        {
+            courseMenu->addMenu(rescentMenu);
+        }
     }
-    MW->setCS(trUtf8("Кумир"));
+    Shared::AnalizerInterface * analizer =
+    ExtensionSystem::PluginManager::instance()
+    ->findPlugin<Shared::AnalizerInterface>();
+    const QString languageName =
+    analizer->languageName().toLower();
+    
+    MW->setCS(languageName);
     MW->setInterface(this);
     qRegisterMetaType<Shared::CoursesInterface::ProgramRunStatus>
             ("CourseManager.ProgramRunStatus");
@@ -293,6 +365,8 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     field_no=0;
     courseMenu->addAction(nextFld);
     courseMenu->addAction(prevFld);
+    rebuildRescentMenu();
+
     return error;
 }
 
@@ -302,6 +376,7 @@ void Plugin::updateSettings(const QStringList & keys)
         settingsEditorPage_->setSettingsObject(mySettings());
     }
     MW->updateSettings(keys, mySettings());
+    rebuildRescentMenu();
 }
 
 

@@ -52,11 +52,14 @@ public slots:
     std::string rawSourceData() const;
     void setSourceText(const QString & text);
     QList<Shared::Analizer::Suggestion> suggestAutoComplete(int lineNo, const QString &before, const QString &after) const;
+    Shared::Analizer::ApiHelpItem itemUnderCursor(const QString & text, int lineNo, int colNo, bool includeRightBound) const;
 
 
     QList<Shared::Analizer::Error> errors() const;
 
     QList<Shared::Analizer::LineProp> lineProperties() const;
+
+    bool multipleStatementsInLine(int lineNo) const;
 
     Shared::Analizer::LineProp lineProp(int lineNo, const QString & text) const;
 

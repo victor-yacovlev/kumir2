@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        []>
+<article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <title>Чтение и запись файлов</title>
+    <section>
+        <title>Использование исполнителя "Файлы"</title>
+        <para>
+            В версиях Кумир для начальных и средних классов алгоритмы работы с файлами
+            находятся в исполнителе <code role="кумир">Файлы</code>.
+        </para>
+        <para>
+            Для их использования необходимо в начале программы написать:
+            <programlisting role="кумир">
+использовать Файлы
+            </programlisting>
+        </para>
+    </section>
+    <xi:include href="files.xml"/>
+</article>

@@ -239,28 +239,49 @@ QAction * DocBookViewImpl::viewerAction(const DocBookView::DocBookViewAction typ
     return 0;
 }
 
-Document DocBookViewImpl::addDocument(const QUrl &url, QString *error, int index)
+Document DocBookViewImpl::addDocument(const QUrl &url, QString *error)
 {
     DocBookFactory * factory = DocBookFactory::self();
-    Document doc = factory->parseDocument(url, error);
-    sidePanel_->addDocument(doc);
+    Document doc = factory->parseDocument(roleValues_, url, error);
+    sidePanel_->addDocument(doc, true);
     if (content_->isEmpty()) {
         content_->renderData(doc.root_);
     }
     return doc;
 }
 
+Document DocBookViewImpl::addDocuments(const QString &groupName, const QList<QUrl> &urls, QString *error)
+{
+    DocBookFactory * factory = DocBookFactory::self();
+
+    QList<Document> docs;
+    Q_FOREACH(const QUrl & url, urls) {
+        Document doc = factory->parseDocument(roleValues_, url, error);
+        if (doc.root_.isNull()) {
+            if (error) {
+                error->prepend(QString("In %1: ").arg(url.toString()));
+            }
+        }
+        else {
+            docs.append(doc);
+        }
+    }
+    Document set = factory->createNamedSet(groupName, docs);
+    sidePanel_->addDocument(set, false);
+    return set;
+}
+
 bool DocBookViewImpl::hasAlgorithm(const QString &name) const
 {
-    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    const ModelPtr algorithm = sidePanel_->findApiFunction(name);
     return ! algorithm.isNull();
 }
 
-void DocBookViewImpl::selectAlgorithm(const QString &name)
+void DocBookViewImpl::navigateToApiFunction(const QString & package, const QString &function)
 {
-    const ModelPtr algorithm = sidePanel_->findAlgorithm(name);
+    const ModelPtr algorithm = sidePanel_->findApiFunction(package, function);
     if (algorithm) {
-        sidePanel_->selectItem(algorithm, name);
+        sidePanel_->selectItem(algorithm, function);
         showAnItem(algorithm);
     }
 }
@@ -310,6 +331,26 @@ void DocBookViewImpl::activateBookIndex(int index)
     }
     if (target) {
         showAnItem(target);
+    }
+}
+
+void DocBookViewImpl::setRole(ModelType category, const QString &value)
+{
+    if (value.isEmpty() && roleValues_.contains(category)) {
+        roleValues_.remove(category);
+    }
+    else {
+        roleValues_[category] = value.toLower().trimmed();
+    }
+}
+
+QString DocBookViewImpl::role(ModelType category) const
+{
+    if (roleValues_.contains(category)) {
+        return roleValues_[category];
+    }
+    else {
+        return "";
     }
 }
 
