@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<chapter>
+<chapter targetdoc="session">
     <title>Сеанс работы &quot;Кумир&quot;. Состояния системы</title>
-    <section>
+	<section id="Kumir_sessions">
         <title>Общие сведения</title>
         <para>
             Работа пользователя в системе Кумир состоит в:
@@ -21,33 +21,75 @@
             <orderedlist>
                 <listitem>
                     <para>
-                        <emphasis role="bold">Редактирование</emphasis>
+						<emphasis role="bold">Редактирование</emphasis> -- происходит подготовка программы, выполнения нет; 
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis role="bold">Выполнение</emphasis>
+						<emphasis role="bold">Выполнение</emphasis> -- происходит выполнение 
+						программы, <emphasis role="italic">редактирование текста запрещено</emphasis>;
                     </para>
                 </listitem>
                 <listitem>
                     <para>
                         <emphasis role="bold">Анализ</emphasis>
-                        (результатов)
+						(результатов) -- выполнение завершено, одноко все сообщения программы доступны для наблюдения и
+                        анализа; по любому действию, изменяющему исходную программу или состояние одного из
+                        исполнителей, система переходит в состояние<emphasis role="bold">Редактирование</emphasis>;
                     </para>
                 </listitem>
                 <listitem>
                     <para>
-                        <emphasis role="bold">Пауза</emphasis>
+						<emphasis role="bold">Пауза</emphasis> -- выполнение программы приостановлено, но может быть продолжено;
+                        редактирование текста программы запрещено;
                     </para>
                 </listitem>
             </orderedlist>
         </para>
-        <para>Состояние системы накладывает естественные ограничения на возможность выполнения различных действий.
-            Например, во время выполнения программы нельзя изменять
-            ее текст.
+		<para>
+            Переход в состояние
+            <emphasis role="bold">Выполнение</emphasis>
+            возможно из состояний:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                    <emphasis role="bold">Редактирование</emphasis>,
+                    <emphasis role="bold">Анализ</emphasis>
+                    -- с помощью действий из меню<guimenu>Выполнение</guimenu>;
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                    <emphasis role="bold">Пауза</emphasis>,
+                    <emphasis role="bold">Анализ</emphasis>
+                    -- с помощью действий из меню<guimenu>Выполнение</guimenu>, за исключением
+                    <guimenuitem>Остановить выполнение</guimenuitem>.
+                    </para>
+                </listitem>
+            </itemizedlist>
         </para>
         <para>
-            Схема возможных переходов между состояниями выглядит так:
+            Из состояния
+            <emphasis role="bold">Выполнение</emphasis>
+            система может перейти в одно из состояний:
+            <itemizedlist>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Анализ</emphasis>, если выполнение программы завершено (аварийно или
+                        успешно);
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis role="bold">Пауза</emphasis>, при выполнении команды<code language="kumir">
+                        пауза</code>,
+                        или при завершении выполнения очередного шага во время пошагового выполнения.
+                    </para>
+                </listitem>
+            </itemizedlist>
+        </para>
+		<para>
+			Общая схема возможных переходов между состояниями выглядит так:
             <itemizedlist>
                 <listitem>Редактирование&rarr;Выполнение</listitem>
                 <listitem>Выполнение&rarr;{Анализ, Пауза}</listitem>

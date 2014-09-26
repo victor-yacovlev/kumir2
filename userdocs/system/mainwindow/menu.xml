@@ -15,26 +15,46 @@
             <orderedlist>
                 <listitem>
                     <para><guimenuitem>Новая программа</guimenuitem> -- создает новую пустую программу в соответствии
-                        с установленным шаблоном</para>
+                        с установленным шаблоном.</para>
+                </listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Новый текст</guimenuitem> -- создаёт и открывает на редактирование пустой текстовый файл.
+						Доступно только в конфигурациях <emphasis role="bold">Профессиональная</emphasis> и <emphasis role="bold">Для учителей</emphasis>.
+					</para>
+				</listitem>
+                <listitem>
+					<para><guimenuitem>Загрузить</guimenuitem> -- отображает диалог выбора файла для
+                        загрузки в систему.</para>
                 </listitem>
                 <listitem>
-                    <para><guimenuitem>Загрузать программу</guimenuitem> -- отображает диалог выбора файла для
-                        загрузки программы</para>
+                    <para><guimenu>Недавние файлы</guimenu> -- открывает вложенное подменю, содержащее элементы
+                        для быстрого открытия последних файлов (не более 10 элементов)</para>
                 </listitem>
                 <listitem>
-                    <para><guimenu>Недавние программы</guimenu> -- открывает вложенное подменю, содержащее элементы
-                        для быстрого открытия последних программ (не более 10 элементов)</para>
-                </listitem>
-                <listitem>
-                    <para><guimenuitem>Сохранить программу</guimenuitem> -- если программа была загружена из файла или
-                        ранее уже была сохранена в файл, то сохраняет текущую программу, перезаписывая исходный файл;
-                        в противном случае отображает диалог выбора имени файла для сохранения программы
+                    <para><guimenuitem>Сохранить</guimenuitem> -- если файл был загружен или
+						ранее уже был сохранён на компьютер, то перезаписывает его;
+						в противном случае отображает диалог выбора имени файла для его сохранения.
                     </para>
                 </listitem>
                 <listitem><para>
-                    <guimenuitem>Сохранить программу как</guimenuitem> -- отображает диалог выбора имени
-                    файла для сохранения текущей программы
+					<guimenuitem>Сохранить как</guimenuitem> -- отображает диалог выбора имени
+					файла для его сохранения.
                 </para></listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить как исполняемый файл</guimenuitem> -- отображает диалог выбора имени файла 
+						для сохранения текущей программы в виде исполняемого файла (в формате *.exe).
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Закрыть вкладку</guimenuitem> -- закрывает рабочую вкладку системы КуМир. Если в файле, 
+						находящемся на этой вкладке были проведены несохранённые изменения, открывается диалоговое окно с предложением 
+						«Сохранить текущий текст?».
+						Доступно только в конфигурациях <emphasis role="bold">Профессиональная</emphasis> и <emphasis role="bold">Для учителей</emphasis>.
+					</para>
+				</listitem>
                 <listitem><para>
                     <guimenuitem>Выбор каталога пользователя</guimenuitem> -- отображает диалог изменения
                     текущего рабочего каталога
@@ -132,7 +152,7 @@
     </section>
     <section>
         <title>Меню &quot;Выполнение&quot;</title>
-        <para>Элементами меню <guimenu>Выполнение</guimenu> являются действия по запуску и остановке
+        <para>Элементами меню <guimenu>Выполнение</guimenu> являются действиями по запуску и остановке
             выполнения текущей программы:
             <orderedlist>
                 <listitem><para><guimenuitem>Без показа на полях</guimenuitem>
@@ -179,33 +199,340 @@
                 <listitem><para>
                     <guimenuitem>Отображать нижнюю часть окна</guimenuitem>
                     -- вызов этого действия отображает либо скрывает нижнюю часть главного окна с областью
-                    ввода-вывода
+                    ввода-вывода.
                 </para></listitem>
                 <listitem><para>
                     <guimenuitem>Практикум</guimenuitem>
                     -- отображат дополнительное окно <emphasis role="italic">практикума</emphasis>.
                 </para></listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Водолей </guimenuitem> -- отображает дополнительное окно исполнителя «Водолей».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Водолей – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Водолей».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Черепаха</guimenuitem> -- отображает дополнительное окно исполнителя «Черепаха».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Черепаха – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Черепаха».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Робот</guimenuitem> -- отображает дополнительное окно исполнителя «Робот».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Робот – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Робот».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Рисователь</guimenuitem> -- отображает дополнительное окно исполнителя «Рисователь».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Вертун</guimenuitem> -- отображает дополнительное окно исполнителя «Вертун».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Кузнечик</guimenuitem> -- отображает дополнительное окно исполнителя «Кузнечик».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Кузнечик – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Кузнечик».
+					</para>
+				</listitem>
             </orderedlist>
         </para>
     </section>
     <section>
         <title>Меню &quot;Практикум&quot;</title>
-        <para>TODO: Написать!!!</para>
+        <para>
+		</para>
     </section>
+	<remark><section>
+		<title>
+			Меню "Водолей"
+		</title>
+		<para>
+			Меню <guimenu>Водолей</guimenu> содержит элементы, вызов которых приводит к выполнению 
+			соответственных операций с заданиями исполнителя "Водолей".
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить задание</guimenuitem> -- открывает стандартное окно загрузки 
+						файла. Файлы заданий исполнителя "Водолей" должны иметь расширение <code>.vod</code>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Недавние задания</guimenuitem> -- отображает список последних заданий Водолея, 
+						которые использовались в системе.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Вернуть исходное задание</guimenuitem> -- возвращает задание в стартовую 
+						конфигурацию.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить</guimenuitem> -- открывает стандартное окно сохранения файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Новое задание</guimenuitem> -- открывает дополнительное окно создания задания 
+						для исполнителя "Водолей". 
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section></remark>
+	<section>
+		<title>
+			Меню "Робот"
+		</title>
+		<para>
+			Меню <guimenu>Робот</guimenu> содержит элементы, вызов которых приводит к выполнению соответственных 
+			операций, касающихся исполнителя Робот.
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить обстановку</guimenuitem> -- открывает стандартное окно загрузки 
+						файла. Файлы обстановок Робота имеют расширение <code>.fil</code>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Недавние обстановки</guimenuitem> -- отображает список последних обстановок 
+						Робота, которые использовались в системе.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Вернуть исходную обстановку</guimenuitem> -- устанавливает текущую 
+						обстановку равной стартовой.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить обстановку</guimenuitem> -- открывает стандартное окно сохранения файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Редактировать обстановку</guimenuitem> -- переводит окно наблюдения за Роботом в 
+						режим редактирования (или наоборот, переводит в обычный режим, если в момент выполнения 
+						команды окно находилось в режиме редактирования).
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Авто размер окна</guimenuitem> -- устанавливает масштаб отображения обстановки 
+						по умолчанию.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Новая обстановка</guimenuitem> -- открывает дополнительное окно создания 
+						обстановки Робота.
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section>
+	<remark><section>
+		<title>
+			Меню "Рисователь"
+		</title>
+		<para>
+			Меню <guimenu>Рисователь</guimenu> содержит элементы, вызов которых приводит к выполнению 
+			соответственных операций с листом исполнителя "Рисователь".
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Новый лист</guimenuitem> -- открывает дополнительное окно создания нового 
+						листа.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить</guimenuitem> -- открывает стандартное окно загрузки 
+						файла. Листы исполнителя "Рисователь" хранятся как обычные растровые изображения в формате <code>.png</code>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Вернуть к исходному</guimenuitem> -- возвращает лист в исходное состояние. 
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить копию как</guimenuitem> -- открывает стандартное окно сохранения файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Масштаб 100%</guimenuitem> -- устанавливает масштаб, равный 100%.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Масштаб по ширине</guimenuitem> -- выравнивает изображение листа по ширине.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Масштаб по высоте</guimenuitem> -- выравнивает изображение листа по высоте.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Масштаб по окну</guimenuitem> -- устанавливает такой масштаб отображаения, чтобы лист 
+						целиком помещался в окне.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Цвет в строке статуса</guimenuitem>. Этот пункт меню позволяет пользователю выбрать, в координатах 
+						какой цветовой модели будет отображаться цвет в строке статуса. Доступны такие варианты:
+						<itemizedlist>
+							<listitem>
+								<para>
+									<code>#PRGGBB</code> -- шестнадцатеричный формат записи цветов модели <code>RGB</code>. 
+									<code>PR</code> -- интенсивность красного цвета, <code>GG</code> -- зелёного, <code>BB</code> -- синего;
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									<code>RGB</code>;
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									<code>CMYK</code>;
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									<code>HSL</code>;
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									<code>HSV</code>.
+								</para>
+							</listitem>
+						</itemizedlist>
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section></remark>
+	<section>
+		<title>
+			Меню "Вертун"
+		</title>
+		<para>
+			Меню <guimenu>Вертун</guimenu> содержит элементы, вызов которых приводит к выполнению 
+			соответственных операций с обстановкой исполнителя "Вертун".
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить обстановку</guimenuitem> -- открывает стандартное окно загрузки 
+						файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Вернуть обстановку к исходной</guimenuitem> -- устанавливает текущую 
+						обстановку равной стартовой.
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section>
+	<remark><section>
+		<title>
+			Меню "Кузнечик"
+		</title>
+		<para>
+			Меню <guimenu>Кузнечик</guimenu> содержит элементы, вызов которых приводит к выполнению 
+			соответственных операций с заданиями исполнителя "Кузнечик".
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Новое задание</guimenuitem> -- открывает дополнительное окно создания задания для 
+						исполнителя "Кузнечик".
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить задание</guimenuitem> -- открывает стандартное окно загрузки 
+						файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить</guimenuitem> -- открывает стандартное окно сохранения 
+						файла. Файлы заданий исполнителя "Кузнечик" имеют расширение <code>.kuz</code>.
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section></remark>
+	<section>
+		<title>
+			Меню "Чертёжник"
+		</title>
+		<para>
+			Меню <guimenu>Чертёжник</guimenu> содержит элементы, вызов которых приводит к выполнению 
+			соответственных операций с чертежами (обстановками исполнителя "Чертёжник").
+			<orderedlist>
+				<listitem>
+					<para>
+						<guimenuitem>Загрузить чертёж</guimenuitem> -- открывает стандартное окно загрузки 
+						файла.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Сохранить чертёж</guimenuitem> -- открывает стандартное окно сохранения 
+						файла.
+					</para>
+				</listitem>
+			</orderedlist>
+		</para>
+	</section>
     <section>
         <title>Меню &quot;Инфо&quot;</title>
         <para>
             Меню <guimenu>Инфо</guimenu> (сокращение от &quot;Информация&quot;) содержит элементы, вызов которых
-            приводит к отображению информационных окон:
+            приводит к отображению информационных окон.
             <orderedlist>
                 <listitem>
                     <para><guimenuitem>Справочные руководства</guimenuitem>
-                        -- дополнительное окно системы с навигацией по доступным справочным руководствам
+                        -- дополнительное окно системы с навигацией по доступным справочным руководствам.
                     </para>
                 </listitem>
                 <listitem>
                     <para><guimenuitem>Текущие значения величин</guimenuitem>
-                        -- в режиме паузы отображает значения величин, используемых в программе
+                        -- в режиме паузы отображает значения величин, используемых в программе.
                     </para>
                 </listitem>
                 <listitem><para>

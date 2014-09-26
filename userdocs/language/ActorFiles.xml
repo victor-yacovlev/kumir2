@@ -3,7 +3,9 @@
         "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
         []>
 <article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <title>Чтение и запись файлов</title>
+    <title>Исполнитель "Файлы"</title>
+    <titleabbrev>Файлы</titleabbrev>
+    <subtitle>Чтение и запись файлов</subtitle>
     <section>
         <title>Использование исполнителя "Файлы"</title>
         <para>

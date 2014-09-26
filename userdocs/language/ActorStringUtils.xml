@@ -3,7 +3,9 @@
         "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
         []>
 <article xmlns="http://www.oasis-open.org/docbook/xml/4.5/" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <title>Алгоритмы обработки строк</title>
+    <title>Исполнитель "Строки"</title>
+    <titleabbrev>Строки</titleabbrev>
+    <subtitle>Алгоритмы обработки строк</subtitle>
     <section>
         <title>Использование исполнителя "Строки"</title>
         <para>
