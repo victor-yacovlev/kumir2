@@ -7,13 +7,13 @@ endif(NOT DEFINED USE_QT)
 
 if(${USE_QT} GREATER 4)
     # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml WebKitWidgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5WebKitWidgets_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5WebKitWidgets_LIBRARIES})
+    find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES} )
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg QtWebkit REQUIRED)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml REQUIRED)
     include(${QT_USE_FILE})
 endif()
 include(../../kumir2_plugin.cmake)

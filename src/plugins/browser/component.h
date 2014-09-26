@@ -38,6 +38,7 @@ public:
 
 public slots:
     void go(const QUrl & url);
+    void setContent(const QString & data);
     void evaluateCommand(const QString & method, const QVariantList & arguments);
 protected:
     void showEvent(QShowEvent *e);
