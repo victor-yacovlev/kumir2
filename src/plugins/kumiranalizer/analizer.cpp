@@ -78,6 +78,25 @@ void Analizer::setSourceDirName(const QString &dirName)
     d->analizer->setSourceDirName(dirName);
 }
 
+bool Analizer::multipleStatementsInLine(int lineNo) const
+{
+    const QList<TextStatementPtr> & sts = d->statements;
+    QList<int> usedLineNumbers;
+    Q_FOREACH(TextStatementPtr st, sts) {
+        int statementLine = -1;
+        Q_FOREACH(LexemPtr lx, st->data) {
+            if (LxTypeComment != lx->type) {
+                statementLine = lx->lineNo;
+                break;
+            }
+        }
+        if (-1 != statementLine) {
+            usedLineNumbers.append(statementLine);
+        }
+    }
+    return usedLineNumbers.count(lineNo) > 1;
+}
+
 Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) const
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);

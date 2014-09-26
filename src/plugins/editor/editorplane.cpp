@@ -976,7 +976,13 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.drawLine(highlightRightRect.bottomLeft(),
                    highlightRightRect.bottomRight());
 
-        if (highlightedTextColumnStartNumber_ != highlightedTextColumnEndNumber_) {
+        bool drawInLineRect = false;
+        if (highlightedTextLineNumber_ < editor_->document()->linesCount()) {
+            const TextLine & textLine = editor_->document()->at(highlightedTextLineNumber_);
+            drawInLineRect = textLine.multipleStatementsInLine;
+        }
+
+        if (drawInLineRect && highlightedTextColumnStartNumber_ != highlightedTextColumnEndNumber_) {
             // Draw a rect around statement
             QPen pen;
             pen.setColor(highlightedTextLineColor_);
