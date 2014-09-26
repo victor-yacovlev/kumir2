@@ -7,7 +7,6 @@
                 ]>
 <article id="Исполнитель Робот" lang="ru">
 	<title>Исполнитель "Робот"</title>
-    <titleabbrev>Робот</titleabbrev>
 	<section id="Введение">
 	  <title>Введение</title>
 	  <section id="Обстановки Робота">
@@ -31,7 +30,7 @@
 			стартовая обстановка (они совпадают).
 		</para>
 		<para>
-			Обстановки Робота могут храниться в файлах специального формата (расширение .fil).
+			Обстановки Робота могут храниться в файлах специального формата (расширение <code>.fil</code>).
 		</para>
 	  </section>
 	  <section>
@@ -291,7 +290,7 @@
 	<section id="Команды управления Роботом из программы">
 		<title>Команды управления Роботом из программы
 		</title>
-		<section>
+		<section id="Общие сведения">
 			<title>Общие сведения
 			</title>
 			<para>
@@ -343,93 +342,45 @@
 		<section id="Команды-действия">
 			<title>Команды-действия
 			</title>
-
-            <section>
-                <title>влево</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <function>влево</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>go_left</function>()</funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Перемещает Робота на одну клетку влево. Если слева стена, выдает отказ.</para>
-            </section>
-
-            <section>
-                <title>вправо</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <function>вправо</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>go_right</function>()</funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Перемещает Робота на одну клетку вправо. Если справа стена, выдает отказ.</para>
-            </section>
-
-            <section>
-                <title>вверх</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <function>вверх</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>go_up</function>()</funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Перемещает Робота на одну клетку вверх. Если сверху стена, выдает отказ.</para>
-            </section>
-
-            <section>
-                <title>вниз</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <function>вниз</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>go_down</function>()</funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Перемещает Робота на одну клетку вниз. Если снизу стена, выдает отказ.</para>
-            </section>
-
-            <section>
-                <title>закрасить</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <function>закрасить</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>do_paint</function>()</funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Делает клетку, в которой находится робот, закрашенной.</para>
-            </section>
-
-
+			<table>
+			<title>Описание команд-действий Робота</title>
+			<tgroup cols="2" align="left">
+				<colspec colnum="1" colname="command" colwidth="20%" align="center"></colspec>
+				<colspec colnum="2" colname="description" colwidth="80%"></colspec>
+			</tgroup>
+					<thead>
+						<row>
+							<entry>Команда</entry>
+							<entry>Описание</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry><code role="кумир">влево</code></entry>
+							<entry>Перемещает Робота на одну клетку влево. Если слева стена, выдает отказ.</entry>
+						</row>
+						<row>
+							<entry><code role="кумир">вправо</code></entry>
+							<entry>Перемещает Робота на одну клетку вправо. Если справа стена, выдает отказ.</entry>
+						</row>
+						<row>
+							<entry><code role="кумир">вверх</code></entry>
+							<entry>Перемещает Робота на одну клетку вверх. Если сверху стена, выдает отказ.</entry>
+						</row>
+						<row>
+							<entry><code role="кумир">вниз</code></entry>
+							<entry>
+								Перемещает Робота на одну клетку вниз. Если снизу стена, выдает отказ.
+							</entry>
+						</row>
+						<row>
+							<entry><code role="кумир">закрасить</code></entry>
+							<entry>
+								Делает клетку, в которой находится робот, закрашенной.
+							</entry>
+						</row>
+					</tbody>
+			</table>
 			<para>
 				Ниже приведён пример использования команд-действий Роботa.
 			</para>
@@ -437,8 +388,6 @@
 				<title>Использование команд-действий Роботa</title>
 				<programlisting role="кумир">
 					<![CDATA[
-использовать Робот
-
 алг
 нач
   вправо
@@ -448,265 +397,89 @@
   закрасить
 кон]]>
 				</programlisting>
-                <programlisting role="python">
-                    <![CDATA[
-import robot
-
-robot.go_right()
-robot.go_down()
-robot.go_left()
-robot.go_up()
-robot.do_paint()
-]]>
-                </programlisting>
 			</example>
 		</section>
-
 		<section id="Команды-проверки">
 			<title>Команды-проверки
 			</title>
-
-            <section>
-                <title>слева свободно</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>слева свободно</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_free_at_left</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если Pобот может перейти влево, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>справа свободно</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>справа свободно</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_free_at_right</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если Pобот может перейти вправо, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>сверху свободно</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>сверху свободно</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_free_at_top</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если Pобот может перейти вверх, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>снизу свободно</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>снизу свободно</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_free_at_bottom</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если Pобот может перейти вниз, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>слева стена</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>слева стена</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_wall_at_left</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если слева от Pобота находится стена, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>справа стена</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>справа стена</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_wall_at_right</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если справа от Pобота находится стена, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>сверху стена</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>сверху стена</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_wall_at_top</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если сверху от Pобота находится стена, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>снизу стена</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>снизу стена</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_wall_at_bottom</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если снизу от Pобота находится стена, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>клетка закрашена</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>клетка закрашена</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_color</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
-                    если клетка закрашена, иначе --
-                    <code role="кумир">нет</code><code role="python">False</code>.
-                </para>
-            </section>
-
-            <section>
-                <title>клетка чистая</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>лог</type> <function>клетка чистая</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>is_clear</function>() -> <type>bool</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает <code role="кумир">нет</code><code role="python">False</code>,
-                    если клетка закрашена, иначе --
-                    <code role="кумир">да</code><code role="python">True</code>.
-                </para>
-            </section>
+			<table>
+				<title>Описание команд-проверок Роботa</title>
+				<tgroup cols="2" align="left">
+					<colspec colnum="1" colname="command" colwidth="20%" align="center"></colspec>
+					<colspec colnum="2" colname="description" colwidth="80%"></colspec>
+				</tgroup>
+				<thead>
+					<row>
+						<entry>Команда</entry>
+						<entry>Описание</entry>
+					</row>
+				</thead>
+				<row>
+					<entry><code role="кумир">лог слева свободно</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если Pобот может перейти влево, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог справа свободно</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если Pобот может перейти вправо, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог сверху свободно</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если Pобот может перейти вверх, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог снизу свободно</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если Pобот может перейти вниз, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог слева стена</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если слева от Робота находится стена, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог справа стена</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если справа от Робота находится стена, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог сверху стена</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если сверху от Робота находится стена, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог снизу стена</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если снизу от Робота находится стена, иначе -- <code role="кумир">нет</code>.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог клетка закрашена</code></entry>
+					<entry>Возвращает <code role="кумир">да</code>, если клетка закрашена, и <code role="кумир">нет</code>, если она не закрашена.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">лог клетка чистая</code></entry>
+					<entry>Возвращает <code role="кумир">нет</code>, если клетка закрашена, и <code role="кумир">да</code>, если она не закрашена.</entry>
+				</row>
+			</table>
 		</section>
 		<section id="Команды-измерения">
 			<title>Команды-измерения
 			</title>
-
-            <section>
-                <title>радиация</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>вещ</type> <function>радиация</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>radiation</function>() -> <type>float</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает значение радиации в клетке, где находится Pобот.
-                </para>
-            </section>
-
-            <section>
-                <title>температура</title>
-                <funcsynopsis role="кумир">
-                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>алг <type>вещ</type> <function>температура</function></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <funcsynopsis role="python">
-                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
-                    <funcprototype>
-                        <funcdef>def <function>temperature</function>() -> <type>float</type></funcdef>
-                    </funcprototype>
-                </funcsynopsis>
-                <para>Возвращает значение температуры в клетке, где находится Pобот.
-                </para>
-            </section>
-
-
+			<table>
+				<title>Описание команд-изменений Роботa</title>
+				<tgroup cols="2" align="left">
+					<colspec colnum="1" colname="command" colwidth="20%" align="center"></colspec>
+					<colspec colnum="2" colname="description" colwidth="80%"></colspec>
+				</tgroup>
+				<thead>
+					<row>
+						<entry>Команда</entry>
+						<entry>Описание</entry>
+					</row>
+				</thead>
+				<row>
+					<entry><code role="кумир">вещ радиация</code></entry>
+					<entry>Возвращает значение радиации в клетке, где находится Pобот.</entry>
+				</row>
+				<row>
+					<entry><code role="кумир">вещ температура</code></entry>
+					<entry>Возвращает значение температуры в клетке, где находится Pобот.</entry>
+				</row>
+			</table>
 		</section>
 	</section>
 	<section id="Стартовая обстановка, ее изменение и связь с текущей обстановкой">
@@ -828,7 +601,7 @@ robot.do_paint()
 			</para>
 			<para>
 				При инсталляции системы Кумир в качестве имени ФСО записывается имя файла со стандартной обстановкой, который входит в 
-				поставку Кумира (10x16.fil). Стандартной обстановкой является <emphasis role="italic">пустая</emphasis> обстановка 
+				поставку Кумира (10x16<code>.fil</code>). Стандартной обстановкой является <emphasis role="italic">пустая</emphasis> обстановка 
 				размера 10&times;16 с Роботом в левом верхнем углу. Максимально допустимый размер обстановки составляет 128&times;255.
 				Слово «пустая» означает:
 			</para>
@@ -988,7 +761,7 @@ robot.do_paint()
 			<title>Операции с файлами обстановок
 			</title>
 			<para>
-				Перечислим все операции с файлами обстановок (расширение .fil), предусмотренные в системе Кумир. Соответствующие им команды 
+				Перечислим все операции с файлами обстановок (расширение <code>.fil</code>), предусмотренные в системе Кумир. Соответствующие им команды 
 				входят в меню «Робот» главного окна (команды «Сохранить обстановку» и «Загрузить обстановку»).
 			</para>
 			<para>
