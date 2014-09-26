@@ -53,6 +53,8 @@ public:
     QVariant valueStackTopItem() const;
     unsigned long int stepsCounted() const;
     inline QAbstractItemModel * debuggerVariablesViewModel() const { return variablesModel_; }
+    inline void setStdInTextStream(QTextStream *) {}
+    inline void setStdOutTextStream(QTextStream *) {}
 
 signals:
     void stopped(int reason);

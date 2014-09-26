@@ -42,6 +42,7 @@ public:
     QStringList imports() const;
     QString createImportStatementLine(const QString &importName) const;
     QString suggestFileName() const;
+    inline ApiHelpItem itemUnderCursor(const QString&,int,int,bool) const { return ApiHelpItem(); }
 
     QString prepareToRun(RunTarget target);
     QString executableFilePath() const { return executableFilePath_; }
