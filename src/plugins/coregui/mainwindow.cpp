@@ -327,10 +327,12 @@ void MainWindow::setupMenuBarContextMenu()
     menubarContextMenu_->setSettingsObject(m_plugin->mySettings(), "MenuBarItems");
 
     Q_FOREACH(QMenu* menu, topLevelMenus_) {
-        QAction * menuAction = menu->menuAction();
-        const QString objectName = menu->objectName();
-        menuAction->setObjectName(objectName);
-        menubarContextMenu_->addProxy(menuAction);
+        if (menu) {
+            QAction * menuAction = menu->menuAction();
+            const QString objectName = menu->objectName();
+            menuAction->setObjectName(objectName);
+            menubarContextMenu_->addProxy(menuAction);
+        }
     }
 
     menubarContextMenu_->finalize();
