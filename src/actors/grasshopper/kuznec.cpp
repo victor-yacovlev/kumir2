@@ -2276,7 +2276,7 @@ void KumKuznec::MouseMove(int x, int y,bool LeftButtonFlag)
 if(moving)return;
 if(!LeftMousePressFlag)return;
 //qDebug()<<"MMove "<<x;
-if((abs(x-OldX)<5)&&(abs(y - OldY)<5)){qDebug()<<"return 1";return;};
+if((fabs(x-OldX)<5)&&(fabs(y - OldY)<5)){qDebug()<<"return 1";return;};
 
 //QApplication::setOverrideCursor(Qt::PointingHandCursor);  
 qreal centY=center().y();
