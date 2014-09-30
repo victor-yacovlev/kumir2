@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 //#include "interface.h"
 
+#include "interfaces/browserinterface.h"
+#include "interfaces/browser_instanceinterface.h"
+
 
 MainWindowTask::MainWindowTask(QWidget *parent) :
     QMainWindow(parent),
@@ -65,11 +68,59 @@ isTeacher=false;
        onTask=false;
        cursFile="";
        setWindowIcon(QIcon(resourcesRoot.absoluteFilePath("10.png")));
-#ifdef QT_DEBUG
-     ui->webView->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-#endif
+        setupWebView();
        //ui->textBrowser->setVisible(false);
  };
+
+void MainWindowTask::setupWebView()
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    BrowserInterface * browserPlugin
+            = PluginManager::instance()->findPlugin<BrowserInterface>();
+
+    QWidget * webViewComponent = 0;
+    simpleBrowserWidget_ = 0;
+    browserPluginInstance_ = 0;
+
+    if (browserPlugin) {
+        browserPluginInstance_ = browserPlugin->createBrowser();
+        webViewComponent = browserPluginInstance_->widget();
+    }
+    else {
+        simpleBrowserWidget_ = new QTextBrowser();
+        webViewComponent = simpleBrowserWidget_;
+    }
+
+    webViewComponent->setParent(ui->webView);
+    webViewComponent->setMinimumWidth(200);
+    QVBoxLayout * l = new QVBoxLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    ui->webView->setLayout(l);
+    l->addWidget(webViewComponent);
+}
+
+void MainWindowTask::setTaskViewHtml(const QString &data)
+{
+    if (simpleBrowserWidget_) {
+        simpleBrowserWidget_->setHtml(data);
+    }
+    else if (browserPluginInstance_) {
+        browserPluginInstance_->setContent(data);
+    }
+}
+
+void MainWindowTask::setTaskViewUrl(const QUrl &url)
+{
+    if (simpleBrowserWidget_) {
+        simpleBrowserWidget_->setSource(url);
+    }
+    else if (browserPluginInstance_) {
+        browserPluginInstance_->go(url);
+    }
+}
+
 QList<QAction*> MainWindowTask::getActions()
 {
     QList<QAction*> toRet;
@@ -259,7 +310,7 @@ for(int i=0;i<prgElListT.count();i++)
     if(cText.right(4)==".htm" ||cText.right(5)==".html" )
     {
         loadHtml(cText);
-    }else ui->webView->setHtml(cText);
+    }else setTaskViewHtml(cText);
     // if(isTeacher)ui->actionEdit->setEnabled(true);
     setWindowTitle(course->name()+trUtf8(" - Практикум"));
     updateLastFiles(fileName);
@@ -324,7 +375,7 @@ void MainWindowTask::loadCourse()
   if(cText.right(4)==".htm" ||cText.right(5)==".html" )
   {
       loadHtml(cText);
-  }else ui->webView->setHtml(cText);
+  }else setTaskViewHtml(cText);
  // if(isTeacher)ui->actionEdit->setEnabled(true);
   setWindowTitle(course->name()+trUtf8(" - Практикум"));
     updateLastFiles(fileName);
@@ -435,7 +486,7 @@ void MainWindowTask::showText(const QModelIndex & index )
  if(taskText.right(4)==".htm" ||taskText.right(5)==".html" )
  {
      loadHtml(taskText);
- }else ui->webView->setHtml(taskText);
+ }else setTaskViewHtml(taskText);
   qDebug()<<"TaskText:"<<course->getTaskText(index);
  curTaskIdx=index;
 
@@ -457,20 +508,23 @@ void MainWindowTask::showText(const QModelIndex & index )
  };
 
 void MainWindowTask::loadHtml(QString fileName)
-{
-    qDebug()<<"LoadHtml"<<fileName;
-    if(fileName.isEmpty())return;
-    QFile inp(curDir+'/'+fileName);
-    if  (!inp.open(QIODevice::ReadOnly))
-    {
-    QMessageBox::information( 0, "", trUtf8("Ошибка чтения: ") + fileName, 0,0,0);
-    return;
-    };
-    QString htmlData=QString::fromUtf8(inp.readAll());
-    //ui->textBrowser->setHtml(htmlData);
+{    
+    const QString absolutePath = QDir(curDir).absoluteFilePath(fileName);
+    const QUrl url = QUrl::fromLocalFile(absolutePath);
+    setTaskViewUrl(url);
+//    qDebug()<<"LoadHtml"<<fileName;
+//    if(fileName.isEmpty())return;
+//    QFile inp(curDir+'/'+fileName);
+//    if  (!inp.open(QIODevice::ReadOnly))
+//    {
+//    QMessageBox::information( 0, "", trUtf8("Ошибка чтения: ") + fileName, 0,0,0);
+//    return;
+//    };
+//    QString htmlData=QString::fromUtf8(inp.readAll());
+//    //ui->textBrowser->setHtml(htmlData);
 
-    ui->webView->setHtml(htmlData,QUrl("file://"+curDir+'/'+fileName));
-    inp.close();
+//    ui->webView->setHtml(htmlData,QUrl("file://"+curDir+'/'+fileName));
+//    inp.close();
 
 };
 void MainWindowTask::startTask()

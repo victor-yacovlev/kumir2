@@ -28,11 +28,9 @@ class DocBookViewImpl
 public /* methods */:
     explicit DocBookViewImpl(class DocBookView * pClass);
     QAction * viewerAction(const DocBookView::DocBookViewAction type) const;
-    class Document addDocument(
-            const QUrl & url,
-            QString * error,
-            int index
-            );
+    class Document addDocument(const QUrl & url, QString * error);
+
+    class Document addDocuments(const QString & groupName, const QList<QUrl> & urls, QString * error = 0);
 
     void removeDocument(const Document & existingDocument);
     bool hasAlgorithm(const QString & name) const;

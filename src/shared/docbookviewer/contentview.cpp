@@ -113,14 +113,18 @@ QString ContentView::renderChapter(ModelPtr data) const
     return result;
 }
 
-QString ContentView::renderAbstract(ModelPtr data) const
+QString ContentView::renderAbstract(ModelPtr data, bool wrapInDivClassAbstract) const
 {
     QString result;
-    result += "<div class='abstract'>";
+    if (wrapInDivClassAbstract) {
+        result += "<div class='abstract'>";
+    }
     foreach (ModelPtr child, data->children()) {
         result += renderElement(child);
     }
-    result += "</div>";
+    if (wrapInDivClassAbstract) {
+        result += "</div>";
+    }
     return result;
 }
 
@@ -136,7 +140,7 @@ QString ContentView::renderArticle(ModelPtr data) const
         }
     }
     if (abstract) {
-        result += renderAbstract(abstract);
+        result += renderAbstract(abstract, true);
     }
     result += "<hr/>";
     foreach (ModelPtr child, data->children()) {
@@ -1515,9 +1519,12 @@ QString ContentView::renderSet(ModelPtr data) const
         ds << dataPtr;
         const QString href = QString::fromLatin1("model_ptr:") +
                 QString::fromLatin1(buffer.toHex());
-        result += "<p align=\"left\"><a href=\"" + href +"\">" +
-                child->title() + "</a></p>\n";
-        result += "<p margin='10' align='left'>" + child->subtitle() + "</p>";
+        result += "<h2><a href=\"" + href +"\">" +
+                child->title() + "</a></h2>\n";
+        ModelPtr abstract = child->findChildrenOfType(Abstract);
+        if (abstract) {
+            result += renderAbstract(abstract, false);
+        }
     }
     return result;
 

@@ -64,9 +64,14 @@ QAction * DocBookView::viewerAction(const DocBookViewAction type) const
     return pImpl_->viewerAction(type);
 }
 
-Document DocBookView::addDocument(const QUrl &url, QString *error, int index)
+Document DocBookView::addDocument(const QUrl &url, QString *error)
 {
-    return pImpl_->addDocument(url, error, index);
+    return pImpl_->addDocument(url, error);
+}
+
+Document DocBookView::addDocuments(const QString &groupName, const QList<QUrl> &urls, QString *error)
+{
+    return pImpl_->addDocuments(groupName, urls, error);
 }
 
 void DocBookView::removeDocument(const Document & existingDocument)

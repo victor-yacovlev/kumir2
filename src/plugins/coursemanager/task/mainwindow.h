@@ -21,10 +21,15 @@
 #include "../coursemanager_plugin.h"
 #include "editdialog.h"
 #include "newkursdialog.h"
+#include <QTextBrowser>
 
 #ifdef interface
 #undef interface // used name 'interface' conflicts with Windows SDK
 #endif
+
+namespace Shared { namespace Browser {
+class InstanceInterface;
+} }
 
 class KumZadanie
 {
@@ -135,6 +140,9 @@ protected:
     void closeEvent(QCloseEvent *event);
     void showEvent(QShowEvent * event);
 private:
+    void setupWebView();
+    void setTaskViewHtml(const QString & data);
+    void setTaskViewUrl(const QUrl & url);
     void markProgChange();
     void createMoveMenu();
     void setUpDown(QModelIndex index);
@@ -163,6 +171,9 @@ private:
      QFileInfo baseKursFile; //4 mode
        Ui::MainWindowTask *ui;
     bool isReadOnly;
+    Shared::Browser::InstanceInterface * browserPluginInstance_;
+    QTextBrowser * simpleBrowserWidget_;
+
 
 };
 

@@ -78,6 +78,25 @@ void Analizer::setSourceDirName(const QString &dirName)
     d->analizer->setSourceDirName(dirName);
 }
 
+bool Analizer::multipleStatementsInLine(int lineNo) const
+{
+    const QList<TextStatementPtr> & sts = d->statements;
+    QList<int> usedLineNumbers;
+    Q_FOREACH(TextStatementPtr st, sts) {
+        int statementLine = -1;
+        Q_FOREACH(LexemPtr lx, st->data) {
+            if (LxTypeComment != lx->type) {
+                statementLine = lx->lineNo;
+                break;
+            }
+        }
+        if (-1 != statementLine) {
+            usedLineNumbers.append(statementLine);
+        }
+    }
+    return usedLineNumbers.count(lineNo) > 1;
+}
+
 Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) const
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);
@@ -1061,6 +1080,7 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
         const Shared::Analizer::Suggestion & s = result.at(i_sugg);
         if (before.endsWith(' ') && !before.trimmed().isEmpty()) {
             // suggest only if suggestion bounds by a keyword
+            // or contains a space inside itself
             if (s.kind==Shared::Analizer::Suggestion::SecondaryKeyword ||
                     (lastStatement!=nullptr
                      && lastStatement->data.size()>0 &&
@@ -1071,7 +1091,13 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
                         )
                      )
                     )
+            {
                 filteredResult.push_back(s);
+            }
+            else if (s.value.contains(' '))
+            {
+                filteredResult.push_back(s);
+            }
         }
         else {
             // regular case -- suggest it (already filtered by name)

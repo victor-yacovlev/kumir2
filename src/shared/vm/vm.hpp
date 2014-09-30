@@ -159,6 +159,7 @@ private /*fields*/:
     AnyValue register0_;
     Stack<Variable> valuesStack_;
     Stack<Context> contextsStack_;
+    Stack< std::pair<bool,Variable> > cacheStack_;
     Kumir::String programDirectory_;
     typedef std::vector<Variable> VariablesTable;
     VariablesTable * currentConstants_;
@@ -207,6 +208,11 @@ private /*instruction methods*/:
     inline void do_jnz(uint8_t, uint16_t);
     inline void do_pop(uint8_t);
     inline void do_push(uint8_t);
+    inline void do_cload();
+    inline void do_cstore();
+    inline void do_cdropz();
+    inline void do_cachebegin();
+    inline void do_cacheend();
     inline void do_ret();
     inline void do_error(uint8_t, uint16_t);
     inline void do_line(const Bytecode::Instruction & instr);
@@ -707,6 +713,7 @@ void KumirVM::reset()
     register0_ = AnyValue();
     Variable::ignoreUndefinedError = false;
     valuesStack_.reset();
+    cacheStack_.reset();
     contextsStack_.reset();
     previousLineNo_ = -1;
     previousColStart_ = previousColEnd_ = 0u;
@@ -957,6 +964,21 @@ void KumirVM::evaluateNextInstruction()
         break;
     case PUSH:
         do_push(instr.registerr);
+        break;
+    case CLOAD:
+        do_cload();
+        break;
+    case CSTORE:
+        do_cstore();
+        break;
+    case CDROPZ:
+        do_cdropz();
+        break;
+    case CACHEBEGIN:
+        do_cachebegin();
+        break;
+    case CACHEEND:
+        do_cacheend();
         break;
     case RET:
         do_ret();
@@ -1868,7 +1890,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         if (stacksMutex_) stacksMutex_->unlock();
         bool hasInput = false;
-        if (consoleInputBuffer_) {
+        if (consoleInputBuffer_ && !fileIO) {
             fileReference.setType(Kumir::FileType::Console);
         }
         if (input_&& !fileIO && !Kumir::Files::overloadedStdIn() && !consoleInputBuffer_) {
@@ -2676,6 +2698,49 @@ void KumirVM::do_pop(uint8_t r)
     nextIP();
 }
 
+void KumirVM::do_cload()
+{
+    const std::pair<bool,Variable> cacheItem = cacheStack_.pop();
+    const Variable & value = cacheItem.second;
+    valuesStack_.push(value);
+    nextIP();
+}
+
+void KumirVM::do_cstore()
+{
+    const Variable & v = valuesStack_.top();
+    const std::pair<bool,Variable> cacheItem = std::pair<bool,Variable>(false, v);
+    cacheStack_.push(cacheItem);
+    nextIP();
+}
+
+void KumirVM::do_cdropz()
+{
+    const bool zFlag = ! register0_.toBool();
+    if (zFlag) {
+        cacheStack_.pop();
+    }
+    nextIP();
+}
+
+void KumirVM::do_cachebegin()
+{
+    const std::pair<bool,Variable> marker = std::pair<bool,Variable>(true, Variable());
+    cacheStack_.push(marker);
+    nextIP();
+}
+
+void KumirVM::do_cacheend()
+{
+    while (cacheStack_.size() > 0) {
+        const std::pair<bool,Variable> cacheItem = cacheStack_.pop();
+        if (true == cacheItem.first) {
+            break;
+        }
+    }
+    nextIP();
+}
+
 void KumirVM::do_showreg(uint8_t regNo) {
     if (!blindMode_) {
         const int lineNo = contextsStack_.top().lineNo;
@@ -2752,6 +2817,11 @@ void KumirVM::do_ret()
         currentConstants_ =
                 &(moduleContexts_[contextsStack_.top().moduleContextNo].constants);
     }
+#ifndef NDEBUG
+    if (cacheStack_.size() > 0) {
+        error_ = Kumir::Core::fromUtf8("Cache-стек не пустой");
+    }
+#endif
     stacksMutex_->unlock();
 }
 

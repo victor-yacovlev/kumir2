@@ -22,7 +22,7 @@ else()
 endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Browser,Actor*,KumirAnalizer\(preload=Files,preload=Strings\),*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=highgrade,nostartpage,nosessions\)"
+    "CourseManager,Editor,Actor*,KumirAnalizer\(preload=Files,preload=Strings\),*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=highgrade,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/highgrade.png"

@@ -492,6 +492,7 @@ void EditorInstance::updateFromAnalizer()
         if (i<props.size()) {
             doc_->setHighlightAt(i, props[i].toList());
         }
+        doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
         int newIndent = doc_->indentAt(i);
         int diffIndent = newIndent - oldIndent;

@@ -132,12 +132,20 @@ else()
             -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
             ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
     )
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_custom_target(
+        stdlib.llvm-debug
+        ALL
+        DEPENDS stdlib_c.h stdlib_c.cpp
+        COMMAND ${Clang_EXECUTABLE} -c -g -std=c++0x -DSTDLIB_DEBUG
+            -I${CMAKE_SOURCE_DIR}/src/shared
+            -o ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o
+            ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
+    )
+    endif()
 endif(WIN32)
 
 file(MAKE_DIRECTORY ${SHARE_PATH}/llvmcodegenerator)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.h DESTINATION ${SHARE_PATH}/llvmcodegenerator)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/kumtypes.h DESTINATION ${SHARE_PATH}/llvmcodegenerator)
 
 install(TARGETS LLVMCodeGenerator DESTINATION ${PLUGINS_DIR})
-
-
+install(FILES ${SHARE_PATH}/llvmcodegenerator/stdlib.bc DESTINATION ${RESOURCES_DIR}/llvmcodegenerator)

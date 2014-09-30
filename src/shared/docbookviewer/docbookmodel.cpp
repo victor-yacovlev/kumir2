@@ -35,6 +35,14 @@ const QString& DocBookModel::title() const
     return title_;
 }
 
+QString DocBookModel::titleAbbrev() const
+{
+    if (titleAbbrev_.isEmpty())
+        return title_;
+    else
+        return titleAbbrev_;
+}
+
 const QString& DocBookModel::subtitle() const
 {
     return subtitle_;
@@ -78,6 +86,21 @@ ModelPtr DocBookModel::parent() const
 ModelPtr DocBookModel::indexParent() const
 {
     return indexParent_;
+}
+
+ModelPtr DocBookModel::findChildrenOfType(const ModelType modelType) const
+{
+    ModelPtr result;
+    foreach (ModelPtr child, children_) {
+        if (modelType == child->modelType()) {
+            result = child;
+        }
+        else {
+            result = child->findChildrenOfType(modelType);
+        }
+        if (result) break;
+    }
+    return result;
 }
 
 const QList<ModelPtr>& DocBookModel::children() const

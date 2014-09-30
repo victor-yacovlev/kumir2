@@ -67,12 +67,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWebView" name="webView">
-       <property name="url">
-        <url>
-         <string>about:blank</string>
-        </url>
-       </property>
+      <widget class="QWidget" name="webView">
       </widget>
      </widget>
     </item>

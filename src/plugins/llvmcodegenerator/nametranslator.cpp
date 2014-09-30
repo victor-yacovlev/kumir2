@@ -87,7 +87,7 @@ CString NameTranslator::screenUtf8Name(const QString &x)
     CString result;
     for (int i=0; i<x.length(); i++) {
         const QChar source = x.at(i);
-        if (0 == source.toLatin1() || source.isSpace()) {
+        if (0 == source.toLatin1() || source.isSpace() || '@' == source) {
             QString code = "u" + QString::number(source.unicode(), 16).toUpper();
             result.append(code.toStdString());
         }

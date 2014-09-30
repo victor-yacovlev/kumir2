@@ -13,6 +13,7 @@ public:
     virtual QWidget * widget() = 0;
 
     virtual void go(const QUrl & url) = 0;
+    virtual void setContent(const QString & data) = 0;
     virtual QUrl currentLocation() const = 0;
 
     virtual QString title() const = 0;
