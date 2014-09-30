@@ -306,7 +306,26 @@ MainWindow::MainWindow(Plugin * p) :
     ui->menubar->setContextMenuWidget(menubarContextMenu_);
     topLevelMenus_ << ui->menuFile << ui->menuEdit << ui->menuInsert
                    << ui->menuRun << ui->menuRun << ui->menuHelp;
-    ui->menubar->addAction(menubarContextMenu_->showAction());
+
+
+    bool useGlobalMenu = false;
+#ifdef Q_OS_MAC
+    useGlobalMenu = true;
+#endif
+#ifdef Q_OS_LINUX
+    const char * session = ::getenv("SESSION");
+    if (session && QString::fromLatin1(session).toLower() == "ubuntu") {
+        useGlobalMenu = true;
+    }
+#endif
+    if (useGlobalMenu) {
+        QMenu * fakeMenu = ui->menubar->addMenu(menubarContextMenu_->showAction()->text());
+        menubarContextMenu_->showAction()->setText(tr("Configure menu items..."));
+        fakeMenu->addAction(menubarContextMenu_->showAction());
+    }
+    else {
+        ui->menubar->addAction(menubarContextMenu_->showAction());
+    }
 }
 
 void MainWindow::addMenuBeforeHelp(QMenu *menu)
