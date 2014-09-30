@@ -209,312 +209,10 @@ void linkLight::paintEvent ( QPaintEvent * event )
 
 
 
-MainButton::MainButton ( QWidget* parent) :
-		QWidget(parent)
-{
-	direction=UP;
-	posX=1;
-	posY=1;
-	buttonImageUp.load(":/icons/71_71grMet.png");
-	buttonImageDown.load(":/icons/71_71grMet_d.png");
-	downFlag=false;
-	Parent=parent;
-	int mid=buttonImageUp.width()/2;
-	Q_UNUSED(mid);
-	// upArrow.append(QLine(mid,30,mid-15,40));
-	// upArrow.append(QLine(mid,30,mid+15,40));
-	// downArrow.append(QLine(mid,40,mid-15,30));
-	// downArrow.append(QLine(mid,40,mid+15,30));
-	// leftArrow.append(QLine(30,mid,40,mid-15));
-	// leftArrow.append(QLine(30,mid,40,mid+15));
-	// rightArrow.append(QLine(40,mid,30,mid-15));
-	// rightArrow.append(QLine(40,mid,30,mid+15));
-	text="";
-	checked=false;
-	checkable=false;
-	mouseOver=false;
-	icon=false;
-	resize(71,71);
-}
-
-void MainButton::paintEvent ( QPaintEvent * event )
-{
-    Q_UNUSED(event);
-    QPainter painter(this);
-    painter.setRenderHint (QPainter::Antialiasing,true );
-    if(!downFlag)
-    {
-		painter.drawImage(QPoint(posX,posY),buttonImageUp);
-		if(icon)painter.drawImage(1,1,buttonIcon);
-		QPen blackPen(QColor(40,40,40));
-		blackPen.setWidth(3);
-		painter.setPen(blackPen);
-		drawAddons(&painter);
-		if(mouseOver)
-		{
-			QLinearGradient grad( 1, 1, 5, 65);
-			grad.setColorAt(0.7,QColor(200,190,222));
-			grad.setColorAt(0.3,QColor(191,208,208));
-
-			QBrush solidBrush(grad);
-			painter.setBrush(solidBrush);
-			painter.setOpacity(0.1);
-			painter.drawRect(3,3,75,55);
-		}
-		
-	}
-	else 	{
-		painter.drawImage(QPoint(posX,posY),buttonImageDown);
-		if(icon){
-			//buttonIcon.invertPixels();
-			painter.drawImage(3,3,buttonIcon);
-			//buttonIcon.invertPixels();
-		}
-		QPen whitePen(QColor(170,170,170));
-		whitePen.setWidth(3);
-		painter.setPen(whitePen);
-		//drawAddons(&painter);
-		
-	}
-}
-
-void MainButton::drawAddons(QPainter* painter)
-{
-	if(direction==UP)painter->drawLines(upArrow);
-	if(direction==DOWN)painter->drawLines(downArrow);
-	if(direction==LEFT)painter->drawLines(leftArrow);
-	if(direction==RIGHT)painter->drawLines(rightArrow);
-    if(direction==TEXTT)
-	{
-		if(!downFlag)painter->setPen(QColor(10,10,10));
-		QFont font("FreeSans");
-		font.setBold(true);
-		painter->setFont(font);
-		QStringList textLines=text.split("|");
-		int start_pos=42-7*textLines.count();
-		for(int i=0;i<textLines.count();i++)painter->drawText(7,start_pos+TEXT_STEP*i,textLines[i]);
-	}
-
-}
-
-bool MainButton::loadIcon(QString iconFile)
-{
-	icon=true;
-	return buttonIcon.load(iconFile);
-}
-
-void MainButton::mousePressEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	qWarning("MousePress");
-	emit pressed();
-	if(checkable)checked=!checked;
-	downFlag=true;
-	repaint();
-}
-
-void MainButton::mouseReleaseEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	if(checkable){if(!checked)downFlag=false;}else downFlag=false;
-	if(mouseOver)emit clicked();
-	repaint();
-}
-
-
-void MainButton::enterEvent ( QEvent * event )
-{
-    Q_UNUSED(event);
-    if(!mouseOver){mouseOver=true;repaint();};
-}
-
-void MainButton::leaveEvent ( QEvent * event )
-{
-    Q_UNUSED(event);
-    if(mouseOver){mouseOver=false;repaint();}
-}
 
 
 
 
-
-loggerButton::loggerButton ( QWidget* parent) :
-		QWidget(parent)
-{
-	isUpArrow=false;
-	posX=1;
-	posY=1;
-    buttonImageUp.load(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("butt_v.png"));
-    buttonImageDown.load(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("buttd_v.png"));
-	downFlag=false;
-	Parent=parent;
-	int mid=buttonImageUp.width()/2;
-	upArrow.append(QLine(mid,10,mid-11,15));
-	upArrow.append(QLine(mid,10,mid+11,15));
-	downArrow.append(QLine(mid,15,mid-11,10));
-	downArrow.append(QLine(mid,15,mid+11,10));
-};
-
-void loggerButton::paintEvent ( QPaintEvent * event )
-{
-    Q_UNUSED(event);
-    QPainter painter(this);
-    painter.setRenderHint (QPainter::Antialiasing,true );
-    if(!downFlag)
-    {
-		painter.drawImage(QPoint(posX,posY),buttonImageUp);
-		QPen blackPen(QColor(50,50,50));
-		blackPen.setWidth(3);
-		painter.setPen(blackPen);
-		if(isUpArrow)painter.drawLines(upArrow);else painter.drawLines(downArrow);
-	}
-	else 	{
-		painter.drawImage(QPoint(posX,posY),buttonImageDown);
-		QPen whitePen(QColor(170,170,170));
-		whitePen.setWidth(3);
-		painter.setPen(whitePen);
-		if(isUpArrow)painter.drawLines(upArrow);else painter.drawLines(downArrow);
-	}
-}
-
-
-void loggerButton::mousePressEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	qWarning("MousePress");
-	emit pressed();
-	downFlag=true;
-	repaint();
-}
-void loggerButton::mouseReleaseEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	downFlag=false;
-	repaint();
-}
-
-
-
-
-
-pultLogger::pultLogger ( QWidget* parent) :
-		QWidget(parent)
-{
-	mainFrame= new QFrame(parent);
-	mainFrame->setLineWidth(2);
-	mainFrame->setFrameShadow(QFrame::Sunken);
-	mainFrame->setFrameShape(QFrame::Panel);
-	mainFrame->setPalette(QPalette(QColor(50,50,50),QColor(100,100,100)));
-	mainFrame->setBackgroundRole(QPalette::Window);
-	mainFrame->setAutoFillBackground(true);
-
-	dummyFrame= new QFrame(mainFrame);
-	dummyFrame->setLineWidth(0);
-	dummyFrame->setFrameShadow(QFrame::Sunken);
-	dummyFrame->setFrameShape(QFrame::Panel);
-	dummyFrame->setPalette(QPalette(QColor(50,50,50),QColor(100,100,100)));
-	dummyFrame->setBackgroundRole(QPalette::Window);
-	dummyFrame->setAutoFillBackground(true);
-	dummyFrame->move(2,2);
-	W=150;H=160;
-	respFrame= new QFrame(mainFrame);
-	respFrame->setLineWidth(0);
-	respFrame->setFrameShadow(QFrame::Sunken);
-	respFrame->setFrameShape(QFrame::Panel);
-	respFrame->setPalette(QPalette(QColor(50,50,50),QColor(120,110,110)));
-	respFrame->setBackgroundRole(QPalette::Window);
-	respFrame->setAutoFillBackground(true);
-	respFrame->move(W-RESP_PANEL,2);
-
-
-	downButton=new loggerButton(parent);
-	downButton->move(0,H-24);
-	downButton->resize(140,24);
-	downButton->show();
-	upButton=new loggerButton(parent);
-	upButton->move(0,8);
-	upButton->resize(140,26);
-	upButton->upArrowType(true);
-	upButton->show();
-	pos=4;
-	connect(downButton,SIGNAL(pressed()),this,SLOT(downBtnPressed()));
-	connect(upButton,SIGNAL(pressed()),this,SLOT(upBtnPressed()));
-	//buttonSize=50;
-
-}
-
-pultLogger::~pultLogger ()
-{
-    //delete mainFrame;
-}
-
-void pultLogger::Move(uint x,uint y)
-{
-	mainFrame->move( x, y+26);
-	//dummyFrame->move( x+1, y+27);
-	int offset=(W-LOGGER_BUTTONS)/2;
-	downButton->move(x+offset,y+H-24);
-	upButton->move(x+offset,y);
-	//testLabel->move(4,30);
-	qDebug()<<"upBtn geom "<<upButton->geometry();
-	qWarning("WidgetMove");
-	move(x,y);
-}
-
-void pultLogger::setSizes(uint w,uint h)
-{
-	mainFrame->resize ( w, h-50);
-	dummyFrame->resize ( w-RESP_PANEL, h);
-	respFrame->resize ( RESP_PANEL, h);
-	respFrame->move(w-RESP_PANEL,2);
-	qDebug()<<"dummy geom"<<dummyFrame->geometry();
-	resize(w,h);
-	W=w;H=h;
-	buttonSize=w;
-}
-
-void pultLogger::appendText(QString kumCommand,QString text,QString replay)
-{
-	while(pos>H-68)downBtnPressed();
-	lines.append(logLine(kumCommand,text,replay,dummyFrame,respFrame,pos));
-	pos=pos+TEXT_STEP;
-}
-
-
-void pultLogger::upBtnPressed()
-{
-
-    if(lines.count()==0)return;
-    if(lines.first().pos()>2)return;
-
-    for(int i=0;i<lines.count();i++)lines[i].moveDown();
-    pos=pos+SCROLL_STEP;
-    qWarning("TEXT MOVE");
-}
-
-void pultLogger::downBtnPressed()
-{
-    if(pos<14)return;
-    for(int i=0;i<lines.count();i++)lines[i].moveUp();
-    pos=pos-SCROLL_STEP;
-}
-
-void pultLogger::ClearLog()
-{
-    for(int i=0;i<lines.count();i++)lines[i].removeLabels();
-    lines.clear();
-    pos=4;
-
-}
-
-void pultLogger::CopyLog()
-{
-    if(lines.count()==0)return;
-    QClipboard * cp=QApplication::clipboard ();
-    QString text;
-    for(int i=0;i<lines.count();i++)if(!lines[i].KumCommand().isEmpty())text+=lines[i].KumCommand()+"\n";
-    cp->setText(text);
-}
 
 VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	: QWidget ( parent, fl ), Ui::VodoleyPult()
@@ -524,7 +222,7 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	libMode=true;
 	//setWindowFlags(Qt::Dialog);
 
-	Logger=new pultLogger(this);
+	Logger=new pultLogger(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 
 
     this->setMinimumSize(250,450);
@@ -534,38 +232,42 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	greenLight->move(15,29);
 	greenLight->resize(12,104);
 
-	UpB->show();
-	BtoC=new MainButton(this);
-	BtoC->move(UpB->pos());
+	UpB->hide();
+	BtoC=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
+
 	BtoC->setGeometry(UpB->geometry());
-  
+    BtoC->setText(" ");
     BtoC->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("b2c.png"));
 
 	DownB->hide();
-	buttBack=new MainButton(this);
+	buttBack=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	buttBack->move(DownB->pos());
 	buttBack->setGeometry(DownB->geometry());
+    buttBack->setText(" ");
     buttBack->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("bout.png"));
 
 	AtoCb->hide();
-	AtoC=new MainButton(this);
+	AtoC=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	AtoC->setGeometry(AtoCb->geometry());
+    AtoC->setText(" ");
     AtoC->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("a2c.png"));
 
 	AoutB->hide();
-	turnRight=new MainButton(this);
+	turnRight=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	turnRight->setGeometry(AoutB->geometry());
+    turnRight->setText(" ");
     turnRight->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("aout.png"));
 	CoutB->hide();
-	Coutb=new MainButton(this);
+	Coutb=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	Coutb->setGeometry(CoutB->geometry());
+    Coutb->setText(" ");
     Coutb->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("cout.png"));
 
 	//        StenaB->hide();
 
 
 	//        SvobodnoB->hide();
-	askFree=new MainButton(this);
+	askFree=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	//        askFree->move(SvobodnoB->pos());
 	askFree->setCheckable(true);
 	askFree->setText(trUtf8(" "));
@@ -576,26 +278,26 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 
 
 	AtoBb->hide();
-	AtoB=new MainButton(this);
+	AtoB=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	AtoB->setGeometry(AtoBb->geometry());
 	AtoB->setText(trUtf8(" "));
     if(!AtoB->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("a2b.png")))qWarning("Image not loaded!");
 	
 	CtoBb->hide();
-	CtoB=new MainButton(this);
+	CtoB=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	CtoB->setGeometry(CtoBb->geometry());
 	CtoB->setText(trUtf8(" "));
     if(!CtoB->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("c2b.png")))qWarning("Image not loaded!");
 
 
 	CtoAb->hide();
-	CtoA=new MainButton(this);
+	CtoA=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	CtoA->setGeometry(CtoAb->geometry());
 	CtoA->setText(trUtf8(" "));
     if(!CtoA->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("c2a.png")))qWarning("Image not loaded!");
 
 	TempB->hide();
-	buttTemp=new MainButton(this);
+	buttTemp=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	buttTemp->setGeometry(TempB->geometry());
     
 	buttTemp->setText(" ");
@@ -604,11 +306,11 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
     QIcon toKumirIco(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-copy.png"));
 	toKumir->setIcon(toKumirIco);
     toKumir->setEnabled(true);
-    ClearLog->setIcon(QIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-clear-list..png")));
+    ClearLog->setIcon(QIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-clear-list.png")));
 
 
 	FillA->hide();
-	aFill=new MainButton(this);
+	aFill=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	//        askFree->move(SvobodnoB->pos());
 	//aFill->setCheckable(false);
 	aFill->setText(trUtf8(" "));
@@ -616,13 +318,13 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	aFill->setGeometry(FillA->geometry());
 
 	FillB->hide();
-	bFill=new MainButton(this);
+	bFill=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	bFill->setText(trUtf8(" "));
     bFill->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("bfill.png"));
 	bFill->setGeometry(FillB->geometry());
 
 	FillC->hide();
-	cFill=new MainButton(this);
+	cFill=new MainButton(ActorVodoley::VodoleyModule::self->myResourcesDir(),this);
 	cFill->setText(trUtf8(" "));
     cFill->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("cfill.png"));
 	cFill->setGeometry(FillC->geometry());

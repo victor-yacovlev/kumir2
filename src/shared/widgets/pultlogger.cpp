@@ -182,3 +182,180 @@ void pultLogger::CopyLog()
     for(int i=0;i<lines.count();i++)if(!lines[i].KumCommand().isEmpty())text+=lines[i].KumCommand()+"\n";
     cp->setText(text);
 };
+
+
+
+
+linkLight::linkLight ( QWidget* parent):QWidget(parent)
+{
+    posX=1;
+    posY=1;
+    onLine=true;
+    text=trUtf8("СВЯЗЬ");
+};
+
+void linkLight::paintEvent ( QPaintEvent * event )
+{
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint (QPainter::Antialiasing,true );
+    QRectF rectangle(posX, posY, 10.0, 10.0);
+    
+    QPen pen(Qt::green);  // creates a default pen
+    
+    QBrush brush(Qt::green);
+    if(!onLine)brush.setColor(QColor(20,60,20));
+    brush.setStyle(Qt::SolidPattern);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.drawEllipse(rectangle);
+    
+    brush.setColor(QColor(10,10,10));
+    painter.setPen(QPen(QColor(10,10,10)));
+    painter.setBrush(brush);
+    QFont font("Arial");
+    font.setBold(true);
+    painter.setFont(font);
+	int cur_pos=0;
+    for(int i=0;i<text.length();i++)
+	{painter.drawText(posX,posY+TEXT_STEP*i+26,QString(text[i]));
+        cur_pos=posY+TEXT_STEP*i+26;};
+    QRectF rectangle2(posX, cur_pos+7, 10, 10);
+    brush.setColor(QColor(30,0,0));
+    if(!onLine)brush.setColor(QColor(250,50,50));
+    pen.setColor(Qt::red);
+    
+    brush.setStyle(Qt::SolidPattern);
+    painter.setPen(pen);
+    painter.setBrush(brush);
+    painter.drawEllipse(rectangle2);
+    
+    
+};
+
+
+
+
+MainButton::MainButton (QDir dir, QWidget* parent):QWidget(parent)
+{direction=UP;
+    posX=1;
+    posY=1;
+    buttonImageUp.load(dir.absoluteFilePath("71_71grMet.png"));
+    buttonImageDown.load(dir.absoluteFilePath("71_71grMet_d.png"));
+    downFlag=false;
+    Parent=parent;
+    int mid=buttonImageUp.width()/2;
+    upArrow.append(QLine(mid,30,mid-15,40));
+    upArrow.append(QLine(mid,30,mid+15,40));
+    downArrow.append(QLine(mid,40,mid-15,30));
+    downArrow.append(QLine(mid,40,mid+15,30));
+    leftArrow.append(QLine(30,mid,40,mid-15));
+    leftArrow.append(QLine(30,mid,40,mid+15));
+    rightArrow.append(QLine(40,mid,30,mid-15));
+    rightArrow.append(QLine(40,mid,30,mid+15));
+    text="";
+    iconoffs=0;
+    checked=false;
+    checkable=false;
+    mouseOver=false;
+    icon=false;
+    resize(71,71);
+};
+
+void MainButton::paintEvent ( QPaintEvent * event )
+{
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint (QPainter::Antialiasing,true );
+    if(!downFlag)
+    {
+		painter.drawImage(QPoint(posX,posY),buttonImageUp);
+		if(icon)painter.drawImage(posX+iconoffs,posX+iconoffs,buttonIcon);
+		QPen blackPen(QColor(40,40,40));
+		blackPen.setWidth(3);
+		painter.setPen(blackPen);
+		drawAddons(&painter);
+		if(mouseOver)
+        {
+			QLinearGradient grad( 1, 1, 5, 65);
+			grad.setColorAt(0.7,QColor(200,190,222));
+			grad.setColorAt(0.3,QColor(191,208,208));
+            
+			QBrush solidBrush(grad);
+			painter.setBrush(solidBrush);
+			painter.setOpacity(0.1);
+			painter.drawRect(3,3,65,65);
+        };
+		
+    }
+	else 	{
+		painter.drawImage(QPoint(posX,posY),buttonImageDown);
+		if(icon){
+			
+			painter.drawImage(posX+3+iconoffs,posY+3+iconoffs,buttonIcon);
+		
+        };
+		QPen whitePen(QColor(170,170,170));
+		whitePen.setWidth(3);
+		painter.setPen(whitePen);
+        drawAddons(&painter);
+		
+    };
+};
+
+void MainButton::drawAddons(QPainter* painter)
+{
+    if(direction==UP)painter->drawLines(upArrow);
+    if(direction==DOWN)painter->drawLines(downArrow);
+    if(direction==LEFT)painter->drawLines(leftArrow);
+    if(direction==RIGHT)painter->drawLines(rightArrow);
+    if(direction==5)
+    {
+        if(!downFlag)painter->setPen(QColor(10,10,10));
+        QFont font("FreeSans");
+        font.setBold(true);
+        painter->setFont(font);
+        QStringList textLines=text.split("|");
+        int start_pos=42-7*textLines.count();
+        for(int i=0;i<textLines.count();i++)painter->drawText(7,start_pos+TEXT_STEP*i,textLines[i]);
+    };
+    
+};
+bool MainButton::loadIcon(QString iconFile)
+{
+    icon=true;
+    return buttonIcon.load(iconFile);
+};
+void MainButton::mousePressEvent ( QMouseEvent * event )
+{Q_UNUSED(event);
+	Q_UNUSED(event);
+	qWarning("MousePress");
+	emit pressed();
+    if(checkable)checked=!checked;
+    downFlag=true;
+	repaint();
+};
+void MainButton::mouseReleaseEvent ( QMouseEvent * event )
+{Q_UNUSED(event);
+	if(checkable){if(!checked)downFlag=false;}else downFlag=false;
+	if(mouseOver)emit clicked();
+	repaint();
+};
+
+
+void MainButton::enterEvent ( QEvent * event )
+{Q_UNUSED(event);
+    if(!mouseOver){mouseOver=true;repaint();};
+    
+    qWarning("mouseOnWidget");
+};
+void MainButton::leaveEvent ( QEvent * event )
+{Q_UNUSED(event);
+    if(mouseOver){mouseOver=false;repaint();qWarning("mouseOffWidget");};
+};
+
+
+
+
+
+

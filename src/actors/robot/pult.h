@@ -14,9 +14,9 @@
 **
 ****************************************************************************/
 #include <QWidget>
-
+#ifndef ROBOT_PULT_H
+#define ROBOT_PULT_H
 #include "ui_pult.h"
-#include "turtle.h"
 #include "widgets/pultlogger.h"
 #include <QtCore>
 #if QT_VERSION >= 0x050000
@@ -33,45 +33,12 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define TEXTT 5
-
-
-
-class OvenTimer : public QWidget
-{
-    Q_OBJECT
-
-public:
-    OvenTimer(QWidget *parent = 0);
-
-    void setDuration(int secs);
-    int duration() const;
-    void draw(QPainter *painter);
-
-signals:
-    void angChange(int value);
-
-public slots:
-    void setValue(int value);
-protected:
-    void paintEvent(QPaintEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent ( QMouseEvent * event ); 
-    void mouseReleaseEvent ( QMouseEvent * event );
-private:
-    //  QDateTime finishTime;
-    //  QTimer *updateTimer;
-    //  QTimer *finishTimer;
-    bool mouseFlag;
-    QPointF old_mouse_pos;
-    int gradValue; 
-    int oldValue;
-};
+#define TEXT 5
 
 
 
 
-class TurtlePult : public QWidget, public Ui::TurtlePult 
+class RoboPult : public QWidget, public Ui::RoboPult
 {
 	Q_OBJECT
 public:
@@ -80,27 +47,19 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-    TurtlePult (QDir resDir=QDir(), QWidget* parent = 0, Qt::WindowFlags fl = 0 );
+	RoboPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
 	/**
 		 * Деструктор
 		 */
-	inline ~TurtlePult(){};
+	//~RoboPult(){};
     
     bool Link(){return link;};
     pultLogger * Logger;
 	pultLogger * pltLogger(){return Logger;};
-	turtle* turtleObj; 
-	bool libMode;
-	//KNPServer* form_kumir;
-
-	void AutoClose(){autoClose=true;};
 	public
 			slots:
 			void noLink();
 	void LinkOK();
-
-	void newClient(QString);
-	void clientDisconnect();
 
 	void Up();
 	void Down();
@@ -112,16 +71,17 @@ public:
 	void TempS();
 	void RadS();
 
-	void resetTurtle();
-	void showMessage(QString message){label->setText(message);};
-	void logToKumir();
+
+	void CenterButton();
+
 signals:
 	void goUp();
 	void goDown();
 	void goLeft();
 	void goRight();
 
-
+	void hasUpWall();
+	void hasDownWall();
 	void hasLeftWall();
 	void hasRightWall();
 
@@ -133,22 +93,17 @@ signals:
 	void Color();
 
 	void Clean();
-
+	void Colored();
 
 	void Rad();
 	void Temp();
-	void logToK();
 	void PultCmd(QString text);
-	void sendText(QString);
-protected:
-	virtual void closeEvent ( QCloseEvent * event );
-    void paintEvent(QPaintEvent *event);
+
 private:
-    bool link;
-    bool autoClose;
+	bool link;
+	void paintEvent(QPaintEvent *);
     linkLight * greenLight;
-    MainButton* buttFwd,*buttBack,*turnLeft,*turnRight;
-    MainButton* askStena,*askFree,*buttRad,*buttTemp;
-    OvenTimer * GradInput;
-   
+	MainButton* buttUp,*buttDown,*buttLeft,*buttRight;
+	MainButton* askStena,*askFree,*buttRad,*buttTemp;
 };
+#endif
