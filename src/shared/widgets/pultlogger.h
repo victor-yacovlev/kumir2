@@ -18,17 +18,7 @@
 #else
 #include <QtGui>
 #endif
-#define SCROLL_STEP 10
-#define RESP_PANEL 50
-#define LOGGER_BUTTONS 140
-#define TEXT_STEP 14
 
-#define UP 1
-#define DOWN 2
-#define LEFT 3
-#define RIGHT 4
-#define TEXTT 5
-#define TEXT 5
 #ifdef WIDGETS_LIBRARY
 #define WIDGETS_EXPORT Q_DECL_EXPORT
 #else
@@ -72,35 +62,14 @@ private:
 class logLine
 {
 public:
-	inline logLine(QString KumCommand,
+    logLine(QString KumCommand,
 				   QString LogCommand,
 				   QString React,QFrame* frame,QFrame* respFrame,uint pos)
-	{
-		kumCommand=KumCommand;
-		logCommand=LogCommand;
-		react=React;
-		textLabel=new QLabel(frame);
-		textLabel->setText(logCommand);
-		textLabel->move(4,pos);
-		textLabel->resize(120,20);
-		textLabel->show();
-        
-		respLabel=new QLabel(respFrame);
-		respLabel->setText(React);
-		respLabel->move(4,pos);
-		respLabel->resize(RESP_PANEL,20);
-		respLabel->show();
-	}
-	inline void moveUp()
-	{
-        textLabel->move(textLabel->x(),textLabel->y()-SCROLL_STEP);
-        respLabel->move(respLabel->x(),respLabel->y()-SCROLL_STEP);
-	}
-	inline void moveDown()
-	{
-        textLabel->move(textLabel->x(),textLabel->y()+SCROLL_STEP);
-        respLabel->move(respLabel->x(),respLabel->y()+SCROLL_STEP);
-	}
+    ;
+    void moveUp();
+
+    void moveDown();
+
 	inline int pos()
 	{
 		return textLabel->y();
@@ -145,12 +114,8 @@ public:
         //upButton->show();
         //show();
 	}
-	inline void appendText(QString kumCommand,QString text,QString replay)
-    {
-        while(pos>H-68)downBtnPressed();
-        lines.append(logLine(kumCommand,text,replay,dummyFrame,respFrame,pos));
-        pos=pos+TEXT_STEP;
-    }
+    void appendText(QString kumCommand,QString text,QString replay);
+
 	QString log()
 	{
 		QString toret;
@@ -219,7 +184,7 @@ public:
 		 */
 	~MainButton(){};
 	void setDirection(int d){direction=d;};
-	void setText(QString t){text=t;direction=TEXT;};
+    void setText(QString t);
 	bool isChecked(){return checked;};
 	void setCheckable(bool flag){Q_UNUSED(flag);checkable=true;};
 	void setChecked(bool flag)
