@@ -153,10 +153,13 @@ void Side::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
     int w = size.isValid() ? size.width() : component->minimumSizeHint().width();
     int diff = w - szs[index];
     if (diff <= 0)
-        return;
+        return;       
 
     // 1. Try to decrease width of auto-resizable component
     int resizableIndex = autoResizable_.indexOf(true);
+    int widgetsCount = count();
+    if (resizableIndex >= widgetsCount)
+        return;
     if (resizableIndex != -1 && resizableIndex != index) {
         int minW = widget(resizableIndex)->minimumSizeHint().width();
         int curW = szs[resizableIndex];
