@@ -207,133 +207,133 @@ void linkLight::paintEvent ( QPaintEvent * event )
 
 
 
-MainButton::MainButton ( QWidget* parent) :
-		QWidget(parent)
-{
-	direction=UP;
-	posX=1;
-	posY=1;
-	buttonImageUp.load(":/icons/71_71grMet.png");
-	buttonImageDown.load(":/icons/71_71grMet_d.png");
-	downFlag=false;
-	Parent=parent;
-	int mid=buttonImageUp.width()/2;
-	Q_UNUSED(mid);
-	// upArrow.append(QLine(mid,30,mid-15,40));
-	// upArrow.append(QLine(mid,30,mid+15,40));
-	// downArrow.append(QLine(mid,40,mid-15,30));
-	// downArrow.append(QLine(mid,40,mid+15,30));
-	// leftArrow.append(QLine(30,mid,40,mid-15));
-	// leftArrow.append(QLine(30,mid,40,mid+15));
-	// rightArrow.append(QLine(40,mid,30,mid-15));
-	// rightArrow.append(QLine(40,mid,30,mid+15));
-	text="";
-	checked=false;
-	checkable=false;
-	mouseOver=false;
-	icon=false;
-	resize(71,71);
-};
-
-void MainButton::paintEvent ( QPaintEvent * event )
-{
-    Q_UNUSED(event);
-    QPainter painter(this);
-    painter.setRenderHint (QPainter::Antialiasing,true );
-    if(!downFlag)
-    {
-		painter.drawImage(QPoint(posX,posY),buttonImageUp);
-		if(icon)painter.drawImage(1,1,buttonIcon);
-		QPen blackPen(QColor(40,40,40));
-		blackPen.setWidth(3);
-		painter.setPen(blackPen);
-		drawAddons(&painter);
-		if(mouseOver)
-		{
-			QLinearGradient grad( 1, 1, 5, 65);
-			grad.setColorAt(0.7,QColor(200,190,222));
-			grad.setColorAt(0.3,QColor(191,208,208));
-
-			QBrush solidBrush(grad);
-			painter.setBrush(solidBrush);
-			painter.setOpacity(0.1);
-			painter.drawRect(3,3,100,40);
-		};
-		
-	}
-	else 	{
-		painter.drawImage(QPoint(posX,posY),buttonImageDown);
-		if(icon){
-			//buttonIcon.invertPixels();
-			painter.drawImage(3,3,buttonIcon);
-			//buttonIcon.invertPixels();
-		};
-		QPen whitePen(QColor(170,170,170));
-		whitePen.setWidth(3);
-		painter.setPen(whitePen);
-		//drawAddons(&painter);
-		
-	};
-};
-
-void MainButton::drawAddons(QPainter* painter)
-{
-	if(direction==UP)painter->drawLines(upArrow);
-	if(direction==DOWN)painter->drawLines(downArrow);
-	if(direction==LEFT)painter->drawLines(leftArrow);
-	if(direction==RIGHT)painter->drawLines(rightArrow);
-    if(direction==TEXTT)
-	{
-		if(!downFlag)painter->setPen(QColor(10,10,10));
-		QFont font("FreeSans");
-		font.setBold(true);
-		painter->setFont(font);
-		QStringList textLines=text.split("|");
-		int start_pos=42-7*textLines.count();
-		for(int i=0;i<textLines.count();i++)painter->drawText(7,start_pos+TEXT_STEP*i,textLines[i]);
-	}
-
-}
-
-bool MainButton::loadIcon(QString iconFile)
-{
-	icon=true;
-	return buttonIcon.load(iconFile);
-}
-
-void MainButton::mousePressEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	qWarning("MousePress");
-	emit pressed();
-	if(checkable)checked=!checked;
-	downFlag=true;
-	repaint();
-}
-
-void MainButton::mouseReleaseEvent ( QMouseEvent * event )
-{
-	Q_UNUSED(event);
-	if(checkable){if(!checked)downFlag=false;}else downFlag=false;
-	if(mouseOver)emit clicked();
-	repaint();
-}
-
-
-void MainButton::enterEvent ( QEvent * event )
-{
-    Q_UNUSED(event);
-    if(!mouseOver){mouseOver=true;repaint();};
-
-
-}
-void MainButton::leaveEvent ( QEvent * event )
-{
-    Q_UNUSED(event);
-    if(mouseOver){mouseOver=false;repaint();};
-}
-
-
+//    MainButton::MainButton ( QWidget* parent) :
+//            QWidget(parent)
+//    {
+//        direction=UP;
+//        posX=1;
+//        posY=1;
+//        buttonImageUp.load(":/icons/71_71grMet.png");
+//        buttonImageDown.load(":/icons/71_71grMet_d.png");
+//        downFlag=false;
+//        Parent=parent;
+//        int mid=buttonImageUp.width()/2;
+//        Q_UNUSED(mid);
+//        // upArrow.append(QLine(mid,30,mid-15,40));
+//        // upArrow.append(QLine(mid,30,mid+15,40));
+//        // downArrow.append(QLine(mid,40,mid-15,30));
+//        // downArrow.append(QLine(mid,40,mid+15,30));
+//        // leftArrow.append(QLine(30,mid,40,mid-15));
+//        // leftArrow.append(QLine(30,mid,40,mid+15));
+//        // rightArrow.append(QLine(40,mid,30,mid-15));
+//        // rightArrow.append(QLine(40,mid,30,mid+15));
+//        text="";
+//        checked=false;
+//        checkable=false;
+//        mouseOver=false;
+//        icon=false;
+//        resize(71,71);
+//    };
+//
+//    void MainButton::paintEvent ( QPaintEvent * event )
+//    {
+//        Q_UNUSED(event);
+//        QPainter painter(this);
+//        painter.setRenderHint (QPainter::Antialiasing,true );
+//        if(!downFlag)
+//        {
+//            painter.drawImage(QPoint(posX,posY),buttonImageUp);
+//            if(icon)painter.drawImage(1,1,buttonIcon);
+//            QPen blackPen(QColor(40,40,40));
+//            blackPen.setWidth(3);
+//            painter.setPen(blackPen);
+//            drawAddons(&painter);
+//            if(mouseOver)
+//            {
+//                QLinearGradient grad( 1, 1, 5, 65);
+//                grad.setColorAt(0.7,QColor(200,190,222));
+//                grad.setColorAt(0.3,QColor(191,208,208));
+//
+//                QBrush solidBrush(grad);
+//                painter.setBrush(solidBrush);
+//                painter.setOpacity(0.1);
+//                painter.drawRect(3,3,100,40);
+//            };
+//            
+//        }
+//        else 	{
+//            painter.drawImage(QPoint(posX,posY),buttonImageDown);
+//            if(icon){
+//                //buttonIcon.invertPixels();
+//                painter.drawImage(3,3,buttonIcon);
+//                //buttonIcon.invertPixels();
+//            };
+//            QPen whitePen(QColor(170,170,170));
+//            whitePen.setWidth(3);
+//            painter.setPen(whitePen);
+//            //drawAddons(&painter);
+//            
+//        };
+//    };
+//
+//    void MainButton::drawAddons(QPainter* painter)
+//    {
+//        if(direction==UP)painter->drawLines(upArrow);
+//        if(direction==DOWN)painter->drawLines(downArrow);
+//        if(direction==LEFT)painter->drawLines(leftArrow);
+//        if(direction==RIGHT)painter->drawLines(rightArrow);
+//        if(direction==TEXTT)
+//        {
+//            if(!downFlag)painter->setPen(QColor(10,10,10));
+//            QFont font("FreeSans");
+//            font.setBold(true);
+//            painter->setFont(font);
+//            QStringList textLines=text.split("|");
+//            int start_pos=42-7*textLines.count();
+//            for(int i=0;i<textLines.count();i++)painter->drawText(7,start_pos+TEXT_STEP*i,textLines[i]);
+//        }
+//
+//    }
+//
+//    bool MainButton::loadIcon(QString iconFile)
+//    {
+//        icon=true;
+//        return buttonIcon.load(iconFile);
+//    }
+//
+//    void MainButton::mousePressEvent ( QMouseEvent * event )
+//    {
+//        Q_UNUSED(event);
+//        qWarning("MousePress");
+//        emit pressed();
+//        if(checkable)checked=!checked;
+//        downFlag=true;
+//        repaint();
+//    }
+//
+//    void MainButton::mouseReleaseEvent ( QMouseEvent * event )
+//    {
+//        Q_UNUSED(event);
+//        if(checkable){if(!checked)downFlag=false;}else downFlag=false;
+//        if(mouseOver)emit clicked();
+//        repaint();
+//    }
+//
+//
+//    void MainButton::enterEvent ( QEvent * event )
+//    {
+//        Q_UNUSED(event);
+//        if(!mouseOver){mouseOver=true;repaint();};
+//
+//
+//    }
+//    void MainButton::leaveEvent ( QEvent * event )
+//    {
+//        Q_UNUSED(event);
+//        if(mouseOver){mouseOver=false;repaint();};
+//    }
+//
+//
 
 
 TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
@@ -356,39 +356,43 @@ TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
 	greenLight->resize(12,104);
 
 	UpB->hide();
-	buttFwd=new MainButton(this);
+	buttFwd=new MainButton(resdir,this);
 	buttFwd->move(UpB->pos());
 	buttFwd->setGeometry(UpB->geometry());
+    buttFwd->setText("  ");
 	buttFwd->loadIcon(resdir.absoluteFilePath("vpered.png"));
 
 	DownB->hide();
-	buttBack=new MainButton(this);
+	buttBack=new MainButton(resdir,this);
 	buttBack->move(DownB->pos());
 	buttBack->setGeometry(DownB->geometry());
+    buttBack->setText("  ");
 	buttBack->loadIcon(resdir.absoluteFilePath("nazad.png"));
 
 	LeftB->hide();
-	turnLeft=new MainButton(this);
+	turnLeft=new MainButton(resdir,this);
 	turnLeft->move(LeftB->pos());
 	turnLeft->setGeometry(RightB->geometry());
+    turnLeft->setText("  ");
 	turnLeft->loadIcon(resdir.absoluteFilePath("vlevo.png"));
 
 	RightB->hide();
-	turnRight=new MainButton(this);
+	turnRight=new MainButton(resdir,this);
 	turnRight->move(RightB->pos());
 	turnRight->setGeometry(LeftB->geometry());
 	turnRight->loadIcon(resdir.absoluteFilePath("vpravo.png"));
+    turnRight->setText("  ");
 
 	//        StenaB->hide();
-	askStena=new MainButton(this);
+	askStena=new MainButton(resdir,this);
 	//        askStena->move(StenaB->pos());
 	askStena->setCheckable(true);
-	askStena->setText(trUtf8("  "));
+	askStena->setText("  ");
 	askStena->loadIcon(resdir.absoluteFilePath("stena.png"));
 	askStena->setCheckable(true);
 	askStena->hide();
 	//        SvobodnoB->hide();
-	askFree=new MainButton(this);
+	askFree=new MainButton(resdir,this);
 	//        askFree->move(SvobodnoB->pos());
 	askFree->setCheckable(true);
 	askFree->setText(trUtf8(" "));
@@ -397,13 +401,14 @@ TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
 	askFree->hide();
 
 	RadB->hide();
-	buttRad=new MainButton(this);
+	buttRad=new MainButton(resdir,this);
 	buttRad->setGeometry(RadB->geometry());
-
 	buttRad->setText(trUtf8(" "));
 	if(!buttRad->loadIcon(resdir.absoluteFilePath("tailup.png")))qWarning("Image not loaded!");
 	TempB->hide();
-	buttTemp=new MainButton(this);
+  
+	buttTemp=new MainButton(resdir,this);
+    buttTemp->setText("  ");
 	buttTemp->setGeometry(TempB->geometry());
     
 	buttTemp->setText(" ");

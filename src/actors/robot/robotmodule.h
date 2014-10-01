@@ -14,7 +14,7 @@ You should change it corresponding to functionality.
 
 #include "extensionsystem/kplugin.h"
 #include "robotmodulebase.h"
-
+#include "pult.h"
 
 namespace ActorRobot {
 
@@ -530,7 +530,8 @@ namespace ActorRobot {
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
         QWidget* m_mainWidget;
-        class QDeclarativeView * m_pultWidget;
+       // class QDeclarativeView * m_pultWidget;
+        RoboPult* m_pultWidget;
         RoboField* field;
         RoboField * startField;
         bool animation;

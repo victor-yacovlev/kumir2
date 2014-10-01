@@ -23,12 +23,17 @@ include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     robotmodule.cpp
+    pult.cpp
 )
 
 set(MOC_HEADERS
     robotmodule.h
+    pult.h
 )
 
+set(FORMS
+    pult.ui
+    )
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorRobot.pluginspec
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot.json
@@ -63,13 +68,15 @@ set(MOC_SOURCES2
 
 if(${USE_QT} GREATER 4)
     qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt5_wrap_ui(UI_SOURCES ${FORMS})
 else()
     qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt4_wrap_ui(UI_SOURCES ${FORMS})
 endif()
 
 install(FILES ${PLUGIN_OUTPUT_PATH}/ActorRobot.pluginspec DESTINATION ${PLUGINS_DIR})
 handleTranslation(ActorRobot)
-add_library(ActorRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2})
+add_library(ActorRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2} ${UI_SOURCES})
 target_link_libraries(ActorRobot ${QT_LIBRARIES} ExtensionSystem Widgets ${STDCXX_LIB} ${STDMATH_LIB})
 copyResources(actors/robot)
 install(TARGETS ActorRobot DESTINATION ${PLUGINS_DIR})
