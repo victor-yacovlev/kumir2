@@ -7,14 +7,14 @@ endif(NOT DEFINED USE_QT)
 
 if(${USE_QT} GREATER 4)
     # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets Declarative REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Declarative_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Declarative_LIBRARIES})
+    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
     set(MOC_PARAMS "-I/usr/include/qt5/QtCore" "-I${_qt5Core_install_prefix}/include/QtCore")
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg QtDeclarative REQUIRED)
+    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
     include(${QT_USE_FILE})
 endif()
 
