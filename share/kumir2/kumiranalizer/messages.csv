@@ -343,4 +343,5 @@
 "Wrong hex constant";"Плохая 16-ричная константа";"";"";"";"";
 "Wrong real number";"Ошибка в записи числа";"";"";"";"";
 "Wrong table constant";"";"";"";"";"";
+"[ instead of {";"[ вместо {";"";"";"";"";
 "kumir2-bc crashed while compiling this module";"Компилятор сломался при попытки сборки этого испонителя";"";"";"";"";
