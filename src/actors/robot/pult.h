@@ -47,7 +47,7 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-	RoboPult ( QWidget* parent = 0, Qt::WFlags fl = 0 );
+    RoboPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
 	/**
 		 * Деструктор
 		 */
