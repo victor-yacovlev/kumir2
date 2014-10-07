@@ -1,5 +1,9 @@
 #include "pyutils.h"
 
+#ifdef PYTHON_SCRIPT_DEBUG
+#include <QMessageBox>
+#endif
+
 namespace Python3Language {
 
 extern QString PyUnicodeToQString(PyObject * unicode)
@@ -9,6 +13,15 @@ extern QString PyUnicodeToQString(PyObject * unicode)
     QString result = QString::fromWCharArray(buffer);
     PyMem_Free(buffer);
     return result;
+}
+
+extern QString PyObjectToQString(PyObject * o)
+{
+    PyObject* repr = PyObject_Repr(o);
+    if (!repr) {
+        repr = PyObject_Str(o);
+    }
+    return repr? PyUnicodeToQString(repr) : QString();
 }
 
 extern PyObject* QStringToPyUnicode(const QString & qstring)
@@ -29,8 +42,22 @@ extern void printPythonTraceback()
     QString qvalue = PyUnicodeToQString(pvalueRepr);
     QString qtraceback = PyUnicodeToQString(ptracebackRepr);
 
-    qDebug() << qvalue;
-    qDebug() << qtraceback;
+#ifdef PYTHON_SCRIPT_DEBUG
+    QString message = QString("Error: %1\nTraceback:\n%2").arg(qvalue).arg(qtraceback);
+    QMessageBox::warning(0, "Python error", message);
+#else
+    qWarning() << qvalue;
+    qWarning() << qtraceback;
+#endif
+}
+
+extern void printError(const QString & message)
+{
+#ifdef PYTHON_SCRIPT_DEBUG
+    QMessageBox::warning(0, "Python error", message);
+#else
+    qWarning(); << message;
+#endif
 }
 
 QMap<QString,QVariant> PyDictToPropertyMap(PyObject *object)

@@ -9,8 +9,11 @@ extern "C" {
 namespace Python3Language {
 
 extern void printPythonTraceback();
+extern void printError(const QString & message);
+
 
 extern QString PyUnicodeToQString(PyObject * unicode);
+extern QString PyObjectToQString(PyObject * o);
 extern PyObject* QStringToPyUnicode(const QString & qstring);
 
 extern QVariantList PyListToQVariantList(PyObject * list);
