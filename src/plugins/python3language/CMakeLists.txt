@@ -53,7 +53,6 @@ set(MOC_HEADERS
     actorshandler.h
     pyfilehandler.h
     variablesmodel.h
-    pyutils.h
 )
 
 if(${USE_QT} GREATER 4)
