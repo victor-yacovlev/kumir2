@@ -146,9 +146,6 @@ else()
 endif(WIN32)
 
 file(MAKE_DIRECTORY ${SHARE_PATH}/llvmcodegenerator)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.h DESTINATION ${SHARE_PATH}/llvmcodegenerator)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/kumtypes.h DESTINATION ${SHARE_PATH}/llvmcodegenerator)
 
 install(TARGETS LLVMCodeGenerator DESTINATION ${PLUGINS_DIR})
-
-
+install(FILES ${SHARE_PATH}/llvmcodegenerator/stdlib.bc DESTINATION ${RESOURCES_DIR}/llvmcodegenerator)

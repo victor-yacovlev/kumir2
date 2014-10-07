@@ -104,7 +104,10 @@ if(APPLE)
 endif(APPLE)
 
 add_subdirectory(kumir2-bc)
-add_subdirectory(kumir2-xrun)
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-xrun")
+    add_subdirectory(kumir2-xrun)
+endif()
 
 # kumir2-llvmc is optional in case if LLVM libraries present
 if(Llvm_FOUND)

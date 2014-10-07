@@ -40,81 +40,9 @@
 
 
 
-class  linkLight : public QWidget
-{
-	Q_OBJECT
-	public:
-		/**
-		 * Конструктор
-		 * @param parent ссыка на объект-владелец
-		 * 
-		 */
-		linkLight ( QWidget* parent =0);
-		/**
-		 * Деструктор
-		 */
-		~linkLight(){};
-		void setLink(bool b){onLine=b;};
-		bool link(){return onLine;};
-        QString text;
-	signals:
-	//void pressed();
-protected:
- void paintEvent ( QPaintEvent * event );
-// void mousePressEvent ( QMouseEvent * event );
- //void mouseReleaseEvent ( QMouseEvent * event );
-private:
-int posX,posY;
-bool onLine;
-};
 
 
-class  MainButton : public QWidget
-{
-	Q_OBJECT
-	public:
-		/**
-		 * Конструктор
-		 * @param parent ссыка на объект-владелец
-		 * 
-		 */
-		MainButton ( QWidget* parent =0);
-		/**
-		 * Деструктор
-		 */
-		~MainButton(){};
-		void setDirection(int d){direction=d;};
-        void setText(QString t){text=t;direction=TEXTT;};
-                bool isChecked(){return checked;};
-		void setCheckable(bool flag){checkable=true;};
-		void setChecked(bool flag)
-			{
-			checked=flag;
-			downFlag=flag;
-			repaint();
-			};
-		bool loadIcon(QString icon);
-		
-	signals:
-	void pressed();
-	void clicked();
-protected:
- void paintEvent ( QPaintEvent * event );
- void mousePressEvent ( QMouseEvent * event );
- void mouseReleaseEvent ( QMouseEvent * event );
- void enterEvent ( QEvent * event );
- void leaveEvent ( QEvent * event );
-  
-private:
-void drawAddons(QPainter* painter);
-int posX,posY;
-uint direction;
-QImage buttonImageUp,buttonImageDown,buttonIcon;
-bool downFlag,checked,checkable,mouseOver,icon;
-QWidget* Parent;
-QVector<QLine> upArrow,downArrow,leftArrow,rightArrow;
-QString text;
-};
+
 
 
 

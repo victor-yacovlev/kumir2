@@ -5,7 +5,7 @@
                 <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
                 <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
                 ]>
-<article id="Исполнитель Робот">
+<article id="Исполнитель Робот" lang="ru">
 	<title>Исполнитель "Робот"</title>
     <titleabbrev>Робот</titleabbrev>
 	<section id="Введение">
@@ -40,8 +40,7 @@
 		<para>
 			В Кумире есть специальное устройство -- <emphasis role="italic">Окно наблюдения за Роботом</emphasis>
 			 (иногда для краткости будем говорить <emphasis role="italic">Окно Роботa</emphasis>). В этом окне всегда 
-			 видна текущая обстановка Робота, включая положение самого Робота 
-			 .
+			 видна текущая обстановка Робота, включая положение самого Робота.
 		</para>
 	</section>
 	<section id="Управление Роботом из программы">
@@ -57,6 +56,9 @@
 			Таким образом, в каждый момент сеанса работы системы Кумир определены две обстановки Робота -- 
 			<emphasis role="">текущая</emphasis> и <emphasis role="">стартовая</emphasis>.
 			Текущая обстановка в любой момент показывается в окне наблюдения за Роботом.
+		</para>
+		<para>
+			Непосредственное управление Роботом из программы осузествляется с помощью <emphasis role="italic">команд Роботa</emphasis>.
 		</para>
 	</section>
 	<section id="Как установить стартовую обстановку">
@@ -128,7 +130,7 @@
 			</title>
 			<para>
 				Окно наблюдения за Роботом может находится в двух режимах:
-				<orderedlist>
+				<itemizedlist>
 					<listitem>
 						<para>
 							<emphasis role="bold">обычном</emphasis> -- применяется при наблюдении за Роботом во время исполнения программ или 
@@ -140,7 +142,7 @@
 							<emphasis role="bold">редактирования</emphasis> -- применяется при редактировании стартовой обстановки Робота.
 						</para>
 					</listitem>
-				</orderedlist>
+				</itemizedlist>
 			</para>
 		</section>
 		<section id="Что входит в описание обстановки Робота">
@@ -180,25 +182,23 @@
 						<listitem>
 							<para>
 								температура (измеряется в градусах Цельсия, может принимать любое целое 
-								значение от 0 до 171).
+								значение от -273 до +233).
 							</para>
 						</listitem>
 					</itemizedlist>
 				</listitem>
 			</orderedlist>
-			
-				<para> 
+			<para> 
 				<emphasis role="italic">Примечание.</emphasis> Нижняя возможная температура -- это (приблизительно) абсолютный 
 				ноль (0 градусов по шкале Кельвина). Верхняя температура -- это температура, при которой горят книги (451 градус по Фаренгейту).
-				</para>
-			
+			</para>
 			<para>
 				Система команд Робота позволяет ему определить значения всех этих характеристик клетки (см. ниже).
 			</para>
 			<para>
 				Кроме того, в клетке могут быть пометки, видимые наблюдателю, но не доступные «органам чувств» Робота:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						символы в левом верхнем и левом нижнем углах,
@@ -209,7 +209,7 @@
 						точка в правом нижнем углу.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 			<para>
 				Частью описания обстановки является и положение Робота. Как и для чтения пометок,
 				у Робота нет средств, чтобы определить свои координаты.
@@ -254,7 +254,7 @@
 					Если команда перемещения выдает отказ, то текущая обстановка не изменяется, а на экране (если он виден) соответствующий угол Робота закрашивается красным. 
 					Красный цвет снимается:
 				</para>
-				<orderedlist>
+				<itemizedlist>
 					<listitem>
 						<para>
 							при выполнении команды <code role="кумир">использовать Робот</code>,
@@ -265,7 +265,7 @@
 							при принудительном помещении Робота в стартовую обстановку (см. ниже).
 						</para>
 					</listitem>
-				</orderedlist>
+				</itemizedlist>
 				<para>
 					Команды проверок и измерения радиации и температуры на текущую обстановку не влияют.
 				</para>
@@ -273,7 +273,7 @@
 					Кроме того, в двух случаях происходит принудительное помещение Робота в стартовую
 					обстановку (текущая обстановка становится равной стартовой). Это происходит:
 				</para>
-				<orderedlist>
+				<itemizedlist>
 					<listitem>
 						<para>
 							при запуске Кумир-программы, которая использует Робот (окно наблюдения при
@@ -285,8 +285,429 @@
 							при изменении имени файла стартовой обстановки Робота (в этой ситуации невидимое окно остается невидимым).
 						</para>
 					</listitem>
-				</orderedlist>
+				</itemizedlist>
 			</section>
+	</section>
+	<section id="Команды управления Роботом из программы">
+		<title>Команды управления Роботом из программы
+		</title>
+		<section>
+			<title>Общие сведения
+			</title>
+			<para>
+				Кумир-программа, управляющая Роботом, должна начинаться со строки <code role="кумир">использовать  Робот</code> (подробнее -- см. 
+				описание языка Кумир). При выполнении этой строки Кумир помещает Робота в <emphasis role="">стартовую обстановку</emphasis>.
+			</para>
+			<para>
+				Система команд исполнителя «Робот» включает:
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>
+						5 команд, вызывающих действия Робота (<code role="кумир">влево</code>, <code role="кумир">вправо</code>, 
+						<code role="кумир">вверх</code>, <code role="кумир">вниз</code>, <code role="кумир">закрасить</code>);
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						10 команд проверки условий:
+					</para>
+					<itemizedlist>
+						<listitem>
+							<para>
+								8 команд вида [<code role="кумир">слева</code>/ <code role="кумир">справа</code>/ 
+								<code role="кумир">сверху</code>/ <code role="кумир">снизу</code>] [<code role="кумир">стена</code>/ 
+								<code role="кумир">свободно</code>],
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								2 команды вида <code role="кумир">клетка</code> [<code role="кумир">закрашена</code>/ 
+								<code role="кумир">чистая</code>];
+							</para>
+						</listitem>
+					</itemizedlist>
+				</listitem>
+				<listitem>
+					<para>
+						2 команды измерения (<code role="кумир">температура</code>, <code role="кумир">радиация</code>).
+					</para>
+				</listitem>
+			</itemizedlist>
+			<para>
+				Командам <code role="кумир">влево</code>, <code role="кумир">вправо</code>, 
+				<code role="кумир">вверх</code>, <code role="кумир">вниз</code>, <code role="кумир">закрасить</code> соответствуют 
+				алгоритмы-процедуры языка КуМир. Остальным командам соответствуют алгоритмы-функции, тип этих функций указан ниже.
+			</para>
+		</section>
+		<section id="Команды-действия">
+			<title>Команды-действия
+			</title>
+
+            <section>
+                <title>влево</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <function>влево</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>go_left</function>()</funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Перемещает Робота на одну клетку влево. Если слева стена, выдает отказ.</para>
+            </section>
+
+            <section>
+                <title>вправо</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <function>вправо</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>go_right</function>()</funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Перемещает Робота на одну клетку вправо. Если справа стена, выдает отказ.</para>
+            </section>
+
+            <section>
+                <title>вверх</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <function>вверх</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>go_up</function>()</funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Перемещает Робота на одну клетку вверх. Если сверху стена, выдает отказ.</para>
+            </section>
+
+            <section>
+                <title>вниз</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <function>вниз</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>go_down</function>()</funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Перемещает Робота на одну клетку вниз. Если снизу стена, выдает отказ.</para>
+            </section>
+
+            <section>
+                <title>закрасить</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <function>закрасить</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>do_paint</function>()</funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Делает клетку, в которой находится робот, закрашенной.</para>
+            </section>
+
+
+			<para>
+				Ниже приведён пример использования команд-действий Роботa.
+			</para>
+			<example>
+				<title>Использование команд-действий Роботa</title>
+				<programlisting role="кумир">
+					<![CDATA[
+использовать Робот
+
+алг
+нач
+  вправо
+  вниз
+  влево
+  вверх
+  закрасить
+кон]]>
+				</programlisting>
+                <programlisting role="python">
+                    <![CDATA[
+import robot
+
+robot.go_right()
+robot.go_down()
+robot.go_left()
+robot.go_up()
+robot.do_paint()
+]]>
+                </programlisting>
+			</example>
+		</section>
+
+		<section id="Команды-проверки">
+			<title>Команды-проверки
+			</title>
+
+            <section>
+                <title>слева свободно</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>слева свободно</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_free_at_left</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если Pобот может перейти влево, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>справа свободно</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>справа свободно</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_free_at_right</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если Pобот может перейти вправо, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>сверху свободно</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>сверху свободно</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_free_at_top</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если Pобот может перейти вверх, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>снизу свободно</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>снизу свободно</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_free_at_bottom</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если Pобот может перейти вниз, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>слева стена</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>слева стена</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_wall_at_left</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если слева от Pобота находится стена, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>справа стена</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>справа стена</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_wall_at_right</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если справа от Pобота находится стена, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>сверху стена</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>сверху стена</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_wall_at_top</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если сверху от Pобота находится стена, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>снизу стена</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>снизу стена</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_wall_at_bottom</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если снизу от Pобота находится стена, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>клетка закрашена</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>клетка закрашена</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_color</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">да</code><code role="python">True</code>,
+                    если клетка закрашена, иначе --
+                    <code role="кумир">нет</code><code role="python">False</code>.
+                </para>
+            </section>
+
+            <section>
+                <title>клетка чистая</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type> <function>клетка чистая</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>is_clear</function>() -> <type>bool</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает <code role="кумир">нет</code><code role="python">False</code>,
+                    если клетка закрашена, иначе --
+                    <code role="кумир">да</code><code role="python">True</code>.
+                </para>
+            </section>
+		</section>
+		<section id="Команды-измерения">
+			<title>Команды-измерения
+			</title>
+
+            <section>
+                <title>радиация</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>вещ</type> <function>радиация</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>radiation</function>() -> <type>float</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает значение радиации в клетке, где находится Pобот.
+                </para>
+            </section>
+
+            <section>
+                <title>температура</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Робот</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>вещ</type> <function>температура</function></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <funcsynopsis role="python">
+                    <funcsynopsisinfo><package>Robot</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>def <function>temperature</function>() -> <type>float</type></funcdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>Возвращает значение температуры в клетке, где находится Pобот.
+                </para>
+            </section>
+
+
+		</section>
 	</section>
 	<section id="Стартовая обстановка, ее изменение и связь с текущей обстановкой">
 		<title>Стартовая обстановка, ее изменение и связь с текущей обстановкой
@@ -330,7 +751,7 @@
 			<para>
 				Школьник может изменить файл стартовой обстановки (ФСО) двумя способами:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>	
 						с помощью команды «Загрузить обстановку» меню Робота,
@@ -341,7 +762,7 @@
 						с помощью редактора стартовых обстановок.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 			<para>
 				Состояние окна наблюдения (видимо/скрыто) при этих действиях не меняется.
 			</para>
@@ -411,7 +832,7 @@
 				размера 10&times;16 с Роботом в левом верхнем углу. Максимально допустимый размер обстановки составляет 128&times;255.
 				Слово «пустая» означает:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						в обстановке нет стен (кроме проходящего по периметру забора),
@@ -427,7 +848,7 @@
 						во всех клетках радиация и температура установлены в 0.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
 	</section>
 	<section id="Редактирование стартовой обстановки">
@@ -439,7 +860,7 @@
 			<para>
 				Редактор стартовых обстановок можно использовать:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						для подготовки новых обстановок,
@@ -450,13 +871,13 @@
 						при отладке Кумир-программ для оперативного внесения небольших изменений в стартовую обстановку.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 			<para>
 				Запуск редактирования производится с помощью команды "Редактировать обстановку" меню Роботa. По этой команде 
 				окно наблюдения переходит в специальный режим -- <emphasis role="italic">режим редактирования стартовой обстановки</emphasis> (для 
 				краткости -- <emphasis role="italic">режим редактирования</emphasis>). Завершить редактирование обстановки можно двумя способами:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						снять галочку с пункта <emphasis role="italic">Редактирование</emphasis>меню Робота,
@@ -468,7 +889,7 @@
 						в обычный режим.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 			<para>
 				В обоих случаях результаты редактирования сохранятся и стартовая обстановка Робота изменится.
 			</para>
@@ -476,7 +897,7 @@
 				Свойства окна наблюдения в режиме редактирования аналогичны свойствам окна наблюдения за Роботом. 
 				Основных отличий -- два:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						фон рабочего поля — синий,
@@ -488,7 +909,7 @@
 						обстановки.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
 		<section id="Главное меню окна наблюдения в режиме редактирования">
 			<title>Главное меню окна наблюдения в режиме редактирования
@@ -499,7 +920,7 @@
 			<para>
 				Опишем кратко назначение кнопок редактирования обстановки по порядку слева направо.
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						<emphasis role="bold">Кнопка редактирования меток клетки.</emphasis> При нажати на эту кнопку в каждой клетке
@@ -521,11 +942,11 @@
 					<para>
 						<emphasis role="bold">Кнопка редактирования уровня температуры.</emphasis> Механизм редактирования температуры в 
 						клетке поностью аналогичен механизму редактирования уровня радиации. Значение по умолчанию в поле редактирования
-						температуры равно 77. Температура в клетке может колебаться от <code role="кумир">0</code> до 
-						<code role="кумир">171</code>.
+						температуры равно 77. Температура в клетке может колебаться от <code role="кумир">-273</code> до 
+						<code role="кумир">233</code>.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
 		<section id="Непосредственное редактирование обстановки">
 			<title>Непосредственное редактирование обстановки
@@ -534,7 +955,7 @@
 				Основное редактирование обстановок Робота ведется непосредственно. Предусмотрены следующие операции непосредственного 
 				редактирования:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						<emphasis role="bold">поставить/убрать стену </emphasis> -- щелкнуть по границе между клетками,
@@ -561,7 +982,7 @@
 						левом верхнем углу окна наблюдения в режиме редактирования обстановки.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
 		<section id="Операции с файлами обстановок">
 			<title>Операции с файлами обстановок
@@ -598,10 +1019,10 @@
 			<para>
 				Окно Пульта создается при запуске системы Кумир. Свойства окна таковы:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
-						при запуске системы пульт Кумира скрыт,
+						при запуске системы КуМир пульт скрыт,
 					</para>
 				</listitem>
 				<listitem>
@@ -609,13 +1030,17 @@
 						пользователь не может менять размеры окна пульта,
 					</para>
 				</listitem>
-				<listitem>
-					<para>
-						чтобы сделать пульт видимым, нужно воспользоваться командой «Робот-Пульт» меню «Робот» или соответствующей 
-						инструментальной клавишей.
-					</para>
-				</listitem>
-			</orderedlist>
+			</itemizedlist>
+			<para>
+				Чтобы сделать пульт видимым, нужно воспользоваться командой «Робот-Пульт» меню «Робот» или соответствующей 
+				инструментальной клавишей.
+			</para>
+			<para>
+				Связь Пульта с Роботом возможна всегда, кроме тех моментов, когда идет непрерывное
+				выполнение программы, использующей Робот (т. е. программы, которая содержит строку 
+				<code role="кумир">использовать Робот</code>). В частности, не имеет значения, идет редактирование стартовой
+				обстановки или нет. О наличии связи свидетельствуют индикаторы в левом верхнем углу пульта.
+			</para>
 		</section>
 		<section id="Общий вид Пульта">
 			<title>Общий вид Пульта
@@ -623,137 +1048,124 @@
 			<para>
 				На пульте Робота есть:
 			</para>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
-						табло для девяти последних выполненных команд, разделенное на левую часть (собственно команда) и правую часть 
+						лампочки-индикаторы:
+						<itemizedlist>
+							<listitem>
+								<para>
+									зелёная лампочка-индикатор "Связь установлена",
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									красная лампочка-индикатор "Нет связи";
+								</para>
+							</listitem>
+						</itemizedlist>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						табло для семи последних выполненных команд, разделенное на левую часть (собственно команда) и правую часть 
 						(реакция Робота);
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-						справа от табло находятся вспомогательные кнопки: прокрутка табло (две кнопки сверху и снизу), а также кнопки «Сброс табло»
-						(очистка табло) и «Скопировать в буфер обмена» (копирует содержимое табло в буфер обмена);
+						вспомогательные кнопки табло:
+						<itemizedlist>
+							<listitem>
+								<para>
+									«Сброс табло» -- кнопка очистки, находится справа от табло,
+								</para>
+							</listitem>
+							<listitem>
+								<para>
+									«Прокрутка табло» -- две кнопки сверху и снизу;
+								</para>
+							</listitem>
+						</itemizedlist>
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-						центральная кнопочная панель, служащая для выдачи команд Роботу (таких как движение в выбранную сторону или
-						команда «Закрасить клетку»);
+						кнопочная панель из 9 кнопок, служащая для передачи команд Роботу.
 					</para>
 				</listitem>
-				<listitem>
-					<para>
-						нижняя часть пульта, служащая для анализа Роботом окружающей среды.
-					</para>
-				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
-		<section id="Центральная кнопочная панель">
-			<title>Центральная кнопочная панель
+		<section id="Кнопочная панель. Передача команд Роботу">
+			<title>Кнопочная панель. Передача команд Роботу
 			</title>
 			<para>
-				Центральная кнопочная панель состоит из 5 кнопок, которые соответствуют таким командам:
+				На панели есть:
+				<itemizedlist>
+					<listitem>
+						<para>
+							4 кнопки-стрелки (они соответствуют командам передвижения Робота);
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							кнопка «закрасить» (в центре);
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							кнопки «температура» и «радиация» (в левом верхнем и левом нижнем углах);
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							две кнопки-префикса «Стена/Закрашено» и «Свободно/Чисто» (в правом верхнем и левом нижнем углах);
+						</para>
+					</listitem>
+				</itemizedlist>
 			</para>
-			<orderedlist>
-				<listitem>
-					<para>
-						<emphasis role="bold">кнопка в центре панели </emphasis>соответствует команде <code role="кумир">закрасить</code>;
-					</para>
-				</listitem>
-				<listitem>
-					<para>
-						<emphasis role="bold">кнопки по бокам панели</emphasis> соответствуют командам <code role="кумир">влево</code>, 
-						<code role="кумир">вверх</code>, <code role="кумир">вправо</code> и <code role="кумир">вниз</code> в 
-						соответствии с изображёнными на кнопках стрелками.
-					</para>
-				</listitem>
-			</orderedlist>
-		</section>
-		<section id="Нижняя часть пульта">
-			<title>Нижняя часть пульта
-			</title>
 			<para>
-				Нижняя часть пульта Робота состоит из трёх вкладок, содержащих различные кнопки, с помощью которых Робот может оценить окружающую
-				среду. Каждая вкладка содержит по 4 кнопки.
+				Для передачи команды действия (вверх, вниз, вправо, влево, закрасить, радиация, температура) достаточно нажать 
+				соответствующую кнопку.
 			</para>
-			<orderedlist>
-				<listitem>
-					<para>
-						Первая вкладка содержит:
-					</para>
-					<itemizedlist>
-						<listitem>
-							<para>
-								кнопку измерения температуры клетки (соответствует команде <code role="кумир">температура</code>),
-							</para>
-						</listitem>
-						<listitem>
-							<para>
-								кнопку измерения радиации клетки (соответствует команде <code role="кумир">радиация</code>),
-							</para>
-						</listitem>
-						<listitem>
-							<para>
-								две кнопки, соответствующие командам <code role="кумир">клетка закрашена</code> и 
-								<code role="кумир">клетка чистая</code>.
-							</para>
-						</listitem>
-					</itemizedlist>
-				</listitem>
-				<listitem>
-					<para>
-						Вторая вкладка содержит кнопки, с помощью которых можно проверить, есть ли на границе клетки 
-						(и если есть, то с какой стороны) стена. 
-						Перечислим команды, соответствующие кнопкам этой вкладки слева направо:
-					</para>
-					<itemizedlist>
-						<listitem><para><code role="кумир">слева стена,</code></para></listitem>
-						<listitem><para><code role="кумир">сверху стена,</code></para></listitem>
-						<listitem><para><code role="кумир">снизу стена,</code></para></listitem>
-						<listitem><para><code role="кумир">справа стена.</code></para></listitem>
-					</itemizedlist>
-				</listitem>
-				<listitem>
-					<para>
-					Третья вкладка содержит кнопки, с помощью которых можно проверить, с какой стороны клетки стены нет 
-					(т.е., свободный проход). Перечислим команды, соответствующие кнопкам этой вкладки слева направо:
-					</para>
-					<itemizedlist>
-						<listitem><para><code role="кумир">слева свободно,</code></para></listitem>
-						<listitem><para><code role="кумир">сверху свободно,</code></para></listitem>
-						<listitem><para><code role="кумир">снизу свободно,</code></para></listitem>
-						<listitem><para><code role="кумир">справа свободно.</code></para></listitem>
-					</itemizedlist>
-				</listitem>
-			</orderedlist>
+			<para>
+				Чтобы передать команду проверки нужно последовательно нажать две кнопки: сначала -- префикс («Стена/Закрашено» 
+				и «Свободно/Чисто»), а потом — основную (закрасить или одну из стрелок).
+			</para>
+			<para><emphasis role="italic">Примеры:</emphasis></para>
+				<orderedlist>
+					<listitem>
+						<para>
+							Чтобы передать Роботу команду проверки «слева свободно?» нужно сначала нажать кнопку-префикс «Свободно/Чисто», 
+							а затем кнопку «влево».
+						</para>
+					</listitem>
+					<listitem>
+						<para>
+							Чтобы передать Роботу команду проверки «клетка закрашена?» нужно сначала нажать кнопку-префикс 
+							«Стена/Закрашено», а затем кнопку «закрасить».
+						</para>
+					</listitem>
+				</orderedlist>
+			<para>
+				После того, как нажата кнопка-префикс, она меняет цвет. Если после кнопки-префикса нажата кнопка, отличная от стрелок и 
+				кнопки «закрасить», то исходная кнопка-префикс просто будет забыта.
+			</para>
 		</section>
 		<section id="Использование табло">
 			<title>Использование табло
 			</title>
 			<para>
-				На табло выводятся все команды, передаваемые Роботу вмести с реакцией Робота на эти команды. В ответ на команды 
-				перемещения в правой части появляется надпись «ОК» или «Отказ».
+				На табло выводятся все команды, передаваемые Роботу вместе с реакцией Робота на эти команды. В ответ на команды 
+				перемещения в правой части появляется надпись «ОК» или «Отказ». Если с Роботом нет связи, на табло 
+				выдается «Нет связи».
 			</para>
-			
-				<para>
-					Если с Роботом нет связи, на табло выдается «Нет связи».
-				</para>
-			
 			<para>
 				Вывод на табло при первом включении Пульта в сеансе работы системы Кумир или после нажатия кнопки «Сброс табло» 
 				начинается с верхней строки. Когда табло заполнилось, начинается прокрутка и вывод идет в последнюю строку табло. 
-				Справа от табло есть две кнопки для прокрутки его содержимого на одну строку вверх/вниз.
+				Выше и ниже табло есть две кнопки для прокрутки его содержимого на одну строку вверх/вниз.
 			</para>
 		</section>
-		
-			<section id="Перехват команд пульта системой Кумир">
-				<title>Перехват команд пульта системой Кумир
-				</title>
-				<para>
-				</para>
-			</section>
-		
 	</section>
 	<section id="Робот и главное меню">
 		<title>Робот и главное меню
@@ -772,7 +1184,7 @@
 		<section id="Команды меню «Робот»">
 			<title>Команды меню «Робот»
 			</title>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						<emphasis role="bold">Загрузть обстановку</emphasis> -- открывает диалог выбора ФСО.
@@ -809,12 +1221,12 @@
 						<emphasis role="bold">Новая обстановка</emphasis> -- открывает окно создания обстановки.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
 		<section id="Команды меню «Окна»">
 			<title>Команды меню «Окна»
 			</title>
-			<orderedlist>
+			<itemizedlist>
 				<listitem>
 					<para>
 						<emphasis role="bold">Робот</emphasis> -- открывает окно наблюдения за исполнителем Робот.
@@ -825,8 +1237,8 @@
 						<emphasis role="bold">Робот - Пульт</emphasis> -- открывает окно пульта исполнителя Робот.
 					</para>
 				</listitem>
-			</orderedlist>
+			</itemizedlist>
 		</section>
-		</section>
+	</section>
 </article>
 

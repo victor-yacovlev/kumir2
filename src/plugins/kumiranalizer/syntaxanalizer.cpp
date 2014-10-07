@@ -3871,6 +3871,10 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
             else if  (group.lexems[curPos]->type==LxOperRightBrace) {
                 deepV --;
             }
+            else if (LxOperLeftSqBr == group.lexems[curPos]->type && var->dimension > deepV) {
+                group.lexems[curPos]->error = _("[ instead of {");
+                return result;
+            }
             if ( deepV==0 && ( group.lexems[curPos]->type==LxOperComa || group.lexems[curPos]->type==LxOperSemicolon )) {
 
                 if (initValue.isEmpty()) {

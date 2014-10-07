@@ -18,21 +18,14 @@
 #else
 #include <QtGui>
 #endif
-#define SCROLL_STEP 10
-#define RESP_PANEL 50
-#define LOGGER_BUTTONS 140
-#define TEXT_STEP 14
 
-#define UP 1
-#define DOWN 2
-#define LEFT 3
-#define RIGHT 4
-#define TEXTT 5
 #ifdef WIDGETS_LIBRARY
 #define WIDGETS_EXPORT Q_DECL_EXPORT
 #else
 #define WIDGETS_EXPORT Q_DECL_IMPORT
 #endif
+
+
 
 class  loggerButton : public QWidget
 {
@@ -69,35 +62,14 @@ private:
 class logLine
 {
 public:
-	inline logLine(QString KumCommand,
+    logLine(QString KumCommand,
 				   QString LogCommand,
 				   QString React,QFrame* frame,QFrame* respFrame,uint pos)
-	{
-		kumCommand=KumCommand;
-		logCommand=LogCommand;
-		react=React;
-		textLabel=new QLabel(frame);
-		textLabel->setText(logCommand);
-		textLabel->move(4,pos);
-		textLabel->resize(120,20);
-		textLabel->show();
-        
-		respLabel=new QLabel(respFrame);
-		respLabel->setText(React);
-		respLabel->move(4,pos);
-		respLabel->resize(RESP_PANEL,20);
-		respLabel->show();
-	}
-	inline void moveUp()
-	{
-        textLabel->move(textLabel->x(),textLabel->y()-SCROLL_STEP);
-        respLabel->move(respLabel->x(),respLabel->y()-SCROLL_STEP);
-	}
-	inline void moveDown()
-	{
-        textLabel->move(textLabel->x(),textLabel->y()+SCROLL_STEP);
-        respLabel->move(respLabel->x(),respLabel->y()+SCROLL_STEP);
-	}
+    ;
+    void moveUp();
+
+    void moveDown();
+
 	inline int pos()
 	{
 		return textLabel->y();
@@ -142,12 +114,8 @@ public:
         //upButton->show();
         //show();
 	}
-	inline void appendText(QString kumCommand,QString text,QString replay)
-    {
-        while(pos>H-68)downBtnPressed();
-        lines.append(logLine(kumCommand,text,replay,dummyFrame,respFrame,pos));
-        pos=pos+TEXT_STEP;
-    }
+    void appendText(QString kumCommand,QString text,QString replay);
+
 	QString log()
 	{
 		QString toret;
@@ -171,6 +139,84 @@ private:
 	int buttonSize;
 	loggerButton* downButton;
 	loggerButton* upButton;
+};
+class  WIDGETS_EXPORT linkLight: public QWidget
+{
+	Q_OBJECT
+public:
+	/**
+		 * Конструктор
+		 * @param parent ссыка на объект-владелец
+		 *
+		 */
+	linkLight ( QWidget* parent =0);
+	/**
+		 * Деструктор
+		 */
+	~linkLight(){};
+	void setLink(bool b){onLine=b;};
+    bool link() {return onLine;};
+	QString text;
+signals:
+	//void pressed();
+protected:
+	void paintEvent ( QPaintEvent * event );
+	// void mousePressEvent ( QMouseEvent * event );
+	//void mouseReleaseEvent ( QMouseEvent * event );
+private:
+	int posX,posY;
+	bool onLine;
+};
+
+
+class WIDGETS_EXPORT MainButton : public QWidget
+{
+	Q_OBJECT
+public:
+	/**
+		 * Конструктор
+		 * @param parent ссыка на объект-владелец
+		 *
+		 */
+	MainButton (QDir dir, QWidget* parent =0);
+	/**
+		 * Деструктор
+		 */
+	~MainButton(){};
+	void setDirection(int d){direction=d;};
+    void setText(QString t);
+	bool isChecked(){return checked;};
+	void setCheckable(bool flag){Q_UNUSED(flag);checkable=true;};
+	void setChecked(bool flag)
+	{
+		checked=flag;
+		downFlag=flag;
+		repaint();
+	};
+	bool loadIcon(QString icon);
+    void setIconOffset(int value)
+    {
+        iconoffs=value;
+    }
+signals:
+	void pressed();
+	void clicked();
+protected:
+    void paintEvent ( QPaintEvent * event );
+    void mousePressEvent ( QMouseEvent * event );
+    void mouseReleaseEvent ( QMouseEvent * event );
+    void enterEvent ( QEvent * event );
+    void leaveEvent ( QEvent * event );
+
+private:
+    void drawAddons(QPainter* painter);
+    int posX,posY,iconoffs;
+    uint direction;
+    QImage buttonImageUp,buttonImageDown,buttonIcon;
+    bool downFlag,checked,checkable,mouseOver,icon;
+    QWidget* Parent;
+    QVector<QLine> upArrow,downArrow,leftArrow,rightArrow;
+    QString text;
 };
 
 

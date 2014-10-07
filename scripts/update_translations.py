@@ -13,11 +13,11 @@ TS_MODULES = {
         "Editor": "src/plugins/editor",
         "KumirAnalizer": "src/plugins/kumiranalizer",
         "KumirCompilerTool": "src/plugins/kumircompilertool",
-        "KumirCompiler": "src/plugins/kumircompiler",
+#        "KumirCompiler": "src/plugins/kumircompiler",
         "KumirCodeRun": "src/plugins/kumircoderun",
         "KumirCodeGenerator": "src/plugins/kumircodegenerator",
 #        "KumirNativeGenerator": "src/plugins/kumirnativegenerator",
-        "PascalAnalizer": "src/plugins/pascalanalizer",
+#        "PascalAnalizer": "src/plugins/pascalanalizer",
 #        "st_funct": "src/plugins/st_funct"
     }
 

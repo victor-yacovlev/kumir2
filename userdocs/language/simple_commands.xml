@@ -50,13 +50,18 @@ b[i,j]:=-b[j,i]
         </para>
         <para>
             Формат вызова:
-            <programlisting role="кумир"><![CDATA[
-утв ЛОГ ВЫРАЖЕНИЕ
-дано ЛОГ ВЫРАЖЕНИЕ
-надо ЛОГ ВЫРАЖЕНИЕ
-]]>
-            </programlisting>
-        </para>
+		</para>
+			<itemizedlist>
+				<listitem>
+					<para><code role="кумир">утв ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+				<listitem>
+					<para><code role="кумир">дано ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+				<listitem>
+					<para><code role="кумир">надо ЛОГ ВЫРАЖЕНИЕ</code></para>
+				</listitem>
+			</itemizedlist>
         <para>
             Все три команды выполняются так.
             <orderedlist>
@@ -117,7 +122,7 @@ b[i,j]:=-b[j,i]
 вывод выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
-                или
+                <para>или</para>
                 <programlisting role="кумир"><![CDATA[
 вывод величина-файлового-типа, выражение-1, ... , выражение-N
 ]]>
@@ -202,7 +207,7 @@ b[i,j]:=-b[j,i]
 ввод выражение-1, ... , выражение-N
 ]]>
                 </programlisting>
-                или
+                <para>или</para>
                 <programlisting role="кумир"><![CDATA[
 ввод величина-файлового-типа, выражение-1, ... , выражение-N
 ]]>
@@ -222,26 +227,58 @@ b[i,j]:=-b[j,i]
                 чтение данных из текстового файла.
             </para>
             <para>
-                TODO: описать про использование нс
+				Использование <code role="кумир">нс</code> в качестве одного из выражений команды ввод изменяет разделитель 
+				вводимых значение с пробела на Enter. Например, если <code role="кумир">нс</code> в списке переметров 
+				команды <code role="кумир">ввод</code> находится между значениями <code role="кумир">а</code> и <code role="кумир">б</code>, 
+				то после ввода <code role="кумир">а</code> нужно нажать Enter чтобы перейти ко вводу <code role="кумир">б</code>. 
+				Значение, введённое после <code role="кумир">а</code> и разделённое с <code role="кумир">а</code> пробелом потеряется.
             </para>
+			<example>
+				<title>
+					Использование "нс" в качестве параметра команды "ввод"
+				</title>
+				<programlisting><![CDATA[
+алг
+ #использование нс в качестве
+ #парамтера команды ввод.
+нач
+  вещ а, б
+  ввод а, нс, б
+  вывод а, нс, б
+кон]]>
+				</programlisting>
+			</example>
+			<para>
+				Если на вход команды ввод мы подадим три числа, написанные так:
+			</para>
+				<programlisting>
+					<![CDATA[
+121 125
+2]]>
+				</programlisting>
+				<para>На выходе программы получим:</para>
+				<programlisting>
+					<![CDATA[
+121
+2]]>
+				</programlisting>
+				<para>Итак, число <code role="кумир">125</code>, введённое через пробел, потерялось.</para>
         </section>
-
     </section>
     <section>
         <title>Вызов алгоритма</title>
         <para>
             Вызов алгоритма-процедуры является отдельной командой алгоритмического языка и
             имеет вид:
+		</para>
             <programlisting><![CDATA[
 имя алгоритма-процедуры
 ]]>
             </programlisting>
-            или
+            <para>или</para>
             <programlisting><![CDATA[
-имя алгоритма-процедуры(список параметров вызова)
-                    ]]>
+имя алгоритма-процедуры(список параметров вызова)]]>
             </programlisting>
-        </para>
         <example>
             <title>Вызов подпрограммы без параметров</title>
             <programlisting role="кумир"><![CDATA[
