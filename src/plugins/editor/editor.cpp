@@ -494,10 +494,12 @@ void EditorInstance::updateFromAnalizer()
         }
         doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
-        int newIndent = doc_->indentAt(i);
-        int diffIndent = newIndent - oldIndent;
-        if (cursor_->row()==i) {
-            cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
+        if (!analizerPlugin_->indentsSignificant()) {
+            int newIndent = doc_->indentAt(i);
+            int diffIndent = newIndent - oldIndent;
+            if (cursor_->row()==i) {
+                cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
+            }
         }
     }
     for (int i=0; i<errors.size(); i++) {
