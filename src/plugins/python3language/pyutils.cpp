@@ -202,6 +202,8 @@ extern ValueRepresentation PyObjectToValueRepresentation(const QString & name, P
 
 extern QVariant PyObjectToQVariant(PyObject *object)
 {
+    if (!object)
+        return QVariant::Invalid;
     const PyTypeObject* const objectType = object->ob_type;
     const QByteArray objectTypeName(objectType->tp_name);
     if (objectTypeName == "NoneType") {
