@@ -29,11 +29,16 @@ void InsertCommand::redo()
         return;
     cursorRow = cursor->row();
     cursorCol = cursor->column();
+    bool hardIndents = analizer && !analizer->plugin()->indentsSignificant();
     doc->insertText(text, analizer, line, pos, blankLines, blankChars);
     QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()>1) {
-        cursor->setRow(cursor->row()+lines.size()-1);
-        cursor->setColumn(lines.last().length() + doc->indentAt(cursor->row())*2);
+        int newRow = cursor->row()+lines.size()-1;
+        int newCol = lines.last().length();
+        if (hardIndents)
+            newCol += doc->indentAt(cursor->row())*2;
+        cursor->setRow(newRow);
+        cursor->setColumn(newCol);
     }
     else {
         cursor->setColumn(cursor->column()+text.length());

@@ -921,6 +921,11 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     // Paint a text
     paintText(&p, e->rect().translated(-offset()));
 
+    // Paint structure marks
+    if (editor_->analizer() && editor_->analizer()->plugin()->indentsSignificant()) {
+        paintProgramStructureLines(&p, e->rect().translated(-offset()));
+    }
+
     // Paint a cursor
     paintCursor(&p, e->rect().translated(-offset()));
 
@@ -1429,6 +1434,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                     if (moveToEnd)
                         editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
                     QString indent;
+                    int proposedIndent = 4 * editor_->document()->indentAt(editor_->cursor()->row()+1);
+                    indentSpaces = qMax(indentSpaces, proposedIndent);
                     indent.fill(' ', indentSpaces);
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
@@ -2079,9 +2086,10 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
+    bool hardIndent = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
     for (int i=startLine; i<endLine+1; i++) {
         if (i<editor_->document()->linesCount()) {
-            int indentSpace = 2 * cw * editor_->document()->indentAt(i);
+            int indentSpace = hardIndent ? 2 * cw * editor_->document()->indentAt(i) : 0;
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
             }
@@ -2424,8 +2432,11 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     // Draw text lines themselves
     for (uint i=startLine; i<=endLine; i++)
     {
+        bool hardIndents = editor_->analizer() &&
+                !editor_->analizerPlugin_->indentsSignificant();
+
         // Indent count (in logical levels)
-        uint indent = editor_->document()->indentAt(i);
+        uint indent = hardIndents ? editor_->document()->indentAt(i) : 0u;
 
         // Bottom text bound (so 'i + 1' instead of 'i')
         const uint y =  ( i + 1 )* lineHeight();
@@ -2575,6 +2586,73 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
         }
 
     } // end for (uint i=startLine; i<=endLine; i++)
+}
+
+static uint countLeadingSpacesInString(const QString & s)
+{
+    uint result = 0u;
+    for (int i=0; i<s.length(); i++) {
+        if (s[i].isSpace()) {
+            result ++;
+        }
+        else {
+            break;
+        }
+    }
+    return result;
+}
+
+void EditorPlane::paintProgramStructureLines(QPainter *p, const QRect &rect)
+{
+    p->save();
+    const QRgb bg = palette().brush(QPalette::Base).color().rgb();
+    const QRgb fg = palette().brush(QPalette::Text).color().rgb();
+    const QRgb lc = qRgb(
+                ( qRed(bg) + qRed(fg) ) / 2,
+                ( qGreen(bg) + qGreen(fg) ) / 2,
+                ( qBlue(bg) + qBlue(fg) ) / 2
+                );
+    const int CW = charWidth();
+    const int LH = lineHeight();
+    const QColor linesColor = QColor::fromRgb(lc);
+    p->setPen(linesColor);
+    int linesCount = editor_->document()->linesCount();
+    int prevIndent = 0;
+    int curIndent = 0;
+    int nextIndent = 0;
+    int x1, x2, y1, y2;
+    for (int l=0; l<linesCount; l++) {
+        curIndent = editor_->document()->indentAt(l);
+        int realIndent = countLeadingSpacesInString(editor_->document()->textAt(l)) / 4;
+        curIndent = realIndent;
+        prevIndent = 0;
+        if (l > 0) {
+            prevIndent = editor_->document()->indentAt(l-1);
+            realIndent = countLeadingSpacesInString(editor_->document()->textAt(l-1)) / 4;
+            prevIndent = realIndent;
+        }
+        if (l < linesCount-1) {
+            nextIndent = editor_->document()->indentAt(l+1);
+            realIndent = countLeadingSpacesInString(editor_->document()->textAt(l+1)) / 4;
+            nextIndent = realIndent;
+        }
+        for (int i=0; i<curIndent; i++) {
+            x1 = x2 = i * 4 * CW + CW / 2;
+            y1 = l * LH;
+            y2 = y1 + LH;
+
+            if (prevIndent < curIndent && i == curIndent-1)
+                y1 += LH / 2;
+
+            p->drawLine(x1, y1, x1, y2);
+
+            if (i+1 > nextIndent && nextIndent < curIndent) {
+                x2 = x1 + CW * 3;
+                p->drawLine(x1, y2, x2, y2);
+            }
+        }
+    }
+    p->restore();
 }
 
 

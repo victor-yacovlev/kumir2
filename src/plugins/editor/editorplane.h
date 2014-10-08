@@ -78,6 +78,7 @@ protected:
     void paintMarginText(QPainter *p, const QRect & rect);
     void paintCursor(QPainter *p, const QRect &rect);
     void paintText(QPainter *p, const QRect &rect);
+    void paintProgramStructureLines(QPainter *p, const QRect &rect);
     void paintHiddenTextDelimeterLine(QPainter *p);
     void paintSelection(QPainter *p, const QRect &rect);
     void paintRectSelection(QPainter *p, const QRect &rect);
