@@ -110,6 +110,14 @@ class Dialog : public QDialog, Ui::Dialog
 		frame_3->setEnabled(true);
 		qDebug()<<"frame_3->ENABLED!";
 		};
+    void translateButtons()
+    {
+        QList<QAbstractButton *>btns = buttonBox->buttons();
+        for(int i=0;i<btns.count();i++)
+        {
+            if(buttonBox->buttonRole(btns[i])==QDialogButtonBox::RejectRole)btns[i]->setText(trUtf8("Отмена"));
+        }
+    }
 public slots:
  void setMax();
  void addFlag();

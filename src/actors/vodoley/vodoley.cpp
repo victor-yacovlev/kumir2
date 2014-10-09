@@ -289,6 +289,9 @@ void Vodoley::CreateVodoley(void)
     Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
     Ctext=scene->addSimpleText("C");
     Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
+    
+    
+    
     // Amen->move(20,20);
     
 }
@@ -365,6 +368,7 @@ Vodoley::~Vodoley()
 void Vodoley::newZ()
 {
     Dialog* newZdialog=new Dialog();
+      
     newZdialog->setSizes(Asize(),Bsize(),Csize());
     newZdialog->setFill(Afill,Bfill,Cfill);
     newZdialog->setNeed(AfillR);

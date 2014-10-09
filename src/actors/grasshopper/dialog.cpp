@@ -22,6 +22,7 @@ connect(BaseB,SIGNAL(valueChanged ( int  )),this,SLOT(setMax()));
 connect(pushButton,SIGNAL(clicked(   )),this,SLOT(addFlag()));
 connect(pushButton_2,SIGNAL(clicked(   )),this,SLOT(removeFlag()));
 connect(listWidget,SIGNAL(itemClicked (QListWidgetItem*)),this,SLOT(enableDelete()));
+    translateButtons();
 };
 void Dialog::setMax()
  {

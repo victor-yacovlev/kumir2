@@ -66,6 +66,14 @@ class Dialog : public QDialog, Ui::Dialog
 		{
 
 		};
+    void translateButtons()
+    {
+        QList<QAbstractButton *>btns = buttonBox->buttons();
+        for(int i=0;i<btns.count();i++)
+        {
+            if(buttonBox->buttonRole(btns[i])==QDialogButtonBox::RejectRole)btns[i]->setText(trUtf8("Отмена"));
+        }
+    }
 public slots:
  void setMax();
 	

@@ -303,10 +303,10 @@ VodoleyPult::VodoleyPult ( QWidget* parent, Qt::WindowFlags fl )
 	buttTemp->setText(" ");
     buttTemp->loadIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("b2a.png"));
 
-    QIcon toKumirIco(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-copy.png"));
+    QIcon toKumirIco(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("kumir.png"));
 	toKumir->setIcon(toKumirIco);
     toKumir->setEnabled(true);
-    ClearLog->setIcon(QIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-clear-list.png")));
+    ClearLog->setIcon(QIcon(ActorVodoley::VodoleyModule::self->myResourcesDir().absoluteFilePath("edit-delete.png")));
 
 
 	FillA->hide();

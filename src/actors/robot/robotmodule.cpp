@@ -3344,6 +3344,8 @@ void RobotModule::createGui()
     connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(goUp()), this, SLOT(runGoUp()));
     connect(m_pultWidget, SIGNAL(goDown()), this, SLOT(runGoDown()));
+    connect(m_pultWidget, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
+    connect(m_pultWidget, SIGNAL(goRight()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
     connect(m_pultWidget, SIGNAL(checkWallLeft()), this, SLOT(runIsWallAtLeft()));
     connect(m_pultWidget, SIGNAL(checkWallRight()), this, SLOT(runIsWallAtRight()));
@@ -3809,14 +3811,35 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runMark(const int row, const int col)
     {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return false;
+        }
         return field->cellAt(row-1,col-1)->mark;
     };
     bool RobotModule::runColored(const int row, const int col)
     {
-        return  field->cellAt(row-1,col-1)->isColored();   
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return false;
+        }
+        return  field->cellAt(row-1,col-1)->isColored();
     };
     void RobotModule::runRobotPos(int& row, int& col)
     {
+        if(row-1>field->rows() ||col-1>field->columns())
+        {
+            
+            setError(trUtf8("Нет какой клетки!"));
+            
+            return;
+        }
         col=field->robotX()+1;
         row=field->robotY()+1;
     };
@@ -3859,7 +3882,15 @@ bool RobotModule::runIsColor()
     };
     
 QChar RobotModule::runDownChar(const int row, const int col)
-    {qDebug()<<field->cellAt(row-1,col-1)->downChar;
+    {
+        if(row-1>field->rows() ||col-1>field->columns())
+            {
+        
+        setError(trUtf8("Нет какой клетки!"));
+        
+        return ' ';
+                }
+        qDebug()<<field->cellAt(row-1,col-1)->downChar;
         return field->cellAt(row-1,col-1)->downChar;
     };   
     
@@ -4043,7 +4074,8 @@ void RobotModule::loadEnv()
 	QDialogButtonBox *buttonBox = new QDialogButtonBox(NewWindow);
     
 	btnOK1 = buttonBox->addButton(QDialogButtonBox::Ok);
-	btnCancel1 = buttonBox->addButton(QDialogButtonBox::Cancel);
+	btnCancel1 = new QPushButton(trUtf8("Отмена"));
+    buttonBox->addButton(btnCancel1,QDialogButtonBox::RejectRole);
    
     nwl->addWidget(buttonBox, 3, 0, 1, 2, Qt::AlignRight);  
     connect ( btnCancel1, SIGNAL(clicked()), NewWindow, SLOT(close()));
