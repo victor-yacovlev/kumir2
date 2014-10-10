@@ -16,7 +16,7 @@ Plugin::Plugin()
 {
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
-    rescentMenu=new QMenu(trUtf8("Недавние тетради..."));
+    rescentMenu=new QMenu(trUtf8("Недавние тетради/курсы..."));
     // m_actionCourseLoadRescent->setMenu(rescentMenu);
     MW=new MainWindowTask();
     MW->setup(myResourcesDir(), mySettings());

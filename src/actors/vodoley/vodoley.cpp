@@ -307,6 +307,7 @@ void Vodoley::createActions(QList<QAction*> actions)
     connect(actLoad, SIGNAL(triggered()), this, SLOT(loadZ()));
     actSave=actions.at(2);
     connect(actSave, SIGNAL(triggered()), this, SLOT(saveZ()));
+    
 
 };
 

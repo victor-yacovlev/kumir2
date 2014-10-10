@@ -38,6 +38,7 @@ void VodoleyModule::createGui()
     actions.append(m_actionVodoleyLoadEnvironment);
     actions.append(m_actionVodoleySaveEnvironment);
     MainWindow->createActions(actions);
+    connect(m_actionVodoleyRevertEnvironment,SIGNAL(triggered()) , MainWindow, SLOT(reset()));
    // m_actionVodoleyNewEnvironment
 }
 
