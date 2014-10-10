@@ -4095,7 +4095,7 @@ void RobotModule::loadEnv()
 
         view->centerOn(field->m_height()/2,field->m_width()/2);
         NewWindow->close();
-        editEnv();
+        if(!field->isEditMode())editEnv();
     };
     void RobotModule::newEnv()
     {
@@ -4105,17 +4105,17 @@ void RobotModule::loadEnv()
             
             QMessageBox messageBox(
                                    QMessageBox::Question,
-                                   tr("New field"),
-                                   tr("Save current field?"),
+                                   trUtf8("Новая обстановка"),
+                                   trUtf8("Сохранить текущую?"),
                                    QMessageBox::NoButton,mainWidget()
                                    );
             
             QPushButton * btnSave =
-            messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+            messageBox.addButton(tr("Сохранить"), QMessageBox::AcceptRole);
             QPushButton * btnDiscard =
-            messageBox.addButton(tr("Don't save"), QMessageBox::DestructiveRole);
+            messageBox.addButton(tr("Не сохранять"), QMessageBox::DestructiveRole);
             QPushButton * btnCancel =
-            messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+            messageBox.addButton(tr("Отмена"), QMessageBox::RejectRole);
             
             messageBox.setDefaultButton(btnSave);
             messageBox.exec();

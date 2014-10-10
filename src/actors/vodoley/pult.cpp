@@ -385,6 +385,7 @@ void VodoleyPult::BOutS()
 void VodoleyPult::COutS()
 {
     if(!greenLight->link())return;
+    if(VodoleyObj->Csize()==0){Logger->appendText(trUtf8("вылей C"),trUtf8("вылей C"),trUtf8("Отказ"));return;}
     Logger->appendText(trUtf8("вылей C"),trUtf8("вылей C"),"OK");
     VodoleyObj->MoveFromTo(2,3);
 }
@@ -425,7 +426,7 @@ void VodoleyPult::FillBs()
 void VodoleyPult::FillCs()
 {
     if(!greenLight->link())return;
-
+if(VodoleyObj->Csize()==0){Logger->appendText(trUtf8("наполни C"),trUtf8("наполни C"),trUtf8("Отказ"));return;}
     Logger->appendText(trUtf8("наполни C"),trUtf8("наполни C"),"OK");
     VodoleyObj->FillC();
 }
@@ -451,7 +452,7 @@ void VodoleyPult::AtoBS()
 void VodoleyPult::CtoAS()
 {
     if(!greenLight->link())return;
-
+    if(VodoleyObj->Csize()==0){Logger->appendText(trUtf8("перелей из C в A"),trUtf8("перелей из C в A"),trUtf8("Отказ"));return;}
     Logger->appendText(trUtf8("перелей из C в A"),trUtf8("перелей из C в A"),"OK");
     VodoleyObj->MoveFromTo(2,0);
 }
@@ -460,7 +461,7 @@ void VodoleyPult::CtoAS()
 void VodoleyPult::CtoBS()
 {
     if(!greenLight->link())return;
-
+    if(VodoleyObj->Csize()==0){Logger->appendText(trUtf8("перелей из C в B"),trUtf8("перелей из C в B"),trUtf8("Отказ"));return;}
     Logger->appendText(trUtf8("перелей из C в B"),trUtf8("перелей из C в B"),"OK");
     VodoleyObj->MoveFromTo(2,1);
 }
