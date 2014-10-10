@@ -1227,6 +1227,11 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
         escPressFlag_ = true;
     }
     else {
+#ifdef QT_NONLATIN_SHORTCUTS_BUG
+        if (escPressFlag_ && e->text().length() > 0) {
+            editor_->tryEscKeyAction(e->text());
+        }
+#endif
         escPressFlag_ = false;
     }
     if (editor_->cursor()->isEnabled()) {
@@ -1522,17 +1527,13 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                  !e->modifiers().testFlag(Qt::ControlModifier) &&
                  !ignoreTextEvent
                  ) {
-            bool escSequence = false;
-#ifdef QT_NONLATIN_SHORTCUTS_BUG
-            escSequence = escPressFlag_ && editor_->tryEscKeyAction(e->text());
-#endif
-            if (!escSequence) {
-                editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
-                                                           , e->text()
-                                                           , e->modifiers().testFlag(Qt::ShiftModifier)
-                                                           , editor_->isTeacherMode() && editor_->analizer()
-                                                          ));
-            }
+
+            editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+                                                       , e->text()
+                                                       , e->modifiers().testFlag(Qt::ShiftModifier)
+                                                       , editor_->isTeacherMode() && editor_->analizer()
+                                                      ));
+
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(

@@ -413,9 +413,9 @@ bool EditorInstance::tryEscKeyAction(const QString &text)
         return false; // workarund required only for non-latin keys
     }
     const QList<Macro> allMacros = systemMacros_ + userMacros_;
-    const QChar ch = text.at(0);
+    const QChar ch = text.at(0).toUpper();
     foreach (const Macro & m, allMacros) {
-        bool keyMatch = m.key == ch;
+        bool keyMatch = m.key.toUpper() == ch;
         bool enabled = m.action && m.action->isEnabled();
         if (keyMatch && enabled) {
             m.action->trigger();
