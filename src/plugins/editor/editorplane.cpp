@@ -44,6 +44,7 @@ EditorPlane::EditorPlane(EditorInstance * editor)
     , pnt_dropPosCorner(QPoint(-1000, -1000))
     , selectionInProgressFlag_(false)
     , marginHintBox_(new QLabel(this, Qt::ToolTip))
+    , escPressFlag_(false)
 {
     if (editor->analizer()) {
         caseInsensitive_ = editor->analizer()->plugin()->caseInsensitiveGrammatic();
@@ -124,6 +125,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
  */
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
+    escPressFlag_ = false;
     emit message(QString());
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
@@ -1220,6 +1222,13 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
     if (e->key()==Qt::Key_Shift || (e->key()==-1 && e->modifiers() & Qt::ShiftModifier)) {
         Utils::shiftKeyPressed = false;
     }
+    if (Qt::Key_Escape == e->key() && e->modifiers() == 0)
+    {
+        escPressFlag_ = true;
+    }
+    else {
+        escPressFlag_ = false;
+    }
     if (editor_->cursor()->isEnabled()) {
         e->accept();
     }
@@ -1513,11 +1522,17 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                  !e->modifiers().testFlag(Qt::ControlModifier) &&
                  !ignoreTextEvent
                  ) {
-            editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
-                                                       , e->text()
-                                                       , e->modifiers().testFlag(Qt::ShiftModifier)
-                                                       , editor_->isTeacherMode() && editor_->analizer()
-                                                      ));
+            bool escSequence = false;
+#ifdef QT_NONLATIN_SHORTCUTS_BUG
+            escSequence = escPressFlag_ && editor_->tryEscKeyAction(e->text());
+#endif
+            if (!escSequence) {
+                editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+                                                           , e->text()
+                                                           , e->modifiers().testFlag(Qt::ShiftModifier)
+                                                           , editor_->isTeacherMode() && editor_->analizer()
+                                                          ));
+            }
         }
 
         Qt::Key tempSwichLayoutKey = Qt::Key(
@@ -1534,6 +1549,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         findCursor();
     }
+    escPressFlag_ = false;
     if (e->key()>=Qt::Key_F1 && e->key()<=Qt::Key_F35)
         e->ignore();
     else
