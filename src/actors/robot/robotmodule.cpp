@@ -4111,11 +4111,11 @@ void RobotModule::loadEnv()
                                    );
             
             QPushButton * btnSave =
-            messageBox.addButton(tr("Сохранить"), QMessageBox::AcceptRole);
+            messageBox.addButton(trUtf8("Сохранить"), QMessageBox::AcceptRole);
             QPushButton * btnDiscard =
-            messageBox.addButton(tr("Не сохранять"), QMessageBox::DestructiveRole);
+            messageBox.addButton(trUtf8("Не сохранять"), QMessageBox::DestructiveRole);
             QPushButton * btnCancel =
-            messageBox.addButton(tr("Отмена"), QMessageBox::RejectRole);
+            messageBox.addButton(trUtf8("Отмена"), QMessageBox::RejectRole);
             
             messageBox.setDefaultButton(btnSave);
             messageBox.exec();
