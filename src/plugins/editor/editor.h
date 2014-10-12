@@ -101,6 +101,7 @@ public slots:
     void changeGlobalState(quint32 prevv, quint32 currentt);
     void updateSettings(const QStringList & keys);
     void updateInsertMenu();
+    bool tryEscKeyAction(const QString & text);
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

@@ -120,6 +120,7 @@ private:
     QList<QAction*> contextMenuActions_;
 
     QLabel * marginHintBox_;
+    bool escPressFlag_;
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
