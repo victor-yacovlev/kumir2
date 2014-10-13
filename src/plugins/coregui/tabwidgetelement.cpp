@@ -181,23 +181,23 @@ void TabWidgetElement::updateSettingsObject(SettingsPtr settings)
 
 bool TabWidgetElement::eventFilter(QObject *obj, QEvent *evt)
 {
-    if (QEvent::ContextMenu==evt->type()) {
-        QContextMenuEvent * event = static_cast<QContextMenuEvent*>(evt);
-        const QPoint position = event->globalPos();
-        QRect contextRect(position, toolbarContextMenu_->size());
-        QDesktopWidget* screen = qApp->desktop();
-        const QRect screenRect = screen->availableGeometry(this);
-        if (contextRect.right() > screenRect.right()) {
-            contextRect.moveRight(screenRect.right());
-        }
-        if (contextRect.left() < screenRect.left()) {
-            contextRect.moveLeft(screenRect.left());
-        }
+//    if (QEvent::ContextMenu==evt->type()) {
+//        QContextMenuEvent * event = static_cast<QContextMenuEvent*>(evt);
+//        const QPoint position = event->globalPos();
+//        QRect contextRect(position, toolbarContextMenu_->size());
+//        QDesktopWidget* screen = qApp->desktop();
+//        const QRect screenRect = screen->availableGeometry(this);
+//        if (contextRect.right() > screenRect.right()) {
+//            contextRect.moveRight(screenRect.right());
+//        }
+//        if (contextRect.left() < screenRect.left()) {
+//            contextRect.moveLeft(screenRect.left());
+//        }
 
-        toolbarContextMenu_->move(contextRect.topLeft());
-        toolbarContextMenu_->show();
-        return true;
-    }
+//        toolbarContextMenu_->move(contextRect.topLeft());
+//        toolbarContextMenu_->show();
+//        return true;
+//    }
     return false;
 }
 

@@ -41,6 +41,7 @@ protected Q_SLOTS:
     void showMe();
 
 protected:
+    void showEvent(QShowEvent * event);
     void paintEvent(QPaintEvent *event);
     QList<QAction*> items_;
     QSet<QString> forcedItemNames_;

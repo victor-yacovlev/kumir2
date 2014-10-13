@@ -345,4 +345,9 @@ void ToolbarContextMenu::showMe()
 
 }
 
+void ToolbarContextMenu::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+}
+
 } // namespace CoreGUI
