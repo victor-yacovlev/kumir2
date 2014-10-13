@@ -3565,7 +3565,7 @@ void RobotModule::runGoUp()
 //     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //         emit sendToPultLog(status);
 //     }
- m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
+if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
     if(animation)msleep(250);
 	return;
 }
@@ -3584,7 +3584,7 @@ void RobotModule::runGoDown()
 //     if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //         emit sendToPultLog(status);
 //     }
-    m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
+  if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
     if(animation){
         view->update();
      msleep(250);   
@@ -3606,7 +3606,7 @@ void RobotModule::runGoLeft()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-        m_pultWidget->Logger->appendText(trUtf8("влево"),QString::fromUtf8("влево     "),status);
+      if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(trUtf8("влево"),QString::fromUtf8("влево     "),status);
     if(animation)
     {
         view->update();
@@ -3629,7 +3629,7 @@ void RobotModule::runGoRight()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
      if(animation)
      {
          view->update();
@@ -3646,7 +3646,7 @@ void RobotModule::runDoPaint()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(trUtf8("закрасить"),trUtf8("закрасить"), "OK");
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("закрасить"),trUtf8("закрасить"), "OK");
     if(animation)
     {
         view->update();
@@ -3663,7 +3663,7 @@ bool RobotModule::runIsWallAtTop()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Сверху стена: \',сверху стена,нс"),
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Сверху стена: \',сверху стена,нс"),
                                      trUtf8("сверху стена"),status);
     return result;
 }
@@ -3676,7 +3676,7 @@ bool RobotModule::runIsWallAtBottom()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Снизу стена: \',снизу стена,нс"),
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Снизу стена: \',снизу стена,нс"),
                        QString::fromUtf8("снизу стена"),status);
     
     return result;
@@ -3690,7 +3690,7 @@ bool RobotModule::runIsWallAtLeft()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Слева стена: \',слева стена,нс"),
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Слева стена: \',слева стена,нс"),
                        trUtf8("слева стена"),status);
     
     return result;
@@ -3704,10 +3704,11 @@ bool RobotModule::runIsWallAtRight()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
+    if (sender()==m_pultWidget) {
     if(result)m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Справа стена: \',справа стена,нс"),
                                                trUtf8("справа стена"),trUtf8("Да"));
     else m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Справа стена: \',справа стена,нс"),
-                                          trUtf8("справа стена"),trUtf8("Нет"));
+                                          trUtf8("справа стена"),trUtf8("Нет"));}
     return result;
 }
 
@@ -3718,7 +3719,7 @@ bool RobotModule::runIsFreeAtTop()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Сверху свободно: \',сверху свободно,нс"),
+  if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Сверху свободно: \',сверху свободно,нс"),
                        trUtf8("сверху свободно"),status);
     return result;
 }
@@ -3731,7 +3732,7 @@ bool RobotModule::runIsFreeAtBottom()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Снизу свободно: \',снизу свободно,нс"),
+  if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Снизу свободно: \',снизу свободно,нс"),
                                      trUtf8("снизу свободно"),status);
     return result;
 }
@@ -3744,7 +3745,7 @@ bool RobotModule::runIsFreeAtLeft()
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //        emit sendToPultLog(status);
 //    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Слева свободно: \',слева свободно,нс"),
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Слева свободно: \',слева свободно,нс"),
                                      trUtf8("слева свободно"),status);
     return result;
 }
@@ -3754,11 +3755,14 @@ bool RobotModule::runIsFreeAtRight()
 {
     bool result = field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
-//    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//        emit sendToPultLog(status);
-//    }
-    m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Справа свободно: \',справа свободно,нс"),
+   // QObject *sendr=sender();
+    if (sender()==m_pultWidget) {
+       
+   
+   
+   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Справа свободно: \',справа свободно,нс"),
                                      trUtf8("справа свободно"),status);
+    }
     return result;
 }
 
@@ -3769,7 +3773,7 @@ bool RobotModule::runIsColor()
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //            emit sendToPultLog(status);
 //        }
-       m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка закрашена: \',клетка закрашена,нс"),
+      if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка закрашена: \',клетка закрашена,нс"),
                            QString::fromUtf8("клетка закрашена"),status);
         return result;
         
@@ -3781,7 +3785,7 @@ bool RobotModule::runIsColor()
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //            emit sendToPultLog(status);
 //        }
-         m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка чистая: \',клетка чистая,нс"),
+        if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка чистая: \',клетка чистая,нс"),
                            QString::fromUtf8("клетка чистая"),status);
         return result;
     };
@@ -3791,7 +3795,7 @@ bool RobotModule::runIsColor()
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //            emit sendToPultLog(status);
 //        }
-        m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
+       if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
                                          QString::fromUtf8("радиация"),status);
         return result;
     };
@@ -3801,7 +3805,7 @@ bool RobotModule::runIsColor()
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
 //            emit sendToPultLog(status);
 //        }
-        m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Температура: \',температура,нс"),
+      if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Температура: \',температура,нс"),
                                          QString::fromUtf8("температура"),status);
         return result;};
     void RobotModule::runFieldSize(int& rows, int& cols)
