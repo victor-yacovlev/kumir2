@@ -82,6 +82,7 @@ void RobotItem::waitForAnimated()
         mutex_animation->unlock();
         if (anim==NoAnimation)
             break;
+        QApplication::processEvents();
         msleep(1);
     }
 }
