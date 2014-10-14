@@ -11,6 +11,7 @@ You should change it corresponding to functionality.
 #include <iostream>
 #include "isometricrobotmodule.h"
 #include "sch_environment.h"
+#include "remotecontrol.h"
 
 namespace ActorIsometricRobot {
 
@@ -20,17 +21,27 @@ IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
     , window_(0)
     , robotView_(0)
     , parentObject_(parent)
+    , remoteControl_(0)
+    , remoteControlWidget_(0)
 {   
 }
 
 void IsometricRobotModule::createGui()
 {
     window_ = new Robot25DWindow(parentObject_->myResourcesDir(), 0);
+    remoteControlWidget_ = new QWidget(0);
+    QVBoxLayout*  rcLayout = new QVBoxLayout;
+    remoteControlWidget_->setLayout(rcLayout);
+    const QString rcFileName = parentObject_->myResourcesDir().absoluteFilePath("robot25d-rc.svg");
+    remoteControl_ = new SvgRemoteControl(parentObject_, this, rcFileName, remoteControlWidget_);
+    rcLayout->addWidget(remoteControl_);
+
     robotView_ = window_->robotView();
     connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
             window_, SLOT(handleLoadAction()));
     connect(m_actionRobot25DResetEnvironment, SIGNAL(triggered()),
             this, SLOT(reset()));
+
 }
 
 QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
@@ -77,6 +88,7 @@ QWidget* IsometricRobotModule::mainWidget() const
 
 void IsometricRobotModule::runGoForward()
 {
+    setError("");
 //    window_->statusMessage(__FUNCTION__);
     if (!robotView_->goForward()) {
         setError(robotView_->lastError(QLocale::Russian));
@@ -87,6 +99,7 @@ void IsometricRobotModule::runGoForward()
 
 void IsometricRobotModule::runTurnRight()
 {
+    setError("");
 //    window_->statusMessage(__FUNCTION__);
     robotView_->turnRight();
     robotView_->waitForAnimated();
@@ -95,6 +108,7 @@ void IsometricRobotModule::runTurnRight()
 
 void IsometricRobotModule::runTurnLeft()
 {
+    setError("");
 //    window_->statusMessage(__FUNCTION__);
     robotView_->turnLeft();
     robotView_->waitForAnimated();
@@ -103,6 +117,7 @@ void IsometricRobotModule::runTurnLeft()
 
 void IsometricRobotModule::runDoPaint()
 {
+    setError("");
 //    window_->statusMessage(__FUNCTION__);
     robotView_->doPaint();
     robotView_->waitForAnimated();
@@ -111,54 +126,64 @@ void IsometricRobotModule::runDoPaint()
 
 bool IsometricRobotModule::runIsCellPainted()
 {
+    setError("");
     return robotView_->isPainted();
 }
 
 
 bool IsometricRobotModule::runIsCellClean()
 {
+    setError("");
     return ! robotView_->isPainted();
 }
 
 
 bool IsometricRobotModule::runIsWallAhead()
 {
+    setError("");
     return robotView_->isWall();
 }
 
 
 bool IsometricRobotModule::runIsFreeAhead()
 {
+    setError("");
     return ! robotView_->isWall();
 }
 
 bool IsometricRobotModule::runIsPainted(const int x, const int y)
 {
+    setError("");
     return robotView_->isPainted(x - 1, y - 1);
 }
 
 bool IsometricRobotModule::runIsMarked(const int x, const int y)
 {
+    setError("");
     return robotView_->isPointed(x - 1, y - 1);
 }
 
 int IsometricRobotModule::runPositionX()
 {
+    setError("");
     return robotView_->positionX() + 1;
 }
 
 int IsometricRobotModule::runPositionY()
 {
+    setError("");
     return robotView_->positionY() + 1;
 }
 
 int IsometricRobotModule::runSizeX()
 {
+    setError("");
     return robotView_->sizeX();
 }
 
 int IsometricRobotModule::runSizeY()
 {
+    setError("");
     return robotView_->sizeY();
 }
 

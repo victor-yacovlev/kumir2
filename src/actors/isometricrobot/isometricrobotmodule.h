@@ -17,6 +17,8 @@ You should change it corresponding to functionality.
 
 namespace ActorIsometricRobot {
 
+class SvgRemoteControl;
+
 class IsometricRobotModule
     : public IsometricRobotModuleBase
 {
@@ -55,7 +57,7 @@ public slots:
 public:
     // GUI access methods
     QWidget* mainWidget() const;
-    inline QWidget* pultWidget() const { return nullptr; }
+    inline QWidget* pultWidget() const { return remoteControlWidget_; }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 
 private:
@@ -63,6 +65,8 @@ private:
     Robot25DWindow * window_;
     Robot25D::RobotView * robotView_;
     ExtensionSystem::KPlugin* parentObject_;
+    SvgRemoteControl * remoteControl_;
+    QWidget* remoteControlWidget_;
 
 
 }; // IsometricRobotModule
