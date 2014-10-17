@@ -407,6 +407,25 @@ void EditorInstance::updateInsertMenu()
     editMacros_->setEnabled(userMacros_.size() > 0);
 }
 
+bool EditorInstance::tryEscKeyAction(const QString &text)
+{
+    if (text.length()!=1 && text.at(0).toLatin1()) {
+        return false; // workarund required only for non-latin keys
+    }
+    const QList<Macro> allMacros = systemMacros_ + userMacros_;
+    const QChar ch = text.at(0).toUpper();
+    foreach (const Macro & m, allMacros) {
+        bool keyMatch = m.key.toUpper() == ch;
+        bool enabled = m.action && m.action->isEnabled();
+        if (keyMatch && enabled) {
+            m.action->trigger();
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void EditorInstance::playMacro()
 {
     QAction * a = qobject_cast<QAction*>(sender());

@@ -31,25 +31,25 @@ protected:
                 catched = true;
             }
         }
-        if (QEvent::ContextMenu == event->type()) {
-            QContextMenuEvent * e =
-                    static_cast<QContextMenuEvent*>(event);
-            if (contextMenuWidget_ && e) {
-                const QPoint position = e->globalPos();
-                QRect contextRect(position, contextMenuWidget_->size());
-                QDesktopWidget* screen = qApp->desktop();
-                const QRect screenRect = screen->availableGeometry(this);
-                if (contextRect.right() > screenRect.right()) {
-                    contextRect.moveRight(screenRect.right());
-                }
-                if (contextRect.left() < screenRect.left()) {
-                    contextRect.moveLeft(screenRect.left());
-                }
-                contextMenuWidget_->move(contextRect.topLeft());
-                contextMenuWidget_->show();
-                catched = true;
-            }
-        }
+//        if (QEvent::ContextMenu == event->type()) {
+//            QContextMenuEvent * e =
+//                    static_cast<QContextMenuEvent*>(event);
+//            if (contextMenuWidget_ && e) {
+//                const QPoint position = e->globalPos();
+//                QRect contextRect(position, contextMenuWidget_->size());
+//                QDesktopWidget* screen = qApp->desktop();
+//                const QRect screenRect = screen->availableGeometry(this);
+//                if (contextRect.right() > screenRect.right()) {
+//                    contextRect.moveRight(screenRect.right());
+//                }
+//                if (contextRect.left() < screenRect.left()) {
+//                    contextRect.moveLeft(screenRect.left());
+//                }
+//                contextMenuWidget_->move(contextRect.topLeft());
+//                contextMenuWidget_->show();
+//                catched = true;
+//            }
+//        }
 
         if (catched)
             return false;

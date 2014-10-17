@@ -29,6 +29,10 @@ if(Llvm_CONFIG_EXECUTABLE)
         # Ubuntu-specific .so-version
         set(Llvm_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm-${Llvm_VERSION}/${LIB_BASENAME} -lLLVM-${Llvm_VERSION}")
         set(Llvm_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
+    elseif(EXISTS /usr/${LIB_BASENAME}/libLLVM-${Llvm_VERSION}.so)
+        # AltLinux-specific .so-version
+        set(Llvm_LIBRARIES "-lLLVM-${Llvm_VERSION}")
+        set(Llvm_DEFINITIONS "-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
     else()
         set(Llvm_REQUEST_STRING "")
         if(Llvm_FIND_COMPONENTS)

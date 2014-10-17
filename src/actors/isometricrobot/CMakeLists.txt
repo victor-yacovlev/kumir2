@@ -35,6 +35,7 @@ set(SOURCES
     graphicsimageitem.cpp
     robot25dwindow.cpp
     robotitem.cpp
+    remotecontrol.cpp
 )
 
 set(MOC_HEADERS
@@ -42,6 +43,7 @@ set(MOC_HEADERS
     robotview.h
     robot25dwindow.h
     robotitem.h
+    remotecontrol.h
 )
 
 set(FORMS

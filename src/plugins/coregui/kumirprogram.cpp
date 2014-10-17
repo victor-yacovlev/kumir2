@@ -298,6 +298,8 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
     program.sourceFileName = sourceProgramPath;
     program.sourceData = editor_->analizer()->plugin()->sourceFileHandler()->toString(editor_->documentContents());
 
+    runner()->setSourceHelper(editor_->analizer()->helper());
+
     if (editor_->analizer()->compiler()) {
         // Use AST to generate executable (only Kumir language)
 
@@ -311,6 +313,14 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
         kumirCodeGenerator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
 
         program.executableData = bufArray;
+        runner()->loadProgram(program);
+    }
+    else if (editor_->analizer()->externalToolchain()) {
+        // Use external toolchain to make executable
+        editor_->ensureAnalized();
+        editor_->analizer()->externalToolchain()->prepareToRun(Shared::Analizer::RegularRun);
+        program.executableFileName = editor_->analizer()->externalToolchain()->executableFilePath();
+        program.sourceFileName = editor_->analizer()->externalToolchain()->debuggableSourceFileName();
         runner()->loadProgram(program);
     }
     else {

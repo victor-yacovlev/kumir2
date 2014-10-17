@@ -1,5 +1,5 @@
 //
-// C++ Implementation: printDialog
+// C++ Implementation: VodoleyDialog
 //
 // Description: 
 //
@@ -20,6 +20,7 @@ setupUi(this);
 connect(BaseA,SIGNAL(valueChanged ( int  )),this,SLOT(setMax()));
 connect(BaseB,SIGNAL(valueChanged ( int  )),this,SLOT(setMax()));
 connect(BaseC,SIGNAL(valueChanged ( int  )),this,SLOT(setMax()));
+ translateButtons();
 setMax();
 };
 void Dialog::setMax()

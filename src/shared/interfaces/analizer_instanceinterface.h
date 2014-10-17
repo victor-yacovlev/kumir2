@@ -57,6 +57,12 @@ public:
         return qobject_cast<HelperInterface*>(me);
     }
 
+    inline virtual ExternalExecutableCompilerInterface * externalToolchain() {
+        QObject * me = dynamic_cast<QObject*>(this);
+        if (!me) return 0;
+        return qobject_cast<ExternalExecutableCompilerInterface*>(me);
+    }
+
     virtual AnalizerInterface * plugin() = 0;
 
 };
