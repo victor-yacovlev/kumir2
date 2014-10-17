@@ -32,7 +32,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/fpcanalizer")
     add_subdirectory(fpcanalizer)
 endif() # fpcanalizer exists
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/gdbrun")
-    add_subdirectory(gdbrun)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lldbrun")
+    add_subdirectory(lldbrun)
 endif() # gdbrun exists
 
