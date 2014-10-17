@@ -10,6 +10,10 @@
 
 namespace Shared {
 
+namespace Analizer {
+class HelperInterface;
+}
+
 class RunInterface {
 public:
     struct RunnableProgram {
@@ -44,6 +48,9 @@ public:
 
     virtual void setStdInTextStream(QTextStream *) = 0;
     virtual void setStdOutTextStream(QTextStream *) = 0;
+
+    inline virtual void setSourceHelper(Analizer::HelperInterface *) {}
+
 };
 
 }
