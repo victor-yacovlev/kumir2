@@ -56,7 +56,7 @@ extern void printError(const QString & message)
 #ifdef PYTHON_SCRIPT_DEBUG
     QMessageBox::warning(0, "Python error", message);
 #else
-    qWarning(); << message;
+    qWarning() << message;
 #endif
 }
 
