@@ -409,7 +409,7 @@ void EditorInstance::updateInsertMenu()
 
 bool EditorInstance::tryEscKeyAction(const QString &text)
 {
-    if (text.length()!=1 && text.at(0).toAscii()) {
+    if (text.length()!=1 && text.at(0).toLatin1()) {
         return false; // workarund required only for non-latin keys
     }
     const QList<Macro> allMacros = systemMacros_ + userMacros_;
