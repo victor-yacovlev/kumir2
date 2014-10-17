@@ -17,7 +17,7 @@
 #include "robotmodule.h"
 
 
-RoboPult::RoboPult ( QWidget* parent, Qt::WFlags fl )
+RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
 	: QWidget ( parent, fl ), Ui::RoboPult()
 {
 	
