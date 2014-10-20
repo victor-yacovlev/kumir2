@@ -340,4 +340,110 @@ QChar Utils::latinKey(const QChar &cyrillicKey)
     }
 }
 
+QChar Utils::cyrillicKey(const QChar &latinKey)
+{
+    if (latinKey.toLower()==QString::fromLatin1("q")[0]) {
+        return QString::fromUtf8("й")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("w")[0]) {
+        return QString::fromUtf8("ц")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("e")[0]) {
+        return QString::fromUtf8("у")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("r")[0]) {
+        return QString::fromUtf8("к")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("t")[0]) {
+        return QString::fromUtf8("е")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("y")[0]) {
+        return QString::fromUtf8("н")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("u")[0]) {
+        return QString::fromUtf8("г")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("i")[0]) {
+        return QString::fromUtf8("ш")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("o")[0]) {
+        return QString::fromUtf8("щ")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("p")[0]) {
+        return QString::fromUtf8("з")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("[")[0]) {
+        return QString::fromUtf8("х")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("]")[0]) {
+        return QString::fromUtf8("ъ")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("a")[0]) {
+        return QString::fromUtf8("ф")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("s")[0]) {
+        return QString::fromUtf8("ы")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("d")[0]) {
+        return QString::fromUtf8("в")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("f")[0]) {
+        return QString::fromUtf8("а")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("g")[0]) {
+        return QString::fromUtf8("п")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("h")[0]) {
+        return QString::fromUtf8("р")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("j")[0]) {
+        return QString::fromUtf8("о")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("k")[0]) {
+        return QString::fromUtf8("л")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("l")[0]) {
+        return QString::fromUtf8("д")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1(";")[0]) {
+        return QString::fromUtf8("ж")[0];
+    }
+    else if (latinKey.toLower()==QString::fromUtf8("э")[0]) {
+            return '\'';
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("z")[0]) {
+        return QString::fromUtf8("я")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("x")[0]) {
+        return QString::fromUtf8("ч")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("c")[0]) {
+        return QString::fromUtf8("с")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("v")[0]) {
+        return QString::fromUtf8("м")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("b")[0]) {
+        return QString::fromUtf8("и")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("n")[0]) {
+        return QString::fromUtf8("т")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("m")[0]) {
+        return QString::fromUtf8("ь")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1(",")[0]) {
+        return QString::fromUtf8("б")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1(".")[0]) {
+        return QString::fromUtf8("ю")[0];
+    }
+    else if (latinKey.toLower()==QString::fromLatin1("`")[0]) {
+        return QString::fromUtf8("ё")[0];
+    }
+    else {
+        return latinKey.toLower();
+    }
+}
+
 } // namespace Editor
