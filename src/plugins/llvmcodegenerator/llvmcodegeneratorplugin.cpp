@@ -360,7 +360,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
                     )
                 );
     static const QString LLC = bundledToolchainPath + "\\llc.exe";
-    static const QString AS = bundledToolchainPath + "\\as.exe";
+    static const QString AS = bundledToolchainPath + "\\clang.exe"; // GNU as in most linux distros doesn't accept llvm-3.5 generated syntax
     static const QString LD = bundledToolchainPath + "\\ld.exe";
 #else
     static const QString LLC = "llc";
