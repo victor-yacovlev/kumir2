@@ -796,7 +796,8 @@ Right click to navigate target</source>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1902"/>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2091"/>
         <source>Save current text?</source>
-        <translation>Сохранить текущий текст?</translation>
+        <translation type="unfinished">В этом файле были проведены несохранённые изменения. При закрытии эти изменения будут потеряны.
+Сохранить их?</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1327"/>
