@@ -22,6 +22,7 @@ PainterNewImageDialog::PainterNewImageDialog(QWidget *parent, PainterModule * mo
     connect(ui->radioButtonCustom, SIGNAL(toggled(bool)), ui->pageCustom, SLOT(setVisible(bool)));
     connect(ui->listWidget,SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(handleTemplateClicked(QListWidgetItem*)));
 //    connect(ui->radioButtonTemplate, SIGNAL(toggled(bool)), ui->listWidget, SLOT(setEnabled(bool)));
+    ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
 }
 
 int PainterNewImageDialog::w() const
