@@ -354,17 +354,17 @@ Right click to navigate target</source>
         <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="407"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="417"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="416"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="426"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="398"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="408"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
@@ -930,62 +930,72 @@ Using Qt version %2</source>
         <translation type="obsolete">Область ввода/вывода</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="625"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="639"/>
         <source>Variables</source>
         <translation>Значения величин</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="534"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="545"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="540"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="551"/>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="220"/>
         <source>Remote Control</source>
         <translation>Пульт</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="83"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="79"/>
         <source>PROGRAM.kum</source>
         <translation>ПРОГРАММА.kum</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="84"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="80"/>
         <source>Source file name</source>
         <translation>Имя файла</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="191"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="187"/>
         <source>Input/Output</source>
         <translation>Ввод/вывод</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="237"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="233"/>
         <source>Save console output</source>
         <translation>Сохранить вывод</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="257"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="253"/>
         <source>Copy to clipboard console output</source>
         <translation>Скопировать вывод в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="371"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="367"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="401"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="411"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="397"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="407"/>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="189"/>
         <source>Courses</source>
         <translation>Практикум</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="561"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="511"/>
+        <source>Show actor window</source>
+        <translation>Показать окно исполнителя</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="567"/>
+        <source>Show actor control</source>
+        <translation>Показать окно пульта</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="575"/>
         <source>Actor&apos;s References</source>
         <translation>Руководства исполнителей</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="584"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="586"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="598"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="600"/>
         <source>No actions for this tab</source>
         <translation>Для этой вкладки нет действий</translation>
     </message>
@@ -1006,7 +1016,7 @@ Using Qt version %2</source>
         <translation type="obsolete">Пауза</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="593"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="607"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>

@@ -9,6 +9,7 @@
 #include "statusbar.h"
 #include "tabwidget.h"
 #include "widgets/iconprovider.h"
+#include "widgets/actionproxy.h"
 
 #include "guisettingspage.h"
 
@@ -494,12 +495,22 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         SLOT(activate())
                         );
 
+
             showActorActions_[actor->asciiModuleName()] = showActor;
 
             showActor->setObjectName("window-actor-" + actorObjectName);
             mainWindow_->gr_otherActions->addAction(showActor);
             if (!actor->mainIconName().isEmpty()) {
                 showActor->setIcon(mainIcon);
+            }
+
+            if (actor->moduleMenus().size() > 0) {
+                QMenu * actorMainMenu = actor->moduleMenus().first();
+                Widgets::ActionProxy *showActorProxy =
+                        new Widgets::ActionProxy(showActor, actorMainMenu);
+                showActorProxy->setText(tr("Show actor window"));
+                actorMainMenu->addSeparator();
+                actorMainMenu->addAction(showActorProxy);
             }
 
             foreach (QMenu* menu, actorMenus) {
@@ -547,6 +558,14 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
                 if (!actor->pultIconName().isEmpty()) {
                     showPult->setIcon(pultIcon);
+                }
+
+                if (actor->moduleMenus().size() > 0) {
+                    QMenu * actorMainMenu = actor->moduleMenus().first();
+                    Widgets::ActionProxy *showRCProxy =
+                            new Widgets::ActionProxy(showPult, actorMainMenu);
+                    showRCProxy->setText(tr("Show actor control"));
+                    actorMainMenu->addAction(showRCProxy);
                 }
             }
 
