@@ -462,7 +462,8 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
 
 void TextCursor::moveTo(int row, int col)
 {
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
     visibleFlag_ = false;
     updateRequest();
     row_ = qMax(0, row);
@@ -481,7 +482,8 @@ void TextCursor::moveTo(int row, int col)
 
 void TextCursor::selectRangeText(int fromRow, int fromCol, int toRow, int toCol)
 {
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
     visibleFlag_ = false;
     updateRequest();
 
@@ -626,7 +628,8 @@ static uint countLeadingSpacesInString(const QString & s)
 void TextCursor::movePosition(QTextCursor::MoveOperation op, MoveMode m, int n)
 {
     visibleFlag_ = false;
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
     updateRequest();
     bool wasRectSelection = hasRectSelection();
     if (m==MM_Move) {
@@ -1397,7 +1400,8 @@ void TextCursor::insertText(const QString &text)
 
     bool sel = hasSelection();
     bool bsel = hasRectSelection();
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
 
     if (sel) {
         editor_->document()->undoStack()->beginMacro("replaceSelectedText");
@@ -1460,7 +1464,8 @@ int TextCursor::justifyLeft(const QString &text) const
 
     if (!editor_->analizerInstance_ || text.trimmed().isEmpty())
         return column_;
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
 
     // Emulate text change and get line property
 
@@ -1516,7 +1521,8 @@ void TextCursor::removePreviousChar()
     int fromLineUpdate = -1;
     int toLineUpdate = -1;
 
-    bool hardIndents = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndents = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
 
     const int indent = hardIndents ? editor_->document()->indentAt(row_) : 0;
     int textPos = column_ - indent * 2;
@@ -1690,7 +1696,7 @@ void TextCursor::removeSelectedText()
         return;
 
     bool hardIndents = editor_->analizer() &&
-            !editor_->analizerPlugin_->indentsSignificant();
+            Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();
 
     // Find where to place cursor after deletion
 

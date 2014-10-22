@@ -361,15 +361,16 @@ void EditorInstance::updateInsertMenu()
             insertMenu_->addAction(m.action);
             connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
             if (!m.key.isNull()) {
-                const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
+//                const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
                 const QKeySequence ks2(escComa + QString(m.key));
-                if (ks == ks2) {
-                    m.action->setShortcut(ks);
-                }
-                else {
-                    const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
-                    m.action->setShortcuts(shortcuts);
-                }
+                m.action->setProperty("fakeShortcut", ks2.toString());
+//                if (ks == ks2) {
+//                    m.action->setShortcut(ks);
+//                }
+//                else {
+//                    const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
+//                    m.action->setShortcuts(shortcuts);
+//                }
             }
             else if (uint(m.extKey) != 0u) {
                 QString repr;
@@ -414,10 +415,12 @@ bool EditorInstance::tryEscKeyAction(const QString &text)
     }
     const QList<Macro> allMacros = systemMacros_ + userMacros_;
     const QChar ch = text.at(0).toUpper();
+    const QChar altCh = Utils::cyrillicKey(ch).toUpper();
     foreach (const Macro & m, allMacros) {
         bool keyMatch = m.key.toUpper() == ch;
+        bool altKeyMatch = m.key.toUpper() == altCh;
         bool enabled = m.action && m.action->isEnabled();
-        if (keyMatch && enabled) {
+        if ( (keyMatch || altKeyMatch) && enabled) {
             m.action->trigger();
             return true;
         }
@@ -513,11 +516,20 @@ void EditorInstance::updateFromAnalizer()
         }
         doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
-        if (!analizerPlugin_->indentsSignificant()) {
+        if (Shared::AnalizerInterface::HardIndents == analizerPlugin_->indentsBehaviour()) {
             int newIndent = doc_->indentAt(i);
             int diffIndent = newIndent - oldIndent;
-            if (cursor_->row()==i) {
-                cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
+            if (cursor_->row()==i) {                
+                int newCursorColumn = 0;
+                if (doc_->at(i).text.isEmpty()) {
+                    newCursorColumn = 2 * newIndent;
+                }
+                else {
+                    int oldCursorColumn = cursor_->column();
+                    newCursorColumn = oldCursorColumn + 2 * diffIndent;
+                }
+                newCursorColumn = qMax(newCursorColumn, 0);
+                cursor_->setColumn(newCursorColumn);
             }
         }
     }
@@ -691,7 +703,7 @@ Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
         int row = cursor()->row();
         int col = cursor()->column();
         const QString & text = document()->textAt(row);
-        if (!analizerPlugin_->indentsSignificant()) {
+        if (Shared::AnalizerInterface::HardIndents==analizerPlugin_->indentsBehaviour()) {
             col -= document()->indentAt(row) * 2;
         }
         result = analizerInstance_->helper()->itemUnderCursor(text, row, col, true);

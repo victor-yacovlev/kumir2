@@ -354,6 +354,9 @@ QString LLVMCodeGeneratorPlugin::findLibraryByName(const QString &baseName)
 QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const QByteArray &bitcode)
 {
 #ifdef Q_OS_WIN32
+#if LLVM_VERSION_MINOR != 4
+#error "Windows version works only with LLVM 3.4 but not 3.5!"
+#endif
     static const QString bundledToolchainPath = QDir::toNativeSeparators(
                 QDir::cleanPath(
                     QCoreApplication::applicationDirPath() + "/../llvm-mingw/"
@@ -365,7 +368,7 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 #else
     static const QString LLC = "llc";
     static const QString AS = "clang"; // GNU as in most linux distros doesn't accept llvm-3.5 generated syntax
-    static const QString LD = "clang"; // libstdc++ might have several names in Linux, use GCC to find it
+    static const QString LD = "clang"; // libstdc++ might have several names in Linux, use compiler to find it
 #endif
 
     // ====== Write bitcode to external file
@@ -385,12 +388,27 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     QByteArray output;
     QProcess process;
 
-    // ====== Compile bitcode to machine code using LLVM llc
+    QStringList llcArguments;
+    bool skipSecondStage = false;
 
-    const QStringList llcArguments = QStringList()
-            << "-O3"
-            << "-o" << QDir::toNativeSeparators(asmFileName)
-            << QDir::toNativeSeparators(bcFileName);
+    if (LLC.contains("clang")) {
+        // === Compile bitcode to object using CLang
+        skipSecondStage = true;
+        llcArguments = QStringList()
+                << "-c"
+                << "-O3"
+                << "-o" << QDir::toNativeSeparators(objFileName)
+                << QDir::toNativeSeparators(bcFileName);
+    }
+    else {
+        // ====== Compile bitcode to ASM code using LLVM llc
+        skipSecondStage = false;
+        llcArguments = QStringList()
+                << "-O3"
+                << "-o" << QDir::toNativeSeparators(asmFileName)
+                << QDir::toNativeSeparators(bcFileName);
+    }
+
 #ifdef Q_OS_WIN32
     process.setWorkingDirectory(bundledToolchainPath);
 #endif
@@ -421,42 +439,44 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
         qApp->quit();
     }
 
-    // ====== Assemble object using GNU as
+    if (!skipSecondStage) {
+        // ====== Assemble object using GNU as
 
-    QStringList asArguments = QStringList()
-            << "-o" << QDir::toNativeSeparators(objFileName)
-            << QDir::toNativeSeparators(asmFileName);
-    if (AS.endsWith("clang")) {
-        asArguments.prepend("-c");
-    }
-#ifdef Q_OS_WIN32
-    process.setWorkingDirectory(bundledToolchainPath);
-#endif
-    process.setProcessChannelMode(QProcess::MergedChannels);
-    process.start(AS, asArguments);
-    qDebug() << "Starting: " << AS << asArguments;
-    if (!process.waitForFinished()) {
-        errorMessage = QString("== ERROR == %1 %2 failed: %3")
-                .arg(AS)
-                .arg(asArguments.join(" "))
-                .arg(process.errorString())
-                ;
-    }
-    else {
-        output = process.readAllStandardOutput() + "\n" +
-                process.readAllStandardError();
-        qDebug() << output;
-        const int status = process.exitStatus();
-        if (0 != status) {
-            errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
-                    .arg(AS).arg(asArguments.join(" ")).arg(status);
+        QStringList asArguments = QStringList()
+                << "-o" << QDir::toNativeSeparators(objFileName)
+                << QDir::toNativeSeparators(asmFileName);
+        if (AS.endsWith("clang") || AS.endsWith("clang.exe")) {
+            asArguments.prepend("-c");
         }
-    }
+    #ifdef Q_OS_WIN32
+        process.setWorkingDirectory(bundledToolchainPath);
+    #endif
+        process.setProcessChannelMode(QProcess::MergedChannels);
+        process.start(AS, asArguments);
+        qDebug() << "Starting: " << AS << asArguments;
+        if (!process.waitForFinished()) {
+            errorMessage = QString("== ERROR == %1 %2 failed: %3")
+                    .arg(AS)
+                    .arg(asArguments.join(" "))
+                    .arg(process.errorString())
+                    ;
+        }
+        else {
+            output = process.readAllStandardOutput() + "\n" +
+                    process.readAllStandardError();
+            qDebug() << output;
+            const int status = process.exitStatus();
+            if (0 != status) {
+                errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
+                        .arg(AS).arg(asArguments.join(" ")).arg(status);
+            }
+        }
 
-    if (errorMessage.length() > 0) {
-        std::cerr << errorMessage.toStdString() << std::endl;
-        qApp->setProperty("returnCode", 5);
-        qApp->quit();
+        if (errorMessage.length() > 0) {
+            std::cerr << errorMessage.toStdString() << std::endl;
+            qApp->setProperty("returnCode", 5);
+            qApp->quit();
+        }
     }
 
     // ====== Link executable using GNU ld

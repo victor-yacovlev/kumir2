@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>Invalid color</source>
-        <translation>Неверный цвет</translation>
+        <translation type="obsolete">Неверный цвет</translation>
     </message>
     <message>
         <source>Invalid points number</source>
@@ -101,6 +101,10 @@
     <message utf8="true">
         <source>Предварительный просмотр шаблона:</source>
         <translation>Предварительный просмотр шаблона:</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>

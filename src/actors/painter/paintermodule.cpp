@@ -293,11 +293,13 @@ void PainterModule::runNewPage(const int width, const int height, const Color& b
 
 void PainterModule::runCircle(const int xc, const int yc, const int r)
 {
-    int x0 = xc-r;
-    int y0 = yc-r;
-//    int x1 = xc+r;
-//    int y1 = yc+r;
-    runEllipse(x0,y0,2 * r,2 * r);
+    canvasLock->lock();
+    QPainter p(canvas.data());
+    p.setPen(pen);
+    p.setBrush(brush);
+    p.drawEllipse(QPoint(xc, yc), r, r);
+    canvasLock->unlock();
+    markViewDirty();
 }
 
 
@@ -493,13 +495,14 @@ void PainterModule::runSetFont(const QString& family, const int size, const bool
 }
 
 
-void PainterModule::runEllipse(const int x, const int y, const int r1, const int r2)
+void PainterModule::runEllipse(const int x_left, const int y_top, const int x_right, const int y_bottom)
 {
     canvasLock->lock();
     QPainter p(canvas.data());
     p.setPen(pen);
     p.setBrush(brush);
-    p.drawEllipse(x, y, r1, r2);
+    const QRect ellipseRect(QPoint(x_left, y_top), QPoint(x_right, y_bottom));
+    p.drawEllipse(ellipseRect.center(), ellipseRect.width()/2, ellipseRect.height()/2);
     canvasLock->unlock();
     markViewDirty();
 }

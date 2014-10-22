@@ -19,6 +19,7 @@ public:
                              bool teacherMode
                              );
     static QChar latinKey(const QChar & cyrillicKey);
+    static QChar cyrillicKey(const QChar & latinKey);
 };
 
 } // namespace Editor

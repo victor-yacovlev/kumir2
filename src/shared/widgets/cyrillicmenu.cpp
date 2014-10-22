@@ -23,7 +23,12 @@ void CyrillicMenu::paintEvent(QPaintEvent *event)
         opt.rect = actionGeometry(action);
         if (!action->isSeparator()) {
             opt.text = action->text()+"\t";
-            opt.text += shortcutToText(action->shortcut());
+            if (action->property("fakeShortcut").toString().length() > 0) {
+                opt.text += action->property("fakeShortcut").toString();
+            }
+            else {
+                opt.text += shortcutToText(action->shortcut());
+            }
         }
         QRegion adjustedActionReg(opt.rect);
         emptyArea -= adjustedActionReg;

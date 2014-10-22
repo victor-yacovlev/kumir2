@@ -28,6 +28,8 @@ FunctionEnd
 
 Section "Kumir" Kumir
 
+	RMDir /r /REBOOTOK "$INSTDIR\lib\kumir2\plugins" ; Prevent conflicting modules from previous intallation
+
 	SetOutPath "$INSTDIR"
 	File LICENSE_RU.rtf
 	File vcredist_x86.exe
@@ -65,5 +67,24 @@ Section "Kumir" Kumir
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
 	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+
+	; Uninstaller registration
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
+
+	WriteUninstaller $INSTDIR\uninstall.exe
 	
+SectionEnd
+
+Section "Uninstall"
+	Delete /REBOOTOK "$INSTDIR\uninstall.exe"
+	RMDir /r /REBOOTOK "$INSTDIR"
+	RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
+
+        DeleteRegKey HKCR ".kum"
+        DeleteRegKey HKCR "ru.niisi.kumir2.program"
+        DeleteRegKey HKCR ".kod"
+        DeleteRegKey HKCR "ru.niisi.kumir2.bytecode"
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2"
+
 SectionEnd
