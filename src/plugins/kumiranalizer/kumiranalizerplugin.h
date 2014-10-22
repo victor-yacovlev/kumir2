@@ -37,7 +37,7 @@ public:
     inline bool primaryAlphabetIsLatin() const { return false; }
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline bool supportPartialCompiling() const { return true; }
-    inline bool indentsSignificant() const { return false; }
+    inline IndentsBehaviour indentsBehaviour() const { return HardIndents; }
 
     inline QString defaultDocumentFileNameSuffix() const { return "kum"; }
     inline QString languageName() const { return QString::fromUtf8("Кумир"); }    

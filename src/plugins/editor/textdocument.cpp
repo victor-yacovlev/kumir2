@@ -36,7 +36,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
     }
     TextLine tl = data_[line];
     uint nlOffset = text == "\n" ? 1 : 0;
-    while (pos>tl.text.length() + nlOffset) {
+    while (pos>int(tl.text.length() + nlOffset)) {
         blankChars ++;
         tl.text.append(' ');
         tl.selected << false;
@@ -597,7 +597,8 @@ struct Chunk {
 };
 
 static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
-                                        const TextLine & textLine)
+                                        const TextLine & textLine,
+                                        bool primaryAlphabetIsLatin)
 {
     using namespace Shared;
     QList<Chunk> result;
@@ -614,13 +615,13 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
             // Create first empty chunk of text
             Chunk chunk;
             chunk.bold = chunk.error = false;
-            chunk.italic = latin;
+            chunk.italic = latin && !primaryAlphabetIsLatin;
             chunk.format = highlight[i];
             chunk.text += text[i];
             result.push_back(chunk);
         }
         else if (result.last().format==highlight[i] &&
-                 result.last().italic!=latin)
+                 result.last().italic!=(latin && !primaryAlphabetIsLatin))
         {
             // Continue the same format chunk of text
             Chunk & chunk = result.last();
@@ -631,7 +632,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
             // Make new format chunk of text
             Chunk chunk;
             chunk.bold = chunk.error = false;
-            chunk.italic = latin;
+            chunk.italic = latin && !primaryAlphabetIsLatin;
             chunk.format = highlight[i];
             chunk.text += text[i];
             result.push_back(chunk);
@@ -800,7 +801,8 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
             result.append("}");
         }
         const TextLine & textLine = data_[i];
-        const QList<RTF::Chunk> chunks = splitLineIntoChunks(editor_->mySettings(), textLine);
+        bool primaryAlphabetIsLatin = editor_->analizer() && editor_->analizerPlugin_->primaryAlphabetIsLatin();
+        const QList<RTF::Chunk> chunks = splitLineIntoChunks(editor_->mySettings(), textLine, primaryAlphabetIsLatin);
         for (uint j=0; j<chunks.size(); j++) {
             result.append(chunks[j].data);
         }

@@ -14,9 +14,11 @@ namespace Shared {
 
 class AnalizerInterface {
 public:
+    enum IndentsBehaviour { HardIndents, PythonIndents, FreeIndents };
+
     virtual bool primaryAlphabetIsLatin() const = 0;
     virtual bool caseInsensitiveGrammatic() const = 0;
-    virtual bool indentsSignificant() const = 0;
+    virtual IndentsBehaviour indentsBehaviour() const = 0;
     virtual QString languageName() const = 0;
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 

@@ -924,7 +924,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     paintText(&p, e->rect().translated(-offset()));
 
     // Paint structure marks
-    if (editor_->analizer() && editor_->analizer()->plugin()->indentsSignificant()) {
+    if (editor_->analizer() && Shared::AnalizerInterface::PythonIndents == editor_->analizer()->plugin()->indentsBehaviour()) {
         paintProgramStructureLines(&p, e->rect().translated(-offset()));
     }
 
@@ -1418,7 +1418,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
             const bool protecteed = editor_->cursor()->modifiesProtectedLiines();
             if (!protecteed) {
-                bool addIndent = editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
+                bool addIndent = editor_->analizerPlugin_ &&
+                        Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
                 if (!addIndent) {
                     editor_->cursor()->evaluateCommand("\n");
                 }
@@ -1427,11 +1428,13 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                             ? editor_->document()->at(editor_->cursor()->row()).text : QString();
 
                     int indentSpaces = 0;
+                    bool hasTextAfterCursor = false;
                     for (int i=0; i<curText.length(); i++) {
                         if (curText.at(i) == ' ') {
                             indentSpaces += 1;
                         }
                         else {
+                            hasTextAfterCursor = i < (curText.length() - 1);
                             break;
                         }
                     }
@@ -1449,7 +1452,13 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                         editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
                     QString indent;
                     int proposedIndent = 4 * editor_->document()->indentAt(editor_->cursor()->row()+1);
-                    indentSpaces = qMax(indentSpaces, proposedIndent);
+
+                    if (!hasTextAfterCursor &&
+                            Shared::AnalizerInterface::PythonIndents ==
+                            editor_->analizerPlugin_->indentsBehaviour())
+                    {
+                        indentSpaces = qMax(indentSpaces, proposedIndent);
+                    }
                     indent.fill(' ', indentSpaces);
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
@@ -1461,7 +1470,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         }
         else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
             bool checkForIndent = !editor_->cursor()->hasSelection() &&
-                    editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant();
+                    editor_->analizerPlugin_ &&
+                    Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
             if (!checkForIndent) {
                 editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
             }
@@ -1516,7 +1526,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                 doAutocomplete();
         }
         else if (e->key()==Qt::Key_Tab) {
-            if (editor_->analizerPlugin_ && editor_->analizerPlugin_->indentsSignificant()) {
+            if (editor_->analizerPlugin_ &&
+                    Shared::AnalizerInterface::HardIndents!=editor_->analizerPlugin_->indentsBehaviour()) {
                 editor_->cursor()->evaluateCommand("    ");
             }
             else if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()) {
@@ -2103,7 +2114,8 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
-    bool hardIndent = editor_->analizer() && !editor_->analizerPlugin_->indentsSignificant();
+    bool hardIndent = editor_->analizer() &&
+            Shared::AnalizerInterface::HardIndents==editor_->analizerPlugin_->indentsBehaviour();
     for (int i=startLine; i<endLine+1; i++) {
         if (i<editor_->document()->linesCount()) {
             int indentSpace = hardIndent ? 2 * cw * editor_->document()->indentAt(i) : 0;
@@ -2450,7 +2462,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     for (uint i=startLine; i<=endLine; i++)
     {
         bool hardIndents = editor_->analizer() &&
-                !editor_->analizerPlugin_->indentsSignificant();
+                Shared::AnalizerInterface::HardIndents==editor_->analizerPlugin_->indentsBehaviour();
 
         // Indent count (in logical levels)
         uint indent = hardIndents ? editor_->document()->indentAt(i) : 0u;
@@ -2663,7 +2675,11 @@ void EditorPlane::paintProgramStructureLines(QPainter *p, const QRect &rect)
 
             p->drawLine(x1, y1, x1, y2);
 
-            if (i+1 > nextIndent && nextIndent < curIndent) {
+            if (
+                    (i+1 > nextIndent && nextIndent < curIndent) ||
+                    (curIndent > 0 && l==linesCount-1)
+               )
+            {
                 x2 = x1 + CW * 3;
                 p->drawLine(x1, y2, x2, y2);
             }

@@ -516,16 +516,20 @@ void EditorInstance::updateFromAnalizer()
         }
         doc_->at(i).multipleStatementsInLine = analizerInstance_->multipleStatementsInLine(i);
         doc_->marginAt(i).errors.clear();
-        if (!analizerPlugin_->indentsSignificant()) {
+        if (Shared::AnalizerInterface::HardIndents == analizerPlugin_->indentsBehaviour()) {
             int newIndent = doc_->indentAt(i);
             int diffIndent = newIndent - oldIndent;
-            if (cursor_->row()==i) {
+            if (cursor_->row()==i) {                
+                int newCursorColumn = 0;
                 if (doc_->at(i).text.isEmpty()) {
-                    cursor_->setColumn(qMax(2 * newIndent, 0));
+                    newCursorColumn = 2 * newIndent;
                 }
                 else {
-                    cursor_->setColumn(qMax(cursor_->column()+2*diffIndent, 0u));
+                    int oldCursorColumn = cursor_->column();
+                    newCursorColumn = oldCursorColumn + 2 * diffIndent;
                 }
+                newCursorColumn = qMax(newCursorColumn, 0);
+                cursor_->setColumn(newCursorColumn);
             }
         }
     }
@@ -699,7 +703,7 @@ Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
         int row = cursor()->row();
         int col = cursor()->column();
         const QString & text = document()->textAt(row);
-        if (!analizerPlugin_->indentsSignificant()) {
+        if (Shared::AnalizerInterface::HardIndents==analizerPlugin_->indentsBehaviour()) {
             col -= document()->indentAt(row) * 2;
         }
         result = analizerInstance_->helper()->itemUnderCursor(text, row, col, true);
