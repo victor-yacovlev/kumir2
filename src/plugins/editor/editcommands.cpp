@@ -29,7 +29,8 @@ void InsertCommand::redo()
         return;
     cursorRow = cursor->row();
     cursorCol = cursor->column();
-    bool hardIndents = analizer && !analizer->plugin()->indentsSignificant();
+    bool hardIndents = analizer &&
+            Shared::AnalizerInterface::HardIndents==analizer->plugin()->indentsBehaviour();
     doc->insertText(text, analizer, line, pos, blankLines, blankChars);
     QStringList lines = text.split("\n", QString::KeepEmptyParts);
     if (lines.size()>1) {
