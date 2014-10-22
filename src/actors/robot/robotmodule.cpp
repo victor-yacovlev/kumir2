@@ -284,7 +284,7 @@ namespace ActorRobot {
         //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
         //tempItm->setZValue(1);
         
-
+        
     }
     void FieldItm::hideRTItm()
     {
@@ -2684,7 +2684,7 @@ namespace ActorRobot {
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             view->repaint();
-        
+            
             return;
         }
         if(mode==TEMP_MODE)
@@ -3340,15 +3340,15 @@ void RobotModule::createGui()
    // m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     //QDeclarativeItem * pult = qobject_cast<QDeclarativeItem*>(m_pultWidget->rootObject());
     m_pultWidget = new RoboPult();
-    connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runGoLeft()));
-    connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runGoRight()));
+  //  connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runGoLeft()));
+   // connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(goUp()), this, SLOT(runGoUp()));
     connect(m_pultWidget, SIGNAL(goDown()), this, SLOT(runGoDown()));
     connect(m_pultWidget, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
     connect(m_pultWidget, SIGNAL(goRight()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
-    connect(m_pultWidget, SIGNAL(checkWallLeft()), this, SLOT(runIsWallAtLeft()));
-    connect(m_pultWidget, SIGNAL(checkWallRight()), this, SLOT(runIsWallAtRight()));
+    connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runIsWallAtLeft()));
+    connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runIsWallAtRight()));
     connect(m_pultWidget, SIGNAL(hasUpWall()), this, SLOT(runIsWallAtTop()));
     connect(m_pultWidget, SIGNAL(hasDownWall()), this, SLOT(runIsWallAtBottom()));
     connect(m_pultWidget, SIGNAL(noLeftWall()), this, SLOT(runIsFreeAtLeft()));
@@ -3357,8 +3357,8 @@ void RobotModule::createGui()
     connect(m_pultWidget, SIGNAL(noDownWall()), this, SLOT(runIsFreeAtBottom()));
     connect(m_pultWidget, SIGNAL(Rad()), this, SLOT(runRadiation()));
     connect(m_pultWidget, SIGNAL(Temp()), this, SLOT(runTemperature()));
-    connect(m_pultWidget, SIGNAL(checkColored()), this, SLOT(runIsColor()));
-    connect(m_pultWidget, SIGNAL(checkClear()), this, SLOT(runIsClear()));
+    connect(m_pultWidget, SIGNAL(Colored()), this, SLOT(runIsColor()));
+    connect(m_pultWidget, SIGNAL(Clean()), this, SLOT(runIsClear()));
     connect(m_pultWidget, SIGNAL(Color()), this, SLOT(runDoPaint()));
 
     connect(m_pultWidget, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
@@ -4367,6 +4367,8 @@ void RobotModule::setWindowSize()
     
    void RobotView::mouseReleaseEvent ( QMouseEvent * event )
     {
+        repaint();
+        update();
         if(robotField->isEditMode())
             
         { //event->ignore ();

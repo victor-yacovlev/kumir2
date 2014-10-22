@@ -43,6 +43,7 @@ public:
 	~loggerButton(){};
 	void upArrowType(bool b){isUpArrow=b;};
     void loadButtons(QDir dir);
+
 signals:
 	void pressed();
 protected:
@@ -198,6 +199,25 @@ public:
     {
         iconoffs=value;
     }
+    void setQmode(bool mode)
+    {
+        qmode=mode;
+        repaint();
+    };
+    bool Qmode()
+    {
+        return  qmode;
+    };
+    void setQu(bool qu)
+    {
+        SetQu=qu;
+    }
+    void setQPos(QPoint pos)
+    {
+        posQ=pos;
+        SetQu=true;
+    }
+    
 signals:
 	void pressed();
 	void clicked();
@@ -213,10 +233,11 @@ private:
     int posX,posY,iconoffs;
     uint direction;
     QImage buttonImageUp,buttonImageDown,buttonIcon;
-    bool downFlag,checked,checkable,mouseOver,icon;
+    bool downFlag,checked,checkable,mouseOver,icon,qmode,SetQu;
     QWidget* Parent;
     QVector<QLine> upArrow,downArrow,leftArrow,rightArrow;
     QString text;
+    QPoint posQ;
 };
 
 

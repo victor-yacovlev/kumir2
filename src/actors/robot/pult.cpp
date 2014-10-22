@@ -33,19 +33,25 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
         UpB->hide();
         buttUp=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
         buttUp->move(90,170);
-
+        buttUp->setQPos(QPoint(buttUp->size().width()/2-2,20));
+    
         DownB->hide();
         buttDown=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
         buttDown->move(DownB->pos());
+        buttDown->setQu(true);
+    buttDown->setQPos(QPoint(buttDown->size().width()/2-2,buttDown->size().height()-10));
 	buttDown->setDirection(DOWN);
 
         LeftB->hide();
         buttLeft=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
         buttLeft->move(LeftB->pos());
+        buttLeft->setQu(true);
+        buttLeft->setQPos(QPoint(15,buttLeft->size().height()/2+3));
         buttLeft->setDirection(LEFT);
         RightB->hide();
         buttRight=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
         buttRight->move(RightB->pos());
+        buttRight->setQPos(QPoint(buttRight->size().width()-15,buttRight->size().height()/2+3));
         buttRight->setDirection(RIGHT);
         
         StenaB->hide();
@@ -53,6 +59,7 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
         askStena->move(StenaB->pos());
         askStena->setCheckable(true);
 	askStena->setText(trUtf8("  "));
+     askStena->setIconOffset(5);
 	askStena->loadIcon(ActorRobot::RobotModule::self->myResourcesDir().absoluteFilePath("stena.png"));
 	askStena->setCheckable(true);
 
@@ -80,7 +87,14 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
     buttTemp->setIconOffset(10);
 	buttTemp->loadIcon(ActorRobot::RobotModule::self->myResourcesDir().absoluteFilePath("tC.png"));
 
-	CenterB->setIcon(QIcon(ActorRobot::RobotModule::self->myResourcesDir().absoluteFilePath("robo_field.png")));
+    buttCenter=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
+    CenterB->hide();
+    buttCenter->setText(trUtf8(" "));
+    buttCenter->move(CenterB->pos());
+    buttCenter->loadIcon(ActorRobot::RobotModule::self->myResourcesDir().absoluteFilePath("btn_paint.png"));
+    buttCenter->setIconOffset(19);
+    buttCenter->setQPos(QPoint(buttCenter->size().width()/2-4,buttCenter->size().height()/2+5));
+	//CenterB->setIcon(QIcon(ActorRobot::RobotModule::self->myResourcesDir().absoluteFilePath("robo_field.png")));
 	connect(buttUp,SIGNAL(clicked()),this,SLOT(Up()));
 	connect(buttDown,SIGNAL(clicked()),this,SLOT(Down()));
 	connect(buttLeft,SIGNAL(clicked()),this,SLOT(Left()));
@@ -91,7 +105,7 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
 
 	connect(askStena,SIGNAL(clicked()),this,SLOT(SwStena()));
 	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
-	connect(CenterB,SIGNAL(clicked()),this,SLOT(CenterButton()));
+	connect(buttCenter,SIGNAL(clicked()),this,SLOT(CenterButton()));
 
 	connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
 
@@ -118,54 +132,70 @@ void RoboPult::LinkOK(){link=true;greenLight->setLink(link);greenLight->repaint(
 
 void RoboPult::Up()
   {
-  if(askStena->isChecked () ){emit hasUpWall(); askStena->setChecked(false);qWarning("Up Stena");;return;};
+  if(askStena->isChecked () ){emit hasUpWall(); askStena->setChecked(false);switchButt();return;};
   if(askFree->isChecked () ){emit noUpWall(); askFree->setChecked(false);return;};
   emit goUp();
   };
 void RoboPult::Down()
   {
-  if(askStena->isChecked () ){emit hasDownWall(); askStena->setChecked(false);return;};
-  if(askFree->isChecked () ){emit noDownWall(); askFree->setChecked(false);return;};
+      if(askStena->isChecked () ){emit hasDownWall(); askStena->setChecked(false);switchButt();return;};
+      if(askFree->isChecked () ){emit noDownWall(); askFree->setChecked(false);switchButt();return;};
   emit goDown();
   };
 void RoboPult::Left()
   {
-  if(askStena->isChecked () ){emit hasLeftWall(); askStena->setChecked(false);return;};
-  if(askFree->isChecked () ){emit noLeftWall(); askFree->setChecked(false);return;};
+      
+      if(askStena->isChecked () ){emit hasLeftWall(); askStena->setChecked(false);switchButt();return;};
+      if(askFree->isChecked () ){emit noLeftWall(); askFree->setChecked(false);switchButt();return;};
   emit goLeft();
+      switchButt();
   };
 void RoboPult::Right()
   {
-  if(askStena->isChecked () ){emit hasRightWall(); askStena->setChecked(false);return;};
-  if(askFree->isChecked () ){emit noRightWall(); askFree->setChecked(false);return;};
+     
+      if(askStena->isChecked () ){emit hasRightWall(); askStena->setChecked(false);switchButt();return;};
+      if(askFree->isChecked () ){emit noRightWall(); askFree->setChecked(false);switchButt();return;};
   emit goRight();
+      switchButt();
   };
-
+void RoboPult::switchButt()
+{
+  bool  b_mode=askStena->isChecked()||askFree->isChecked ();
+    buttLeft->setQmode(b_mode);
+    buttRight->setQmode(b_mode);
+    buttUp->setQmode(b_mode);
+    buttDown->setQmode(b_mode);
+    buttCenter->setQmode(b_mode);
+};
 void RoboPult::SwStena()
   {
-   if(askFree->isChecked () ) askFree->setChecked(false);	
+   if(askFree->isChecked () ) askFree->setChecked(false);
+      switchButt();
   };
 void RoboPult::SwSvobodno()
   {
    if(askStena->isChecked () )askStena->setChecked(false);
+      switchButt();
   };
 void RoboPult::TempS()
   {
    askStena->setChecked(false);	
    askFree->setChecked(false);
+      switchButt();
   emit Temp();
   };
 void RoboPult::RadS()
   {
    askStena->setChecked(false);	
    askFree->setChecked(false);
+      switchButt();
   emit Rad();
   };
 
 void RoboPult::CenterButton()
   {
-  if(askStena->isChecked () ){emit Colored(); askStena->setChecked(false);return;};
-  if(askFree->isChecked () ){emit Clean(); askFree->setChecked(false);return;};
+  if(askStena->isChecked () ){emit Colored(); askStena->setChecked(false);switchButt();return;};
+  if(askFree->isChecked () ){emit Clean(); askFree->setChecked(false);switchButt();return;};
   emit Color();
   };
 
