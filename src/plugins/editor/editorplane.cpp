@@ -1428,11 +1428,13 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                             ? editor_->document()->at(editor_->cursor()->row()).text : QString();
 
                     int indentSpaces = 0;
+                    bool hasTextAfterCursor = false;
                     for (int i=0; i<curText.length(); i++) {
                         if (curText.at(i) == ' ') {
                             indentSpaces += 1;
                         }
                         else {
+                            hasTextAfterCursor = i < (curText.length() - 1);
                             break;
                         }
                     }
@@ -1450,7 +1452,13 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                         editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
                     QString indent;
                     int proposedIndent = 4 * editor_->document()->indentAt(editor_->cursor()->row()+1);
-                    indentSpaces = qMax(indentSpaces, proposedIndent);
+
+                    if (!hasTextAfterCursor &&
+                            Shared::AnalizerInterface::PythonIndents ==
+                            editor_->analizerPlugin_->indentsBehaviour())
+                    {
+                        indentSpaces = qMax(indentSpaces, proposedIndent);
+                    }
                     indent.fill(' ', indentSpaces);
                     editor_->cursor()->evaluateCommand("\n" + indent);
                 }
@@ -2667,7 +2675,11 @@ void EditorPlane::paintProgramStructureLines(QPainter *p, const QRect &rect)
 
             p->drawLine(x1, y1, x1, y2);
 
-            if (i+1 > nextIndent && nextIndent < curIndent) {
+            if (
+                    (i+1 > nextIndent && nextIndent < curIndent) ||
+                    (curIndent > 0 && l==linesCount-1)
+               )
+            {
                 x2 = x1 + CW * 3;
                 p->drawLine(x1, y2, x2, y2);
             }
