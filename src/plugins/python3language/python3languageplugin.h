@@ -41,7 +41,7 @@ public:
     Analizer::SourceFileInterface * sourceFileHandler();
     inline bool primaryAlphabetIsLatin() const { return true; }
     inline bool caseInsensitiveGrammatic() const { return false; }
-    inline virtual bool indentsSignificant() const { return true; }    
+    inline IndentsBehaviour indentsBehaviour() const { return PythonIndents; }
     inline QString defaultDocumentFileNameSuffix() const { return "py"; }
     inline QString languageName() const { return "Python"; }
 
