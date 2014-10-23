@@ -1126,6 +1126,7 @@ namespace ActorRobot {
                 
             };
         };
+        update();
     };
     void RoboField::destroyScene()
     {
@@ -2651,6 +2652,7 @@ namespace ActorRobot {
                 showCursorDown(rowClicked,colClicked);
             }
              else showCursorUp(rowClicked,colClicked);
+            update();
             return;
         }
         if(mode==RAD_MODE)//if radiation || temp edit mode
@@ -2673,7 +2675,7 @@ namespace ActorRobot {
                 // radSpinBox->hide();
              }
             if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
-            {
+            {update();
               //radSpinBox->hide();
              return;
             }
@@ -2684,7 +2686,7 @@ namespace ActorRobot {
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             view->repaint();
-            
+            update();
             return;
         }
         if(mode==TEMP_MODE)
@@ -2700,11 +2702,12 @@ namespace ActorRobot {
             {    clickCell=QPair<int,int>(rowClicked,colClicked);
                 qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
                 getFieldItem(rowClicked,colClicked)->temperature=tempSpinBox->value();
-                
+                update();
             }
-            redrawRTFields();  
+            redrawRTFields();
              QGraphicsView * view=views().first();
             view->repaint();
+            update();
             return;
         }
  
@@ -4352,7 +4355,9 @@ void RobotModule::setWindowSize()
         if(robotField->isEditMode())
         {
          qDebug()<<"Edit mode;";
-           QGraphicsView::mousePressEvent(event);   
+           QGraphicsView::mousePressEvent(event);
+            update();
+            repaint();
             return;
         }
         if(robotField->sceneRect().height()*c_scale> this->height()  || robotField->sceneRect().width()*c_scale> this->width())//field > view
@@ -4479,19 +4484,21 @@ void RobotView::changeEditMode(bool state)
         if(textEditBtn->isChecked ())
         {
           
-            robotField->setMode(TEXT_MODE); 
+            robotField->setMode(TEXT_MODE);
+            update();
         }
         if(radEditBtn->isChecked ())
         {
                     robotField->setMode(RAD_MODE);
             repaint();
-            
+            update();
             
         }; 
         if(tmpEditBtn->isChecked ())
         {
             robotField->setMode(TEMP_MODE);
             repaint();
+            update();
         };
         
         
