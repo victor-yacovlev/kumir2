@@ -791,6 +791,7 @@ namespace ActorRobot {
            redrawRTFields();  
            view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
            view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+           update();
        }
         if(mode==NEDIT_MODE)
         {
@@ -800,7 +801,8 @@ namespace ActorRobot {
           redrawEditFields();
           redrawRTFields();  
           view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);                                    
+          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            update();
         }
         
         if(mode==RAD_MODE)
@@ -817,7 +819,8 @@ namespace ActorRobot {
             
             
             redrawEditFields();
-            redrawRTFields();  
+            redrawRTFields();
+            update();
             
         }
         if(mode==TEMP_MODE)
@@ -834,7 +837,8 @@ namespace ActorRobot {
             
             
             redrawEditFields();
-            redrawRTFields();  
+            redrawRTFields();
+            update();
             
         }
         if(mode==TEXT_MODE)
@@ -848,8 +852,8 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
-        
-       // view->repaint();
+        update();
+        view->repaint();
         
         //repaint();
         
