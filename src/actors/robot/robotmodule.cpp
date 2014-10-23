@@ -40,10 +40,10 @@ namespace ActorRobot {
 //        return pluginManager->settingsByObject(plugin);
     }
 
-    FieldItm::FieldItm(QWidget *parent, QGraphicsScene *scene)
+    FieldItm::FieldItm( QGraphicsItem* par ,QGraphicsScene *scene)
     {
         sett=RobotModule::robotSettings();
-        Q_UNUSED(parent);
+    
         upWallLine = NULL;
         downWallLine = NULL;
         leftWallLine = NULL;
@@ -704,7 +704,7 @@ namespace ActorRobot {
     
     FieldItm* FieldItm::Copy()
     {
-        FieldItm* copy=new FieldItm();
+        FieldItm* copy=new FieldItm(0,Scene);
         copy->leftWall=leftWall;
         copy->rightWall=rightWall;
         copy->upWall=upWall;
@@ -854,8 +854,8 @@ namespace ActorRobot {
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         update();
         view->repaint();
-        
-        //repaint();
+        update();
+       
         
     }
     void RoboField::editField()
@@ -2672,13 +2672,15 @@ namespace ActorRobot {
                    
                {    clickCell=QPair<int,int>(rowClicked,colClicked);
                    qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
+                   
+                   if(!(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0))
                    getFieldItem(rowClicked,colClicked)->radiation=radSpinBox->value();
                 
                }
                  redrawRTFields();  
                 // radSpinBox->hide();
              }
-            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            if(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
             {update();
               //radSpinBox->hide();
              return;
@@ -2696,7 +2698,7 @@ namespace ActorRobot {
         if(mode==TEMP_MODE)
         {
             qDebug()<<"Temp MODE CLick";
-            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            if(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
             {
                 //radSpinBox->hide();
                 return;
