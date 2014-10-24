@@ -78,6 +78,7 @@ loggerButton::loggerButton (QDir dir, QWidget* parent):QWidget(parent)
 	upArrow.append(QLine(mid,10,mid+11,15));
 	downArrow.append(QLine(mid,15,mid-11,10));
 	downArrow.append(QLine(mid,15,mid+11,10));
+   
 };
 void loggerButton::loadButtons(QDir dir)
 {
@@ -106,6 +107,7 @@ void loggerButton::paintEvent ( QPaintEvent * event )
 		painter.setPen(whitePen);
 		if(isUpArrow)painter.drawLines(upArrow);else painter.drawLines(downArrow);
 	};
+
 };
 
 
@@ -314,7 +316,10 @@ MainButton::MainButton (QDir dir, QWidget* parent):QWidget(parent)
     checkable=false;
     mouseOver=false;
     icon=false;
+    qmode=false;
     resize(71,71);
+    SetQu=false;
+    posQ=QPoint(10,71/2);
 };
 
 void MainButton::paintEvent ( QPaintEvent * event )
@@ -322,6 +327,7 @@ void MainButton::paintEvent ( QPaintEvent * event )
     Q_UNUSED(event);
     QPainter painter(this);
     painter.setRenderHint (QPainter::Antialiasing,true );
+    QPoint m_posQ=posQ;
     if(!downFlag)
     {
 		painter.drawImage(QPoint(posX,posY),buttonImageUp);
@@ -332,14 +338,14 @@ void MainButton::paintEvent ( QPaintEvent * event )
 		drawAddons(&painter);
 		if(mouseOver)
         {
-			QLinearGradient grad( 1, 1, 5, 65);
-			grad.setColorAt(0.7,QColor(200,190,222));
-			grad.setColorAt(0.3,QColor(191,208,208));
+		//	QLinearGradient grad( 1, 1, 5, 65);
+		//	grad.setColorAt(0.7,QColor(200,190,222));
+		//	grad.setColorAt(0.3,QColor(191,208,208));
             
-			QBrush solidBrush(grad);
-			painter.setBrush(solidBrush);
-			painter.setOpacity(0.1);
-			painter.drawRect(3,3,65,65);
+		//	QBrush solidBrush(grad);
+		//	painter.setBrush(solidBrush);
+		//	painter.setOpacity(0.1);
+			//painter.drawRect(3,3,65,65);
         };
 		
     }
@@ -350,12 +356,25 @@ void MainButton::paintEvent ( QPaintEvent * event )
 			painter.drawImage(posX+3+iconoffs,posY+3+iconoffs,buttonIcon);
 		
         };
+        m_posQ=m_posQ+QPoint(3,3);
 		QPen whitePen(QColor(170,170,170));
 		whitePen.setWidth(3);
 		painter.setPen(whitePen);
         drawAddons(&painter);
 		
     };
+    if(SetQu)
+    {
+    QPen QLPen(QColor(170,170,170));
+    if(posQ.y()>30)QLPen=QPen(QColor(163,163,163));
+    if(qmode)
+    {
+    QLPen=QPen(QColor(230,255,230));
+ 
+    }
+    painter.setPen(QLPen);
+    painter.drawText(m_posQ,"?");
+    }
 };
 
 void MainButton::drawAddons(QPainter* painter)

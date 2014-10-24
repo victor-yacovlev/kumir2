@@ -70,7 +70,7 @@ public:
 	void SwSvobodno();
 	void TempS();
 	void RadS();
-
+    void switchButt();
 
 	void CenterButton();
 
@@ -103,7 +103,7 @@ private:
 	bool link;
 	void paintEvent(QPaintEvent *);
     linkLight * greenLight;
-	MainButton* buttUp,*buttDown,*buttLeft,*buttRight;
+	MainButton* buttUp,*buttDown,*buttLeft,*buttRight,*buttCenter;
 	MainButton* askStena,*askFree,*buttRad,*buttTemp;
 };
 #endif

@@ -955,11 +955,9 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     // If there is highlighted line, draw it's parts at left anf right margin
     if (highlightedTextLineNumber_!=-1)
     {
-        // Save & translate coordinate system again
-
         const QRect highlightRightRect(
                     marginLineRect().right()+1,
-                    lineHeight() * highlightedTextLineNumber_ + 1,
+                    lineHeight() * highlightedTextLineNumber_ + 1 + offset().y(),
                     marginCharactersCount() * widthInChars(),
                     lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
                     );
@@ -2220,7 +2218,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         if (-1!=highlightedTextLineNumber_ && highlightedTextLineNumber_ + 1== realLineNumber) {
             paintLineHighlight(p, QRect(
                                    0,
-                                   highlightedTextLineNumber_ * lineHeight() + 1,
+                                   highlightedTextLineNumber_ * lineHeight() + 1 + offset().y(),
                                    charWidth() * 5 + lockSymbolOffset + breakpointPaneWidth,
                                    lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
                                    )
@@ -2243,7 +2241,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         const QString txt = QString::number(realLineNumber);
         int textWidth = QFontMetrics(font()).width(txt);
         int xx = charWidth() * 3 - textWidth + lockSymbolOffset;
-        int yy = i * lineHeight() - 2;
+        int yy = i * lineHeight();
         p->drawText(xx, yy, txt);
 
         if (editor_->plugin_->teacherMode_) {

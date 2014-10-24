@@ -113,12 +113,12 @@ namespace ActorRobot {
 
     
     
-    class FieldItm: public QWidget
+    class FieldItm: public QGraphicsWidget
     {
         Q_OBJECT
     public:
         
-        FieldItm(QWidget *parent = 0,QGraphicsScene* scene=0);
+        FieldItm(QGraphicsItem *parent = 0,QGraphicsScene* scene=0);
         
         
         ~FieldItm();

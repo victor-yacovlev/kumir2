@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
-//#include <iostream> 
+ //#include <iostream> 
 
 namespace ActorRobot {
 
@@ -40,10 +40,10 @@ namespace ActorRobot {
 //        return pluginManager->settingsByObject(plugin);
     }
 
-    FieldItm::FieldItm(QWidget *parent, QGraphicsScene *scene)
+    FieldItm::FieldItm( QGraphicsItem* par ,QGraphicsScene *scene)
     {
         sett=RobotModule::robotSettings();
-        Q_UNUSED(parent);
+    
         upWallLine = NULL;
         downWallLine = NULL;
         leftWallLine = NULL;
@@ -284,7 +284,7 @@ namespace ActorRobot {
         //tempItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
         //tempItm->setZValue(1);
         
-
+        
     }
     void FieldItm::hideRTItm()
     {
@@ -704,7 +704,7 @@ namespace ActorRobot {
     
     FieldItm* FieldItm::Copy()
     {
-        FieldItm* copy=new FieldItm();
+        FieldItm* copy=new FieldItm(0,Scene);
         copy->leftWall=leftWall;
         copy->rightWall=rightWall;
         copy->upWall=upWall;
@@ -791,6 +791,7 @@ namespace ActorRobot {
            redrawRTFields();  
            view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
            view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+           update();
        }
         if(mode==NEDIT_MODE)
         {
@@ -800,7 +801,8 @@ namespace ActorRobot {
           redrawEditFields();
           redrawRTFields();  
           view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);                                    
+          view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            update();
         }
         
         if(mode==RAD_MODE)
@@ -817,7 +819,8 @@ namespace ActorRobot {
             
             
             redrawEditFields();
-            redrawRTFields();  
+            redrawRTFields();
+            update();
             
         }
         if(mode==TEMP_MODE)
@@ -834,7 +837,8 @@ namespace ActorRobot {
             
             
             redrawEditFields();
-            redrawRTFields();  
+            redrawRTFields();
+            update();
             
         }
         if(mode==TEXT_MODE)
@@ -848,10 +852,10 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
-        
-       // view->repaint();
-        
-        //repaint();
+        update();
+        view->repaint();
+        update();
+       
         
     }
     void RoboField::editField()
@@ -1126,6 +1130,8 @@ namespace ActorRobot {
                 
             };
         };
+        update();
+
     };
     void RoboField::destroyScene()
     {
@@ -2651,6 +2657,7 @@ namespace ActorRobot {
                 showCursorDown(rowClicked,colClicked);
             }
              else showCursorUp(rowClicked,colClicked);
+            update();
             return;
         }
         if(mode==RAD_MODE)//if radiation || temp edit mode
@@ -2666,14 +2673,16 @@ namespace ActorRobot {
                    
                {    clickCell=QPair<int,int>(rowClicked,colClicked);
                    qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
+                   
+                   if(!(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0))
                    getFieldItem(rowClicked,colClicked)->radiation=radSpinBox->value();
                 
                }
                  redrawRTFields();  
                 // radSpinBox->hide();
              }
-            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
-            {
+            if(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            {update();
               //radSpinBox->hide();
              return;
             }
@@ -2684,13 +2693,13 @@ namespace ActorRobot {
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
             view->repaint();
-        
+            update();
             return;
         }
         if(mode==TEMP_MODE)
         {
             qDebug()<<"Temp MODE CLick";
-            if(rowClicked>rows() || colClicked>columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
+            if(rowClicked>=rows() || colClicked>=columns() ||rowClicked<0 || colClicked<0)//clik mimio polya
             {
                 //radSpinBox->hide();
                 return;
@@ -2700,11 +2709,12 @@ namespace ActorRobot {
             {    clickCell=QPair<int,int>(rowClicked,colClicked);
                 qDebug()<<"SET F:"<<clickCell.first<<"SET SEC:"<<clickCell.second;
                 getFieldItem(rowClicked,colClicked)->temperature=tempSpinBox->value();
-                
+                update();
             }
-            redrawRTFields();  
+            redrawRTFields();
              QGraphicsView * view=views().first();
             view->repaint();
+            update();
             return;
         }
  
@@ -3340,15 +3350,15 @@ void RobotModule::createGui()
    // m_pultWidget->setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     //QDeclarativeItem * pult = qobject_cast<QDeclarativeItem*>(m_pultWidget->rootObject());
     m_pultWidget = new RoboPult();
-    connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runGoLeft()));
-    connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runGoRight()));
+  //  connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runGoLeft()));
+   // connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(goUp()), this, SLOT(runGoUp()));
     connect(m_pultWidget, SIGNAL(goDown()), this, SLOT(runGoDown()));
     connect(m_pultWidget, SIGNAL(goLeft()), this, SLOT(runGoLeft()));
     connect(m_pultWidget, SIGNAL(goRight()), this, SLOT(runGoRight()));
     connect(m_pultWidget, SIGNAL(doPaint()), this, SLOT(runDoPaint()));
-    connect(m_pultWidget, SIGNAL(checkWallLeft()), this, SLOT(runIsWallAtLeft()));
-    connect(m_pultWidget, SIGNAL(checkWallRight()), this, SLOT(runIsWallAtRight()));
+    connect(m_pultWidget, SIGNAL(hasLeftWall()), this, SLOT(runIsWallAtLeft()));
+    connect(m_pultWidget, SIGNAL(hasRightWall()), this, SLOT(runIsWallAtRight()));
     connect(m_pultWidget, SIGNAL(hasUpWall()), this, SLOT(runIsWallAtTop()));
     connect(m_pultWidget, SIGNAL(hasDownWall()), this, SLOT(runIsWallAtBottom()));
     connect(m_pultWidget, SIGNAL(noLeftWall()), this, SLOT(runIsFreeAtLeft()));
@@ -3357,8 +3367,8 @@ void RobotModule::createGui()
     connect(m_pultWidget, SIGNAL(noDownWall()), this, SLOT(runIsFreeAtBottom()));
     connect(m_pultWidget, SIGNAL(Rad()), this, SLOT(runRadiation()));
     connect(m_pultWidget, SIGNAL(Temp()), this, SLOT(runTemperature()));
-    connect(m_pultWidget, SIGNAL(checkColored()), this, SLOT(runIsColor()));
-    connect(m_pultWidget, SIGNAL(checkClear()), this, SLOT(runIsClear()));
+    connect(m_pultWidget, SIGNAL(Colored()), this, SLOT(runIsColor()));
+    connect(m_pultWidget, SIGNAL(Clean()), this, SLOT(runIsClear()));
     connect(m_pultWidget, SIGNAL(Color()), this, SLOT(runDoPaint()));
 
     connect(m_pultWidget, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
@@ -4352,7 +4362,9 @@ void RobotModule::setWindowSize()
         if(robotField->isEditMode())
         {
          qDebug()<<"Edit mode;";
-           QGraphicsView::mousePressEvent(event);   
+           QGraphicsView::mousePressEvent(event);
+            update();
+            repaint();
             return;
         }
         if(robotField->sceneRect().height()*c_scale> this->height()  || robotField->sceneRect().width()*c_scale> this->width())//field > view
@@ -4367,6 +4379,8 @@ void RobotModule::setWindowSize()
     
    void RobotView::mouseReleaseEvent ( QMouseEvent * event )
     {
+        repaint();
+        update();
         if(robotField->isEditMode())
             
         { //event->ignore ();
@@ -4477,21 +4491,28 @@ void RobotView::changeEditMode(bool state)
         if(textEditBtn->isChecked ())
         {
           
-            robotField->setMode(TEXT_MODE); 
+            robotField->setMode(TEXT_MODE);
+            update();
         }
         if(radEditBtn->isChecked ())
         {
                     robotField->setMode(RAD_MODE);
             repaint();
-            
+            update();
             
         }; 
         if(tmpEditBtn->isChecked ())
         {
             robotField->setMode(TEMP_MODE);
             repaint();
+            update();
         };
-        
+        ViewportUpdateMode mod=viewportUpdateMode ();
+        setViewportUpdateMode ( QGraphicsView::FullViewportUpdate);
+            setViewportUpdateMode (mod);
+            qDebug()<<"UPDATE VIEW";
+            scale(0.99,0.99);
+            scale(1.01,1.01);
         
     };
 } // $namespace
