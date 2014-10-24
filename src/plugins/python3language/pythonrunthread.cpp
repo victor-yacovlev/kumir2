@@ -74,6 +74,25 @@ void PythonRunThread::forceGlobalVariableValue(const QByteArray &name, PyObject 
     forcedGlobalValues_[name] = value;
 }
 
+void PythonRunThread::removeAllBreakpoints()
+{
+    QMutexLocker l(mutex_);
+    breakpoints_.clear();
+}
+
+void PythonRunThread::addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data)
+{
+    QMutexLocker l(mutex_);
+    breakpoints_[location] = data;
+}
+
+void PythonRunThread::removeBreakpoint(const BreakpointLocation &location)
+{
+    QMutexLocker l(mutex_);
+    if (breakpoints_.contains(location))
+        breakpoints_.remove(location);
+}
+
 void PythonRunThread::setStdInStream(QTextStream *stream)
 {
     callback_->setStdInStream(stream);
@@ -322,13 +341,20 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
                 }
             }
 
+
             if (PyTrace_LINE==what && !self->runMode_.isEmpty()) {
                 RunMode mode = self->runMode_.last();
-                if (RM_StepOver==mode || RM_StepIn==mode) {
+                bool stopOnStep = RM_StepOver==mode || RM_StepIn==mode;
+                bool stopOnBreakpoint = RM_Blind!=mode && RM_Idle!=mode
+                        && self->checkForBreakpoint(BreakpointLocation(fileName, lineNumber));
+                if (stopOnStep || stopOnBreakpoint) {
+                    if (RM_Regular==mode)  // not emited while in dispatchLineChange()
+                        Q_EMIT self->lineChanged(lineNumber, 0, 0);
                     Q_EMIT self->stopped(RunInterface::SR_UserInteraction);
                     self->runPauseSemaphore_->acquire();
                 }
             }
+
 
             if (PyTrace_CALL==what) {
                 RunMode curMode = RM_StepOver;
@@ -427,6 +453,12 @@ void PythonRunThread::dispatchLineChange()
     }
 
 }
+
+bool PythonRunThread::checkForBreakpoint(const BreakpointLocation &location)
+{
+    return breakpoints_.contains(location); // TODO: 1) check condition; 2) check hit count
+}
+
 
 void PythonRunThread::handlePythonInput()
 {

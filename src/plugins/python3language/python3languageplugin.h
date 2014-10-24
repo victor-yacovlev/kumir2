@@ -46,6 +46,7 @@ public:
     inline QString languageName() const { return "Python"; }
 
     // Runner interface methods
+    inline bool hasBreakpointsSupport() const { return true; }
     bool loadProgram(const RunnableProgram & program);
     inline QDateTime loadedProgramVersion() const { return loadedProgramVersion_; }
     bool canStepOut() const;
@@ -80,6 +81,10 @@ public Q_SLOTS:
     void runTesting();
     void terminate();
     void terminateAndWaitForStopped();
+
+    void removeAllBreakpoints();
+    void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
+    void removeBreakpoint(const QString &fileName, quint32 lineNo);
 
 protected:
     void connectRunThreadSignals();

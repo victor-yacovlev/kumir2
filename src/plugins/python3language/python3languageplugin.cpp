@@ -245,6 +245,27 @@ void Python3LanguagePlugin::terminateAndWaitForStopped()
     terminate();
 }
 
+void Python3LanguagePlugin::removeAllBreakpoints()
+{
+    qDebug() << "Remove all breakpoints";
+    runner_->removeAllBreakpoints();
+}
+
+void Python3LanguagePlugin::insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition)
+{
+    qDebug() << "Insert breakpoint: " << fileName << ":" << lineNo;
+    BreakpointLocation location(fileName, lineNo);
+    BreakpointData data; data.condition = condition; data.ignoreCount = ignoreCount;
+    runner_->addOrChangeBreakpoint(location, data);
+}
+
+void Python3LanguagePlugin::removeBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    qDebug() << "Remove breakpoint: " << fileName << ":" << lineNo;
+    BreakpointLocation location(fileName, lineNo);
+    runner_->removeBreakpoint(location);
+}
+
 
 } // namespace Python3Language
 

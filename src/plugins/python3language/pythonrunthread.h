@@ -15,6 +15,14 @@ class InterpreterCallback;
 class ActorsHandler;
 class VariablesModel;
 
+typedef QPair<QString,quint32> BreakpointLocation;
+struct BreakpointData {
+    QString condition;
+    quint32 ignoreCount;
+    quint32 hitCount;
+    inline explicit BreakpointData(): ignoreCount(0), hitCount(0) {}
+};
+
 class PythonRunThread : public QThread
 {
     Q_OBJECT
@@ -36,6 +44,10 @@ public /*methods*/:
     void forceGlobalVariableValue(const QByteArray & name, PyObject * value);
     inline void setTestRunCount(quint32 n) { QMutexLocker l(mutex_); testRunCount_ = n; }
     inline unsigned long testRunsLeft() const { QMutexLocker l(mutex_); return testRunCount_; }
+
+    void removeAllBreakpoints();
+    void addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data);
+    void removeBreakpoint(const BreakpointLocation &location);
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -77,6 +89,7 @@ private /*methods*/:
     void updateDebuggerVariablesModel(PyFrameObject * current_frame);
     static int python_trace_dispatch(PyObject *obj, PyFrameObject *frame, int what, PyObject *arg);
     void dispatchLineChange();
+    bool checkForBreakpoint(const BreakpointLocation & location);
     void releaseSemaphores();
 
 
@@ -108,6 +121,7 @@ private /*fields*/:
     bool canStepOut_;
     QMap<QByteArray,PyObject*> forcedGlobalValues_;
     quint32 testRunCount_;
+    QMap<BreakpointLocation,BreakpointData> breakpoints_;
 };
 
 } // namespace Python3Language
