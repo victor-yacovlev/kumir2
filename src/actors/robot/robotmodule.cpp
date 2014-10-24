@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
-//#include <iostream> 
+ //#include <iostream> 
 
 namespace ActorRobot {
 
