@@ -24,6 +24,10 @@ static const QColor PROTECTED_LINE_BACKGROUND(0x15, 0x79, 0x63, 0x40);
 static const QColor HIDDEN_LINE_BACKGROUND(0x00, 0x00, 0x00, 0x40);
 static const uint MARGIN_LINE_WIDTH = 3u /*px*/;
 
+static const uint BREAKPOINT_PANE_WIDTH = 24u /*px*/;
+static const uint BREAKPOINT_MARKER_SIZE = 12u /*px*/;
+static const QString BREAKPOINT_MARKER_COLOR = "#800000";
+
 QString EditorPlane::MarginWidthKey = "MarginWidth";
 uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 
@@ -148,16 +152,19 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     const uint lockSymbolWidth = editor_->plugin_->teacherMode_ &&
             editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
 
+    const uint breakpointPaneWidth = editor_->hasBreakpointSupport()
+            ? BREAKPOINT_PANE_WIDTH : 0u;
+
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth;
+            lockSymbolWidth + breakpointPaneWidth;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth;
+            lockSymbolWidth - breakpointPaneWidth;
 
     // Force text cursor (managed primarily from keyboard) to temporary hide
     editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
@@ -186,6 +193,26 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             editor_->document()->undoStack()->push(
                         new ToggleLineProtectedCommand(editor_->document(), textY)
                         );
+        }
+    }
+    else if (editor_->hasBreakpointSupport() && e->pos().x() < editableAreaLeftBorder) {
+        const uint realY = qMax(0, e->pos().y() - offset().y());
+        const uint textY = realY / lineHeight();
+        if (textY < editor_->document()->linesCount()) {
+            TextLine & line = editor_->document()->at(textY);
+            line.hasBreakpoint = !line.hasBreakpoint;
+            line.breakpoint.lineNo = textY;
+            if (line.hasBreakpoint) {
+                emit breakpointCnagedOrInserted(
+                            line.breakpoint.enabled,
+                            line.breakpoint.lineNo,
+                            line.breakpoint.ignoreCount,
+                            line.breakpoint.condition
+                            );
+            }
+            else {
+                emit breakpointRemoved(textY);
+            }
         }
     }
     else if (editor_->analizerInstance_ &&
@@ -370,16 +397,19 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     const uint lockSymbolWidth = editor_->plugin_->teacherMode_ &&
             editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
 
+    const uint breakpointPaneWidth = editor_->hasBreakpointSupport()
+            ? BREAKPOINT_PANE_WIDTH : 0u;
+
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth;
+            lockSymbolWidth + breakpointPaneWidth;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth;
+            lockSymbolWidth - breakpointPaneWidth;
 
     // Line number of highlighted (by mouseover) 'lock' symbol or -1 if none
     highlightedLockSymbolLineNumber_ = -1;
@@ -723,6 +753,7 @@ QPoint EditorPlane::offset() const
 {
     QPoint lineNumbersOffset(charWidth() * LEFT_MARGIN_SIZE , 0);
     QPoint lockSymbolOffset (editor_->plugin_->teacherMode_ ? LOCK_SYMBOL_WIDTH : 0, 0);
+    QPoint breakpointsOffset (editor_->hasBreakpointSupport() ? BREAKPOINT_PANE_WIDTH : 0, 0);
     QPoint scrollOffset(0, 0);
     if (editor_->scrollBar(Qt::Horizontal)->isEnabled()) {
         int valX = editor_->scrollBar(Qt::Horizontal)->value();
@@ -734,7 +765,7 @@ QPoint EditorPlane::offset() const
         valY = ( valY / lineHeight() ) * lineHeight();
         scrollOffset.setY(-valY);
     }
-    QPoint totalOffset = lineNumbersOffset + scrollOffset + lockSymbolOffset;
+    QPoint totalOffset = lineNumbersOffset + scrollOffset + lockSymbolOffset + breakpointsOffset;
     return totalOffset;
 }
 
@@ -868,57 +899,34 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     // Save state before translating scroll offsets
     p.save();
-
-    // Translate coordinate system to match scroll values
     p.translate( offset() );
 
     // Paint selections before text
     paintSelection(&p, e->rect().translated(-offset()));
     paintRectSelection(&p, e->rect().translated(-offset()));
 
-    QBrush highlightLineBrush;
-    if (highlightedTextLineNumber_!=-1)
-    {
-        const QColor bgColor = palette().color(QPalette::Base);
-        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
-        if (darkness / 3 <= 127) {
-            highlightLineBrush = QBrush(highlightedTextLineColor_);
-        }
-        else {
-            QLinearGradient gr(QPointF(0,0),QPointF(0,1));
-            gr.setCoordinateMode(QGradient::ObjectBoundingMode);
-            QColor c1 = highlightedTextLineColor_.lighter();
-            c1.setAlpha(32);
-            QColor c2 = highlightedTextLineColor_.lighter();
-            gr.setColorAt(0, c1);
-            gr.setColorAt(1, c2);
-            highlightLineBrush = QBrush(gr);
-        }
-    }
+    p.restore();
+
 
     // Paint line highlight if need before text itself
     if (highlightedTextLineNumber_!=-1)
     {
+        p.save();
+        p.translate(0, offset().y());
         const QRect highlightRect(
                     0,
                     lineHeight() * highlightedTextLineNumber_+1,
-                    widthInChars() * charWidth(),
+                    width(),
                     lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
                     );        
 
-        // Draw a rect
-        p.setBrush(highlightLineBrush);
-        p.setPen(Qt::NoPen);
-        p.drawRect(highlightRect);
-
-        // Draw rect borders
-        p.setPen(highlightedTextLineColor_);        
-        p.drawLine(highlightRect.topLeft(), highlightRect.topRight());
-        p.drawLine(highlightRect.bottomLeft(), highlightRect.bottomRight());
-
-        // Restore a pen
-        p.setPen(Qt::NoPen);
+        paintLineHighlight(&p, highlightRect);
+        p.restore();
     }
+
+    // Translate coordinate system to match scroll values
+    p.save();
+    p.translate( offset() );
 
     // Paint a text
     paintText(&p, e->rect().translated(-offset()));
@@ -948,40 +956,18 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     if (highlightedTextLineNumber_!=-1)
     {
         // Save & translate coordinate system again
-        p.save();
-        p.translate(offset());
-
-        const QRect highlightLeftRect(
-                    -offset().x(),
-                    lineHeight() * highlightedTextLineNumber_ + 1,
-                    LEFT_MARGIN_SIZE * charWidth(),
-                    lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
-                    );
 
         const QRect highlightRightRect(
-                    charWidth() * widthInChars(),
+                    marginLineRect().right()+1,
                     lineHeight() * highlightedTextLineNumber_ + 1,
                     marginCharactersCount() * widthInChars(),
                     lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
                     );
 
-        // Draw a rect
-        p.setBrush(highlightLineBrush);
-        p.setPen(Qt::NoPen);
-        p.drawRect(highlightLeftRect);
-        p.drawRect(highlightRightRect);
+        paintLineHighlight(&p, highlightRightRect);
 
-        // Draw borders
-        p.setPen(highlightedTextLineColor_);
-
-        p.drawLine(highlightLeftRect.topLeft(),
-                   highlightLeftRect.topRight());
-        p.drawLine(highlightLeftRect.bottomLeft(),
-                   highlightLeftRect.bottomRight());
-        p.drawLine(highlightRightRect.topLeft(),
-                   highlightRightRect.topRight());
-        p.drawLine(highlightRightRect.bottomLeft(),
-                   highlightRightRect.bottomRight());
+        p.save();
+        p.translate(offset());
 
         bool drawInLineRect = false;
         if (highlightedTextLineNumber_ < editor_->document()->linesCount()) {
@@ -1007,8 +993,8 @@ void EditorPlane::paintEvent(QPaintEvent *e)
             uint right = cw * highlightedTextColumnEndNumber_;
             left += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
             right += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
-            p.drawRoundedRect(left, highlightLeftRect.top(),
-                              int(right) - int(left), highlightLeftRect.height(),
+            p.drawRoundedRect(left, highlightRightRect.top(),
+                              int(right) - int(left), highlightRightRect.height(),
                               2, 2);
         }
 
@@ -1060,6 +1046,37 @@ void EditorPlane::paintEvent(QPaintEvent *e)
 
     // Accept an event
     e->accept();
+}
+
+void EditorPlane::paintLineHighlight(QPainter *painter, const QRect &rect)
+{
+    painter->save();
+    QBrush highlightLineBrush;
+    const QColor bgColor = palette().color(QPalette::Base);
+    int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
+    if (darkness / 3 <= 127) {
+        highlightLineBrush = QBrush(highlightedTextLineColor_);
+    }
+    else {
+        QLinearGradient gr(QPointF(0,0),QPointF(0,1));
+        gr.setCoordinateMode(QGradient::ObjectBoundingMode);
+        QColor c1 = highlightedTextLineColor_.lighter();
+        c1.setAlpha(32);
+        QColor c2 = highlightedTextLineColor_.lighter();
+        gr.setColorAt(0, c1);
+        gr.setColorAt(1, c2);
+        highlightLineBrush = QBrush(gr);
+    }
+    // Draw a rect
+    painter->setBrush(highlightLineBrush);
+    painter->setPen(Qt::NoPen);
+    painter->drawRect(rect);
+
+    // Draw rect borders
+    painter->setPen(highlightedTextLineColor_);
+    painter->drawLine(rect.topLeft(), rect.topRight());
+    painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+    painter->restore();
 }
 
 void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
@@ -1524,6 +1541,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
             if (editor_->analizerInstance_)
                 doAutocomplete();
+        }
+        else if (e->key()==Qt::Key_8 && e->modifiers().testFlag(Qt::ControlModifier)) {
+            if (editor_->hasBreakpointSupport())
+                editor_->toggleBreakpoint();
         }
         else if (e->key()==Qt::Key_Tab) {
             if (editor_->analizerPlugin_ &&
@@ -2156,31 +2177,55 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     const uint endLine = qMax(0, rect.bottom() / int(lineHeight()) + 1);
 
     uint lockSymbolOffset = editor_->plugin_->teacherMode_? LOCK_SYMBOL_WIDTH : 0;
+
+    bool drawBreakpoints = editor_->hasBreakpointSupport();
+
+    uint breakpointPaneWidth = drawBreakpoints? BREAKPOINT_PANE_WIDTH : 0u;
+
+    // Draw a background
+
+    // The line number backround is not editable, so use theme backround
+    // color and theme text color
+    p->setPen(Qt::NoPen);
+    p->setBrush(palette().brush(QPalette::Window));
+    p->drawRect(0,
+                0,
+                charWidth() * 4+ charWidth() / 2 + lockSymbolOffset + breakpointPaneWidth,
+                height()
+                );
+
+    // Draw a small white border to the right
+    p->setBrush(palette().brush(QPalette::Base));
+    p->drawRect(charWidth() * 4 + charWidth() / 2 + lockSymbolOffset + breakpointPaneWidth,
+                0,
+                charWidth() / 2,
+                height()
+                );
+
+    if (drawBreakpoints) {
+        p->setPen(QPen(palette().brush(QPalette::Disabled, QPalette::WindowText), 1));
+        p->drawLine(charWidth() * 4 + charWidth() / 2 + lockSymbolOffset,
+                    0,
+                    charWidth() * 4 + charWidth() / 2 + lockSymbolOffset,
+                    height());
+    }
+
     for (uint i=startLine; i<=endLine; i++) {
 
         // Visible line number accounting Y-scroll offset
         uint realLineNumber = i + qMax(0, -offset().y()) / lineHeight();
 
-        // Draw a background
 
-        // The line number backround is not editable, so use theme backround
-        // color and theme text color
-        p->setPen(Qt::NoPen);
-        p->setBrush(palette().brush(QPalette::Window));
-        p->drawRect(0,
-                    i * lineHeight(),
-                    charWidth() * 4+ charWidth() / 2 + lockSymbolOffset,
-                    lineHeight()
-                    );
 
-        // Draw a small white border to the right
-        p->setBrush(palette().brush(QPalette::Base));
-        p->drawRect(charWidth() * 4 + charWidth() / 2 + lockSymbolOffset,
-                    i * lineHeight(),
-                    charWidth() / 2,
-                    lineHeight()
-                    );
-
+        if (-1!=highlightedTextLineNumber_ && highlightedTextLineNumber_ + 1== realLineNumber) {
+            paintLineHighlight(p, QRect(
+                                   0,
+                                   highlightedTextLineNumber_ * lineHeight() + 1,
+                                   charWidth() * 5 + lockSymbolOffset + breakpointPaneWidth,
+                                   lineHeight() + HIGHTLIGHT_LINE_VERTICAL_PADDING
+                                   )
+                               );
+        }
 
         const QColor textColor = realLineNumber <= editor_->document()->linesCount()
                   // If line exists, draw number using regular fg color
@@ -2189,13 +2234,11 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                 : QColor(palette().brush(QPalette::Disabled, QPalette::WindowText).color());
 //                : QColor(Qt::lightGray);
 
-        p->setPen(textColor);
-        const QColor bgColor = palette().color(QPalette::Base);
-        int darkness = bgColor.red() + bgColor.green() + bgColor.blue();
-        if ((darkness / 3 <= 127) && (highlightedTextLineNumber_ + 1== realLineNumber)) {
+
+        p->setPen(textColor);        
+        if (-1!=highlightedTextLineNumber_ && highlightedTextLineNumber_ + 1== realLineNumber) {
             p->setPen(QColor(Qt::black));
         }
-
         // Calculate number width to align it centered
         const QString txt = QString::number(realLineNumber);
         int textWidth = QFontMetrics(font()).width(txt);
@@ -2224,6 +2267,22 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
             {
                 // Draw 'locked' symbol outline in case of mouse over
                 paintLockSymbol(p, false, lockSymbolRect);
+            }
+        }
+
+        if (drawBreakpoints) {
+            int lineNumber = realLineNumber - 1;
+            if (lineNumber >= 0 && lineNumber < editor_->document()->linesCount()) {
+                const TextLine & line = editor_->document()->at(lineNumber);
+                if (line.hasBreakpoint) {
+                    p->setPen(QPen(palette().brush(QPalette::WindowText), 1));
+                    p->setBrush(line.breakpoint.enabled ? QBrush(QColor(BREAKPOINT_MARKER_COLOR)) : Qt::NoBrush);
+                    const int x_base = charWidth() * 4 + charWidth() / 2 + lockSymbolOffset;
+                    const int x = x_base + (BREAKPOINT_PANE_WIDTH-BREAKPOINT_MARKER_SIZE)/2;
+                    const int y_base = (i-1) * lineHeight() + 2;
+                    const int y = y_base + (lineHeight()-BREAKPOINT_MARKER_SIZE)/2;
+                    p->drawRect(QRect(x, y, BREAKPOINT_MARKER_SIZE, BREAKPOINT_MARKER_SIZE));
+                }
             }
         }
     }
@@ -2862,7 +2921,9 @@ uint EditorPlane::widthInChars() const
     const uint lockSymbolWidth = (editor_->analizerInstance_ && editor_->plugin_->teacherMode_)
             ? LOCK_SYMBOL_WIDTH
             : 0;
-    const int availableWidth = myWidth - marginWidthInPixels - lockSymbolWidth;
+    const uint breakpointsPaneWidth = editor_->hasBreakpointSupport()
+            ? BREAKPOINT_PANE_WIDTH : 0;
+    const int availableWidth = myWidth - marginWidthInPixels - lockSymbolWidth - breakpointsPaneWidth;
     const int result = availableWidth / cw - 5;
     return uint( qMax(0, result) );
 }

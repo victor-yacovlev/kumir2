@@ -48,6 +48,8 @@ public:
 
     Shared::Analizer::SourceFileInterface::Data documentContents() const;
 
+    bool hasBreakpointSupport() const;
+
     void loadDocument(QIODevice * device,
                               const QString & fileNameSuffix = "",
                               const QString & sourceEncoding = "",
@@ -94,6 +96,10 @@ public:
         return nullptr!=analizerInstance_ && nullptr!=analizerInstance_->helper();
     }
     Shared::Analizer::ApiHelpItem contextHelpItem() const;
+
+    QAction * toggleBreakpointAction() const;
+    QList<Shared::Editor::Breakpoint> breakpoints() const;
+
 public slots:
     void undo();
     void redo();
@@ -102,6 +108,7 @@ public slots:
     void updateSettings(const QStringList & keys);
     void updateInsertMenu();
     bool tryEscKeyAction(const QString & text);
+    void toggleBreakpoint();
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);
@@ -111,6 +118,9 @@ signals:
     void message(const QString &);
     void requestHelpForAlgorithm(const QString & package, const QString & function);
     void recordMacroChanged(bool on);
+
+    void breakpointCnagedOrInserted(bool enabled, quint32 lineNo, quint32 ignoreCount, const QString & condition);
+    void breakpointRemoved(quint32 lineNo);
 
 
 private slots:
@@ -178,6 +188,7 @@ private /* fields */:
     QMenu * insertMenu_;
 
     QAction * separatorAction_;
+    mutable QAction * toggleBreakpoint_;
 
     QList<Macro> systemMacros_;
     QList<Macro> userMacros_;

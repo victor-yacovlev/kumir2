@@ -24,6 +24,14 @@ public:
     };
 
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
+
+    inline virtual bool hasBreakpointsSupport() const { return false; }
+    inline virtual void setBreakpoint(
+            const QString & /*sourceFileName*/,
+            const quint16 /*lineNumber*/,
+            const QString & /*condition*/,
+            const quint32 /*ignoreCount*/) {}
+
     virtual bool loadProgram(const RunnableProgram &sourceInfo) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 
@@ -50,6 +58,14 @@ public:
     virtual void setStdOutTextStream(QTextStream *) = 0;
 
     inline virtual void setSourceHelper(Analizer::HelperInterface *) {}
+
+    inline virtual void removeAllBreakpoints() {}
+
+    inline virtual void insertOrChangeBreakpoint(bool /*enabled*/, const QString &/*fileName*/,
+                                                 quint32 /*lineNo*/, quint32 /*ignoreCount*/,
+                                                 const QString & /*condition*/) {}
+
+    inline virtual void removeBreakpoint(const QString & /*fileName*/, quint32 /*lineNo*/) {}
 
 };
 

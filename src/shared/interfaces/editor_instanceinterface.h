@@ -13,6 +13,18 @@
 
 namespace Shared { namespace Editor {
 
+struct Breakpoint {
+    QString fileName;
+    bool enabled;
+    quint32 lineNo;
+    quint32 ignoreCount;
+    QString condition;
+
+    inline explicit Breakpoint(): enabled(true), lineNo(0u), ignoreCount(0u) {}
+};
+
+
+
 class InstanceInterface {
 public:
     virtual bool isModified() const = 0;
@@ -49,11 +61,16 @@ public:
     virtual QWidget * widget() = 0;
     virtual QList<QMenu*> menus() const = 0;
     virtual QList<QAction*> toolBarActions() const = 0;
+
+    virtual QAction * toggleBreakpointAction() const = 0;
+    virtual QList<Breakpoint> breakpoints() const = 0;
+
 };
 
 
 }}
 
+Q_DECLARE_METATYPE(Shared::Editor::Breakpoint)
 Q_DECLARE_INTERFACE(Shared::Editor::InstanceInterface,
                     "kumir2.Editor.InstanceInterface")
 

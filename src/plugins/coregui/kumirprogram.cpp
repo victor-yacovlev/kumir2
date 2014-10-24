@@ -4,6 +4,7 @@
 #include "dataformats/ast_algorhitm.h"
 #include "interfaces/coursesinterface.h"
 #include "widgets/iconprovider.h"
+#include "widgets/actionproxy.h"
 
 namespace CoreGUI {
 
@@ -25,12 +26,32 @@ KumirProgram::KumirProgram(QObject *parent)
     , stepInAction_(0)
     , stepOutAction_(0)
     , stopAction_(0)
+    , toggleBreakpointAction_(0)
     , actions_(0)
-
+    , breakpointActions_(0)
     , courseManagerRequest_(false)
 {
     createActions();
     createConnections();
+}
+
+void KumirProgram::setEditorInstance(Shared::Editor::InstanceInterface *editor)
+{
+    using namespace Shared;
+    editor_ = editor;
+    toggleBreakpointAction_ = 0;
+    if (breakpointActions_)
+        breakpointActions_->deleteLater();
+    breakpointActions_ = new QActionGroup(this);
+    if (editor_ && runner() && runner()->hasBreakpointsSupport()) {
+        if (editor_->toggleBreakpointAction()) {
+            toggleBreakpointAction_ = new Widgets::ActionProxy(editor_->toggleBreakpointAction(), this);
+        }
+        toggleBreakpointAction_ = editor->toggleBreakpointAction();
+        if (toggleBreakpointAction_) {
+            breakpointActions_->addAction(toggleBreakpointAction_);
+        }
+    }
 }
 
 
@@ -291,14 +312,20 @@ void KumirProgram::regularRun()
 
 void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
+    using namespace Shared;
+
     bool ok = false;
     QString sourceProgramPath;
     sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
-    Shared::RunInterface::RunnableProgram program;
+    RunInterface::RunnableProgram program;
     program.sourceFileName = sourceProgramPath;
     program.sourceData = editor_->analizer()->plugin()->sourceFileHandler()->toString(editor_->documentContents());
 
     runner()->setSourceHelper(editor_->analizer()->helper());
+
+    if (runner()->hasBreakpointsSupport()) {
+        runner()->removeAllBreakpoints();
+    }
 
     if (editor_->analizer()->compiler()) {
         // Use AST to generate executable (only Kumir language)
@@ -329,9 +356,20 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
         program.executableFileName = program.sourceFileName;
 
         ok = runner()->loadProgram(program);
-    }
+    }    
     const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
     QDir::setCurrent(newCwd);
+
+    if (runner()->hasBreakpointsSupport()) {
+        using Editor::Breakpoint;
+        QList<Breakpoint> breaks = editor_->breakpoints();
+        for (int i=0; i<breaks.size(); i++) {
+            Breakpoint bp = breaks[i];
+            bp.fileName = sourceProgramPath;
+            runner()->insertOrChangeBreakpoint(bp.enabled, bp.fileName, bp.lineNo, bp.ignoreCount, bp.condition);
+        }
+    }
+
     terminal_->start(sourceProgramPath);
 }
 
