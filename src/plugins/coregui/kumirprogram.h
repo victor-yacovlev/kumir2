@@ -36,11 +36,10 @@ public:
     inline Shared::Editor::InstanceInterface * editorInstance() const {
         return editor_;
     }
-    inline void setEditorInstance(Shared::Editor::InstanceInterface * editor) {
-        editor_ = editor;
-    }
+    void setEditorInstance(Shared::Editor::InstanceInterface * editor);
 
     inline QActionGroup * actions() { return actions_; }
+    inline QActionGroup * breakpointActions() { return breakpointActions_; }
     inline bool isRunning() const { return state_!=Idle; }
     inline void setMainWidget(QWidget * w) { mainWidget_ = w; }
     void setTerminal(Term * t, QDockWidget * w);
@@ -50,6 +49,7 @@ public:
     inline QString endStatusText() const { return endStatusText_; }
     inline RunEndStatus endStatus() const { return endStatus_; }
     inline void setCourseManagerRequest() { courseManagerRequest_ = true; }
+    static Shared::RunInterface * runner();
 signals:
     void giveMeAProgram();
 
@@ -73,7 +73,6 @@ private:
     void createActions();
     void createConnections();
 
-    static Shared::RunInterface * runner();
 
     void setAllActorsAnimationFlag(bool animationEnabled);
     void prepareRunner(Shared::GeneratorInterface::DebugLevel);
@@ -93,7 +92,9 @@ private /*fields*/:
     QAction * stepInAction_;
     QAction * stepOutAction_;
     QAction * stopAction_;
+    QAction * toggleBreakpointAction_;
     QActionGroup * actions_;
+    QActionGroup * breakpointActions_;
 
     bool courseManagerRequest_;
 

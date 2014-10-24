@@ -69,6 +69,7 @@ protected:
     void ensureHighlightedLineVisible();
 //    void updateOffset();
     void paintEvent(QPaintEvent *);
+    void paintLineHighlight(QPainter * painter, const QRect & rect);
     bool event(QEvent *e);
     void paintLockSymbol(QPainter * p, bool colored, const QRect & r);
     QPoint offset() const;
@@ -129,6 +130,10 @@ signals:
     void disableInsertActions();
     void enableInsertActions();
     void message(const QString &text);
+
+    void breakpointCnagedOrInserted(bool enabled, quint32 lineNo, quint32 ignoreCount, const QString & condition);
+    void breakpointRemoved(quint32 lineNo);
+
 
 };
 

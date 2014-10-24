@@ -10,11 +10,11 @@
 
 #include "interfaces/lexemtype.h"
 #include "interfaces/analizerinterface.h"
+#include "interfaces/editor_instanceinterface.h"
 #include "dataformats/kumfile.h"
 #include "extensionsystem/settings.h"
 
 namespace Editor {
-
 
 struct TextLine
 {
@@ -26,6 +26,8 @@ struct TextLine
         protecteed = false;
         hidden = false;
         multipleStatementsInLine = false;
+        margin.lineEndSelected = false;
+        hasBreakpoint = false;
     }
     int indentStart;
     int indentEnd;
@@ -34,6 +36,7 @@ struct TextLine
     bool lineEndSelected;
     bool protecteed;
     bool hidden;
+
     QString text;
 
     struct Margin {
@@ -43,6 +46,10 @@ struct TextLine
         QList<bool> selected;
         bool lineEndSelected;
     } margin;
+
+    Shared::Editor::Breakpoint breakpoint;
+    bool hasBreakpoint;
+
 
     bool changed;
     bool inserted;

@@ -16,6 +16,9 @@
 #include "macrolisteditor.h"
 #include "extensionsystem/pluginmanager.h"
 #include "widgets/iconprovider.h"
+#include "extensionsystem/pluginmanager.h"
+#include "interfaces/runinterface.h"
+#include "interfaces/editor_instanceinterface.h"
 
 namespace Editor {
 
@@ -46,6 +49,8 @@ void EditorInstance::lock()
     deleteTail_->setEnabled(false);
     if (toggleComment_)
         toggleComment_->setEnabled(false);
+    if (toggleBreakpoint_)
+        toggleBreakpoint_->setEnabled(false);
     for (int i=0; i<userMacros_.size(); i++) {
         userMacros_[i].action->setEnabled(false);
     }
@@ -63,6 +68,8 @@ void EditorInstance::unlock()
     deleteTail_->setEnabled(true);
     if (toggleComment_)
         toggleComment_->setEnabled(true);
+    if (toggleBreakpoint_)
+        toggleBreakpoint_->setEnabled(true);
     for (int i=0; i<userMacros_.size(); i++) {
         userMacros_[i].action->setEnabled(true);
     }
@@ -429,6 +436,27 @@ bool EditorInstance::tryEscKeyAction(const QString &text)
     return false;
 }
 
+void EditorInstance::toggleBreakpoint()
+{
+    qint32 lineNo = cursor()->row();
+    if (0 <= lineNo && lineNo < document()->linesCount()) {
+        TextLine & line = document()->at(lineNo);
+        line.hasBreakpoint = !line.hasBreakpoint;
+        plane_->update();
+        if (line.hasBreakpoint) {
+            emit breakpointCnagedOrInserted(
+                        line.breakpoint.enabled,
+                        lineNo,
+                        line.breakpoint.ignoreCount,
+                        line.breakpoint.condition
+                        );
+        }
+        else {
+            emit breakpointRemoved(lineNo);
+        }
+    }
+}
+
 void EditorInstance::playMacro()
 {
     QAction * a = qobject_cast<QAction*>(sender());
@@ -681,6 +709,11 @@ void EditorInstance::createConnections()
     connect(autocompleteWidget_.data(), SIGNAL(acceptedSuggestion(QString)),
             plane_, SLOT(finishAutoCompletion(QString)));
 
+    connect(plane_, SIGNAL(breakpointCnagedOrInserted(bool,quint32,quint32,QString)),
+            this, SIGNAL(breakpointCnagedOrInserted(bool,quint32,quint32,QString)));
+    connect(plane_, SIGNAL(breakpointRemoved(quint32)),
+            this, SIGNAL(breakpointRemoved(quint32)));
+
 }
 
 QScrollBar * EditorInstance::scrollBar(Qt::Orientation orientation)
@@ -709,6 +742,34 @@ Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
         result = analizerInstance_->helper()->itemUnderCursor(text, row, col, true);
     }
 
+    return result;
+}
+
+QAction *EditorInstance::toggleBreakpointAction() const
+{
+    if (!toggleBreakpoint_ && hasBreakpointSupport()) {
+        toggleBreakpoint_ = new QAction(plane_);
+        toggleBreakpoint_->setText(tr("Toggle line breakpoint"));
+        toggleBreakpoint_->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_8));
+        toggleBreakpoint_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(toggleBreakpoint_, SIGNAL(triggered()),
+                         this, SLOT(toggleBreakpoint()));
+    }
+    return toggleBreakpoint_;
+}
+
+QList<Shared::Editor::Breakpoint> EditorInstance::breakpoints() const
+{
+    QList<Shared::Editor::Breakpoint> result;
+    for (int i=0; i<document()->linesCount(); i++) {
+        const TextLine & line = document()->at(i);
+        if (line.hasBreakpoint) {
+            Shared::Editor::Breakpoint bp = line.breakpoint;
+            bp.lineNo = i;
+            bp.fileName = "";
+            result.push_back(bp);
+        }
+    }
     return result;
 }
 
@@ -890,6 +951,9 @@ void EditorInstance::createActions()
 
     insertMenu_ = new Widgets::CyrillicMenu(tr("Insert"), 0);
     insertMenu_->setProperty("menuRole", "insert");
+
+    toggleBreakpoint_ = 0;
+
 }
 
 const TextCursor * EditorInstance::cursor() const
@@ -1007,7 +1071,7 @@ QList<QMenu*> EditorInstance::menus() const
         }
     }
     if (nonEmptyInsertMenu)
-        result << insertMenu_;
+        result << insertMenu_;    
     return result;
 }
 
@@ -1052,6 +1116,13 @@ Shared::Analizer::SourceFileInterface::Data EditorInstance::documentContents() c
     Shared::Analizer::SourceFileInterface::Data data = doc_->toKumFile();
     data.sourceUrl = documentUrl_;
     return data;
+}
+
+bool EditorInstance::hasBreakpointSupport() const
+{
+    Shared::RunInterface * runner =
+            ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+    return nullptr!=analizerInstance_ && nullptr!=runner && runner->hasBreakpointsSupport();
 }
 
 void EditorInstance::saveDocument(const QString &fileName)

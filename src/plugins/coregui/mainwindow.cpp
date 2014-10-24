@@ -378,6 +378,23 @@ void MainWindow::updateVisibleMenus(TabWidgetElement *twe)
     menubarContextMenu_->setExplicitImportNames(twe->availableMenuNames());
 }
 
+void MainWindow::handleBreakpointCnagedOrInserted(bool enabled, quint32 lineNo, quint32 ignoreCount, const QString &condition)
+{
+    using namespace Shared::Editor;
+    InstanceInterface * editor = qobject_cast<InstanceInterface*>(sender());
+    const QString fileName = editor->documentContents().sourceUrl.toLocalFile();
+    KumirProgram::runner()->insertOrChangeBreakpoint(enabled, fileName, lineNo, ignoreCount, condition);
+}
+
+void MainWindow::handleBreakpointRemoved(quint32 lineNo)
+{
+    using namespace Shared::Editor;
+    InstanceInterface * editor = qobject_cast<InstanceInterface*>(sender());
+    const QString fileName = editor->documentContents().sourceUrl.toLocalFile();
+    KumirProgram::runner()->removeBreakpoint(fileName, lineNo);
+}
+
+
 //QString MainWindow::StatusbarWidgetCSS =
 //        "QLabel {"
 //        "   font-size: 16px;"
@@ -1080,7 +1097,12 @@ void MainWindow::prepareRunMenu()
     if (!twe)
         return;
     if (twe->type==Program) {
-        ui->menuRun->addActions(m_plugin->kumirProgram_->actions()->actions());
+        KumirProgram * program = m_plugin->kumirProgram_;
+        ui->menuRun->addActions(program->actions()->actions());
+        if (program->breakpointActions() && program->breakpointActions()->actions().size()>0) {
+            ui->menuRun->addSeparator();
+            ui->menuRun->addActions(program->breakpointActions()->actions());
+        }
     }
     else {
         ui->menuRun->addAction(a_notAvailable);
@@ -1445,7 +1467,13 @@ void MainWindow::newProgram()
                 editor->menus(),
                 type);
     e->setEditor(editor);
+    QObject * editorObject = dynamic_cast<QObject*>(editor);
+    connect(editorObject, SIGNAL(breakpointCnagedOrInserted(bool,quint32,quint32,QString)),
+            this, SLOT(handleBreakpointCnagedOrInserted(bool,quint32,quint32,QString)));
+    connect(editorObject, SIGNAL(breakpointRemoved(quint32)),
+            this, SLOT(handleBreakpointRemoved(quint32)));
     tabWidget_->setCurrentWidget(e);
+    setupContentForTab();
     setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 
@@ -1486,6 +1514,7 @@ void MainWindow::newText(const QString &fileName, const QString & text)
                 Text);
     e->setEditor(editor);
     tabWidget_->setCurrentWidget(e);
+    setupContentForTab();
     setTitleForTab(tabWidget_->indexOf(e));
     e->setFocus();
 }
@@ -1591,7 +1620,9 @@ void MainWindow::setupContentForTab()
         return;
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    m_plugin->kumirProgram_->setEditorInstance(twe->editor());
+    Shared::Editor::InstanceInterface * editor = twe->editor();
+    m_plugin->kumirProgram_->setEditorInstance(editor);
+    setupActionsForTab();
 }
 
 void MainWindow::disableTabs()
@@ -2175,6 +2206,11 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                         editor->menus(),
                         type);
             result->setEditor(editor);
+            QObject * editorObject = dynamic_cast<QObject*>(editor);
+            connect(editorObject, SIGNAL(breakpointCnagedOrInserted(bool,quint32,quint32,QString)),
+                    this, SLOT(handleBreakpointCnagedOrInserted(bool,quint32,quint32,QString)));
+            connect(editorObject, SIGNAL(breakpointRemoved(quint32)),
+                    this, SLOT(handleBreakpointRemoved(quint32)));
             tabWidget_->setCurrentIndex(tabWidget_->count()-1);
             tabWidget_->currentWidget()->setFocus();
             setupContentForTab();
@@ -2252,6 +2288,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
         courseManagerTab->setCourseTitle(data.title);
 
     tabWidget_->setCurrentWidget(courseManagerTab);
+    setupContentForTab();
     return courseManagerTab;
 }
 
