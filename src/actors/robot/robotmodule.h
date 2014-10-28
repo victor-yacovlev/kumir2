@@ -448,7 +448,7 @@ namespace ActorRobot {
         void wheelEvent ( QWheelEvent * event );
        
     private:
-        bool pressed;
+        bool pressed,inDock;
         int pressX,pressY;
         RoboField* robotField;
         QToolButton * textEditBtn;
@@ -456,6 +456,7 @@ namespace ActorRobot {
         QToolButton * tmpEditBtn;
         float c_scale;
         int CurCellSize;
+        
     };
     
     class RobotModule
@@ -538,6 +539,7 @@ namespace ActorRobot {
         RobotView * view;
         QString curDir;
         bool pressed;
+        bool inDock;
         QPushButton * btnOK1;
         QPushButton * btnCancel1; //Кнопки диалога новая обстановка
         QSpinBox *eXSizeEdit;
