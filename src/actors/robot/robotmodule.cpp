@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include "extensionsystem/pluginmanager.h"
-//#include <iostream> 
+ //#include <iostream> 
 
 namespace ActorRobot {
 
@@ -1131,6 +1131,7 @@ namespace ActorRobot {
             };
         };
         update();
+
     };
     void RoboField::destroyScene()
     {
@@ -4529,7 +4530,12 @@ void RobotView::changeEditMode(bool state)
             repaint();
             update();
         };
-        
+        ViewportUpdateMode mod=viewportUpdateMode ();
+        setViewportUpdateMode ( QGraphicsView::FullViewportUpdate);
+            setViewportUpdateMode (mod);
+            qDebug()<<"UPDATE VIEW";
+            scale(0.99,0.99);
+            scale(1.01,1.01);
         
     };
 } // $namespace

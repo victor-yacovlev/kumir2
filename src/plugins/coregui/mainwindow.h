@@ -118,6 +118,9 @@ private slots:
     void updateVisibleMenus(int index);
     void updateVisibleMenus(class TabWidgetElement*);
 
+    void handleBreakpointCnagedOrInserted(bool enabled, quint32 lineNo, quint32 ignoreCount, const QString & condition);
+    void handleBreakpointRemoved(quint32 lineNo);
+
 
 private:
     void createSettingsDialog();
