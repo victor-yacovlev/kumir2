@@ -1406,7 +1406,7 @@ namespace ActorRobot {
         Pen = QPen(LineColor,1);
         PenError = QPen(LineColor,1);
         infin = 5*BORT+10;
-        int col_debug=columns();
+ 
        // printf("Columns:%d",col_debug);
         for (int i = -1; i < columns(); i++) //Vertikalnie linii
         {

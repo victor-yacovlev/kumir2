@@ -552,7 +552,8 @@ bool Vodoley::loadFile(QString fileName)
 	updateMenzur();
 //	vodHeader->setWMTitle(QString::fromUtf8("Водолей - ") +  fi.bundleName());
         setWindowTitle(QString::fromUtf8("Водолей - ") +  fi.baseName());
-	return true;
+	emit FileLoaded(fileName);
+    return true;
 };
 
 void Vodoley::loadZ()

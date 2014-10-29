@@ -52,16 +52,17 @@ public slots:
     void runFromCToB();
     void runFromCToA();
     bool runTaskComplited();
-
-
+    void openRecent();
+    void updateLastFiles(const QString newFile );
 
     /* ========= CLASS PRIVATE ========= */
 
 private:
     void createGui();
+    void createRescentMenu();
     Vodoley *MainWindow;
-
-
+    ExtensionSystem::SettingsPtr my_settings;
+    QMenu * rescentMenu;
 
 
 };
