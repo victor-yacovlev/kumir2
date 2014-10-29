@@ -17,9 +17,9 @@ const QString GUISettingsPage::RowsFirstValue = "RowsFirst";
 const QString GUISettingsPage::ColumnsFirstValue = "ColumnsFirst";
 
 GUISettingsPage::GUISettingsPage(ExtensionSystem::SettingsPtr settings, QWidget *parent)
-    : settings_(settings)
-    , QWidget(parent)
+    : QWidget(parent)
     , ui(new Ui::GUISettingsPage)
+    , settings_(settings)
 {
     ui->setupUi(this);
     ui->lblRowsFirst->setPixmap(QPixmap(":/coregui/layout-rows-first.png"));

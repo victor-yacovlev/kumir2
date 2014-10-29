@@ -583,11 +583,11 @@ EditorInstance::EditorInstance(
     , doc_(new TextDocument(this))
     , cursor_(new TextCursor(this))
     , plane_(new EditorPlane(this))
-    , notSaved_(initiallyNotSaved)
     , findReplace_(new FindReplace(plugin->myResourcesDir(), this))
     , autocompleteWidget_(new SuggestionsWindow(this))
     , autoScrollStateX_(0)
     , autoScrollStateY_(0)
+    , notSaved_(initiallyNotSaved)
 {
     setupUi();
     setupStyleSheets();

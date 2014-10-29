@@ -210,9 +210,9 @@ private:
         Char cvalue_;
         bool bvalue_;
     };
-    Record * uvalue_;
     String * svalue_;
     std::vector<class AnyValue> * avalue_;
+    Record * uvalue_;
 };
 
 

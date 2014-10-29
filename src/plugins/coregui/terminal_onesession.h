@@ -18,8 +18,8 @@ enum CharSpec {
 typedef QVector<CharSpec> LineProp;
 
 struct VisibleLine {
-    LineProp prop;
     QString text;
+    LineProp prop;
     bool * endSelected;
     size_t from;
     size_t to;

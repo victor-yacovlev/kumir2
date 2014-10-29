@@ -46,7 +46,7 @@ if(NOT MSVC)
         set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
     endif()
     if(CMAKE_BUILD_TYPE MATCHES Debug)
-        set(CMAKE_CXX_FLAGS "-Werror -Wreturn-type -Wno-error=unused-variable -Wno-error=unused-parameter -O0 ${CMAKE_CXX_FLAGS}")
+        set(CMAKE_CXX_FLAGS "-Werror -Wreorder -Wreturn-type -Wno-error=unused-variable -Wno-error=unused-parameter -O0 ${CMAKE_CXX_FLAGS}")
     endif()
 endif()
 

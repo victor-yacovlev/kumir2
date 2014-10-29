@@ -195,8 +195,8 @@ private /* fields */:
 
     int timerId_;
     int autoScrollTimerId_;
-    char autoScrollStateY_;
     char autoScrollStateX_;
+    char autoScrollStateY_;
 
     bool notSaved_;
 
