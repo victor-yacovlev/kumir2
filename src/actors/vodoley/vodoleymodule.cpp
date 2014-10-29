@@ -39,6 +39,12 @@ void VodoleyModule::createGui()
     actions.append(m_actionVodoleySaveEnvironment);
     MainWindow->createActions(actions);
     connect(m_actionVodoleyRevertEnvironment,SIGNAL(triggered()) , MainWindow, SLOT(reset()));
+    
+    rescentMenu=new QMenu();
+    createRescentMenu();
+    m_actionVodoleyLoadRescent->setMenu(rescentMenu);
+    connect(MainWindow,SIGNAL(FileLoaded(QString)),this,SLOT(updateLastFiles(QString)));
+    
    // m_actionVodoleyNewEnvironment
 }
 
@@ -47,6 +53,7 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
     }
+     createRescentMenu();
     return "";
 }
 
@@ -125,6 +132,8 @@ private:
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
+    my_settings=settings;
+    createRescentMenu();
     Q_UNUSED(settings);  // Remove this line on implementation
     Q_UNUSED(keys);  // Remove this line on implementation
 }
@@ -244,6 +253,48 @@ private:
     
 }
 
+    void VodoleyModule::openRecent()
+    {
+ 
+        
+        QAction *s = qobject_cast<QAction*>(sender());
+        QString txt = s->text();
+       
 
+        QString VodFile=txt;
+       
+        if(!MainWindow->loadFile(VodFile))QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+VodFile, 0,0,0);
+        
+    };
 
+    void VodoleyModule::updateLastFiles(const QString newFile )
+    {
+        QStringList lastFiles= VodoleyModule::self->mySettings()->value("Vodoley/LastFiles").toString().split(";");
+        if(lastFiles.indexOf(newFile)<0)lastFiles.prepend(newFile);
+        int max_fid=std::min(lastFiles.count(),11);
+        QString sett="";
+        for(int i=0;i<max_fid;i++)
+        {
+            sett+= lastFiles.at(i)+";";
+        }
+        VodoleyModule::self->mySettings()->setValue("Vodoley/LastFiles",sett);
+        createRescentMenu();
+    }
+    
+    void VodoleyModule::createRescentMenu()
+    {
+        rescentMenu->clear();
+        QStringList lastFiles= VodoleyModule::self->mySettings()->value("Vodoley/LastFiles").toString().split(";");
+        qDebug()<<lastFiles;
+        if(lastFiles.count()==0 ||(lastFiles.count()==1 && lastFiles[0]==""))rescentMenu->setEnabled(false);else  rescentMenu->setEnabled(true);
+        
+        
+        for(int i=0;i<lastFiles.count();i++) {
+            if(lastFiles[i]=="")continue;
+            QAction *action = rescentMenu->addAction(lastFiles[i],this,SLOT(openRecent()));
+            Q_UNUSED(action);
+        }
+    };
+    
+    
 } // namespace ActorVodoley
