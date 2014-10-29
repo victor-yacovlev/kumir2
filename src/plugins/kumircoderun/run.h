@@ -16,6 +16,14 @@ using Kumir::real;
 using VM::Variable;
 using VM::AnyValue;
 
+typedef QPair<quint8,quint32> BreakpointLocation;
+
+struct BreakpointData {
+    bool enabled;
+    quint32 ignoreCount;
+    quint32 hitCount;
+};
+
 class Mutex: public VM::CriticalSectionLocker
 {
 public:
@@ -49,6 +57,8 @@ public:
     inline bool stopped() const { return stoppingFlag_; }
     bool mustStop() const;
     bool isTestingRun() const;
+    inline bool supportBreakpoints() const { return supportBreakpoints_; }
+    inline void setSupportBreakpoints(bool v) { supportBreakpoints_ = v; }
 
     // VM Access methods
     int effectiveLineNo() const;
@@ -96,13 +106,19 @@ public slots:
     void debuggerNoticeBeforeArrayInitialize(const VM::Variable &, const int[7]);
     void debuggerNoticeAfterArrayInitialize(const VM::Variable &);
     void debuggerNoticeOnValueChanged(const VM::Variable &, const int *);
+    void debuggerNoticeOnBreakpointHit(const Kumir::String & filename, const quint32 lineNo);
 
 
     void handleAlgorhitmDone(int lineNo, quint32 colStart, quint32 colEnd);
     void handlePauseRequest();
 
+    void removeAllBreakpoints();
+    void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
+    void removeBreakpoint(const QString &fileName, quint32 lineNo);
+
 
 signals:
+    void breakpointHit(const QString & fileName, int lineNo);
     void updateStepsCounter(quint64);
     void finishInput(const QVariantList &data);
     void lineChanged(int lineNo, quint32 colStart, quint32 colEnd);
@@ -133,6 +149,10 @@ protected :
     bool algDoneFlag_;
     QMutex* algDoneMutex_;
 
+    bool breakHitFlag_;
+    bool ignoreLineChangeFlag_;
+    QMutex* breakHitMutex_;
+
     int originFunctionDeep_;
 
     QMutex* interactDoneMutex_;
@@ -147,6 +167,9 @@ protected :
     QString programLoadError_;
 
     Gui::SimulatedInputBuffer * stdInBuffer_;
+
+    bool supportBreakpoints_;
+    QMap<BreakpointLocation,BreakpointData> breakpoints_;
 
 };
 

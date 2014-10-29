@@ -22,7 +22,7 @@ else()
 endif()
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
+    "CourseManager,Editor,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun(nobreakpoints),!CoreGUI\(notabs,icon=classic,nostartpage,nosessions\)"
 )
 set(SPLASHSCREEN
     "coregui/splashscreens/classic.png"

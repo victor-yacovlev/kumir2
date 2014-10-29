@@ -30,6 +30,7 @@ public:
     bool loadProgram(const RunnableProgram &sourceInfo);
     bool hasMoreInstructions() const;
     bool hasTestingEntryPoint() const;
+    bool hasBreakpointsSupport() const;
     QString error() const;
 
     int currentLineNo() const ;
@@ -74,6 +75,10 @@ public slots:
     void runTesting();
     void terminate();
 
+    void removeAllBreakpoints();
+    void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
+    void removeBreakpoint(const QString &fileName, quint32 lineNo);
+
 
 
 
@@ -94,6 +99,7 @@ protected:
 protected slots:
     void handleThreadFinished();
     void handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd);
+    void handleBreakpointHit(const QString &fileName, int lineNo);
     void checkForErrorInConsole();
 
 

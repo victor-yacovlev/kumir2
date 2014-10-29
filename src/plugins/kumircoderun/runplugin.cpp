@@ -72,6 +72,7 @@ KumirRunPlugin::KumirRunPlugin()
     connect (pRun_, SIGNAL(clearMarginRequest(int,int)), this, SIGNAL(clearMargin(int,int)));
     connect (pRun_, SIGNAL(marginTextReplace(int,QString,bool)),
              this, SIGNAL(replaceMarginText(int,QString,bool)));
+    connect (pRun_, SIGNAL(breakpointHit(QString,int)), this, SLOT(handleBreakpointHit(QString,int)));
     onlyOneTryToInput_ = false;
 }
 
@@ -443,6 +444,21 @@ void KumirRunPlugin::terminate()
     pRun_->stop();
 }
 
+void KumirRunPlugin::removeAllBreakpoints()
+{
+    pRun_->removeAllBreakpoints();
+}
+
+void KumirRunPlugin::insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition)
+{
+    pRun_->insertOrChangeBreakpoint(enabled, fileName, lineNo, ignoreCount, condition);
+}
+
+void KumirRunPlugin::removeBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    pRun_->removeBreakpoint(fileName, lineNo);
+}
+
 void KumirRunPlugin::terminateAndWaitForStopped()
 {
     if (pRun_->isRunning()) {
@@ -480,6 +496,11 @@ void KumirRunPlugin::handleThreadFinished()
 void KumirRunPlugin::handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
     emit lineChanged(lineNo, colStart, colEnd);
+}
+
+void KumirRunPlugin::handleBreakpointHit(const QString &fileName, int lineNo)
+{
+    emit lineChanged(lineNo, 0, 0);
 }
 
 
@@ -647,14 +668,16 @@ KumirRunPlugin::acceptableCommandLineParameters() const
     return result;
 }
 
-QString KumirRunPlugin::initialize(const QStringList &,
+QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
                                    const ExtensionSystem::CommandLine & runtimeArguments)
 {
     pRun_->programLoaded = false;
-
+    const bool noBreakpoints = configurationArguments.contains("nobreakpoints");
+    pRun_->setSupportBreakpoints(!noBreakpoints);
     qRegisterMetaType<QVariant::Type>("QVariant::Type");
     qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
+
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
 
@@ -794,6 +817,11 @@ bool KumirRunPlugin::canStepOut() const
 bool KumirRunPlugin::hasTestingEntryPoint() const
 {
     return pRun_->vm->hasTestingAlgorithm();
+}
+
+bool KumirRunPlugin::hasBreakpointsSupport() const
+{
+    return pRun_->supportBreakpoints();
 }
 
 QAbstractItemModel * KumirRunPlugin::debuggerVariablesViewModel() const
