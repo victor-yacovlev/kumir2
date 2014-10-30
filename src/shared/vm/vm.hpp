@@ -18,6 +18,7 @@
 #include "context.hpp"
 #include "stack.hpp"
 #include "vm_abstract_handlers.h"
+#include "vm_breakpoints_table.hpp"
 
 #ifndef MAX_RECURSION_SIZE
 #define MAX_RECURSION_SIZE 4000
@@ -46,6 +47,7 @@ public /*methods*/:
 
     /** Set 'blind' mode flag: do not emit debugging information */
     inline void setDebugOff(bool b) { blindMode_ = b; }
+    inline bool isDebugOff() const { return blindMode_; }
 
     /** Set 'step into' flag for next function call */
     inline void setStepInto(bool b) { nextCallInto_ = b; }
@@ -55,6 +57,13 @@ public /*methods*/:
 
     inline bool hasTestingAlgorithm() const;
     inline unsigned long int stepsDone() const { return stepsCounter_; }
+
+
+    /** Breakpoint operations */
+    inline void removeAllBreakpoints();
+    inline void insertOrChangeBreakpoint(const bool enabled, const String &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const String &condition);
+    inline void insertSingleHitBreakpoint(const String &fileName, uint32_t lineNo);
+    inline void removeBreakpoint(const String &fileName, const uint32_t lineNo);
 
     /** Sets the Debugging Interaction handler for this VM */
     inline void setDebuggingHandler(
@@ -171,6 +180,9 @@ private /*fields*/:
     int previousLineNo_;
     uint32_t previousColStart_;
     uint32_t previousColEnd_;
+
+    BreakpointsTable breakpointsTable_;
+
 
 public /*constructors*/:
     inline KumirVM();
@@ -562,10 +574,12 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             key = mod | alg;
             moduleContexts_[currentModuleContext].functions[key] = e;
             moduleContexts_[currentModuleContext].exportModuleId = mod;
+            breakpointsTable_.registerSourceFileName(filename, e.module);
         }
         else if (e.type==EL_INIT ) {
             uint8_t key = e.module;
             moduleContexts_[currentModuleContext].inits.push_back(e);
+            breakpointsTable_.registerSourceFileName(filename, e.module);
         }
     }
     for (FunctionMap::iterator it = moduleContexts_[currentModuleContext].functions.begin();
@@ -696,6 +710,34 @@ bool KumirVM::hasTestingAlgorithm() const
         }
     }
     return false;
+}
+
+void KumirVM::removeAllBreakpoints()
+{
+    if (stacksMutex_) stacksMutex_->lock();
+    breakpointsTable_.removeAllBreakpoints();
+    if (stacksMutex_) stacksMutex_->unlock();
+}
+
+void KumirVM::insertOrChangeBreakpoint(const bool enabled, const Kumir::String &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const Kumir::String &)
+{
+    if (stacksMutex_) stacksMutex_->lock();
+    breakpointsTable_.insertOrChangeBreakpoint(enabled, fileName, lineNo, ignoreCount, 0);
+    if (stacksMutex_) stacksMutex_->unlock();
+}
+
+void KumirVM::insertSingleHitBreakpoint(const Kumir::String &fileName, uint32_t lineNo)
+{
+    if (stacksMutex_) stacksMutex_->lock();
+    breakpointsTable_.insertSingleHitBreakpoint(fileName, lineNo);
+    if (stacksMutex_) stacksMutex_->unlock();
+}
+
+void KumirVM::removeBreakpoint(const Kumir::String &fileName, const uint32_t lineNo)
+{
+    if (stacksMutex_) stacksMutex_->lock();
+    breakpointsTable_.removeBreakpoint(fileName, lineNo);
+    if (stacksMutex_) stacksMutex_->unlock();
 }
 
 void KumirVM::reset()
@@ -2875,6 +2917,14 @@ void KumirVM::do_line(const Bytecode::Instruction & instr)
 //        }
         currentContext().lineNo = no;
         currentContext().columnStart = currentContext().columnEnd = 0u;
+        if (!blindMode_ && debugHandler_) {
+            const uint8_t modId = currentContext().moduleId;
+            const int lineNo = currentContext().lineNo;
+            if (breakpointsTable_.processBreakpointHit(modId, lineNo, nullptr)) {
+                const String & sourceFileName = breakpointsTable_.registeredSourceFileName(modId);
+                debugHandler_->debuggerNoticeOnBreakpointHit(sourceFileName, uint32_t(lineNo));
+            }
+        }
     }
     nextIP();
 }
@@ -3322,6 +3372,7 @@ bool KumirVM::canStepOut() const
 
 bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, const String & filename, String & error)
 {    
+    breakpointsTable_.reset();
     error.clear();
     if (!Bytecode::isValidSignature(stream)) {
         error = Kumir::Core::fromUtf8("Это не исполняемый файл Кумир 2.x");
@@ -3360,6 +3411,7 @@ bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, 
 
 bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, bool isMain, const String & filename, String & error)
 {
+    breakpointsTable_.reset();
     error.clear();
     Bytecode::Data d;
     bool ok;

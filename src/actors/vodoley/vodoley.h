@@ -22,6 +22,7 @@
 //#include <QtSvg>
 //#include <QGraphicsSvgItem>
 #include "dialog.h"
+
 //#include "kumfiledialog.h"
 //#include "../../isp_window_header.h"
 #define MAX_SIZE 160.0
@@ -183,6 +184,7 @@ public:
     void createActions(QList<QAction*> actions);
     bool ready()
     {return ((Curfill[0]==AfillR)||(Curfill[1]==BfillR)||(Curfill[1]==AfillR));};
+ 
 protected:
     void mousePressEvent(QMouseEvent *event);
 //    void closeEvent ( QCloseEvent * event );
@@ -198,14 +200,14 @@ public slots:
     void FillC();
     
     void MoveFromTo(uint from,uint to);
-
+    
 
 signals:
     void Otkaz(QString msg);
     void Ok();
     void CNull();
     void CNotNull();
-
+    void FileLoaded(QString fname);
 private:
     void updateMenzur();
     void updateNeedBirka();

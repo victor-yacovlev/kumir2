@@ -65,8 +65,8 @@ CommandLineParameter::CommandLineParameter(
     , shortDescription_(shortDescription)
     , description_(description)
     , acceptValue_(true)
-    , acceptType_(acceptType)
     , valueRequired_(required)
+    , acceptType_(acceptType)
 {
 
 }

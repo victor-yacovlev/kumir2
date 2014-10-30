@@ -19,10 +19,10 @@ static const unsigned int SelectionMask = 0xFF00;
 OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * parent)
     : QObject(parent)
     , parent_(parent)
+    , maxLineLength_(0u)
     , fileName_(fileName)
     , fixedWidth_(fixedWidth)
     , relayoutMutex_(new QMutex)
-    , maxLineLength_(0u)
 {
     inputLineStart_ = inputPosStart_ = -1;
     inputCursorPosition_ = -1;

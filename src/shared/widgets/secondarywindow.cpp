@@ -222,6 +222,12 @@ void SecondaryWindow::restoreState()
         bool dockVisible = settings_->value(settingsKey_ + IsDockVisible, false).toBool();
         if (dockVisible) {
             dockContainer_->activate(QPoint(), QSize());
+            if (centralWidget_) {
+                QObject * obj = centralWidget_;
+                if (-1 != obj->metaObject()->indexOfMethod("setDock(bool)")) {
+                    QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, true));
+                }
+            }
         }
         QWidget * dock = dockContainer_->toWidget();
         QSize sz = settings_->value(settingsKey_ + DockSize).toSize();

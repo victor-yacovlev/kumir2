@@ -259,9 +259,56 @@
         </para>
     </section>
     <section>
-        <title>Меню &quot;Практикум&quot;</title>
+        <title>Меню "Практикум"</title>
         <para>
+			Меню <guimenu>Практикум</guimenu> содержит следующие пункты:
 		</para>
+		<itemizedlist>
+			<listitem>
+				<para>
+					<guimenuitem>Загрузить курс</guimenuitem> -- загрузить файл описания курса или тетрадь.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Недавние тетради/курсы </guimenuitem> -- открыть список недавно использовавшихся тетрадей/курсов.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Проверить</guimenuitem> -- запустить проверку заданий.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Сохранить как … </guimenuitem> -- сохранить тетрадь.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Вернуться к исходной </guimenuitem> -- возврат всех исполнителей к исходным обстановкам. 
+					Все пользовательские изменения в файле программы также аннулируются.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Вернуться к проверенной</guimenuitem> -- вернуть состояние исполнителей и файла программы 
+					к тому моменту, когда программа последний раз подавалась на проверку.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Следующая обстановка </guimenuitem> -- загрузить следующую обстановку из тех на которых будет 
+					производиться проверка.
+				</para>
+			</listitem>
+			<listitem>
+				<para>
+					<guimenuitem>Предыдущая обстановка </guimenuitem> -- загрузить предыдущую обстановку из тех на которых будет 
+					производиться проверка.
+				</para>
+			</listitem>
+		</itemizedlist>
     </section>
 	<remark><section>
 		<title>

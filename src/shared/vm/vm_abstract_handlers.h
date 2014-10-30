@@ -335,7 +335,7 @@ public:
     inline virtual void debuggerNoticeOnValueChanged(const VM::Variable & /*variable*/,
                                                      const int[4] /*indeces*/) {}
 
-
+    inline virtual void debuggerNoticeOnBreakpointHit(const String & /*filename*/, const uint32_t /*lineNo*/) {}
 };
 
 }

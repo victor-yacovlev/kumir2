@@ -25,6 +25,7 @@ KumirProgram::KumirProgram(QObject *parent)
     , stepRunAction_(0)
     , stepInAction_(0)
     , stepOutAction_(0)
+    , runToCursorAction_(0)
     , stopAction_(0)
     , toggleBreakpointAction_(0)
     , actions_(0)
@@ -112,6 +113,14 @@ void KumirProgram::createActions()
 #endif
     stepOutAction_->setToolTip(tr("Run to end of algorhitm")+" <b>"+stepOutAction_->shortcut().toString()+"</b>");
 
+    if (runner()->hasBreakpointsSupport()) {
+        runToCursorAction_ = new QAction(tr("Run to cursor"), this);
+        runToCursorAction_->setShortcut(QKeySequence("F4"));
+        runToCursorAction_->setToolTip(tr("Run until the line editor cursor in")
+                                       + "<b>" + runToCursorAction_->shortcut().toString() + "</b>");
+        connect(runToCursorAction_, SIGNAL(triggered()), this, SLOT(runToCursor()));
+    }
+
     stopAction_ = new QAction(tr("Stop"), this);
     stopAction_->setObjectName("run-stop");
 //    stopAction_->setIcon(QIcon(qtcreatorIconsPath+"stop.png"));
@@ -158,6 +167,9 @@ void KumirProgram::createActions()
     actions_->addAction(stepRunAction_);
     actions_->addAction(stepInAction_);
     actions_->addAction(stepOutAction_);
+    if (runToCursorAction_) {
+        actions_->addAction(runToCursorAction_);
+    }
 }
 
 Shared::RunInterface * KumirProgram::runner()
@@ -406,6 +418,20 @@ void KumirProgram::stepOut()
         return;
     setAllActorsAnimationFlag(true);
     runner()->runToEnd();
+}
+
+void KumirProgram::runToCursor()
+{
+    using namespace Shared;
+    if (state_==Idle) {
+        emit giveMeAProgram();
+        prepareRunner(GeneratorInterface::LinesAndVariables);
+        state_ = RegularRun;
+    }
+    const quint32 currentLineNumber = editorInstance()->currentLineNumber();
+    const QString sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+    runner()->insertSingleHitBreakpoint(sourceProgramPath, currentLineNumber);
+    regularRun();
 }
 
 void KumirProgram::stop()

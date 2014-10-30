@@ -60,6 +60,7 @@ public slots:
     void stepRun();
     void stepIn();
     void stepOut();
+    void runToCursor();
     void stop();
     void switchGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState cur);
     void handleLineChanged(int lineNo, quint32 colStart, quint32 colEnd);
@@ -91,6 +92,7 @@ private /*fields*/:
     QAction * stepRunAction_;
     QAction * stepInAction_;
     QAction * stepOutAction_;
+    QAction * runToCursorAction_;
     QAction * stopAction_;
     QAction * toggleBreakpointAction_;
     QActionGroup * actions_;

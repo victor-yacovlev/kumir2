@@ -42,10 +42,10 @@ namespace LLVMCodeGenerator {
 LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
     : ExtensionSystem::KPlugin()
     , d(new LLVMGenerator)
-    , textForm_(false)
     , createMain_(false)
     , linkStdLib_(false)
     , linkAllUnits_(false)
+    , textForm_(false)
     , runToolChain_(false)
     , debugLevel_(LinesOnly)
 {

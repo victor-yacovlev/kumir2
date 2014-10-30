@@ -1406,7 +1406,7 @@ namespace ActorRobot {
         Pen = QPen(LineColor,1);
         PenError = QPen(LineColor,1);
         infin = 5*BORT+10;
-        int col_debug=columns();
+ 
        // printf("Columns:%d",col_debug);
         for (int i = -1; i < columns(); i++) //Vertikalnie linii
         {
@@ -3326,6 +3326,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 	/* TODO 
 	implement class Constructor
 	*/
+    inDock=false;
     animation=true;
     pressed=false;
     m_mainWidget = 0;
@@ -4317,6 +4318,7 @@ void RobotModule::setWindowSize()
     {
         setScene(roboField);
         pressed=false;
+        inDock=false;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setMouseTracking(true);
@@ -4459,7 +4461,27 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     {
         QSize oldSize=this->size();
         emit  resizeRequest(newGeometry);
-       if(newGeometry != oldSize)
+       if(inDock)
+       {
+           scale(1/c_scale,1/c_scale);
+           
+           
+           qreal w=sceneRect().width();
+           qreal h=sceneRect().height();
+           qreal maxDisp=qMax(w/oldSize.width(),h/oldSize.height());
+          
+           scale(1/maxDisp,1/maxDisp);
+           c_scale=1/maxDisp;
+           maxDisp=qMax(w*(1/maxDisp)/oldSize.width(),h*(1/maxDisp)/oldSize.height());
+           while(maxDisp>1.01 || maxDisp<0.99)
+           {
+            scale(1/maxDisp,1/maxDisp);
+             c_scale=c_scale/maxDisp;
+            maxDisp=qMax(w*(1/maxDisp)/oldSize.width(),h*(1/maxDisp)/oldSize.height());
+           }
+           return;
+     }
+        if(newGeometry != oldSize)
        {centerOn(newGeometry.width()/2-(CurCellSize/2),newGeometry.height()/2-(CurCellSize/2));
         qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
            this->scale(1/c_scale,1/c_scale);
@@ -4479,6 +4501,7 @@ void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
 void RobotView::setDock(bool docked)
     {
     qDebug() << "RobotView::setDock(" << docked << ")";
+        inDock=docked;
     };
 void RobotView::changeEditMode(bool state)
     {

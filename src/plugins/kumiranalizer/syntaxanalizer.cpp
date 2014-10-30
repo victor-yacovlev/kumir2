@@ -26,11 +26,11 @@ SyntaxAnalizer::SyntaxAnalizer(Lexer * lexer,
                                bool teacherMode,
                                Analizer *parent)
     : QObject(parent)
-    , currentPosition_(-1)
-    , alwaysEnabledModules_(alwaysEnabledModules)
-    , teacherMode_(teacherMode)
     , lexer_(lexer)
     , analizer_(parent)
+    , alwaysEnabledModules_(alwaysEnabledModules)
+    , currentPosition_(-1)
+    , teacherMode_(teacherMode)
 {
 }
 

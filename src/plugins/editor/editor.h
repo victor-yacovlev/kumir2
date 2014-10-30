@@ -60,6 +60,7 @@ public:
 
     void saveDocument(const QString &fileName);
     void saveDocument(QIODevice * device);
+    uint32_t currentLineNumber() const;
     void setKumFile(const Shared::Analizer::SourceFileInterface::Data & data);
     void setPlainText(const QString & data);
     void setDocumentId(int id);
@@ -195,8 +196,8 @@ private /* fields */:
 
     int timerId_;
     int autoScrollTimerId_;
-    char autoScrollStateY_;
     char autoScrollStateX_;
+    char autoScrollStateY_;
 
     bool notSaved_;
 

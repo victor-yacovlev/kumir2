@@ -1,5 +1,7 @@
 #include "ast.h"
 #include "ast_module.h"
+#include "ast_algorhitm.h"
+#include "ast_variable.h"
 
 namespace AST {
 

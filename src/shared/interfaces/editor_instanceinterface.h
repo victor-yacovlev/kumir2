@@ -64,6 +64,7 @@ public:
 
     virtual QAction * toggleBreakpointAction() const = 0;
     virtual QList<Breakpoint> breakpoints() const = 0;
+    virtual uint32_t currentLineNumber() const = 0;
 
 };
 
