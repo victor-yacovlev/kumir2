@@ -83,6 +83,7 @@ public Q_SLOTS:
     void terminateAndWaitForStopped();
 
     void removeAllBreakpoints();
+    void insertSingleHitBreakpoint(const QString &fileName, quint32 lineNo);
     void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
     void removeBreakpoint(const QString &fileName, quint32 lineNo);
 

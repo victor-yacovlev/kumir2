@@ -46,6 +46,7 @@ public /*methods*/:
     inline unsigned long testRunsLeft() const { QMutexLocker l(mutex_); return testRunCount_; }
 
     void removeAllBreakpoints();
+    void insertSingleHitBreakpoint(const BreakpointLocation &location);
     void addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data);
     void removeBreakpoint(const BreakpointLocation &location);
 
@@ -121,6 +122,7 @@ private /*fields*/:
     bool canStepOut_;
     QMap<QByteArray,PyObject*> forcedGlobalValues_;
     quint32 testRunCount_;
+    QSet<BreakpointLocation> singleHits_;
     QMap<BreakpointLocation,BreakpointData> breakpoints_;
 };
 

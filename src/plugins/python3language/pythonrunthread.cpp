@@ -78,6 +78,13 @@ void PythonRunThread::removeAllBreakpoints()
 {
     QMutexLocker l(mutex_);
     breakpoints_.clear();
+    singleHits_.clear();
+}
+
+void PythonRunThread::insertSingleHitBreakpoint(const BreakpointLocation &location)
+{
+    QMutexLocker l(mutex_);
+    singleHits_.insert(location);
 }
 
 void PythonRunThread::addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data)
@@ -456,7 +463,13 @@ void PythonRunThread::dispatchLineChange()
 
 bool PythonRunThread::checkForBreakpoint(const BreakpointLocation &location)
 {
-    return breakpoints_.contains(location); // TODO: 1) check condition; 2) check hit count
+    if (singleHits_.contains(location)) {
+        singleHits_.remove(location);
+        return true;
+    }
+    else {
+        return breakpoints_.contains(location); // TODO: 1) check condition; 2) check hit count
+    }
 }
 
 

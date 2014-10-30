@@ -10,8 +10,8 @@ namespace Python3Language {
 Python3LanguagePlugin::Python3LanguagePlugin()
     : ExtensionSystem::KPlugin()
     , fileHandler_(new PyFileHandler(this))
-    , runner_(0)
     , pyMain_(0)
+    , runner_(0)
 {    
 }
 
@@ -249,6 +249,12 @@ void Python3LanguagePlugin::removeAllBreakpoints()
 {
     qDebug() << "Remove all breakpoints";
     runner_->removeAllBreakpoints();
+}
+
+void Python3LanguagePlugin::insertSingleHitBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    BreakpointLocation location(fileName, lineNo);
+    runner_->insertSingleHitBreakpoint(location);
 }
 
 void Python3LanguagePlugin::insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition)
