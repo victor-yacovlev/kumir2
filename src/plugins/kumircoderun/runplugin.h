@@ -77,6 +77,7 @@ public slots:
 
     void removeAllBreakpoints();
     void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
+    void insertSingleHitBreakpoint(const QString & fileName, quint32 lineNo);
     void removeBreakpoint(const QString &fileName, quint32 lineNo);
 
 

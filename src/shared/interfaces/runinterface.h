@@ -65,6 +65,8 @@ public:
                                                  quint32 /*lineNo*/, quint32 /*ignoreCount*/,
                                                  const QString & /*condition*/) {}
 
+    inline virtual void insertSingleHitBreakpoint(const QString &/*fileName*/, quint32 /*lineNo*/) {}
+
     inline virtual void removeBreakpoint(const QString & /*fileName*/, quint32 /*lineNo*/) {}
 
 };

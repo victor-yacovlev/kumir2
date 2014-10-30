@@ -284,12 +284,12 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="139"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="60"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="61"/>
         <source>Regular run</source>
         <translation>Обычное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="74"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="75"/>
         <source>Testing run</source>
         <translation>Запустить тестирование</translation>
     </message>
@@ -299,7 +299,7 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="167"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="91"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="92"/>
         <source>Step in</source>
         <translation>шаг</translation>
     </message>
@@ -309,18 +309,18 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="145"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="115"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="124"/>
         <source>Stop</source>
         <translation>Остановить выполнение</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="133"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="138"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="147"/>
         <source>Blind run</source>
         <translation>Без показа на полях</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="287"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="299"/>
         <source>This program does not have testing algorithm</source>
         <translation>У этой программы нет тестирующего алгоритма</translation>
     </message>
@@ -329,23 +329,33 @@ Right click to navigate target</source>
         <translation type="obsolete">Программа не содержит тестирующего алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="89"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="90"/>
         <source>Do big step</source>
         <translation>ШАГ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="101"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="102"/>
         <source>Do small step</source>
         <translation>шаг</translation>
     </message>
     <message>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="117"/>
+        <source>Run to cursor</source>
+        <translation>Выполнить до курсора</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="119"/>
+        <source>Run until the line editor cursor in</source>
+        <translation>Выполнить программу до строки, в которой находится курсор редактирования</translation>
+    </message>
+    <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="173"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="103"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="104"/>
         <source>Step to end</source>
         <translation>До конца алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="113"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="114"/>
         <source>Run to end of algorhitm</source>
         <translation>До конца алгоритма</translation>
     </message>
@@ -354,23 +364,23 @@ Right click to navigate target</source>
         <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="455"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="481"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="464"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="490"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="446"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="472"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="161"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="79"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="80"/>
         <source>Step over</source>
         <translation>ШАГ</translation>
     </message>

@@ -304,6 +304,12 @@ void Run::insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint3
     vm->insertOrChangeBreakpoint(enabled, wFileName, lineNo, ignoreCount, wCondition);
 }
 
+void Run::insertSingleHitBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    const String wFileName = fileName.toStdWString();
+    vm->insertSingleHitBreakpoint(wFileName, lineNo);
+}
+
 void Run::removeBreakpoint(const QString &fileName, quint32 lineNo)
 {
     const String wFileName = fileName.toStdWString();

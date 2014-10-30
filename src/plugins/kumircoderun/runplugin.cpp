@@ -454,6 +454,11 @@ void KumirRunPlugin::insertOrChangeBreakpoint(bool enabled, const QString &fileN
     pRun_->insertOrChangeBreakpoint(enabled, fileName, lineNo, ignoreCount, condition);
 }
 
+void KumirRunPlugin::insertSingleHitBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    pRun_->insertSingleHitBreakpoint(fileName, lineNo);
+}
+
 void KumirRunPlugin::removeBreakpoint(const QString &fileName, quint32 lineNo)
 {
     pRun_->removeBreakpoint(fileName, lineNo);

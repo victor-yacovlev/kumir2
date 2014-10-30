@@ -1160,6 +1160,11 @@ void EditorInstance::saveDocument(QIODevice *device)
     doc_->undoStack()->setClean();
 }
 
+uint32_t EditorInstance::currentLineNumber() const
+{
+    return cursor_->row();
+}
+
 quint32 EditorInstance::errorLinesCount() const
 {
     QSet<int> lines;

@@ -32,7 +32,7 @@ struct BreakpointData {
 
 class BreakpointsTable {
 public:
-    inline bool isBreakpointHit(const uint8_t modId, const int lineNo, const BreakpointConditionChecker * conditionChecker) const;
+    inline bool processBreakpointHit(const uint8_t modId, const int lineNo, const BreakpointConditionChecker * conditionChecker);
 
     inline void reset();
     inline void registerSourceFileName(const String & sourceFileName, const uint8_t modId);
@@ -40,6 +40,7 @@ public:
 
     inline void removeAllBreakpoints();
     inline void insertOrChangeBreakpoint(const bool enabled, const String &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const BreakpointCondition & condition);
+    inline void insertSingleHitBreakpoint(const Kumir::String &fileName, uint32_t lineNo);
     inline void removeBreakpoint(const String &fileName, const uint32_t lineNo);
 
 private:
@@ -48,24 +49,32 @@ private:
     typedef std::map<uint8_t,String> IdsToSourcesTable;
 
     BreaksTable breakpoints_;
+    BreaksTable singleHits_;
     SourcesToIdsTable sourceToIds_;
     IdsToSourcesTable idsToSources_;
 };
 
 // ------------ INLINE IMPLEMENTATION
 
-bool BreakpointsTable::isBreakpointHit(const uint8_t modId, const int lineNo, const BreakpointConditionChecker *conditionChecker) const
+bool BreakpointsTable::processBreakpointHit(const uint8_t modId, const int lineNo, const BreakpointConditionChecker *conditionChecker)
 {
     if (-1 == lineNo)
         return false;
 
     bool result = false;
     const BreakpointLocation loc(modId, lineNo);
-    BreaksTable::const_iterator locIt = breakpoints_.find(loc);
-    if (breakpoints_.end() != locIt) {
-        const BreakpointData & data = locIt->second;
-        if (data.enabled) {
-            result = true; // TODO check for hit count and condition
+    BreaksTable::iterator shitIt = singleHits_.find(loc);
+    if (singleHits_.end() != shitIt) {
+        result = true;
+        singleHits_.erase(shitIt);
+    }
+    if (!result) {
+        BreaksTable::const_iterator locIt = breakpoints_.find(loc);
+        if (breakpoints_.end() != locIt) {
+            const BreakpointData & data = locIt->second;
+            if (data.enabled) {
+                result = true; // TODO check for hit count and condition
+            }
         }
     }
     return result;
@@ -74,6 +83,7 @@ bool BreakpointsTable::isBreakpointHit(const uint8_t modId, const int lineNo, co
 void BreakpointsTable::reset()
 {
     breakpoints_.clear();
+    singleHits_.clear();
     sourceToIds_.clear();
     idsToSources_.clear();
 }
@@ -91,6 +101,7 @@ const String &BreakpointsTable::registeredSourceFileName(const uint8_t &modId) c
 
 void BreakpointsTable::removeAllBreakpoints()
 {
+    singleHits_.clear();
     breakpoints_.clear();
 }
 
@@ -114,6 +125,21 @@ void BreakpointsTable::insertOrChangeBreakpoint(const bool enabled, const String
             data.condition = condition;
             breakpoints_[loc] = data;
         }
+    }
+}
+
+void BreakpointsTable::insertSingleHitBreakpoint(const Kumir::String &fileName, uint32_t lineNo)
+{
+    SourcesToIdsTable::const_iterator fnIt = sourceToIds_.find(fileName);
+    if (sourceToIds_.end() != fnIt) {
+        const uint8_t modId = fnIt->second;
+        const BreakpointLocation loc(modId, lineNo);
+        BreakpointData data;
+        data.condition = 0;
+        data.ignoreCount = 0;
+        data.hitCount = 0;
+        data.enabled = true;
+        singleHits_[loc] = data;
     }
 }
 
