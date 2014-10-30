@@ -90,7 +90,7 @@ void Python3LanguagePlugin::stop()
         instance->stopPythonInterpreter();
     QCoreApplication::instance()->processEvents();
     PyEval_AcquireThread(pyMain_);
-    Py_Finalize();
+//    Py_Finalize();
 }
 
 Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
