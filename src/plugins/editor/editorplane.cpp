@@ -1540,7 +1540,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             if (editor_->analizerInstance_)
                 doAutocomplete();
         }
-        else if (e->key()==Qt::Key_8 && e->modifiers().testFlag(Qt::ControlModifier)) {
+        else if (e->key()==Qt::Key_B && e->modifiers().testFlag(Qt::ControlModifier)) {
             if (editor_->hasBreakpointSupport())
                 editor_->toggleBreakpoint();
         }
