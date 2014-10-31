@@ -750,7 +750,7 @@ QAction *EditorInstance::toggleBreakpointAction() const
     if (!toggleBreakpoint_ && hasBreakpointSupport()) {
         toggleBreakpoint_ = new QAction(plane_);
         toggleBreakpoint_->setText(tr("Toggle line breakpoint"));
-        toggleBreakpoint_->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_8));
+        toggleBreakpoint_->setShortcut(QKeySequence(Qt::CTRL+Qt::Key_B));
         toggleBreakpoint_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(toggleBreakpoint_, SIGNAL(triggered()),
                          this, SLOT(toggleBreakpoint()));
