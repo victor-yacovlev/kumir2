@@ -764,7 +764,7 @@ namespace ActorRobot {
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
       //  textEditMode=false;
-       
+        mode=NORMAL_MODE;
         keyCursor=new QGraphicsLineItem(0,0,0,0);
         this->addItem(keyCursor); 
         keyCursor->hide();
@@ -889,7 +889,7 @@ namespace ActorRobot {
             };
             Items.append(row);
         };
-        wasEdit=true;
+       
     };
     
     QPoint RoboField::upLeftCorner(int str,int stlb)
@@ -1338,7 +1338,7 @@ namespace ActorRobot {
                                                                       fieldSize,
                                                                       fieldSize));
         };
-        wasEdit=true;
+        if(mode!=NORMAL_MODE)wasEdit=true;
     }
     
     void RoboField::reverseColorCurrent()
@@ -4110,6 +4110,7 @@ void RobotModule::loadEnv()
 
         view->centerOn(field->m_height()/2,field->m_width()/2);
         NewWindow->close();
+        
         if(!field->isEditMode())editEnv();
     };
     void RobotModule::newEnv()
