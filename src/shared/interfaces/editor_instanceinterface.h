@@ -11,6 +11,8 @@
 #include <QMenu>
 #include <QAction>
 
+#include <cstdint>
+
 namespace Shared { namespace Editor {
 
 struct Breakpoint {
