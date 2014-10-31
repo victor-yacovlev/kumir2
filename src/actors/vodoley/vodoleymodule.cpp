@@ -52,8 +52,9 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
 {
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
+        createRescentMenu();
     }
-     createRescentMenu();
+    
     return "";
 }
 
