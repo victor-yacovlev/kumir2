@@ -284,12 +284,12 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="139"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="39"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="61"/>
         <source>Regular run</source>
         <translation>Обычное выполнение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="53"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="75"/>
         <source>Testing run</source>
         <translation>Запустить тестирование</translation>
     </message>
@@ -299,7 +299,7 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="167"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="70"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="92"/>
         <source>Step in</source>
         <translation>шаг</translation>
     </message>
@@ -309,18 +309,18 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="145"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="94"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="124"/>
         <source>Stop</source>
         <translation>Остановить выполнение</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="133"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="117"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="147"/>
         <source>Blind run</source>
         <translation>Без показа на полях</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="266"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="299"/>
         <source>This program does not have testing algorithm</source>
         <translation>У этой программы нет тестирующего алгоритма</translation>
     </message>
@@ -329,23 +329,33 @@ Right click to navigate target</source>
         <translation type="obsolete">Программа не содержит тестирующего алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="68"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="90"/>
         <source>Do big step</source>
         <translation>ШАГ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="80"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="102"/>
         <source>Do small step</source>
         <translation>шаг</translation>
     </message>
     <message>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="117"/>
+        <source>Run to cursor</source>
+        <translation>Выполнить до курсора</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="119"/>
+        <source>Run until the line editor cursor in</source>
+        <translation>Выполнить программу до строки, в которой находится курсор редактирования</translation>
+    </message>
+    <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="173"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="82"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="104"/>
         <source>Step to end</source>
         <translation>До конца алгоритма</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="92"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="114"/>
         <source>Run to end of algorhitm</source>
         <translation>До конца алгоритма</translation>
     </message>
@@ -354,23 +364,23 @@ Right click to navigate target</source>
         <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="417"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="481"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="426"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="490"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="408"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="472"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="161"/>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="58"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="80"/>
         <source>Step over</source>
         <translation>ШАГ</translation>
     </message>
@@ -497,7 +507,7 @@ Right click to navigate target</source>
     <name>CoreGUI::MainWindow</name>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="14"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="968"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="985"/>
         <source>Kumir</source>
         <translation>Кумир</translation>
     </message>
@@ -583,10 +593,10 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="148"/>
         <location filename="../../../src/plugins/coregui/guisettingspage.cpp" line="67"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1325"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1786"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1907"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2096"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1347"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1817"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1938"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2127"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
@@ -700,7 +710,7 @@ Right click to navigate target</source>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="228"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1718"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1749"/>
         <source>Restore previous session</source>
         <translation>Восстановить предыдущий сеанс</translation>
     </message>
@@ -740,13 +750,13 @@ Right click to navigate target</source>
         <translation type="obsolete">Новый текст</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1936"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1967"/>
         <source>%1 programs (*%2)</source>
         <translation>Программы %1 (*%2)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1244"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1939"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1266"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1970"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
@@ -756,85 +766,85 @@ Right click to navigate target</source>
         <translation>Настроить элементы меню...</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1189"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1211"/>
         <source>Native executables (*.%1)</source>
         <translation>Программы (*.%1)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1190"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1212"/>
         <source>Save native executable</source>
         <translation>Сохранить выполняемый файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1241"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1263"/>
         <source>%1 programs (*.%2)</source>
         <translation>Программы %1 (*.%2)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1246"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1941"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1268"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1972"/>
         <source>All files (*)</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1247"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1269"/>
         <source>Save file</source>
         <translation>Сохранить файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1274"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1296"/>
         <source>Can&apos;t save file</source>
         <translation>Не могу сохранить файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1319"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1341"/>
         <source>Close editor</source>
         <translation>Закрытие текста</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1320"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1902"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2091"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1342"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1933"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2122"/>
         <source>Save current text?</source>
-        <translation type="unfinished">В этом файле были проведены несохранённые изменения. При закрытии эти изменения будут потеряны.
+        <translation>В этом файле были проведены несохранённые изменения. При закрытии эти изменения будут потеряны.
 Сохранить их?</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1327"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1788"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1909"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2098"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1349"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1819"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1940"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2129"/>
         <source>Don&apos;t save</source>
         <translation>Не сохранять</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1329"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1790"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1351"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1821"/>
         <source>Cancel closing</source>
         <translation>Отменить закрытие</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1375"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1397"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1719"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1750"/>
         <source>Are you sure to restore previous session? All unsaved changes will be lost.</source>
         <translation>Вы уверены, что хотите восстановить предыдущий сеанс? Все открытые файлы будут закрыты без сохранения.</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1723"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1754"/>
         <source>Yes</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1724"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1755"/>
         <source>No</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1777"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1808"/>
         <source>The following files have changes:
 %1
 Save them?</source>
@@ -843,29 +853,29 @@ Save them?</source>
 Сохранить их?</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1780"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1811"/>
         <source>Close Kumir</source>
         <translation>Выход из Кумир</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1901"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2090"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1932"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2121"/>
         <source>Open another file</source>
         <translation>Открытие другого файла</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1911"/>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2100"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1942"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2131"/>
         <source>Cancel opening another file</source>
         <translation>Не открывать другой файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1938"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1969"/>
         <source>Web pages (*.html *.htm)</source>
         <translation>Web-страницы (*.html *.htm)</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2159"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="2190"/>
         <source>Can&apos;t open file</source>
         <translation>Не могу открыть файл</translation>
     </message>
@@ -904,7 +914,7 @@ Using Qt version %2</source>
 Использует Qt версии %2</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1945"/>
+        <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1976"/>
         <source>Load file...</source>
         <translation>Загрузить файл...</translation>
     </message>

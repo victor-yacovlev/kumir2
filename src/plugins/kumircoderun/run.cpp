@@ -31,8 +31,12 @@ Run::Run(QObject *parent) :
     stepDoneMutex_ = new QMutex;
     algDoneMutex_ = new QMutex;
     interactDoneMutex_ = new QMutex;
+    breakHitMutex_ = new QMutex;
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
     runMode_ = RM_ToEnd;
     stdInBuffer_ = 0;
+    supportBreakpoints_ = true;
 
     vm->setDebuggingHandler(this);
 
@@ -62,6 +66,7 @@ void Run::runStepOver()
 {
     stepDoneFlag_ = false;
     stoppingFlag_ = false;
+    breakHitFlag_ = false;
     runMode_ = RM_StepOver;
     vm->setNextCallStepOver();
     start();
@@ -70,6 +75,7 @@ void Run::runStepOver()
 void Run::runStepIn()
 {
     stepDoneFlag_ = false;
+    breakHitFlag_ = false;
     runMode_ = RM_StepIn;
     vm->setNextCallInto();
     start();
@@ -79,6 +85,8 @@ void Run::runToEnd()
 {
     stepDoneFlag_ = false;
     algDoneFlag_ = false;
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
     emit lineChanged(-1, 0u, 0u);
     runMode_ = RM_StepOut;
     vm->setNextCallToEndOfContext();
@@ -88,6 +96,8 @@ void Run::runToEnd()
 void Run::runBlind()
 {
     stoppingFlag_ = false;
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
     runMode_ = RM_ToEnd;
     vm->setDebugOff(true);
     vm->setNextCallToEnd();
@@ -98,6 +108,8 @@ void Run::runContinuous()
 {
     runMode_ = RM_ToEnd;
     stoppingFlag_ = false;
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
     vm->setNextCallToEnd();
     start();
 }
@@ -169,6 +181,20 @@ void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * in
     variablesModel_->emitValueChanged(variable, ind);
 }
 
+void Run::debuggerNoticeOnBreakpointHit(const String &filename, const quint32 lineNo)
+{
+    stepDoneMutex_->lock();
+    stepDoneFlag_ = true;
+    stepDoneMutex_->unlock();
+    breakHitMutex_->lock();
+    breakHitFlag_ = true;
+    ignoreLineChangeFlag_ = true;
+    breakHitMutex_->unlock();
+    runMode_ = RM_StepOver;
+    vm->setNextCallStepOver();
+    emit breakpointHit(QString::fromStdWString(filename), lineNo);
+}
+
 bool Run::appendTextToMargin(int l, const String & s)
 {
     emit marginText(l, QString::fromStdWString(s));
@@ -183,6 +209,10 @@ bool Run::setTextToMargin(int lineNo, const String &s, bool red)
 
 bool Run::noticeOnLineChanged(int lineNo, quint32 colStart, quint32 colEnd)
 {
+    if (ignoreLineChangeFlag_) {
+        ignoreLineChangeFlag_ = false;
+        return true;
+    }
     stepDoneMutex_->lock();
     stepDoneFlag_ = true;
     stepDoneMutex_->unlock();
@@ -216,34 +246,30 @@ bool Run::clearMargin(int from, int to)
 
 bool Run::mustStop() const
 {
-    stoppingMutex_->lock();
-    stepDoneMutex_->lock();
+    QMutexLocker l1(stoppingMutex_);
+    QMutexLocker l2(stepDoneMutex_);
+    QMutexLocker l3(breakHitMutex_);
 
-    if (vm->error().length()>0) {
-        stoppingMutex_->unlock();
-        stepDoneMutex_->unlock();
+
+    if (vm->error().length()>0) {        
         return true;
     }
 
     if (stoppingFlag_) {
-        stoppingMutex_->unlock();
-        stepDoneMutex_->unlock();
+        return true;
+    }
+
+    if (breakHitFlag_) {
         return true;
     }
 
     if (runMode_==RM_StepOut) {
-        stoppingMutex_->unlock();
-        stepDoneMutex_->unlock();
         return algDoneFlag_;
     }
     else if (runMode_!=RM_ToEnd) {
-        stoppingMutex_->unlock();
-        stepDoneMutex_->unlock();
         return stepDoneFlag_;
     }
     else {
-        stoppingMutex_->unlock();
-        stepDoneMutex_->unlock();
         return false;
     }
 }
@@ -266,13 +292,37 @@ void Run::handlePauseRequest()
     vm->setDebugOff(false);
 }
 
+void Run::removeAllBreakpoints()
+{
+    vm->removeAllBreakpoints();
+}
+
+void Run::insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition)
+{
+    const String wFileName = fileName.toStdWString();
+    const String wCondition = condition.toStdWString();
+    vm->insertOrChangeBreakpoint(enabled, wFileName, lineNo, ignoreCount, wCondition);
+}
+
+void Run::insertSingleHitBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    const String wFileName = fileName.toStdWString();
+    vm->insertSingleHitBreakpoint(wFileName, lineNo);
+}
+
+void Run::removeBreakpoint(const QString &fileName, quint32 lineNo)
+{
+    const String wFileName = fileName.toStdWString();
+    vm->removeBreakpoint(wFileName, lineNo);
+}
+
 void Run::run()
 {    
     while (vm->hasMoreInstructions()) {
         if (mustStop()) {
             break;
         }
-        vm->evaluateNextInstruction();
+        vm->evaluateNextInstruction();        
         if (vm->error().length()>0 && !stoppingFlag_) {
             int lineNo = vm->effectiveLineNo();
             std::pair<quint32,quint32> colNo =
@@ -320,6 +370,7 @@ int Run::effectiveLineNo() const
 
 bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & filename)
 {
+    breakpoints_.clear();
     Kumir::EncodingError encodingError;
     String errorMessage;
     bool ok = vm->loadProgramFromBinaryBuffer(stream, true, filename, errorMessage);
@@ -341,6 +392,7 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
 
 void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
 {
+    breakpoints_.clear();
     Kumir::EncodingError encodingError;
     String error;
     if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
@@ -384,6 +436,8 @@ bool Run::hasTestingAlgorithm() const
 
 void Run::reset()
 {
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
     vm->reset();
 }
 
