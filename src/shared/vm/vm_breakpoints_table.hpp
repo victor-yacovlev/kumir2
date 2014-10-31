@@ -3,17 +3,20 @@
 
 #include <map>
 #include <utility>
-
-#ifdef NO_UNICODE
-    #include <string>
-    typedef std::string String;
-#else
-    extern "C" {
-        #include <wchar.h>
-    }
-    #include <string>
-    typedef std::wstring String;
-#endif
+extern "C" {
+    #include <wchar.h>
+}
+#include <string>
+// #ifdef NO_UNICODE
+//     #include <string>
+//     typedef std::string std::wstring;
+// #else
+//     extern "C" {
+//         #include <wchar.h>
+//     }
+//     #include <string>
+//     typedef std::wstring std::wstring;
+// #endif
 
 namespace VM {
 
@@ -35,18 +38,18 @@ public:
     inline bool processBreakpointHit(const uint8_t modId, const int lineNo, const BreakpointConditionChecker * conditionChecker);
 
     inline void reset();
-    inline void registerSourceFileName(const String & sourceFileName, const uint8_t modId);
-    inline const String & registeredSourceFileName(const uint8_t & modId) const;
+    inline void registerSourceFileName(const std::wstring & sourceFileName, const uint8_t modId);
+    inline const std::wstring & registeredSourceFileName(const uint8_t & modId) const;
 
     inline void removeAllBreakpoints();
-    inline void insertOrChangeBreakpoint(const bool enabled, const String &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const BreakpointCondition & condition);
-    inline void insertSingleHitBreakpoint(const Kumir::String &fileName, uint32_t lineNo);
-    inline void removeBreakpoint(const String &fileName, const uint32_t lineNo);
+    inline void insertOrChangeBreakpoint(const bool enabled, const std::wstring &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const BreakpointCondition & condition);
+    inline void insertSingleHitBreakpoint(const std::wstring &fileName, uint32_t lineNo);
+    inline void removeBreakpoint(const std::wstring &fileName, const uint32_t lineNo);
 
 private:
     typedef std::map<BreakpointLocation,BreakpointData> BreaksTable;
-    typedef std::map<String,uint8_t> SourcesToIdsTable;
-    typedef std::map<uint8_t,String> IdsToSourcesTable;
+    typedef std::map<std::wstring,uint8_t> SourcesToIdsTable;
+    typedef std::map<uint8_t,std::wstring> IdsToSourcesTable;
 
     BreaksTable breakpoints_;
     BreaksTable singleHits_;
@@ -88,13 +91,13 @@ void BreakpointsTable::reset()
     idsToSources_.clear();
 }
 
-void BreakpointsTable::registerSourceFileName(const String & sourceFileName, const uint8_t modId)
+void BreakpointsTable::registerSourceFileName(const std::wstring & sourceFileName, const uint8_t modId)
 {
     sourceToIds_[sourceFileName] = modId;
     idsToSources_[modId] = sourceFileName;
 }
 
-const String &BreakpointsTable::registeredSourceFileName(const uint8_t &modId) const
+const std::wstring &BreakpointsTable::registeredSourceFileName(const uint8_t &modId) const
 {
     return idsToSources_.at(modId);
 }
@@ -105,7 +108,7 @@ void BreakpointsTable::removeAllBreakpoints()
     breakpoints_.clear();
 }
 
-void BreakpointsTable::insertOrChangeBreakpoint(const bool enabled, const String &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const BreakpointCondition & condition)
+void BreakpointsTable::insertOrChangeBreakpoint(const bool enabled, const std::wstring &fileName, const uint32_t lineNo, const uint32_t ignoreCount, const BreakpointCondition & condition)
 {
     SourcesToIdsTable::const_iterator fnIt = sourceToIds_.find(fileName);
     if (sourceToIds_.end() != fnIt) {
@@ -128,7 +131,7 @@ void BreakpointsTable::insertOrChangeBreakpoint(const bool enabled, const String
     }
 }
 
-void BreakpointsTable::insertSingleHitBreakpoint(const Kumir::String &fileName, uint32_t lineNo)
+void BreakpointsTable::insertSingleHitBreakpoint(const std::wstring &fileName, uint32_t lineNo)
 {
     SourcesToIdsTable::const_iterator fnIt = sourceToIds_.find(fileName);
     if (sourceToIds_.end() != fnIt) {
@@ -143,7 +146,7 @@ void BreakpointsTable::insertSingleHitBreakpoint(const Kumir::String &fileName, 
     }
 }
 
-void BreakpointsTable::removeBreakpoint(const String &fileName, const uint32_t lineNo)
+void BreakpointsTable::removeBreakpoint(const std::wstring &fileName, const uint32_t lineNo)
 {
     SourcesToIdsTable::const_iterator fnIt = sourceToIds_.find(fileName);
     if (sourceToIds_.end() != fnIt) {
