@@ -994,11 +994,11 @@ void MainWindow::setTitleForTab(int index)
     tabWidget_->setTabText(index, title);
 }
 
-void MainWindow::updateBrowserTitle(const QString &title, const Shared::Browser::InstanceInterface * sender)
+void MainWindow::updateStartPageTitle(const QString &title, const Shared::Browser::InstanceInterface * sender)
 {
     for (int i=0; i<tabWidget_->count(); i++) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->widget(i));
-        if (twe->browser() == sender) {
+        if (twe->startPage() == sender) {
             tabWidget_->setTabText(i, title);
             if (tabWidget_->currentIndex() == i)
                 setTitleForTab(i);
@@ -1015,8 +1015,8 @@ void MainWindow::setupActionsForTab()
         return;
 
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
-    ui->actionSave->setEnabled(twe->type!=WWW);
-    ui->actionSave_as->setEnabled(twe->type!=WWW);
+    ui->actionSave->setEnabled(twe->type!=StartPage);
+    ui->actionSave_as->setEnabled(twe->type!=StartPage);
 
     ui->actionClose->setEnabled(!twe->property("uncloseable").toBool());
     ui->actionMake_native_executable->setEnabled(Program==twe->type);
@@ -1328,7 +1328,7 @@ bool MainWindow::closeTab(int index)
     if (twe->property("uncloseable").toBool()) {
         return false;
     }
-    if (twe->type!=WWW) {
+    if (twe->type!=StartPage) {
         bool notSaved = twe->editor()->isModified();
         QMessageBox::StandardButton r;
         if (!notSaved || twe->isCourseManagerTab()) {
@@ -1559,7 +1559,7 @@ TabWidgetElement * MainWindow::addCentralComponent(
     }
     TabWidgetElement * element = new TabWidgetElement(c,
                                                       m_plugin->mySettings(),
-                                                      type != WWW,
+                                                      type != StartPage,
                                                       toolbarActions, menus, type,
                                                       gr_fileActions, gr_otherActions, kumir);
 
@@ -2171,14 +2171,14 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         if (suffix==programSuffix)
             type = Program;
         else if (suffix=="html" || suffix=="htm")
-            type = WWW;
+            type = StartPage;
         else
             type = Text;
     }
     else {
-        type = WWW;
+        type = StartPage;
     }
-    if (addToRecentFiles && type!=WWW)
+    if (addToRecentFiles && type!=StartPage)
         addToRecent(url.toLocalFile());
     if (type==Program || type==Text) {
         QFileInfo f(url.toLocalFile());
@@ -2216,10 +2216,10 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             setupContentForTab();
         }
     }        
-    else if (type==WWW && m_plugin->plugin_browser) {
+    else if (type==StartPage && m_plugin->plugin_browser) {
         Shared::Browser::InstanceInterface * browser =
                 m_plugin->plugin_browser->createBrowser(url, m_plugin->m_browserObjects);
-        browser->setTitleChangeHandler(this, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
+        browser->setTitleChangeHandler(this, SLOT(updateStartPageTitle(QString, const Shared::Browser::InstanceInterface*)));
         if (tabsDisabledFlag_) {
             while(tabWidget_->count()) tabWidget_->removeTab(0);
         }
@@ -2228,8 +2228,8 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
                     browser->widget(),
                     QList<QAction*>(),
                     QList<QMenu*>(),
-                    WWW);
-        result->setBrowser(browser);
+                    StartPage);
+        result->setStartPage(browser);
         tabWidget_->setCurrentIndex(tabWidget_->count()-1);
         tabWidget_->currentWidget()->setFocus();
     }

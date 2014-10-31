@@ -43,7 +43,6 @@ Plugin::Plugin() :
     plugin_NativeGenerator = plugin_BytecodeGenerator = 0;
     plugin_browser = 0;
     plugin_kumirCodeRun = 0;
-    startPage_ = 0;
     helpWindow_ = 0;
     coursesWindow_ = 0;
     terminal_ = 0;
@@ -576,49 +575,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
 
     if (!parameters.contains("nostartpage", Qt::CaseInsensitive)) {
-
-        startPage_ = plugin_browser->createBrowser();
-
-        startPage_->setTitleChangeHandler(mainWindow_, SLOT(updateBrowserTitle(QString, const Shared::Browser::InstanceInterface*)));
-
-        (*startPage_)["mainWindow"] = mainWindow_;
-
-        (*startPage_)["gui"] = this;
-
-        m_browserObjects["mainWindow"] = mainWindow_;
-
-        startPage_->widget()->setProperty("uncloseable", true);
-
-        if (startPage_ && mainWindow_->tabWidget_->count()==0) {
-
-            QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
-
-            QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
-
-            QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
-
-            QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
-
-            editNotAvailable->setEnabled(false);
-
-            insertNotAvailable->setEnabled(false);
-
-            TabWidgetElement * twe = mainWindow_->addCentralComponent(
-                        tr("Start"),
-                        startPage_->widget(),
-                        QList<QAction*>(),
-                        QList<QMenu*>() << editMenu << insertMenu,
-                        MainWindow::WWW
-                        );
-
-            twe->setBrowser(startPage_);
-
-            const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
-
-            const QUrl browserEntryUrl = QUrl::fromLocalFile(browserEntryPoint);
-            startPage_->go(browserEntryUrl);
-
-        }
+        createStartPage();
     }
 
     if (parameters.contains("notabs", Qt::CaseInsensitive)) {
@@ -889,6 +846,85 @@ void Plugin::saveSession() const
     mainWindow_->saveSettings();
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
         secWindow->saveState();
+}
+
+void Plugin::createStartPage()
+{
+    using namespace ExtensionSystem;
+    using namespace Shared;
+
+    StartpageWidgetInterface * plugin = PluginManager::instance()->findPlugin<StartpageWidgetInterface>();
+    if (plugin) {
+        createSpecializedStartPage(plugin);
+    }
+    else {
+        createWebKitStartPage();
+    }
+}
+
+void Plugin::createWebKitStartPage()
+{
+    Shared::Browser::InstanceInterface * startPage = plugin_browser->createBrowser();
+
+    startPage->setTitleChangeHandler(mainWindow_, SLOT(updateStartPageTitle(QString, const Shared::Browser::InstanceInterface*)));
+
+    (*startPage)["mainWindow"] = mainWindow_;
+
+    (*startPage)["gui"] = this;
+
+    m_browserObjects["mainWindow"] = mainWindow_;
+
+    startPage->widget()->setProperty("uncloseable", true);
+
+    if (mainWindow_->tabWidget_->count()==0) {
+        QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
+        QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
+        QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
+        QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
+
+        editNotAvailable->setEnabled(false);
+        insertNotAvailable->setEnabled(false);
+
+        TabWidgetElement * twe = mainWindow_->addCentralComponent(
+                    tr("Start"),
+                    startPage->widget(),
+                    QList<QAction*>(),
+                    QList<QMenu*>() << editMenu << insertMenu,
+                    MainWindow::StartPage
+                    );
+
+        twe->setStartPage(startPage);
+        const QString browserEntryPoint = myResourcesDir().absoluteFilePath("startpage/russian/index2.html");
+        const QUrl browserEntryUrl = QUrl::fromLocalFile(browserEntryPoint);
+        startPage->go(browserEntryUrl);
+    }
+}
+
+void Plugin::createSpecializedStartPage(Shared::StartpageWidgetInterface * plugin)
+{
+    plugin->setStartPageTitleChangeHandler(mainWindow_, SLOT(updateStartPageTitle(QString,const Shared::Browser::InstanceInterface*)));
+    QWidget * widget = plugin->startPageWidget();
+    const QString title = plugin->startPageTitle();
+    widget->setProperty("uncloseable", true);
+    if (mainWindow_->tabWidget_->count()==0) {
+        QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
+        QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
+        QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
+        QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
+
+        editNotAvailable->setEnabled(false);
+        insertNotAvailable->setEnabled(false);
+
+        TabWidgetElement * twe = mainWindow_->addCentralComponent(
+                    title,
+                    widget,
+                    QList<QAction*>(),
+                    QList<QMenu*>() << editMenu << insertMenu,
+                    MainWindow::StartPage
+                    );
+
+        twe->setStartPage(plugin);
+    }
 }
 
 
