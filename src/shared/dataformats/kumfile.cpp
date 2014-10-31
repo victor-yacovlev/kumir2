@@ -9,7 +9,7 @@
 
 Shared::Analizer::SourceFileInterface::Data KumFile::insertTeacherMark(Shared::Analizer::SourceFileInterface::Data & data)//Inserts |#%% if needed.
 {
-  static const QRegExp teacherMark("^\\|#%%");
+  static const QRegExp teacherMark("(^|\\n)\\|#%%");
     if(data.visibleText.indexOf(teacherMark)>-1)
     {
         //qDebug()<<" TM POS:"<<data.visibleText.indexOf("\n|#%%");
