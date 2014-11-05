@@ -4498,8 +4498,14 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     
 QSize	RobotView::sizeHint () const
     {
-        return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
-    }
+    return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
+}
+
+void RobotView::handleDocked()
+{
+    qDebug() << "Robot is visible in dock. Size = " << size();
+    setWindowSize(size());
+}
 void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
     {
        CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt(); 

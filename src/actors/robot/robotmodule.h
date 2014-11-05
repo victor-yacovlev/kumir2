@@ -436,6 +436,7 @@ namespace ActorRobot {
         }
         void setWindowSize(const QSize newGeometry);
     public slots:
+        void handleDocked();
         void changeEditMode(bool state);
         void setDock(bool);
         void reloadSett(ExtensionSystem::SettingsPtr settings);
@@ -510,7 +511,7 @@ namespace ActorRobot {
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
         static ExtensionSystem::SettingsPtr robotSettings();
-   public slots:
+   public slots:        
         void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();

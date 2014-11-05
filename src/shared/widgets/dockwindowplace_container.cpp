@@ -42,6 +42,9 @@ void DockWindowPlaceContainer::activate(const QPoint &, const QSize & sz)
     place_->setCurrentIndex(tabIndex);
     place_->activate(sz);
     centralWidget_->setFocus();
+    if (-1 != centralWidget_->metaObject()->indexOfMethod("handleDocked()")) {
+        QTimer::singleShot(50, centralWidget_, SLOT(handleDocked()));
+    }
 }
 
 void DockWindowPlaceContainer::deactivate()
