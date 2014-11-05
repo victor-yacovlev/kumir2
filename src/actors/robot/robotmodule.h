@@ -446,9 +446,9 @@ namespace ActorRobot {
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
         void wheelEvent ( QWheelEvent * event );
-       
+        void showEvent ( QShowEvent * event );
     private:
-        bool pressed,inDock;
+        bool pressed,inDock,firstShow;
         int pressX,pressY;
         RoboField* robotField;
         QToolButton * textEditBtn;

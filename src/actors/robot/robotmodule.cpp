@@ -3389,8 +3389,8 @@ void RobotModule::createGui()
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
     view->setWindowTitle(trUtf8("Робот - нет файла"));
+   // setWindowSize();
 }
-
 
 void RobotModule::copyFromPult(QString log)
     {
@@ -3551,7 +3551,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
                 createEmptyField(7,7);
 
             }
-            setWindowSize();
+            //setWindowSize();
         }
         if(sett->value("Robot/Dir").isValid())
         {
@@ -4320,6 +4320,7 @@ void RobotModule::setWindowSize()
         setScene(roboField);
         pressed=false;
         inDock=false;
+        firstShow=true;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setMouseTracking(true);
@@ -4452,7 +4453,11 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         }
         
     }
-    
+ void RobotView::showEvent ( QShowEvent * event )
+    {
+        if(firstShow)setWindowSize(size());
+        firstShow=false;
+    };
  void RobotView:: FindRobot()
     {
         centerOn(robotField->roboPosF());
@@ -4461,7 +4466,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
  void RobotView::setWindowSize(const QSize newGeometry)
     {
         QSize oldSize=this->size();
-        emit  resizeRequest(newGeometry);
+        
        if(inDock)
        {
            scale(1/c_scale,1/c_scale);
@@ -4482,6 +4487,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
            }
            return;
      }
+        emit  resizeRequest(newGeometry);
         if(newGeometry != oldSize)
        {centerOn(newGeometry.width()/2-(CurCellSize/2),newGeometry.height()/2-(CurCellSize/2));
         qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
@@ -4503,6 +4509,7 @@ void RobotView::setDock(bool docked)
     {
     qDebug() << "RobotView::setDock(" << docked << ")";
         inDock=docked;
+        if(inDock)setWindowSize(size());
     };
 void RobotView::changeEditMode(bool state)
     {
