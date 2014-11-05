@@ -24,7 +24,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
 //        , statusbarWidgets(sws)
     , type(t)
     , editorInstance_(nullptr)
-    , browserInstance_(nullptr)
+    , startPageInstance_(nullptr)
     , kumirProgram_(kumir)
     , courseManagerTab_(false)
     , documentHasChanges_(false)
@@ -35,7 +35,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
     Q_CHECK_PTR(w);
     Q_ASSERT(!QString::fromLatin1(w->metaObject()->className()).isEmpty());
     setProperty("uncloseable", w->property("uncloseable"));
-    if (type==MainWindow::WWW) {
+    if (type==MainWindow::StartPage) {
         connect(w, SIGNAL(titleChanged(QString)), this, SIGNAL(changeTitle(QString)));
     }
     else {
@@ -71,7 +71,7 @@ TabWidgetElement::TabWidgetElement(QWidget * w
 #endif
             tb->setStyleSheet(QString::fromLatin1(css).replace("$windowColor",palette().brush(QPalette::Window).color().name()));
             l->addWidget(tb);
-            if (type!=MainWindow::WWW) {
+            if (type!=MainWindow::StartPage) {
                 Q_FOREACH(QAction * a, gr_fileActions->actions()) {
                     ActionProxy * proxy = new ActionProxy(a, this);
                     if ("file-save" == a->objectName()) {
@@ -255,8 +255,8 @@ QString TabWidgetElement::title() const
             return title;
         }
     }
-    else if (browserInstance_) {
-        return browserInstance_->title();
+    else if (startPageInstance_) {
+        return startPageInstance_->startPageTitle();
     }
     else {
         return "";

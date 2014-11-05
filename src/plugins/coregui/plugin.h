@@ -16,6 +16,7 @@
 #include "interfaces/runinterface.h"
 #include "interfaces/guiinterface.h"
 #include "interfaces/coursesinterface.h"
+#include "interfaces/startpage_widget_interface.h"
 #include "widgets/secondarywindow.h"
 #include "widgets/dockwindowplace.h"
 #include "docbookviewer/docbookview.h"
@@ -95,6 +96,9 @@ protected:
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void saveSession() const;
+    void createStartPage();
+    void createWebKitStartPage();
+    void createSpecializedStartPage(Shared::StartpageWidgetInterface * plugin);
     void restoreSession();
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
@@ -118,7 +122,6 @@ protected:
     BrowserInterface * plugin_browser;
     RunInterface * plugin_kumirCodeRun;
     QList<ActorInterface*> l_plugin_actors;
-    Browser::InstanceInterface * startPage_;
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Widgets::SecondaryWindow* helpWindow_;
     Widgets::SecondaryWindow* coursesWindow_;

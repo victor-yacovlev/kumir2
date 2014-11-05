@@ -10,6 +10,7 @@
 
 #include "extensionsystem/settings.h"
 #include "mainwindow.h"
+#include "interfaces/startpage_widget_interface.h"
 
 namespace CoreGUI {
 class TabWidgetElement
@@ -35,8 +36,8 @@ public:
     inline Shared::Editor::InstanceInterface* editor() const { return editorInstance_; }
     void setEditor(Shared::Editor::InstanceInterface* editor);
 
-    inline Shared::Browser::InstanceInterface* browser() const { return browserInstance_; }
-    inline void setBrowser(Shared::Browser::InstanceInterface* browser) { browserInstance_ = browser; }
+    inline Shared::StartpageWidgetInterface* startPage() const { return startPageInstance_; }
+    inline void setStartPage(Shared::StartpageWidgetInterface* sp) { startPageInstance_ = sp; }
 
     inline class KumirProgram * kumirProgram() { return kumirProgram_; }
     inline bool isCourseManagerTab() const { return courseManagerTab_; }
@@ -64,7 +65,7 @@ protected slots:
 
 private:
     Shared::Editor::InstanceInterface * editorInstance_;
-    Shared::Browser::InstanceInterface * browserInstance_;
+    Shared::StartpageWidgetInterface * startPageInstance_;
     class KumirProgram * kumirProgram_;
     bool courseManagerTab_;
     QString courseTitle_;

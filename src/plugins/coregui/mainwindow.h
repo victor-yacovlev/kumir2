@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow
     friend class Plugin;
 
 public:
-    enum DocumentType { Text, Program, WWW };
+    enum DocumentType { Text, Program, StartPage };
     enum DockWindowType { Terminal, Help, StandardActor, WorldActor, Control, SubControl, Other };
     explicit MainWindow(Plugin * p);
     bool isColumnFirstLayout() const;
@@ -91,7 +91,7 @@ public slots:
     void showUserManual();
     void showHelp();
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
-    void updateBrowserTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
+    void updateStartPageTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
     void makeNativeExecutable();
 
 private slots:

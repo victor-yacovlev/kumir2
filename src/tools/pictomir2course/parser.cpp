@@ -360,6 +360,7 @@ void parser::read_command(const string & command_name, command_t &command)
     static const string CondNotAction = string("condnotaction");
     static const string CondIsWall = string("condiswall");
     static const string CondNotWall = string("condnotwall");
+    static const string CondNoWall = string("condnowall");
     static const string RepForever = string("repforever");
     static const string Rep2 = string("rep2");
     static const string Rep3 = string("rep3");
@@ -395,7 +396,7 @@ void parser::read_command(const string & command_name, command_t &command)
         command = COND_NOT_ACTION;
     else if (CondIsWall == name)
         command = COND_IS_WALL;
-    else if (CondNotWall == name)
+    else if (CondNotWall == name || CondNoWall == name)
         command = COND_NOT_WALL;
     else if (RepForever == name)
         command = REP_FOREVER;
