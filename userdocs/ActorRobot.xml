@@ -1240,5 +1240,221 @@ robot.do_paint()
 			</itemizedlist>
 		</section>
 	</section>
+	<section configuration="teacher" id="Алгоритмы контроля обстановки исполнителя «Робот»">
+		<title> Алгоритмы контроля обстановки исполнителя «Робот»
+		</title>
+			<para>
+				Алгоритмы, описанные ниже могут быть вызваны только из "скрытой" части программы. Они служат для получении
+				различных данных о текущей обстановке исполнителя <emphasis role="bold">Робот</emphasis>.
+			</para>
+		<section id="@@размер поля">
+			<title>@@размер поля
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>@@размер поля</function>
+					</funcdef>
+					<paramdef>рез цел
+						<parameter>строк</parameter>
+					</paramdef>
+					<paramdef>рез цел
+						<parameter>столбцов</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				После выполнения данного алгоритма в переменные <parameter>строк</parameter> и <parameter>столбцов</parameter> будут 
+				записаны соответствующие размеры обстановки.
+			</para>
+		</section>
+		<section id="@@закрашена">
+			<title>@@закрашена
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@закрашена</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает <code role="кумир">да</code> если клетка, расположенная в строке <parameter>строка</parameter> 
+				и столбце <parameter>столбец</parameter> закрашена.
+			</para>
+		</section>
+		<section id="@@метка">
+			<title>@@метка
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@метка</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает <code role="кумир">да</code> если клетка, расположенная в строке <parameter>строка</parameter> 
+				и столбце <parameter>столбец</parameter> отмечена точкой.
+			</para>
+		</section>
+		<section id="@@робот">
+			<title>@@робот
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>@@робот</function>
+					</funcdef>
+					<paramdef>рез цел
+						<parameter>строка</parameter>
+					</paramdef>
+					<paramdef>рез цел
+						<parameter>столбец</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				После выполнения данного алгоритма в переменные <parameter>строка</parameter> 
+				и <parameter>столбец</parameter> будет записано текущее положение Робота.
+			</para>
+		</section>
+		<section id="@@верхняя буква">
+			<title>@@верхняя буква
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@верхняя буква</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает верхний символ из клетки <parameter>строка </parameter>/ <parameter>столбец</parameter>. 
+				Если верхнего символа в клетке нет -- возвращает пробел.
+			</para>
+		</section>
+		<section id="@@нижняя буква">
+			<title>@@нижняя буква
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@нижняя буква</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает нижний символ из клетки <parameter>строка </parameter>/ <parameter>столбец</parameter>. 
+				Если нижнего символа в клетке нет -- возвращает пробел.
+			</para>
+		</section>
+		<section id="@@температура">
+			<title>@@температура
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@температура</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает значение температуры в клетке <parameter>строка </parameter>/ <parameter>столбец</parameter>.
+			</para>
+		</section>
+		<section id="@@радиация">
+			<title>@@радиация
+			</title>
+			<funcsynopsis>
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@радиация</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает уровень радиации в клетке <parameter>строка </parameter>/ <parameter>столбец</parameter>.
+			</para>
+		</section>
+	</section>
 </article>
 
