@@ -21,6 +21,7 @@ public:
     QSize sizeHint() const;
 
 signals:
+    void resizeRequest(const QString & size);
     
 public slots:
 

@@ -142,6 +142,27 @@ void Side::handleVisiblityRequest(bool visible, const QSize & size)
     }
 }
 
+void Side::forceResizeItem(const QSize &sz)
+{
+    QWidget * who = qobject_cast<QWidget*>(sender());
+    Q_ASSERT(who);
+    const int index = indexOf(who);
+    Q_ASSERT(-1 != index);
+    QList<int> szs = sizes();
+    const int diff = Qt::Horizontal == orientation()
+            ? sz.width() - szs.at(index)
+            : sz.height() - szs.at(index);
+    for (int i=0; i<szs.size(); ++i) {
+        if (i == index) {
+            szs[i] += diff;
+        }
+        else {
+            szs[i] -= diff;
+        }
+    }
+    setSizes(szs);
+}
+
 void Side::ensureEnoughtSpaceForComponent(QWidget *component, const QSize &size)
 {
     int index = indexOf(component);

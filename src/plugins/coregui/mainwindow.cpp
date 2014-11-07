@@ -422,33 +422,31 @@ void MainWindow::changeFocusOnMenubar()
 
 void MainWindow::prepareLayoutChange()
 {
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
+    helpAndCoursesPlace_->disconnect(SIGNAL(resizeRequest(QSize)));
     helpAndCoursesPlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
+    debuggerPlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));    
     debuggerPlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
     consolePlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    consolePlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
+
     actorsPlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    centralSide_->disconnect(SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    actorsPlace_->disconnect(SIGNAL(visiblityRequest(bool,QSize)));
+
+    centralSide_->disconnect(SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));    
     ui->splitter->disconnect(SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    helpAndCoursesPlace_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    debuggerPlace_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    consolePlace_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    actorsPlace_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    centralSide_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    helpAndCoursesPlace_->setParent(0);    
+    debuggerPlace_->setParent(0);    
+    consolePlace_->setParent(0);    
+    actorsPlace_->setParent(0);   
+
+    centralSide_->setParent(0);    
     secondarySide_->setParent(0);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
 }
 
 QMap<QWidget*,QSize> MainWindow::saveSizes() const
@@ -552,155 +550,125 @@ void MainWindow::restoreSizes(const QMap<QWidget *, QSize> &sizes, const Qt::Ori
 
 void MainWindow::switchToRowFirstLayout()
 {
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     QMap<QWidget*,QSize> visibleSizes = saveSizes();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     prepareLayoutChange();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     ui->splitter->setOrientation(Qt::Vertical);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setOrientation(Qt::Horizontal);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setOrientation(Qt::Horizontal);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     debuggerWindow_->changeDockPlace(debuggerPlace_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     ui->splitter->addWidget(centralSide_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->splitter->addWidget(secondarySide_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
 
     centralSide_->addComponent(tabWidget_, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->addComponent(helpAndCoursesPlace_, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     secondarySide_->addComponent(debuggerPlace_, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->addComponent(consolePlace_, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     secondarySide_->addComponent(actorsPlace_, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(helpAndCoursesPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             centralSide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(helpAndCoursesPlace_, SIGNAL(resizeRequest(QSize)),
+            centralSide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(debuggerPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(debuggerPlace_, SIGNAL(resizeRequest(QSize)),
+            centralSide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(consolePlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(consolePlace_, SIGNAL(resizeRequest(QSize)),
+            centralSide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(actorsPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(actorsPlace_, SIGNAL(resizeRequest(QSize)),
+            centralSide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     centralSide_->setCollapsible(0, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setCollapsible(0, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setVisible(true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     restoreSizes(visibleSizes, Qt::Vertical);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
 }
 
 void MainWindow::switchToColumnFirstLayout()
 {
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     QMap<QWidget*,QSize> visibleSizes = saveSizes();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     prepareLayoutChange();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     ui->splitter->setOrientation(Qt::Horizontal);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setOrientation(Qt::Vertical);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setOrientation(Qt::Vertical);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     debuggerWindow_->changeDockPlace(helpAndCoursesPlace_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     ui->splitter->addWidget(centralSide_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->splitter->addWidget(secondarySide_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->splitter->setCollapsible(0, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->splitter->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     centralSide_->addComponent(tabWidget_, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->addComponent(consolePlace_, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-//    secondarySide_->addComponent(debuggerPlace_, false);
     secondarySide_->addComponent(helpAndCoursesPlace_, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
     secondarySide_->addComponent(actorsPlace_, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(helpAndCoursesPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(helpAndCoursesPlace_, SIGNAL(resizeRequest(QSize)),
+            secondarySide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(debuggerPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(debuggerPlace_, SIGNAL(resizeRequest(QSize)),
+            secondarySide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(consolePlace_, SIGNAL(visiblityRequest(bool,QSize)),
             centralSide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(consolePlace_, SIGNAL(resizeRequest(QSize)),
+            secondarySide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(actorsPlace_, SIGNAL(visiblityRequest(bool,QSize)),
             secondarySide_, SLOT(handleVisiblityRequest(bool,QSize)),
             Qt::DirectConnection);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(actorsPlace_, SIGNAL(resizeRequest(QSize)),
+            secondarySide_, SLOT(forceResizeItem(QSize)),
+            Qt::DirectConnection);
 
     connect(centralSide_, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     centralSide_->setCollapsible(0, false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setCollapsible(0, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     secondarySide_->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     centralSide_->setVisible(true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     restoreSizes(visibleSizes, Qt::Horizontal);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 }
 
 QSize MainWindow::minimumSizeHint() const

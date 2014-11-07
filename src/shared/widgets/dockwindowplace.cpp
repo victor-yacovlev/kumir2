@@ -45,6 +45,12 @@ void DockWindowPlace::activate(const QSize &)
     emit visiblityRequest(true, QSize());
 }
 
+void DockWindowPlace::processResize(const QSize &sz)
+{
+    resize(sz);
+    emit resizeRequest(sz);
+}
+
 void DockWindowPlace::resizeEvent(QResizeEvent *e)
 {
     const QSize minSize = minimumSizeHint();
@@ -52,8 +58,9 @@ void DockWindowPlace::resizeEvent(QResizeEvent *e)
     }
     else {
         QWidget * curW = currentWidget();
-        if (curW) {
-            pImpl_->preferredSize_ = curW->size();
+        const QSize currentWidgetSize = curW->size();
+        if (curW && currentWidgetSize.width() && currentWidgetSize.height()) {
+            pImpl_->preferredSize_ = currentWidgetSize;
         }
     }
     QTabWidget::resizeEvent(e);

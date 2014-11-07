@@ -19,7 +19,8 @@ class DockWindowPlaceContainer
 public:        
 
 signals:
-    
+    void resizeRequest(const QString & size);
+
 public slots:
     virtual void activate(const QPoint &ps, const QSize &sz);
     virtual void deactivate();
@@ -35,8 +36,13 @@ private /*methods*/:
     virtual HitTestResult hitTest(const QPoint & mousePosition) const;
     virtual void notifyOnDocked();
 
+private slots:
+    void resizePlaceToLastSize();
+
 private /*fields*/:
     class DockWindowPlace * place_;
+    QSize lastPlaceSize_;
+
 };
 
 } // namespace Widgets

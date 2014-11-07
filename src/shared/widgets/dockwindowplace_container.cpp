@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QVBoxLayout>
+#include <QResizeEvent>
 
 namespace Widgets {
 
@@ -35,6 +36,10 @@ void DockWindowPlaceContainer::activate(const QPoint &, const QSize & sz)
                 layout()->contentsMargins().bottom() +
                 layout()->spacing() +
                 titleBox_->height();
+        if (lastPlaceSize_.isValid()) {
+            dockSize.rwidth() = qMax(sz.width(), lastPlaceSize_.width());
+            dockSize.rheight() = qMax(sz.height(), lastPlaceSize_.height());
+        }
         place_->setPreferredItemSize(dockSize);
         tabIndex = place_->addTab(this, title());
     }
@@ -42,6 +47,10 @@ void DockWindowPlaceContainer::activate(const QPoint &, const QSize & sz)
     place_->setCurrentIndex(tabIndex);
     place_->activate(sz);
     centralWidget_->setFocus();
+    if (lastPlaceSize_.isValid()) {
+//        QTimer::singleShot(50, this, SLOT(resizePlaceToLastSize()));
+        resizePlaceToLastSize();
+    }
     if (-1 != centralWidget_->metaObject()->indexOfMethod("handleDocked()")) {
         QTimer::singleShot(50, centralWidget_, SLOT(handleDocked()));
     }
@@ -57,6 +66,7 @@ void DockWindowPlaceContainer::deactivate()
         }
     }
     if (tabIndex != -1) {
+        lastPlaceSize_ = place_->size();
         place_->removeTab(tabIndex);
     }
     setVisible(false);
@@ -168,6 +178,14 @@ void DockWindowPlaceContainer::notifyOnDocked()
             QMetaObject::invokeMethod(obj, "setDock", Q_ARG(bool, false));
         }
     }
+}
+
+void DockWindowPlaceContainer::resizePlaceToLastSize()
+{
+    QSize sz = place_->size();
+    sz.rwidth() = qMax(sz.width(), lastPlaceSize_.width());
+    sz.rheight() = qMax(sz.height(), lastPlaceSize_.height());
+    place_->processResize(sz);
 }
 
 } // namespace Widgets
