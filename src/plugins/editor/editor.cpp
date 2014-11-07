@@ -1226,6 +1226,9 @@ void EditorInstance::updateSettings(const QStringList & keys)
 {
     plane_->updateSettings(keys);
     plane_->update();
+    if (autocompleteWidget_) {
+        autocompleteWidget_->setFont(plane_->font());
+    }
 }
 
 void EditorInstance::changeGlobalState(quint32 prevv, quint32 currentt)

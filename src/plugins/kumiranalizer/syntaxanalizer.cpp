@@ -882,46 +882,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 ) const
 {
     QList<Shared::Analizer::Suggestion> result;
-    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
-    // 1. Suggest locals and globals if any applicable
-    if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
-        QList<AST::VariablePtr> vars;
-        if (contextAlgorithm)
-            vars += contextAlgorithm->impl.locals;
-        if (contextModule)
-            vars += contextModule->impl.globals;
-
-        foreach (AST::VariablePtr  var , vars) {
-            if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
-                Shared::Analizer::Suggestion suggestion;
-                if (contextAlgorithm
-                        && contextAlgorithm->impl.locals.contains(var)
-                        && contextAlgorithm->header.name==var->name
-                        )
-                {
-                    // return-value
-                    suggestion.value = QString::fromUtf8("знач");
-                    suggestion.kind = Shared::Analizer::Suggestion::LocalVariable;
-                    suggestion.description = var->baseType.kind==AST::TypeUser
-                            ? var->baseType.name
-                            : lexer_->classNameByBaseType(var->baseType.kind);
-                    suggestion.description += " "+suggestion.value;
-                }
-                else {
-                    // local or global variable
-                    suggestion.value = var->name;
-                    suggestion.description = var->baseType.kind==AST::TypeUser
-                            ? var->baseType.name
-                            : lexer_->classNameByBaseType(var->baseType.kind);
-                    suggestion.description += " " + var->name;
-                    suggestion.kind = contextModule->impl.globals.contains(var)
-                            ? Shared::Analizer::Suggestion::GlobalVariable
-                            : Shared::Analizer::Suggestion::LocalVariable;
-                }
-                result.push_back(suggestion);
-            }
-        }
-    }
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);   
 
     // 2. Suggest algorithms if any applicable
     if (minimumDimension==0
@@ -936,7 +897,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
         if (contextModule)
             algs += contextModule->impl.algorhitms;
         foreach (const AST::ModulePtr  mod , ast_->modules) {
-            if (mod->isEnabledFor(currentModule))
+            if (mod->isEnabledFor(currentModule) || alwaysEnabledModules_.contains(mod->header.name))
                 algs += mod->header.algorhitms;
         }
 
@@ -988,6 +949,46 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     suggestion.description += ")";
                 }
                 suggestion.kind = Shared::Analizer::Suggestion::Function;
+                result.push_back(suggestion);
+            }
+        }
+    }
+
+    // 1. Suggest locals and globals if any applicable
+    if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
+        QList<AST::VariablePtr> vars;
+        if (contextAlgorithm)
+            vars += contextAlgorithm->impl.locals;
+        if (contextModule)
+            vars += contextModule->impl.globals;
+
+        foreach (AST::VariablePtr  var , vars) {
+            if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
+                Shared::Analizer::Suggestion suggestion;
+                if (contextAlgorithm
+                        && contextAlgorithm->impl.locals.contains(var)
+                        && contextAlgorithm->header.name==var->name
+                        )
+                {
+                    // return-value
+                    suggestion.value = QString::fromUtf8("знач");
+                    suggestion.kind = Shared::Analizer::Suggestion::LocalVariable;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer_->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " "+suggestion.value;
+                }
+                else {
+                    // local or global variable
+                    suggestion.value = var->name;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer_->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " " + var->name;
+                    suggestion.kind = contextModule->impl.globals.contains(var)
+                            ? Shared::Analizer::Suggestion::GlobalVariable
+                            : Shared::Analizer::Suggestion::LocalVariable;
+                }
                 result.push_back(suggestion);
             }
         }
