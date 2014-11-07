@@ -487,7 +487,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
 
         static const QList<QByteArray> Operators = QList<QByteArray>()
                 << "input" << "output" << "+" << "-" << "*" << "/" << "**"
-                << "=" << "<>" << "<" << ">";
+                << "=" << "<>" << "<" << ">" << ":=";
 
         AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);
         alg->header.implType = AST::AlgorhitmExternal;

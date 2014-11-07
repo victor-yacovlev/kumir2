@@ -2727,9 +2727,32 @@ void SyntaxAnalizer::parseAssignment(int str)
             return;
         }
         QString err;
-        if (leftExpr->baseType!=rightExpr->baseType) {
-            AST::VariableBaseType a = leftExpr->baseType.kind;
-            AST::VariableBaseType b = rightExpr->baseType.kind;
+        const AST::Type & aa = leftExpr->baseType;
+        const AST::Type & bb = rightExpr->baseType;
+        const AST::VariableBaseType a = aa.kind;
+        const AST::VariableBaseType b = bb.kind;
+        if (aa != bb && (AST::TypeUser == a || AST::TypeUser == b)) {
+            AST::ModulePtr  convMod;
+            AST::AlgorithmPtr  convAlg;
+            if (findConversionAlgorithm(bb, aa, convMod, convAlg, st.mod)) {
+                AST::ExpressionPtr  convExpr = AST::ExpressionPtr(new AST::Expression);
+                convExpr->kind = AST::ExprFunctionCall;
+                convExpr->function = convAlg;
+                convExpr->operands.push_back(rightExpr);
+                convExpr->baseType = a;
+                convExpr->dimension = leftExpr->dimension;
+                rightExpr = convExpr;
+            }
+            else {
+                const QString aName = AST::TypeUser == a
+                        ? aa.name : lexer_->classNameByBaseType(a);
+                const QString bName = AST::TypeUser == b
+                        ? bb.name : lexer_->classNameByBaseType(b);
+
+                err = _("Can't %1:=%2", aName, bName);
+            }
+        }
+        else if (aa != bb) {
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
                     bool isRealConstant = false;
@@ -2835,25 +2858,6 @@ void SyntaxAnalizer::parseAssignment(int str)
                 }
                 else if (b==AST::TypeUser) {
                     err = _("Can't %1:=%2", lexer_->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
-                }
-            }
-            else if (a==AST::TypeUser) {
-                AST::ModulePtr  convMod;
-                AST::AlgorithmPtr  convAlg;
-                if (findConversionAlgorithm(rightExpr->baseType, leftExpr->baseType, convMod, convAlg, st.mod)) {
-                    AST::ExpressionPtr  convExpr = AST::ExpressionPtr(new AST::Expression);
-                    convExpr->kind = AST::ExprFunctionCall;
-                    convExpr->function = convAlg;
-                    convExpr->operands.push_back(rightExpr);
-                    convExpr->baseType = a;
-                    convExpr->dimension = leftExpr->dimension;
-                    rightExpr = convExpr;
-                }
-                else if (b!=AST::TypeUser) {
-                    err = _("Can't %1:=%2", leftExpr->baseType.name, lexer_->classNameByBaseType(rightExpr->baseType.kind));
-                }
-                else if (b==AST::TypeUser) {
-                    err = _("Can't %1:=%2", leftExpr->baseType.name, rightExpr->baseType.name);
                 }
             }
         } // if (leftExpr->type!=rightExpr->type)
