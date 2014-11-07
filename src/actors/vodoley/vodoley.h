@@ -187,6 +187,7 @@ public:
  
 protected:
     void mousePressEvent(QMouseEvent *event);
+    void resizeEvent ( QResizeEvent * event );
 //    void closeEvent ( QCloseEvent * event );
 public slots:
     void reset();
