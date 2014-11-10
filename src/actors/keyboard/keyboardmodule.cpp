@@ -20,7 +20,7 @@ You should change it corresponding to functionality.
 namespace ActorKeyboard {
 
 KeyboardModule::KeyboardModule(ExtensionSystem::KPlugin * parent)
-    : KeyboardModuleBase(parent)
+    : KeyboardModuleBase(parent)    
 {
     // Module constructor, called once on plugin load
     // TODO implement me
@@ -84,7 +84,8 @@ KeyboardModule::KeyboardModule(ExtensionSystem::KPlugin * parent)
     // Register event filter
     QWidgetList widgets = QApplication::allWidgets();
     Q_FOREACH(QWidget * w, widgets) {
-        w->installEventFilter(this);
+        if (w->isTopLevel())
+            w->installEventFilter(this);
     }
 }
 
@@ -120,6 +121,7 @@ void KeyboardModule::finalizeRun()
     /* алг цел код клавиши */
     bufferLock_.lock();
     const int result = buffer_.isEmpty() ? 0 : buffer_.dequeue();
+    qDebug() << "Got key code : " << result << "; keys left in buffer: " << buffer_.size();
     bufferLock_.unlock();
     return result;
     
@@ -183,12 +185,17 @@ void KeyboardModule::finalizeRun()
         C("ENTER", 13),
         C("RETURN", 13),
         C("SPACE", 32),
+        C("ПРОБЕЛ", 32),
         C("PAGEUP", 33),
         C("PGUP", 33),
         C("PAGEDOWN", 34),
         C("PGDOWN", 34),
         C("END", 35),
         C("HOME", 36),
+        C("ВЛЕВО", 37),
+        C("ВВЕРХ", 38),
+        C("ВПРАВО", 39),
+        C("ВНИЗ", 40),
         C("INSERT", 45),
         C("DELETE", 46),
         C("F1", 112), C("F2", 113), C("F3", 114), C("F4", 115), C("F5", 116), C("F6", 117),
@@ -348,14 +355,18 @@ int KeyboardModule::runOperatorASTERISK(int self, const Keycode &other)
 bool KeyboardModule::eventFilter(QObject *obj, QEvent *event)
 {
     if (QEvent::KeyPress == event->type()) {
-        QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
-        qDebug() << "Catched Qt code: " << keyEvent->key();
-        const int code = polyakovCodeOfKey(keyEvent->key(), keyEvent->text());
-        if (code) {
-            qDebug() << "Catched code: " << code;
-            bufferLock_.lock();
-            buffer_.enqueue(code);
-            bufferLock_.unlock();
+        bool process = true;
+        if (process) {
+            qDebug() << "From " << obj->metaObject()->className();
+            QKeyEvent * keyEvent = static_cast<QKeyEvent*>(event);
+            qDebug() << "Catched Qt code: " << keyEvent->key();
+            const int code = polyakovCodeOfKey(keyEvent->key(), keyEvent->text());
+            if (code) {
+                qDebug() << "Catched code: " << code;
+                bufferLock_.lock();
+                buffer_.enqueue(code);
+                bufferLock_.unlock();
+            }
         }
     }
     return QObject::eventFilter(obj, event);

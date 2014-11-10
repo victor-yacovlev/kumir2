@@ -22,22 +22,6 @@
             "name": { "ascii": "clear key buffer", "ru_RU": "очистить клавиши" }
         },
         {
-            "name": { "ascii": "KEY_UP", "ru_RU": "КЛ_ВВЕРХ" },
-            "returnType": "int"
-        },
-        {
-            "name": { "ascii": "KEY_DOWN", "ru_RU": "КЛ_ВНИЗ" },
-            "returnType": "int"
-        },
-        {
-            "name": { "ascii": "KEY_LEFT", "ru_RU": "КЛ_ВЛЕВО" },
-            "returnType": "int"
-        },
-        {
-            "name": { "ascii": "KEY_RIGHT", "ru_RU": "КЛ_ВПРАВО" },
-            "returnType": "int"
-        },
-        {
             "name": { "ascii": "input", "ru_RU": "ввод" },
             "returnType": "keycode",
             "arguments": [
