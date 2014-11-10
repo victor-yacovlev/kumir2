@@ -1507,7 +1507,7 @@ void Generator::CALL_SPECIAL(int modId, int algId, int level, const AST::Stateme
     if (st->type==AST::StOutput) {
         int varsCount = st->expressions.size() / 3;
 
-        for (int i = varsCount-1; i>=0; i--) {
+        for (int i = 0; i<varsCount; ++i) {
             const AST::ExpressionPtr  expr = st->expressions[3*i];
             const AST::ExpressionPtr  format1 = st->expressions[3*i+1];
             const AST::ExpressionPtr  format2 = st->expressions[3*i+2];

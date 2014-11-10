@@ -2059,9 +2059,9 @@ void KumirVM::do_specialcall(uint16_t alg)
             std::pair<int, int> format;
             format.second = valuesStack_.pop().toInt();
             format.first = valuesStack_.pop().toInt();
-            formats.push_back(format);
+            formats.push_front(format);
             const Variable & ref = valuesStack_.pop();
-            values.push_back(ref);
+            values.push_front(ref);
         }
         if (stacksMutex_) stacksMutex_->unlock();
         if (output_ && !fileIO && !Kumir::Files::overloadedStdOut()) {
