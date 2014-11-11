@@ -1021,6 +1021,11 @@ public:
         if (std::string::npos != dotPos) {
             ascii.replace(dotPos, 1, ".");
         }
+        if (!expform && 0==width && std::string::npos != ascii.find('.')) {
+            while (ascii.size() > 1 && '0' == ascii.at(ascii.size()-1)) {
+                ascii.pop_back();
+            }
+        }
         while (width > 0 && ascii.length() < static_cast<size_t>(width)) {
             if ('r' == al) {
                 ascii = std::string(" ") + ascii;
