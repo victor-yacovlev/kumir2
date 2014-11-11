@@ -1012,10 +1012,10 @@ public:
         sprintfFormat.push_back('%');
         real v = fabs(value);
         int p = 0;
-        while (v >= 1.0) {
-            v /= 10;
-            p++;
-        }
+//        while (v >= 1.0) {
+//            v /= 10;
+//            p++;
+//        }
         if (decimals>0 && p < 7) {
             sprintfFormat.push_back('.');
             sprintfFormat.append(sprintfInt(decimals + p, 10, 0, 'l'));
@@ -1023,7 +1023,7 @@ public:
         if (expform)
             sprintfFormat.push_back('e');
         else
-            sprintfFormat.push_back('g');
+            sprintfFormat.push_back('f');
         EncodingError encodingError;
         const std::string formatAscii = Coder::encode(ASCII, sprintfFormat, encodingError);
         const char * fmt = formatAscii.c_str();
