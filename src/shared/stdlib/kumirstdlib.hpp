@@ -1006,100 +1006,121 @@ public:
     }
 
     static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
-        char buffer[500];
-        String sprintfFormat;
-        sprintfFormat.reserve(10);
-        sprintfFormat.push_back('%');
-        real v = fabs(value);
-        int p = 0;
-        while (v >= 1.0) {
-            v /= 10;
-            p++;
-        }
-        if (decimals>0 && p < 7) {
-            sprintfFormat.push_back('.');
-            sprintfFormat.append(sprintfInt(decimals + p, 10, 0, 'l'));
-        }
+        std::stringstream stream;
+        stream.precision(decimals);
         if (expform)
-            sprintfFormat.push_back('e');
+            stream << std::scientific;
         else
-            sprintfFormat.push_back('g');
+            stream << std::fixed;
+
+        stream << value;
+
+        std::string ascii = stream.str();
+        // Replace ',' with '.' (for some locales like Russian)
+        const size_t dotPos = ascii.find(',');
+        if (std::string::npos != dotPos) {
+            ascii.replace(dotPos, 1, ".");
+        }
+        while (width > 0 && ascii.length() < static_cast<size_t>(width)) {
+            if ('r' == al) {
+                ascii = std::string(" ") + ascii;
+            }
+            else {
+                ascii.push_back(' ');
+            }
+        }
+
         EncodingError encodingError;
-        const std::string formatAscii = Coder::encode(ASCII, sprintfFormat, encodingError);
-        const char * fmt = formatAscii.c_str();
-        sprintf(buffer, fmt, value);
-        std::string result(reinterpret_cast<char*>(&buffer));
-
-        size_t epos = result.find('e');
-        if (epos!=std::string::npos) {
-            std::string beforeESignValue = result.substr(0,epos+2);
-            std::string afterESignValue  = result.substr(epos+2);
-            while (afterESignValue.length()>0 && afterESignValue.at(0)=='0') {
-                afterESignValue = afterESignValue.substr(1);
-            }
-            result = beforeESignValue;
-            int zeroesToAppend = 2-afterESignValue.length();
-            for (int i=0; i<zeroesToAppend; i++) {
-                result.push_back('0');
-            }
-            result += afterESignValue;
-        }
-
-        if (width>0) {
-            while (result.length()>width && result.find('.')!=std::string::npos) {
-                result.resize(result.length()-1);
-            }
-            int leftSpaces = 0;
-            int rightSpaces = 0;
-            if (al=='l') {
-                rightSpaces = width - result.length();
-            } else if (al=='r') {
-                leftSpaces = width - result.length();
-            } else {
-                leftSpaces = (width - result.length()) / 2;
-                rightSpaces = width - result.length() - leftSpaces;
-            }
-            if (leftSpaces>0)
-                result.insert(0, leftSpaces, ' ');
-            if (rightSpaces>0)
-                result.append(rightSpaces, ' ');
-        }
-        for (size_t i=0; i<result.length(); i++) {
-            if (result[i]==',')
-                result[i] = '.';
-        }
-        if (!expform) {
-            int chopPos;
-            bool dotFound = false;
-            for (chopPos=result.length()-1; chopPos>0; chopPos--) {
-                if (result[chopPos]=='.')
-                    dotFound = true;
-                if (result[chopPos]!='0')
-                    break;
-            }
-            if (result[chopPos]=='.')
-                chopPos += 1;
-            if (dotFound)
-                result = result.substr(0, chopPos+1);
-        }
-        String uniresult = Coder::decode(ASCII, result, encodingError);
-        size_t dotPos = uniresult.find_first_of('.');
-        if (dotPos!=String::npos) {
-            uniresult[dotPos] = dot;
-        }
-        else {
-            if (uniresult.find_first_of(Char('e'))==String::npos) {
-                uniresult.push_back(dot);
-                uniresult.push_back('0');
-            }
-        }
-//        if (!expform) {
-//            bool forceExpForm = false;
-//            int integralDigits = dotPos; // thereshold >= 8
-//            int decimalDigits = uniresult.length()-integralDigits-1; // t
-
+        String result = Coder::decode(ASCII, ascii, encodingError);
+        return result;
+//        char buffer[500];
+//        String sprintfFormat;
+//        sprintfFormat.reserve(10);
+//        sprintfFormat.push_back('%');
+//        real v = fabs(value);
+//        int p = 0;
+//        while (v >= 1.0) {
+//            v /= 10;
+//            p++;
 //        }
-        return uniresult;
+//        if (decimals>0 && p < 7) {
+//            sprintfFormat.push_back('.');
+//            sprintfFormat.append(sprintfInt(decimals + p, 10, 0, 'l'));
+//        }
+//        if (expform)
+//            sprintfFormat.push_back('e');
+//        else
+//            sprintfFormat.push_back('g');
+//        EncodingError encodingError;
+//        const std::string formatAscii = Coder::encode(ASCII, sprintfFormat, encodingError);
+//        const char * fmt = formatAscii.c_str();
+//        sprintf(buffer, fmt, value);
+//        std::string result(reinterpret_cast<char*>(&buffer));
+
+//        size_t epos = result.find('e');
+//        if (epos!=std::string::npos) {
+//            std::string beforeESignValue = result.substr(0,epos+2);
+//            std::string afterESignValue  = result.substr(epos+2);
+//            while (afterESignValue.length()>0 && afterESignValue.at(0)=='0') {
+//                afterESignValue = afterESignValue.substr(1);
+//            }
+//            result = beforeESignValue;
+//            int zeroesToAppend = 2-afterESignValue.length();
+//            for (int i=0; i<zeroesToAppend; i++) {
+//                result.push_back('0');
+//            }
+//            result += afterESignValue;
+//        }
+
+//        if (width>0) {
+//            while (result.length()>width && result.find('.')!=std::string::npos) {
+//                result.resize(result.length()-1);
+//            }
+//            int leftSpaces = 0;
+//            int rightSpaces = 0;
+//            if (al=='l') {
+//                rightSpaces = width - result.length();
+//            } else if (al=='r') {
+//                leftSpaces = width - result.length();
+//            } else {
+//                leftSpaces = (width - result.length()) / 2;
+//                rightSpaces = width - result.length() - leftSpaces;
+//            }
+//            if (leftSpaces>0)
+//                result.insert(0, leftSpaces, ' ');
+//            if (rightSpaces>0)
+//                result.append(rightSpaces, ' ');
+//        }
+//        for (size_t i=0; i<result.length(); i++) {
+//            if (result[i]==',')
+//                result[i] = '.';
+//        }
+//        if (!expform) {
+//            int chopPos;
+//            bool dotFound = false;
+//            for (chopPos=result.length()-1; chopPos>0; chopPos--) {
+//                if (result[chopPos]=='.')
+//                    dotFound = true;
+//                if (result[chopPos]!='0')
+//                    break;
+//            }
+//            if (result[chopPos]=='.')
+//                chopPos += 1;
+//            if (dotFound)
+//                result = result.substr(0, chopPos+1);
+//        }
+//        String uniresult = Coder::decode(ASCII, result, encodingError);
+//        size_t dotPos = uniresult.find_first_of('.');
+//        if (dotPos!=String::npos) {
+//            uniresult[dotPos] = dot;
+//        }
+//        else {
+//            if (uniresult.find_first_of(Char('e'))==String::npos) {
+//                uniresult.push_back(dot);
+//                uniresult.push_back('0');
+//            }
+//        }
+//        return uniresult;
     }
 
 
