@@ -1007,11 +1007,17 @@ public:
 
     static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
         std::stringstream stream;
-        stream.precision(decimals);
-        if (expform)
+        if (0 == width && !expform) {
+            if (value < 0.00001 || value > 99999.)
+                expform = true;
+        }
+        if (expform) {
             stream << std::scientific;
-        else
+        }
+        else {
             stream << std::fixed;
+            stream.precision(0==decimals ? 6 : decimals);
+        }
 
         stream << value;
 
@@ -1024,6 +1030,9 @@ public:
         if (!expform && 0==width && std::string::npos != ascii.find('.')) {
             while (ascii.size() > 1 && '0' == ascii.at(ascii.size()-1)) {
                 ascii.pop_back();
+            }
+            if ('.' == ascii.at(ascii.length()-1)) {
+                ascii.push_back('0');
             }
         }
         while (width > 0 && ascii.length() < static_cast<size_t>(width)) {
