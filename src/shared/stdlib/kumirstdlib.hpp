@@ -1008,11 +1008,13 @@ public:
     static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
         std::stringstream stream;
         if (0 == width && !expform) {
-            if (value < 0.00001 || value > 99999.)
+            double absVal = fabs(double(value));
+            if (0.0 != value && (absVal < 0.0001 || absVal > 999999.))
                 expform = true;
         }
         if (expform) {
             stream << std::scientific;
+            stream.precision(2);
         }
         else {
             stream << std::fixed;
@@ -1021,20 +1023,34 @@ public:
 
         stream << value;
 
-        std::string ascii = stream.str();
+        std::string rpart = stream.str();
+        std::string expPart;
+
+        if (expform) {
+            size_t ePos = rpart.find('e');
+            if (std::string::npos == ePos)
+                ePos = rpart.find('E');
+            expPart = rpart.substr(ePos);
+            rpart.resize(ePos);
+        }
+
         // Replace ',' with '.' (for some locales like Russian)
-        const size_t dotPos = ascii.find(',');
+        const size_t dotPos = rpart.find(',');
         if (std::string::npos != dotPos) {
-            ascii.replace(dotPos, 1, ".");
+            rpart.replace(dotPos, 1, ".");
         }
-        if (!expform && 0==width && std::string::npos != ascii.find('.')) {
-            while (ascii.size() > 1 && '0' == ascii.at(ascii.size()-1)) {
-                ascii.pop_back();
+        if ((expform || 0==width) && std::string::npos != rpart.find('.')) {
+            while (rpart.size() > 1 && '0' == rpart.at(rpart.size()-1)) {
+                rpart.pop_back();
             }
-            if ('.' == ascii.at(ascii.length()-1)) {
-                ascii.push_back('0');
+            if ('.' == rpart.at(rpart.length()-1)) {
+                if (expform)
+                    rpart.pop_back();
+                else
+                    rpart.push_back('0');
             }
         }
+        std::string ascii = rpart + expPart;
         while (width > 0 && ascii.length() < static_cast<size_t>(width)) {
             if ('r' == al) {
                 ascii = std::string(" ") + ascii;
