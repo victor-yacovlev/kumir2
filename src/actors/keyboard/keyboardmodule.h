@@ -84,10 +84,20 @@ public slots:
     int runOperatorASTERISK(int self, const ActorKeyboard::Keycode &other);
 
 protected:
+    struct KeyEvent {
+        static const qint64 MAX_DELTA = 10;
+        int kumirCode;
+        qint64 timestamp;
+
+        inline explicit KeyEvent(int kumirCodee) :kumirCode(kumirCodee) { timestamp = QDateTime::currentMSecsSinceEpoch(); }
+        inline explicit KeyEvent(): kumirCode(0), timestamp(0) {}
+    };
+
     bool eventFilter(QObject *obj, QEvent *event);
     static int polyakovCodeOfKey(int qtCode, const QString & text);
 
-    QQueue<int> buffer_;
+    QQueue<KeyEvent> buffer_;
+    KeyEvent lastPressed_;
     QMutex bufferLock_;
 
 
