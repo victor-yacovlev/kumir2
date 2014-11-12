@@ -2060,7 +2060,7 @@ void SyntaxAnalizer::parseOutput(int str)
             expr3->baseType.kind = AST::TypeInteger;
             expr3->dimension = 0;
             expr3->kind = AST::ExprConst;
-            expr3->constant = QVariant(6);
+            expr3->constant = QVariant(0);
         }
         if (expr->baseType.kind==AST::TypeUser) {
             bool canConvert = makeCustomUnaryOperation<bool>(lexer_->outputLexemName(), expr, st.mod);

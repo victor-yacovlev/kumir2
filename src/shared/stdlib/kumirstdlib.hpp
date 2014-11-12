@@ -1007,7 +1007,7 @@ public:
 
     static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
         std::stringstream stream;
-        if (0 == width && !expform) {
+        if (0 == decimals && !expform) {
             double absVal = fabs(double(value));
             if (0.0 != value && (absVal < 0.0001 || absVal > 999999.))
                 expform = true;
@@ -1039,7 +1039,7 @@ public:
         if (std::string::npos != dotPos) {
             rpart.replace(dotPos, 1, ".");
         }
-        if ((expform || 0==width) && std::string::npos != rpart.find('.')) {
+        if ((expform || 0==decimals) && std::string::npos != rpart.find('.')) {
             while (rpart.size() > 1 && '0' == rpart.at(rpart.size()-1)) {
                 rpart.pop_back();
             }
