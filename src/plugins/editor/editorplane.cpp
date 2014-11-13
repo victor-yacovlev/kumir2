@@ -2208,6 +2208,14 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                     height());
     }
 
+    if (lockSymbolOffset) {
+        p->setPen(QPen(palette().brush(QPalette::Disabled, QPalette::WindowText), 1));
+        p->drawLine(lockSymbolOffset + 2,
+                    0,
+                    lockSymbolOffset + 2,
+                    height());
+    }
+
     for (uint i=startLine; i<=endLine; i++) {
 
         // Visible line number accounting Y-scroll offset

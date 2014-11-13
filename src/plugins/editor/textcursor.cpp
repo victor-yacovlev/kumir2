@@ -1560,7 +1560,7 @@ void TextCursor::removePreviousChar()
             if (row_<editor_->document()->linesCount()) {
 
                 // Check if previous char position is protected
-                if (editor_->document()->isProtected(row_-1))
+                if (!teacherModeFlag_ && editor_->document()->isProtected(row_-1))
                     return;
 
                 editor_->document()->undoStack()->push(new RemoveCommand(editor_->document(),

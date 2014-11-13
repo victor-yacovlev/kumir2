@@ -598,6 +598,8 @@ EditorInstance::EditorInstance(
     plane_->addContextMenuAction(copy_);
     plane_->addContextMenuAction(paste_);
 
+    cursor_->setTeacherMode(plugin_->teacherMode_);
+
     createConnections();
 
     timerId_ = startTimer(50);

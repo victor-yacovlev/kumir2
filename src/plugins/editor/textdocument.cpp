@@ -75,6 +75,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
             tl.inserted = true;
             tl.text = lines[i];
             tl.hidden = data_[line].hidden;
+            tl.protecteed = data_[line].protecteed;
             for (int j=0; j<tl.text.length(); j++) {
                 tl.selected << false;
                 tl.highlight << Shared::LxTypeEmpty;
