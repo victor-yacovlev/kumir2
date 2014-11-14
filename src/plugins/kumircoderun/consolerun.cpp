@@ -15,8 +15,8 @@ VM::ExternalModuleLoadFunctor::NamesList
 ExternalModuleLoadFunctor::operator() (
         const std::string & moduleAsciiName,
         const Kumir::String & moduleLocalizedName
+        , Kumir::String * error
     )
-    /* throws std::string, Kumir::String */
 {
     using namespace ExtensionSystem;
     using namespace Shared;
@@ -50,7 +50,10 @@ ExternalModuleLoadFunctor::operator() (
                     QString::fromUtf8(
                         "Ошибка загрузки исполнителя %1: %2"
                         ).arg(qModuleName).arg(localError).toStdWString();
-            throw errorMessage;
+            if (error) {
+                error->assign(errorMessage);
+            }
+            return NamesList();
         }
         actor = Util::findActor(moduleAsciiName);
     }
@@ -70,7 +73,10 @@ ExternalModuleLoadFunctor::operator() (
                     "Ошибка загрузки исполнителя %1: "
                     "модуль %2 не содежит данного исполнителя"
                     ).arg(qModuleName).arg(qFileName).toStdWString();
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+            return NamesList();
+        }
     }
 
     NamesList namesList;
@@ -95,7 +101,7 @@ ExternalModuleLoadFunctor::operator() (
 }
 
 
-void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName, const Kumir::String & moduleLocalizedName)
+void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName, const Kumir::String & moduleLocalizedName, Kumir::String * error)
 {
     using namespace Shared;
     using namespace ExtensionSystem;
@@ -119,7 +125,10 @@ void ExternalModuleResetFunctor::operator ()(const std::string & moduleAsciiName
                     "Ошибка инициализации исполнителя: нет исполнителя "
                     "с именем %1"
                     ).arg(qModuleName).toStdWString();
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+        }
+        return;
     }
 }
 

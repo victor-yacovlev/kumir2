@@ -22,8 +22,8 @@ class ExternalModuleLoadFunctor
 public:
     NamesList operator()(
             const std::string & moduleAsciiName,
-            const Kumir::String & moduleName)
-                /* throws std::string, Kumir::String */ ;
+            const Kumir::String & moduleName, Kumir::String * error)
+                override;
 };
 
 class InputFunctor
@@ -36,13 +36,13 @@ public:
     InputFunctor();
     void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    bool operator()(VariableReferencesList alist);
+    bool operator()(VariableReferencesList alist, Kumir::String * error) override;
     ~InputFunctor();
 
     // Raw data handling methods
-    void clear();
-    bool readRawChar(Kumir::Char &ch);
-    void pushLastCharBack();
+    void clear() override;
+    bool readRawChar(Kumir::Char &ch) override;
+    void pushLastCharBack() override;
 
 signals:
     void requestInput(const QString & format);
@@ -65,9 +65,9 @@ class SimulatedInputBuffer
 public:
     inline explicit SimulatedInputBuffer(QTextStream * stream): io_(stream), prevChar_(QChar::Null), lastChar_(QChar::Null) {}
 
-    void clear();
-    bool readRawChar(Kumir::Char &ch);
-    void pushLastCharBack();
+    void clear() override;
+    bool readRawChar(Kumir::Char &ch) override;
+    void pushLastCharBack() override;
 
 private:
     QTextStream *io_;
@@ -86,8 +86,8 @@ public:
     OutputFunctor();
     void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    void operator()(VariableReferencesList alist, FormatsList formats);
-    void writeRawString(const String & s);
+    void operator()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) override;
+    void writeRawString(const String & s) override;
 signals:
     void requestOutput(const QString & data);
 private:
@@ -99,7 +99,7 @@ class SimulatedOutputBuffer
 {
 public:
     inline explicit SimulatedOutputBuffer(QTextStream * stream): io_(stream) {}
-    void writeRawString(const Kumir::String &);
+    void writeRawString(const Kumir::String &) override;
 private:
     QTextStream *io_;
 };
@@ -111,7 +111,7 @@ class GetMainArgumentFunctor
     Q_OBJECT
 public:
     GetMainArgumentFunctor();
-    void operator()(Variable & reference);
+    void operator()(Variable & reference, Kumir::String * error) override;
     void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f);
     void setRunnerInstance(class Run * runner);
     ~GetMainArgumentFunctor();
@@ -141,7 +141,7 @@ public:
     ReturnMainValueFunctor();
     void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    void operator()(const Variable & reference);
+    void operator()(const Variable & reference, Kumir::String * error) override;
 signals:
     void requestOutput(const QString & data);
 private:
@@ -156,7 +156,7 @@ class PauseFunctor
     Q_OBJECT
 public:
     PauseFunctor();
-    void operator()();
+    void operator()() override;
 signals:
     void requestPause();
 };
@@ -168,7 +168,7 @@ class DelayFunctor
     Q_OBJECT
 public:
     DelayFunctor();
-    void operator()(quint32 msec);
+    void operator()(quint32 msec) override;
     void stop();
 private:
     bool stopFlag_;
@@ -182,8 +182,7 @@ class ExternalModuleResetFunctor
     Q_OBJECT
 public:
     ExternalModuleResetFunctor();
-    virtual void operator()(const std::string & moduleName, const String & localizedName)
-        /* throws std::string, Kumir::String */ ;
+    virtual void operator()(const std::string & moduleName, const String & localizedName, Kumir::String * error) override;
 signals:
     void showActorWindow(const QByteArray & actorAsciiName);
 };

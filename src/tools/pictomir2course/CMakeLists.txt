@@ -44,8 +44,9 @@ if(WIN32)
 endif()
 
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03")
-    #   due to bug in boost 1.49 (Ticket #6785)
+    set(CMAKE_CXX_FLAGS "-fexceptions -std=c++03")
+    #   1. -fexceptions:    Exceptions is widely used by Boost
+    #   2. -std=c++03:      Due to bug in boost 1.49 (Ticket #6785)
 endif()
 
 add_executable(pictomir2course ${SOURCES} ${3RDPARTY_SOURCES})

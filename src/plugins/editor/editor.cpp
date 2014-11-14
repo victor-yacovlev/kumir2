@@ -91,7 +91,7 @@ void EditorInstance::appendMarginText(int lineNo, const QString &text)
 }
 
 void EditorInstance::loadDocument(QIODevice *device, const QString &fileNameSuffix,
-                          const QString &sourceEncoding, const QUrl &sourceUrl)
+                          const QString &sourceEncoding, const QUrl &sourceUrl, QString * error)
 {
     const QByteArray bytes = device->readAll();
 
@@ -107,34 +107,28 @@ void EditorInstance::loadDocument(QIODevice *device, const QString &fileNameSuff
     }
     data.canonicalSourceLanguageName = fileNameSuffix;
     data.sourceUrl = sourceUrl;
-    loadDocument(data);
+    loadDocument(data, error);
 }
 
-void EditorInstance::loadDocument(const QString &fileName)
+void EditorInstance::loadDocument(const QString &fileName, QString * error)
 {
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly)) {
         const QString localPath = QFileInfo(f).absoluteFilePath();
         const QString suffix = QFileInfo(f).suffix();
         const QUrl url = QUrl::fromLocalFile(localPath);
-        QString error;
-        try {
-            loadDocument(&f, suffix, QString(), url);
-        }
-        catch (const QString & e) {
-            error = e;
-        }
+        loadDocument(&f, suffix, QString(), url, error);
         f.close();
-        if (error.length() > 0) {
-            throw error;
-        }
     }
     else {
-        throw tr("Can't open file %1 for reading").arg(fileName);
+        if (error) {
+            *error =
+                tr("Can't open file %1 for reading").arg(fileName);
+        }
     }
 }
 
-void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data)
+void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data, QString * error)
 {
     Shared::AnalizerInterface * analizerPlugin = nullptr;
     Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
@@ -1127,20 +1121,21 @@ bool EditorInstance::hasBreakpointSupport() const
     return nullptr!=analizerInstance_ && nullptr!=runner && runner->hasBreakpointsSupport();
 }
 
-void EditorInstance::saveDocument(const QString &fileName)
+void EditorInstance::saveDocument(const QString &fileName, QString * error)
 {
     QFile f(fileName);
     if (f.open(QIODevice::WriteOnly)) {
-        saveDocument(&f);
+        saveDocument(&f, error);
         f.close();
         documentUrl_ = QUrl::fromLocalFile(fileName);
     }
     else {
-        throw tr("Can't open file %1 for writing").arg(fileName);
+        if (error)
+            *error = tr("Can't open file %1 for writing").arg(fileName);
     }
 }
 
-void EditorInstance::saveDocument(QIODevice *device)
+void EditorInstance::saveDocument(QIODevice *device, QString * error)
 {
     if (analizerPlugin_) {
         QByteArray bytes = analizerPlugin_->sourceFileHandler()->toBytes(documentContents());

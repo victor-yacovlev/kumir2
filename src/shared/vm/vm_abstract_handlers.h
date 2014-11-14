@@ -75,22 +75,21 @@ protected:
 /* ====== Functors for external modules initialization ====== */
 
 /** A functor to reset external module before execution by a given name
- *
- *  May throw std::string or Kumir::String exception containing error message.
  */
 class ExternalModuleResetFunctor: public Functor {
 public:
     inline ExternalModuleResetFunctor(): callFunctor_(0) {}
-    inline Type type() const { return ExternalModuleReset; }
-    inline virtual void operator()(const std::string & moduleName, const Kumir::String & localizedName)
-    /* throws std::string, Kumir::String */
+    inline Type type() const override { return ExternalModuleReset; }
+    inline virtual void operator()(const std::string & /*moduleName*/, const Kumir::String & localizedName, Kumir::String * error)
     {
         const Kumir::String errorMessage =
                 Kumir::Core::fromUtf8("Невозможно использовать \"")+
                 localizedName+
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
-        throw errorMessage;
-    }
+        if (error) {
+            error->assign(errorMessage);
+        }
+    }    
     inline void setCallFunctor(class ExternalModuleCallFunctor * callFunctor)
     {
         callFunctor_ = callFunctor;
@@ -105,11 +104,8 @@ protected:
  *  canonical module file name, e.g. a file name without prefix 'lib' and
  *  any dot-after suffix in name.
  *
- *  May throw std::string or Kumir::String exception in case of
- *  module can not be loaded.
- *
  *  Example:
- *    ExternalModuleLoadFunctor("A great module", "greatModule")
+ *    ExternalModuleLoadFunctor("A great module", "greatModule", &errorMessage)
  *
  *    --- loads 'A great module' from file 'libGreatModule.so' (on Linux), or
  *        from file 'GreatModule.dll' (on Windows).
@@ -117,19 +113,21 @@ protected:
  */
 class ExternalModuleLoadFunctor: public Functor {
 public:
-    inline Type type() const { return ExternalModuleLoad; }
+    inline Type type() const override { return ExternalModuleLoad; }
     typedef std::deque<std::string> NamesList;
     inline virtual NamesList operator()(
             const std::string & /*moduleAsciiName*/,
-            const Kumir::String & moduleName
+            const Kumir::String & moduleName,
+            Kumir::String * error
             )
-            /* throws std::string, Kumir::String */
     {
         const Kumir::String errorMessage =
                 Kumir::Core::fromUtf8("Невозможно использовать \"")+
                 moduleName+
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+        }
         return NamesList();
     }
 };
@@ -140,26 +138,26 @@ public:
  *  An arguments list is passed to functor; return value is a
  *  calling function return (is any), or a dummy any value (if void).
  *
- *  May throw std::string of Kumir::String exception in case of
- *  runtime error.
- *
  */
 class ExternalModuleCallFunctor: public Functor {
 public:
-    inline Type type() const { return ExternalModuleCall; }
+    inline Type type() const override { return ExternalModuleCall; }
     typedef const std::deque<Variable> & VariableReferencesList;
     inline virtual AnyValue operator()(
             const std::string & /*asciiModuleName*/,
             const Kumir::String & localizedModuleName,
             const uint16_t /*alogrithmId*/,
-            VariableReferencesList /*arguments*/
-            ) /* throws std::string, Kumir::String */
+            VariableReferencesList /*arguments*/,
+            Kumir::String * error
+            )
     {
         const Kumir::String errorMessage =
                 Kumir::Core::fromUtf8("Невозможно вызвать алгоритм исполнителя \"")+
                 localizedModuleName+
                 Kumir::Core::fromUtf8("\": исполнители не поддерживаются");
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+        }
         return AnyValue();
     }
     inline virtual void checkForActorConnected(const std::string & /*asciiModuleName*/) {}
@@ -167,30 +165,40 @@ public:
 
 class CustomTypeToStringFunctor: public Functor {
 public:
-    inline Type type() const { return ConvertToString; }
+    inline Type type() const override { return ConvertToString; }
     inline virtual Kumir::String operator()(
-            const Variable & variable
-            ) /*throws Kumir::String, std::string*/
+            const Variable & variable,
+            Kumir::String * error
+            )
     {
-        throw Kumir::Core::fromUtf8("Не могу вывести значение типа \"") +
+        const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Не могу вывести значение типа \"") +
                 variable.recordClassLocalizedName()+Kumir::Core::fromAscii("\"");
+        if (error) {
+            error->assign(errorMessage);
+        }
         return Kumir::String();
     }
 };
 
 class CustomTypeFromStringFunctor: public Functor {
 public:
-    inline Type type() const { return ConvertFromString; }
+    inline Type type() const override { return ConvertFromString; }
     inline virtual VM::AnyValue operator()(
             const Kumir::String & /*source*/,
             const std::string & /*moduleAsciiName*/,
             const Kumir::String & /*moduleName*/,
             const std::string & /* typeAsciiName */,
-            const Kumir::String & typeLocalizedName
-            ) /*throws Kumir::String, std::string*/
+            const Kumir::String & typeLocalizedName,
+            Kumir::String * error
+            )
     {
-        throw Kumir::Core::fromUtf8("Не могу разобрать значение типа \"") +
+        const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Не могу разобрать значение типа \"") +
                 typeLocalizedName+Kumir::Core::fromAscii("\"");
+        if (error) {
+            error->assign(errorMessage);
+        }
         return VM::AnyValue();
     }
 };
@@ -201,8 +209,8 @@ public:
  */
 class PauseFunctor : public Functor {
 public:
-    inline Type type() const { return Pause; }
-    inline virtual void operator()() /* nothrow */ {}
+    inline Type type() const override { return Pause; }
+    inline virtual void operator()() {}
 };
 
 
@@ -213,8 +221,8 @@ public:
  */
 class DelayFunctor : public Functor {
 public:
-    inline Type type() const { return Delay; }
-    inline virtual void operator()(uint32_t msec) /* nothrow */ {
+    inline Type type() const override { return Delay; }
+    inline virtual void operator()(uint32_t msec) {
 #if defined(WIN32) || defined(_WIN32)
         Sleep(msec);
 #else
@@ -237,12 +245,15 @@ public:
  */
 class InputFunctor: public Functor {
 public:
-    inline Type type() const { return Input; }
+    inline Type type() const override { return Input; }
     typedef std::deque<Variable> & VariableReferencesList;
-    inline virtual bool operator()(VariableReferencesList /*alist*/)
-        /* throws Kumir::String, std::string */
+    inline virtual bool operator()(VariableReferencesList /*alist*/, Kumir::String * error)
     {
-        throw Kumir::Core::fromUtf8("Операция ввода не поддерживается");
+        static const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Операция ввода не поддерживается");
+        if (error) {
+            error->assign(errorMessage);
+        }
         return false;
     }
 };
@@ -255,37 +266,46 @@ public:
  */
 class OutputFunctor: public Functor {
 public:
-    inline Type type() const { return Output; }
+    inline Type type() const override { return Output; }
     typedef const std::deque<Variable> & VariableReferencesList;
     typedef const std::deque< std::pair<int,int> > & FormatsList;
     inline virtual void operator()(
             VariableReferencesList /*vars*/,
-            FormatsList /*formats*/
-            ) /* throws Kumir::String, std::string */
+            FormatsList /*formats*/,
+            Kumir::String * error
+            )
     {
-        throw Kumir::Core::fromUtf8("Операция вывода не поддерживается");
+        static const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Операция вывода не поддерживается");
+        if (error) {
+            error->assign(errorMessage);
+        }
     }
 };
 
 class GetMainArgumentFunctor: public Functor {
 public:
-    inline Type type() const { return GetMainArgument; }
-    inline virtual void operator()(Variable & /*reference*/)
-        /* throws Kumir::String, std::string */
+    inline Type type() const override { return GetMainArgument; }
+    inline virtual void operator()(Variable & /*reference*/, Kumir::String * error)
     {
-        throw
-        Kumir::Core::fromUtf8("Запуск первого алгоритма с аргументами не поддерживается");
+        static const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Запуск первого алгоритма с аргументами не поддерживается");
+        if (error) {
+            error->assign(errorMessage);
+        }
     }
 };
 
 class ReturnMainValueFunctor: public Functor {
 public:
-    inline Type type() const { return ReturnMainValue; }
-    inline virtual void operator()(const Variable & /*reference*/)
-        /* throws Kumir::String, std::string */
+    inline Type type() const override { return ReturnMainValue; }
+    inline virtual void operator()(const Variable & /*reference*/, Kumir::String * error)
     {
-        throw
-        Kumir::Core::fromUtf8("Возвращение значений первого алгоритма не поддерживается");
+        static const Kumir::String errorMessage =
+            Kumir::Core::fromUtf8("Возвращение значений первого алгоритма не поддерживается");
+        if (error) {
+            error->assign(errorMessage);
+        }
     }
 };
 

@@ -14,16 +14,16 @@ class EditorInterface
 public:
     virtual Editor::InstanceInterface * loadDocument(
             QIODevice * device,
-            const QString & fileNameSuffix = "",
-            const QString & sourceEncoding = "",
-            const QUrl & sourceUrl = QUrl()
-            ) /* throws QString */ = 0;
+            const QString & fileNameSuffix,
+            const QString & sourceEncoding,
+            const QUrl & sourceUrl, QString * error
+            ) = 0;
 
     virtual Editor::InstanceInterface * loadDocument(
-            const QString & fileName) /* throws QString */ = 0;
+            const QString & fileName, QString * error) = 0;
 
     virtual Editor::InstanceInterface * loadDocument(
-            const Analizer::SourceFileInterface::Data &data) /* throws QString */ = 0;
+            const Analizer::SourceFileInterface::Data &data, QString * error) = 0;
 
     virtual Editor::InstanceInterface * newDocument(
             const QString & canonicalLanguageName = "",

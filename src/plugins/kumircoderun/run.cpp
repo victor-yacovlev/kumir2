@@ -336,13 +336,8 @@ void Run::run()
             vm->entryPoint() == KumirVM::EP_Testing)
     {
         bool hasRetval = false;
-        try {
-            VM::AnyValue retval = vm->topLevelStackValue();
-            hasRetval = retval.isValid();
-        }
-        catch (...) {
-            hasRetval = false;
-        }
+        VM::AnyValue retval = vm->topLevelStackValue();
+        hasRetval = retval.isValid();
         if (hasRetval) {
             qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
         }
@@ -443,12 +438,7 @@ QVariant Run::valueStackTopItem() const
 {
     VMMutex_->lock();
     AnyValue value;
-    try {
-        value = vm->topLevelStackValue();
-    }
-    catch (std::string & e) {
-        qDebug() << e.c_str();
-    }
+    value = vm->topLevelStackValue();
     VMMutex_->unlock();
     QVariant result;
     if (value.isValid()) {

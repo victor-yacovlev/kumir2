@@ -3,6 +3,8 @@
 
 #include "docbookviewer/docbookmodel.h"
 
+#include <iostream>
+
 #include <QTextCodec>
 #include <QByteArray>
 #include <QDir>
@@ -38,7 +40,7 @@ void generator::saveToFile(const std::string &filename) const
         f.close();
     }
     else {
-        throw string("Can't open file for write: ") + filename;
+        std::cerr << "Can't open file for write: " << filename;
     }
 }
 
@@ -67,7 +69,8 @@ void generator::renderData(ModelPtr data)
                                                               "a4ts" << "a5ts" <<
                                                               "tablet" << "ebook";
     if (!ValidProfiles.contains(profile)) {
-        throw string("Not valid profile: ") + options::profile;
+        std::cerr << "Not valid profile: " << options::profile << std::endl;
+        return;
     }
     if (profile.startsWith("a4")) {
         paper = "a4paper";

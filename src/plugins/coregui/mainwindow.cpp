@@ -1257,10 +1257,9 @@ bool MainWindow::saveCurrentFileAs()
 bool MainWindow::saveCurrentFileTo(const QString &fileName)
 {
     TabWidgetElement * twe = currentTab();
-    try {
-        twe->editor()->saveDocument(fileName);
-    }
-    catch (const QString & error) {
+    QString error;
+    twe->editor()->saveDocument(fileName, &error);
+    if (error.length() > 0) {
         QMessageBox::critical(this, tr("Can't save file"), error);
         return false;
     }
@@ -1469,7 +1468,8 @@ void MainWindow::newText(const QString &fileName, const QString & text)
     data.sourceUrl = fileName.isEmpty()
             ? QUrl() : QUrl::fromLocalFile(fileName);
     data.visibleText = text;
-    editor->loadDocument(data);
+    QString error;
+    editor->loadDocument(data, &error);
 
     QWidget * vc = editor->widget();
     connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
@@ -2151,11 +2151,12 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
     if (type==Program || type==Text) {
         QFileInfo f(url.toLocalFile());
         Shared::Editor::InstanceInterface * editor = nullptr;
-        try {
-            editor = m_plugin->plugin_editor->loadDocument(url.toLocalFile());
-        }
-        catch (const QString & e) {
-            QMessageBox::critical(this, tr("Can't open file"), e);
+        QString error;
+
+        editor = m_plugin->plugin_editor->loadDocument(url.toLocalFile(), &error);
+
+        if (error.length() > 0) {
+            QMessageBox::critical(this, tr("Can't open file"), error);
             return nullptr;
         }
         if (editor) {
@@ -2237,11 +2238,13 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
             // Reuse existing tab
             Shared::Editor::InstanceInterface * editor =
                     courseManagerTab->editor();
-            editor->loadDocument(src);
+            QString error;
+            editor->loadDocument(src, &error);
         }
         else {
+            QString error;
             Shared::Editor::InstanceInterface * editor =
-                    m_plugin->plugin_editor->loadDocument(src);
+                    m_plugin->plugin_editor->loadDocument(src, &error);
             // Create new course manager tab
             courseManagerTab = addCentralComponent(
                         data.title,

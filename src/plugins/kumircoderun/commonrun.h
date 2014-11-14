@@ -37,8 +37,8 @@ public:
             const std::string & asciiModuleName,
             const String & moduleName,
             const uint16_t algKey,
-            VariableReferencesList alist
-            )  /* throws std::string, Kumir::String */ ;
+            VariableReferencesList alist, Kumir::String * error
+            )  override;
     ~ExternalModuleCallFunctor();
     void checkForActorConnected(const std::string & asciiModuleName);
 
@@ -56,8 +56,7 @@ class CustomTypeToStringFunctor
         : public VM::CustomTypeToStringFunctor
 {
 public:
-    String operator()(const Variable & variable)
-        /*throws Kumir::String, std::string*/;
+    String operator()(const Variable & variable, Kumir::String * error) override;
 };
 
 class CustomTypeFromStringFunctor
@@ -69,8 +68,8 @@ public:
                 const std::string & moduleAsciiName,
                 const String & moduleName,
                 const std::string & typeAsciiName,
-                const String & typeName
-                ) /*throws Kumir::String, std::string*/;
+                const String & typeName, Kumir::String * error
+                ) override;
 };
 
 }}

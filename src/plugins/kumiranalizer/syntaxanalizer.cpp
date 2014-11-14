@@ -1191,13 +1191,8 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
             if (!programFile.is_open()) {
                 error = _("Can't open module file");
             }
-            else {
-                try {
-                    Bytecode::bytecodeFromDataStream(programFile, programData);
-                }
-                catch (...) {
-                    error = _("Module file is damaged");
-                }
+            else {                
+                Bytecode::bytecodeFromDataStream(programFile, programData);
             }
             programFile.close();
             if (error.length()==0) {
@@ -1805,13 +1800,8 @@ AST::ModulePtr SyntaxAnalizer::loadKodFile(const QString &name, QString &error)
     if (!programFile.is_open()) {
         error = _("Can't open module file");
     }
-    else {
-        try {
-            Bytecode::bytecodeFromDataStream(programFile, programData);
-        }
-        catch (...) {
-            error = _("Module file is damaged");
-        }
+    else {        
+        Bytecode::bytecodeFromDataStream(programFile, programData);
     }
     programFile.close();
     AST::ModulePtr result;

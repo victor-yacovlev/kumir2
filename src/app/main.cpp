@@ -93,25 +93,6 @@ public:
         , splashScreen_(nullptr)
         , started_(false)
     {}
-    inline bool notify(QObject * receiver, QEvent * event) {
-        bool result = false;
-        try {
-            result = QApplication::notify(receiver, event);
-        }
-        catch (const std::exception & ex) {
-            const QString message =
-                    QString("Caught exception: ") + QString(ex.what());
-            qDebug() << message;
-            if (arguments().contains("--debug"))
-                abort();
-        }
-        catch (...) {
-            qDebug() << "Exception caught in QApplication::notify!!!";
-            if (arguments().contains("--debug"))
-                abort();
-        }
-        return result;
-    }
 
     inline void setSplashScreen(QSplashScreen * s) {
         splashScreen_ = s;
@@ -357,17 +338,7 @@ int main(int argc, char **argv)
         app->setSplashScreen(splashScreen);
     }
 #endif
-    int ret = 0;
-    try {
-        ret = app->main();
-    }
-    catch (const std::exception & ex) {
-        qFatal("Caught exception: %s", ex.what());
-    }
-    catch (...) {
-        qFatal("Caught an exception");
-    }
-
+    int ret = app->main();
     ExtensionSystem::PluginManager::destroy();
     delete app;
     return ret;

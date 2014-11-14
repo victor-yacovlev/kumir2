@@ -592,22 +592,8 @@ inline std::string kindToString(ValueKind k)
     else if (k==VK_Out)
         return "out";
     else  {
-        throw std::string("Unknown type");
-        return "";
+        return "unknown";
     }
-}
-
-inline ValueKind kindFromString(const std::string &ss)
-{
-    const std::string s = Kumir::Core::toLowerCase(ss);
-    if (s=="in")
-        return VK_In;
-    else if (s=="inout")
-        return VK_InOut;
-    else if (s=="out")
-        return VK_Out;
-    else
-        return VK_Plain;
 }
 
 inline void replaceAll(String &str, const String & from, const String & to)

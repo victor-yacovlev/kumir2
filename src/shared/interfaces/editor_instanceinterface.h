@@ -33,15 +33,15 @@ public:
     virtual void setNotModified() = 0;
 
     virtual void loadDocument(QIODevice * device,
-                              const QString & fileNameSuffix = "",
-                              const QString & sourceEncoding = "",
-                              const QUrl & sourceUrl = QUrl()
-            ) /* throws QString */ = 0;
-    virtual void loadDocument(const QString & fileName) /* throws QString */ = 0;
-    virtual void loadDocument(const Analizer::SourceFileInterface::Data &data) /* throws QString */ = 0;
+                              const QString & fileNameSuffix,
+                              const QString & sourceEncoding,
+                              const QUrl & sourceUrl, QString * error
+            ) = 0;
+    virtual void loadDocument(const QString & fileName, QString * error) /* throws QString */ = 0;
+    virtual void loadDocument(const Analizer::SourceFileInterface::Data &data, QString * error) /* throws QString */ = 0;
 
-    virtual void saveDocument(const QString & fileName) /* throws QString */ = 0;
-    virtual void saveDocument(QIODevice * device) /* throws QString */ = 0;
+    virtual void saveDocument(const QString & fileName, QString * error) /* throws QString */ = 0;
+    virtual void saveDocument(QIODevice * device, QString * error) /* throws QString */ = 0;
 
     virtual Analizer::SourceFileInterface::Data documentContents() const = 0;
 

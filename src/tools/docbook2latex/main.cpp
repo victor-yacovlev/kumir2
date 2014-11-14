@@ -38,15 +38,9 @@ static int process_file(const string & input_file_name,
         return 2;
     }
 
-    try {
-        generator::self()->reset();
-        generator::self()->renderData(document.documentRoot());
-        generator::self()->saveToFile(output_file_name);
-    }
-    catch (const std::string & error) {
-        cerr << error << std::endl;
-        return 3;
-    }
+    generator::self()->reset();
+    generator::self()->renderData(document.documentRoot());
+    generator::self()->saveToFile(output_file_name);
 
     return 0;
 }

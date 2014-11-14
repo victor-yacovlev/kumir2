@@ -15,16 +15,14 @@ class ExternalModuleLoadFunctor
 public:
     NamesList operator()(
                 const std::string & moduleAsciiName,
-                const Kumir::String & moduleName)
-                /* throws std::string, Kumir::String */ ;
+                const Kumir::String & moduleName, Kumir::String * error) override;
 };
 
 class ExternalModuleResetFunctor
         : public VM::ExternalModuleResetFunctor
 {
 public:
-    void operator()(const std::string & moduleName, const Kumir::String & localizedName)
-        /* throws std::string, Kumir::String */ ;
+    void operator()(const std::string & moduleName, const Kumir::String & localizedName, Kumir::String * error) override;
 };
 
 }} // namespace Console
