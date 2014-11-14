@@ -50,9 +50,9 @@ QImage IconProvider::loadAndPreprocess(const QString &fileName)
 
     static const QPalette palette = QApplication::palette();
     static const QRgb foreground =
-            palette.brush(QPalette::Text).color().rgba();
+            palette.brush(QPalette::WindowText).color().rgba();
     static const QRgb background =
-            palette.brush(QPalette::Base).color().rgba();
+            palette.brush(QPalette::Window).color().rgba();
     static int normRed = qRed(foreground)-qRed(background);
     static int normBlue = qBlue(foreground)-qBlue(background);
     static int normGreen = qGreen(foreground)-qGreen(background);
