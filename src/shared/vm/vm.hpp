@@ -3299,9 +3299,9 @@ void KumirVM::do_halt(uint16_t)
 {
     if (stacksMutex_) stacksMutex_->lock();
     static const String STOP = Kumir::Core::fromUtf8("\nСТОП.");
-    static std::deque< std::pair<int,int> > formats;
+    std::deque< std::pair<int,int> > formats;
     formats.push_back(std::pair<int,int>(0,0));
-    static std::deque<Variable> values;
+    std::deque<Variable> values;
     values.push_back(Variable(STOP));
     try {
         (*output_)(values, formats);
