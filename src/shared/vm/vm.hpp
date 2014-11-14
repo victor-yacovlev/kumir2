@@ -39,7 +39,6 @@ public /*methods*/:
     inline void setProgramDirectory(const Kumir::String & path) { programDirectory_.clear(); programDirectory_ = path; }
 
     inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, bool isMain, const String & filename, String & error);
-    inline bool loadProgramFromTextBuffer(const std::string & stream, bool isMain, const String & filename, String & error);
 
     /** Set entry point to Main or Testing algorithm */
     inline void setEntryPoint(EntryPoint ep) { entryPoint_ = ep; }
@@ -3409,30 +3408,6 @@ bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, 
     return ok;
 }
 
-bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, bool isMain, const String & filename, String & error)
-{
-    breakpointsTable_.reset();
-    error.clear();
-    Bytecode::Data d;
-    bool ok;
-    std::istringstream stream(buffer);
-    try {
-        Bytecode::bytecodeFromTextStream(stream, d);
-        ok = true;
-    }
-    catch (String e) {
-        error = e;
-        ok = false;
-    }
-    catch (std::string e) {
-        error = Kumir::Core::fromAscii(e);
-        ok = false;
-    }
-    if (ok) {
-        setProgram(d, isMain, filename);
-    }
-    return ok;
-}
 
 int KumirVM::contextByIds(int moduleId, int algorhitmId) const
 {

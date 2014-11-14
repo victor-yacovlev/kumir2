@@ -151,41 +151,6 @@ inline void bytecodeToTextStream(std::ostream & ts, const Data & data)
     }
 }
 
-inline void bytecodeFromTextStream(std::istream & ts, Data & data)
-{
-    std::string line;
-    data.versionMaj = 1;
-    data.versionMin = 99;
-    data.versionRel = 0;
-    while (!ts.eof()) {
-        getline(ts, line);
-        if (line.length()==0)
-            break;
-        if (line.at(0)!='#')
-            throw std::string("Header elements must start with '#' symbol");
-        std::istringstream is(line);
-        std::string lexem;
-        is >> lexem;
-        if (lexem=="#version") {
-            is >> data.versionMaj >> data.versionMin >> data.versionRel;
-            if (is.fail())
-                throw std::string("Wrong version number in header");
-        }
-    }
-    data.d.resize(20);
-    size_t realCount = 0;
-    while (!ts.eof()) {
-        TableElem e;
-        tableElemFromTextStream(ts, e);
-        if (realCount>=data.d.size()) {
-            data.d.resize(data.d.size()+20);
-        }
-        data.d.at(realCount) = e;
-        realCount ++;
-    }
-    data.d.resize(realCount);
-}
-
 
 
 } // namespace Bytecode

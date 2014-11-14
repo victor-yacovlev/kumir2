@@ -15,43 +15,29 @@
 #endif
 #include "encodings.hpp"
 
-#ifndef NO_SYSTEM
-#   include <time.h>
-#endif
+#include <time.h>
 
-#ifdef NO_UNICODE
-#include <string>
-#   if not defined(ONEBYTE_LOCALE)
-#       define ONEBYTE_LOCALE CP866
-#   endif
-#else
 #include <wchar.h>
 #include <string>
-#endif
 
 #include <cmath>
 
-#ifndef NO_FILES
-#   if defined(WIN32) || defined(_WIN32)
-#       include <Windows.h>
-#   else
-#       include <sys/stat.h>
-#       include <fcntl.h>
-#       include <unistd.h>
-#       include <string.h>
-#       include <errno.h>
-#   endif
+#if defined(WIN32) || defined(_WIN32)
+#   include <Windows.h>
+#else
+#   include <sys/time.h>
+#   include <sys/stat.h>
+#   include <fcntl.h>
+#   include <unistd.h>
+#   include <string.h>
+#   include <errno.h>
 #endif
+
 
 namespace VM { class Variable; }
 
-
 namespace Kumir {
 
-#ifdef NO_UNICODE
-typedef char Char;
-typedef std::string String;
-#else
 typedef wchar_t Char;
 typedef std::wstring String;
 inline String & operator+(String & s, const /*ascii only*/ char c) {
@@ -66,13 +52,7 @@ inline String & operator+(String &s1, const /*utf8*/ char * s2) {
     return s1;
 }
 
-#endif
-
-#ifdef NO_FPU
-typedef float real;
-#else
 typedef double real;
-#endif
 
 inline String & operator+(String & s, const Char c) {
     s.push_back(c);
@@ -326,16 +306,7 @@ public:
 
     inline static bool checkSumm(int32_t lhs, int32_t rhs) {
         // Check for integer overflow
-//#if !defined(__clang__)
-//        int32_t sum = lhs+rhs;
-//        if (lhs>=0) {
-//            return sum >= rhs;
-//        }
-//        else {
-//            return sum < rhs;
-//        }
-//#else
-        // CLang completely removes the check above due to optimization.
+        // CLang completely removes the standard check technique due to optimization.
         // Use another method: cast to 64 bit
         const int64_t l = lhs;
         const int64_t r = rhs;
@@ -344,18 +315,9 @@ public:
         static const int64_t Left = -2147483648LL;
         bool result = sum >= Left && sum <= Right;
         return result;
-//#endif
     }
 
     inline static bool checkDiff(int32_t lhs, int32_t rhs) {
-//        // Check for integer overflow
-//        int32_t diff = lhs-rhs;
-//        if (rhs>=0) {
-//            return diff <= lhs;
-//        }
-//        else {
-//            return diff > lhs;
-//        }
         const int64_t l = lhs;
         const int64_t r = rhs;
         const int64_t diff = l - r;
@@ -371,8 +333,6 @@ public:
         return (prod >> 32)==(prod >> 31);
     }
 
-#ifndef NO_X86_FPU
-
     inline static bool isCorrectDouble(double val) {
         // !!!!!!!!!!! WARNING !!!!!!!!!!
         // this works ONLY for x86/x86_64 platform!
@@ -381,25 +341,16 @@ public:
         uint64_t bits = *pbits;
         uint64_t expMask  = 0x7FF0000000000000;
         uint64_t fracMask = 0x000FFFFFFFFFFFFF;
-//        uint64_t signMask = 0x8000000000000000;
         uint64_t exponent = (bits & expMask) >> 52;
         uint64_t fraction = bits & fracMask;
-//        uint64_t sign = (bits & signMask) >> 63;
         bool Inf = (exponent==uint64_t(0x7FF)) && (fraction==uint64_t(0));
         bool NaN = (exponent==uint64_t(0x7FF)) && (fraction>uint64_t(0));
         return !Inf && !NaN;
     }
 
-#endif
 
     inline static bool isCorrectReal(real val) {
-#ifndef NO_X86_FPU
         return isCorrectDouble(val);
-#else
-        (void)(val);
-        return true;
-        // TODO: implement for ARM/AVR platform!!!!
-#endif
     }
 
     inline static bool isCorrectIntegerConstant(const String & value) {
@@ -557,11 +508,7 @@ public:
         return int(0x7FFFFFFF);
     }
     inline static real maxreal() {
-#ifdef NO_FPU
-        return 3.4028234e+38;
-#else
         return 1.797693e+308;
-#endif
     }
     inline static int div(int a, int b) {
         if (b<=0) {
@@ -574,8 +521,6 @@ public:
                 unsigned int quoti = absolunta / b + 1;
                 aa += quoti * b;
             }
-//            while (aa<0)
-//                aa += b;
             int m = aa % b;
             return (a-m)/b;
         }
@@ -590,8 +535,6 @@ public:
                 unsigned int quoti = absolunta / b + 1;
                 a += quoti * b;
             }
-//            while (a<0)
-//                a += b;
             return a % b;
         }
     }
@@ -602,16 +545,6 @@ public:
     }
 };
 
-#ifdef NO_RANDOM
-// Dummy "random generator"
-class Random {
-public:
-    inline static void init() {}
-    inline static void finalize() {}
-    template <typename T> inline static T rand(T, T) { return 0; }
-    template <typename T> inline static T rnd(T) { return 0; }
-};
-#else
 #include <stdlib.h>
 class Random {
 public:
@@ -721,13 +654,8 @@ public:
 #endif
 };
 
-#endif
 
-#ifdef NO_UNICODE
-typedef std::stringstream StringStream;
-#else
 typedef std::basic_stringstream<Char> StringStream;
-#endif
 
 class Converter {
 public:
@@ -1219,93 +1147,8 @@ public:
     inline static void init() {}
     inline static void finalize() {}
     inline static int length(const String & str) { return str.length(); }
-#ifdef NO_UNICODE
-#   if ONEBYTE_LOCALE==CP866
-#       define CODINGTABLE CP866CodingTable
-#   elif ONEBYTE_LOCALE==CP1251
-#       define CODINGTABLE CP1251CodingTable
-#   elif ONEBYTE_LOCALE==KOI8R
-#       define CODINGTABLE KOI8RCodingTable
-#   elif ONEBYTE_LOCALE==UTF8
-#       define CODINGTABLE UTF8CodingTable
-#   endif
 
-    inline static int code(char ch) {
-        int value = 0;
-        uint32_t univalue = 0;
-        char buf[2] = { ch, '\0' };
-        charptr p = reinterpret_cast<charptr>(&buf);
-        try {
-            univalue = CODINGTABLE::dec(p);
-            value = static_cast<int>(KOI8RCodingTable::enc(univalue));
-        }
-        catch (EncodingError e) {
-            if (e==OutOfTable)
-                Core::abort(Core::fromUtf8("Символ вне кодировки КОИ-8"));
-            else
-                Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
-        }
-        return value;
-    }
-    inline static char symbol(int code) {
-        if (code<0 || code>255) {
-            Core::abort(Core::fromUtf8("Код вне диапазона [0..255]"));
-            return L'\0';
-        }
-        else {
-            char value = '\0';
-            uint32_t univalue = 0;
-            char buf[2] = { static_cast<char>(code), '\0' };
-            charptr p = reinterpret_cast<charptr>(&buf);
-            try {
-                univalue = KOI8RCodingTable::dec(p);
-                value = static_cast<char>(CODINGTABLE::enc(univalue));
-            }
-            catch (EncodingError e) {
-                if (e==OutOfTable)
-                    Core::abort(Core::fromUtf8("Символ вне кодировки КОИ-8"));
-                else
-                    Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
-            }
-            return value;
-        }
-    }
-    inline static int unicode(char ch) {
-        int value = 0;
-        char buf[2] = { ch, '\0' };
-        charptr p = reinterpret_cast<charptr>(&buf);
-        try {
-            value = CODINGTABLE::dec(p);
-        }
-        catch (EncodingError e) {
-            if (e==OutOfTable)
-                Core::abort(Core::fromUtf8("Символ вне кодировки Базового Юникода"));
-            else
-                Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
-        }
-        return value;
-    }
-    inline static char unisymbol(int code) {
-        if (code<0 || code>65535) {
-            Core::abort(Core::fromUtf8("Код вне диапазона [0..65535]"));
-            return '\0';
-        }
-        else {
-            char value = '\0';
-            try {
-                value = static_cast<char>(CODINGTABLE::enc(static_cast<uint32_t>(code)));
-            }
-            catch (EncodingError e) {
-                if (e==OutOfTable)
-                    Core::abort(Core::fromUtf8("Символ вне кодировки Базового Юникода"));
-                else
-                    Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
-            }
-            return value;
-        }
-    }
-#else
-    inline static int code(wchar_t ch) {
+    inline static int code(Char ch) {
         unsigned char value = 0;
         EncodingError error;
         value = KOI8RCodingTable::enc(ch, error);
@@ -1319,7 +1162,7 @@ public:
         }
         return static_cast<int>(value);
     }
-    inline static wchar_t symbol(int code) {
+    inline static Char symbol(int code) {
         if (code<0 || code>255) {
             Core::abort(Core::fromUtf8("Код вне диапазона [0..255]"));
             return L'\0';
@@ -1332,10 +1175,10 @@ public:
             return static_cast<wchar_t>(val);
         }
     }
-    inline static int unicode(wchar_t ch) {
+    inline static int unicode(Char ch) {
         return static_cast<int>(ch);
     }
-    inline static wchar_t unisymbol(int code) {
+    inline static Char unisymbol(int code) {
         if (code<0 || code>65535) {
             Core::abort(Core::fromUtf8("Код вне диапазона [0..65535]"));
             return L'\0';
@@ -1344,7 +1187,7 @@ public:
             return static_cast<wchar_t>(code);
         }
     }
-#endif
+
     template <class S, typename C>
     inline static S & trim(S & s) {
         int nonSpacePos = 0;
@@ -1371,20 +1214,15 @@ public:
         }
         return s;
     }
+
     inline static String toLowerCase(const String & s) {
-#ifdef NO_UNICODE
-        return Core::toLowerCase(s);
-#else
         return Core::toLowerCaseW(s);
-#endif
     }
+
     inline static String toUpperCase(const String & s) {
-#ifdef NO_UNICODE
-        return Core::toUpperCase(s);
-#else
         return Core::toUpperCaseW(s);
-#endif
     }
+
     inline static int find(int from, const String &substr, const String & s) {
         if (from<1) {
             Core::abort(Core::fromUtf8("Индекс меньше 1"));
@@ -1414,6 +1252,7 @@ public:
             s.insert(spos, substr);
         }
     }
+
     inline static void replace(String & s, const String & oldSubstr, const String & newSubstr, bool all) {
         size_t pos = 0;
         while (true) {
@@ -1430,6 +1269,7 @@ public:
             }
         }
     }
+
     inline static void remove(String & s, int pos, int count) {
         if (pos<1) {
             Core::abort(Core::fromUtf8("Индекс меньше 1"));
@@ -1457,14 +1297,17 @@ public:
     inline static void setConsoleInputBuffer(AbstractInputBuffer * b) {
         consoleInputBuffer = b;
     }
+
     inline static void setConsoleOutputBuffer(AbstractOutputBuffer * b) {
         consoleOutputBuffer = b;
     }
 
     inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
+
     inline static void init() {
         fileEncoding = DefaultEncoding;
     }
+
     inline static void finalize() {
         if (isOpenedFiles() && Core::getError().length()==0)
             Core::abort(Core::fromUtf8("Остались не закрытые файлы"));
@@ -1568,12 +1411,8 @@ public:
         char cwd[1024];
         getcwd(cwd, 1024*sizeof(char));
         String workDir;
-#   ifdef NO_UNICODE
-        workDir = String(cwd);
-#   else
         std::string sworkDir = std::string(cwd);
         workDir = Core::fromUtf8(sworkDir);
-#   endif
         workDir.push_back(Char('/'));
         String absPath;
         if (fileName.length()==0 || fileName.at(0)==Char('/'))
@@ -1587,12 +1426,8 @@ public:
         char cwd[1024];
         getcwd(cwd, 1024*sizeof(char));
         String workDir;
-#   ifdef NO_UNICODE
-        workDir = String(cwd);
-#   else
         std::string sworkDir = std::string(cwd);
         workDir = Core::fromUtf8(sworkDir);
-#   endif
         return workDir;
     }
 
@@ -1647,13 +1482,9 @@ public:
     inline static bool canOpenForRead(const String & fileName)
     {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         struct stat st;
         int res = stat(path, &st);
         bool exists = res==0;
@@ -1668,9 +1499,7 @@ public:
             readAsGroup = g && getgid()==st.st_gid;
             readAsOther = o;
         }
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         bool result = readAsOwner || readAsGroup || readAsOther;
         return result;
     }
@@ -1678,13 +1507,9 @@ public:
     inline static bool canOpenForWrite(const String & fileName)
     {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         struct stat st;
         int res = stat(path, &st);
         bool exists = res==0;
@@ -1723,9 +1548,7 @@ public:
                 }
             }
         }
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         bool result = writeAsOwner || writeAsGroup || writeAsOther;
         return result;
     }
@@ -1766,13 +1589,9 @@ public:
     }
 #else
     inline static bool exist(const String & fileName) {
-#   ifdef NO_UNICODE
-        const char * path = const_cast<char*>(fileName.c_str());
-#   else
         EncodingError encodingError;
         std::string localName = Kumir::Coder::encode(Kumir::UTF8, fileName, encodingError);
         const char * path = localName.c_str();
-#   endif
         struct stat st;
         int res = stat(path, &st);
         bool result = res==0;
@@ -1781,48 +1600,32 @@ public:
 
     inline static bool isDirectory(const String & fileName) {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         struct stat st;
         int res = stat(path, &st);
         bool result = res==0 && S_ISDIR(st.st_mode);
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         return result;
     }
 
     inline static bool mkdir(const String & fileName) {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         int res = ::mkdir(path, 0666);
         bool result = res==0;
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         return result;
     }
 
     inline static bool unlink(const String & fileName) {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         int res = ::unlink(path);
         bool result;
         if (res==0)
@@ -1830,21 +1633,15 @@ public:
         else {
             result = false;
         }
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         return result;
     }
 
     inline static bool rmdir(const String & fileName) {
         char * path;
-#   ifdef NO_UNICODE
-        path = const_cast<char*>(fileName.c_str());
-#   else
         path = reinterpret_cast<char*>( calloc(fileName.length()*2+1, sizeof(char)) );
         size_t pl = wcstombs(path, fileName.c_str(), fileName.length()*2+1);
         path[pl] = '\0';
-#   endif
         int res = ::rmdir(path);
         bool result;
         if (res==0)
@@ -1852,9 +1649,7 @@ public:
         else {
             result = false;
         }
-#   ifndef NO_UNICODE
         free(path);
-#   endif
         return result;
     }
 #endif
@@ -1874,7 +1669,6 @@ public:
 
     inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
         const String fileName = getAbsolutePath(shortName);
-//        std::wcout<<fileName;
         for (std::deque<FileType>::const_iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f.getName()==fileName) {
@@ -1883,33 +1677,21 @@ public:
             }
         }
         bool isCorrectName = true;
-#   ifdef NO_UNICODE
-        const char * path = fileName.c_str();
-#   else
         std::string localName;
-#       if defined(WIN32) || defined(_WIN32)
-//        try {
-//            localName = Coder::encode(AreFileApisANSI()? CP1251 : CP866, fileName);
-//            isCorrectName = true;
-//        }
-//        catch (...) {
-//            isCorrectName = false;
-//        }
-#       else
+#if !defined(WIN32) && !defined(_WIN32)
         EncodingError encodingError;
 
         localName = Coder::encode(UTF8, fileName, encodingError);
         isCorrectName = NoEncodingError == encodingError;
 
-#       endif
+#endif
         if (!isCorrectName) {
             Kumir::Core::abort(Kumir::Core::fromUtf8("Ошибка открытия файла: имя содержит недопустимый символ"));
             return FileType();
         }
         const char * path = localName.c_str();
-#   endif
 
-#   if defined(WIN32) || defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32)
         const wchar_t * fmode;
         if (mode==FileType::Read)
             fmode = L"rb";
@@ -1919,7 +1701,7 @@ public:
             fmode = L"ab";
         FILE * res = _wfopen(fileName.c_str(), fmode);
 //        _wfopen_s(&res, fileName.c_str(), fmode);
-#   else
+#else
         const char * fmode;
         if (mode==FileType::Read)
             fmode = "rb";
@@ -1928,7 +1710,7 @@ public:
         else if (mode==FileType::Append)
             fmode = "ab";
         FILE* res = fopen(path, fmode);
-#   endif
+#endif
         FileType f;
         if (res==0) {
             Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
@@ -2794,22 +2576,6 @@ public:
 
 }; // end class IO
 
-#ifdef NO_SYSTEM
-// Dummy class implementation
-class System {
-public:
-    inline static void init() {}
-    inline static void finalize() {}
-
-    inline static int time() { return 0; }
-};
-#else
-#include <time.h>
-#if defined(WIN32) || defined(_WIN32)
-#include <windows.h>
-#else
-#include <sys/time.h>
-#endif
 class System {
 public:
     inline static void init() {}
@@ -2850,7 +2616,6 @@ public:
         return result;
     }
 };
-#endif
 
 inline void initStandardLibrary() {
     Core::init();

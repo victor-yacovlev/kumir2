@@ -390,23 +390,6 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
     return ok;
 }
 
-void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
-{
-    breakpoints_.clear();
-    Kumir::EncodingError encodingError;
-    String error;
-    if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
-        std::string msg;
-#if defined(WIN32) || defined(_WIN32)
-        msg = Kumir::Coder::encode(Kumir::CP866, error, encodingError);
-#else
-        msg = Kumir::Coder::encode(Kumir::UTF8, error, encodingError);
-#endif
-        std::cerr << msg << std::endl;
-    }
-}
-
-
 void Run::setEntryPointToMain()
 {
     vm->setEntryPoint(KumirVM::EP_Main);

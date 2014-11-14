@@ -237,7 +237,6 @@ namespace Kumir {
         }
     };
 
-#ifndef NO_UNICODE
     class Coder {
     public:
         inline static std::string encode(Encoding E, const std::wstring & src, EncodingError &error) {
@@ -298,9 +297,6 @@ namespace Kumir {
             return result;
         }
     };
-#else
-#   error Not implemented yet
-#endif
 }
 
 #endif
