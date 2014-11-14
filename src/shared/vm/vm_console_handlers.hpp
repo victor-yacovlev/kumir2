@@ -393,6 +393,11 @@ bool GetMainArgumentFunctor::readScalarArgument(
         }
         val = (*f)(s, customModuleAsciiName, customModuleName, customTypeAsciiName, customTypeLocalizedName, error);
     }
+    if (Core::getError().length() > 0) {
+        if (error) {
+            error->assign(Core::getError());
+        }
+    }
     return error? error->length()==0: true; // Core::getError().size()==0;
 }
 
