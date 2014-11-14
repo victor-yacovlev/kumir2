@@ -7,6 +7,14 @@
 #include "interfaces/actorinterface.h"
 #include "commonrun.h"
 
+#ifndef _override
+#if defined(_MSC_VER)
+#   define _override
+#else
+#   define _override override
+#endif
+#endif
+
 namespace KumirCodeRun {
 
 class Run;
@@ -23,7 +31,7 @@ public:
     NamesList operator()(
             const std::string & moduleAsciiName,
             const Kumir::String & moduleName, Kumir::String * error)
-                override;
+                _override;
 };
 
 class InputFunctor
@@ -36,13 +44,13 @@ public:
     InputFunctor();
     void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    bool operator()(VariableReferencesList alist, Kumir::String * error) override;
+    bool operator()(VariableReferencesList alist, Kumir::String * error) _override;
     ~InputFunctor();
 
     // Raw data handling methods
-    void clear() override;
-    bool readRawChar(Kumir::Char &ch) override;
-    void pushLastCharBack() override;
+    void clear() _override;
+    bool readRawChar(Kumir::Char &ch) _override;
+    void pushLastCharBack() _override;
 
 signals:
     void requestInput(const QString & format);
@@ -65,9 +73,9 @@ class SimulatedInputBuffer
 public:
     inline explicit SimulatedInputBuffer(QTextStream * stream): io_(stream), prevChar_(QChar::Null), lastChar_(QChar::Null) {}
 
-    void clear() override;
-    bool readRawChar(Kumir::Char &ch) override;
-    void pushLastCharBack() override;
+    void clear() _override;
+    bool readRawChar(Kumir::Char &ch) _override;
+    void pushLastCharBack() _override;
 
 private:
     QTextStream *io_;
@@ -86,8 +94,8 @@ public:
     OutputFunctor();
     void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    void operator()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) override;
-    void writeRawString(const String & s) override;
+    void operator()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) _override;
+    void writeRawString(const String & s) _override;
 signals:
     void requestOutput(const QString & data);
 private:
@@ -99,7 +107,7 @@ class SimulatedOutputBuffer
 {
 public:
     inline explicit SimulatedOutputBuffer(QTextStream * stream): io_(stream) {}
-    void writeRawString(const Kumir::String &) override;
+    void writeRawString(const Kumir::String &) _override;
 private:
     QTextStream *io_;
 };
@@ -111,7 +119,7 @@ class GetMainArgumentFunctor
     Q_OBJECT
 public:
     GetMainArgumentFunctor();
-    void operator()(Variable & reference, Kumir::String * error) override;
+    void operator()(Variable & reference, Kumir::String * error) _override;
     void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f);
     void setRunnerInstance(class Run * runner);
     ~GetMainArgumentFunctor();
@@ -141,7 +149,7 @@ public:
     ReturnMainValueFunctor();
     void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor *f);
     void setRunnerInstance(class Run * runner);
-    void operator()(const Variable & reference, Kumir::String * error) override;
+    void operator()(const Variable & reference, Kumir::String * error) _override;
 signals:
     void requestOutput(const QString & data);
 private:
@@ -156,7 +164,7 @@ class PauseFunctor
     Q_OBJECT
 public:
     PauseFunctor();
-    void operator()() override;
+    void operator()() _override;
 signals:
     void requestPause();
 };
@@ -168,7 +176,7 @@ class DelayFunctor
     Q_OBJECT
 public:
     DelayFunctor();
-    void operator()(quint32 msec) override;
+    void operator()(quint32 msec) _override;
     void stop();
 private:
     bool stopFlag_;
@@ -182,7 +190,7 @@ class ExternalModuleResetFunctor
     Q_OBJECT
 public:
     ExternalModuleResetFunctor();
-    virtual void operator()(const std::string & moduleName, const String & localizedName, Kumir::String * error) override;
+    virtual void operator()(const std::string & moduleName, const String & localizedName, Kumir::String * error) _override;
 signals:
     void showActorWindow(const QByteArray & actorAsciiName);
 };

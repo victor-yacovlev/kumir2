@@ -24,6 +24,14 @@
 #   include <unistd.h>
 #endif
 
+#ifndef _override
+#if defined(_MSC_VER)
+#   define _override
+#else
+#   define _override override
+#endif
+#endif
+
 #include <deque>
 #include <string>
 #include <list>
@@ -79,7 +87,7 @@ protected:
 class ExternalModuleResetFunctor: public Functor {
 public:
     inline ExternalModuleResetFunctor(): callFunctor_(0) {}
-    inline Type type() const override { return ExternalModuleReset; }
+    inline Type type() const _override { return ExternalModuleReset; }
     inline virtual void operator()(const std::string & /*moduleName*/, const Kumir::String & localizedName, Kumir::String * error)
     {
         const Kumir::String errorMessage =
@@ -113,7 +121,7 @@ protected:
  */
 class ExternalModuleLoadFunctor: public Functor {
 public:
-    inline Type type() const override { return ExternalModuleLoad; }
+    inline Type type() const _override { return ExternalModuleLoad; }
     typedef std::deque<std::string> NamesList;
     inline virtual NamesList operator()(
             const std::string & /*moduleAsciiName*/,
@@ -141,7 +149,7 @@ public:
  */
 class ExternalModuleCallFunctor: public Functor {
 public:
-    inline Type type() const override { return ExternalModuleCall; }
+    inline Type type() const _override { return ExternalModuleCall; }
     typedef const std::deque<Variable> & VariableReferencesList;
     inline virtual AnyValue operator()(
             const std::string & /*asciiModuleName*/,
@@ -165,7 +173,7 @@ public:
 
 class CustomTypeToStringFunctor: public Functor {
 public:
-    inline Type type() const override { return ConvertToString; }
+    inline Type type() const _override { return ConvertToString; }
     inline virtual Kumir::String operator()(
             const Variable & variable,
             Kumir::String * error
@@ -183,7 +191,7 @@ public:
 
 class CustomTypeFromStringFunctor: public Functor {
 public:
-    inline Type type() const override { return ConvertFromString; }
+    inline Type type() const _override { return ConvertFromString; }
     inline virtual VM::AnyValue operator()(
             const Kumir::String & /*source*/,
             const std::string & /*moduleAsciiName*/,
@@ -209,7 +217,7 @@ public:
  */
 class PauseFunctor : public Functor {
 public:
-    inline Type type() const override { return Pause; }
+    inline Type type() const _override { return Pause; }
     inline virtual void operator()() {}
 };
 
@@ -221,7 +229,7 @@ public:
  */
 class DelayFunctor : public Functor {
 public:
-    inline Type type() const override { return Delay; }
+    inline Type type() const _override { return Delay; }
     inline virtual void operator()(uint32_t msec) {
 #if defined(WIN32) || defined(_WIN32)
         Sleep(msec);
@@ -245,7 +253,7 @@ public:
  */
 class InputFunctor: public Functor {
 public:
-    inline Type type() const override { return Input; }
+    inline Type type() const _override { return Input; }
     typedef std::deque<Variable> & VariableReferencesList;
     inline virtual bool operator()(VariableReferencesList /*alist*/, Kumir::String * error)
     {
@@ -266,7 +274,7 @@ public:
  */
 class OutputFunctor: public Functor {
 public:
-    inline Type type() const override { return Output; }
+    inline Type type() const _override { return Output; }
     typedef const std::deque<Variable> & VariableReferencesList;
     typedef const std::deque< std::pair<int,int> > & FormatsList;
     inline virtual void operator()(
@@ -285,7 +293,7 @@ public:
 
 class GetMainArgumentFunctor: public Functor {
 public:
-    inline Type type() const override { return GetMainArgument; }
+    inline Type type() const _override { return GetMainArgument; }
     inline virtual void operator()(Variable & /*reference*/, Kumir::String * error)
     {
         static const Kumir::String errorMessage =
@@ -298,7 +306,7 @@ public:
 
 class ReturnMainValueFunctor: public Functor {
 public:
-    inline Type type() const override { return ReturnMainValue; }
+    inline Type type() const _override { return ReturnMainValue; }
     inline virtual void operator()(const Variable & /*reference*/, Kumir::String * error)
     {
         static const Kumir::String errorMessage =

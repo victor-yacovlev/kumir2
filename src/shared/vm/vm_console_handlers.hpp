@@ -9,6 +9,14 @@
 #include <fstream>
 #undef DO_NOT_DECLARE_STATIC
 
+#ifndef _override
+#if defined(_MSC_VER)
+#   define _override
+#else
+#   define _override override
+#endif
+#endif
+
 namespace VM {
 namespace Console {
 
@@ -42,15 +50,15 @@ public:
         , customTypeFromString_(nullptr)
         , stdin_(IO::makeInputStream(FileType(), true))
     {}
-    inline bool operator() (VariableReferencesList alist, Kumir::String * error) override;
+    inline bool operator() (VariableReferencesList alist, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f)
     {
         customTypeFromString_ = f;
     }
-    inline bool readRawChar(Char &ch) override;
-    inline void pushLastCharBack() override;
-    inline void clear() override {}
+    inline bool readRawChar(Char &ch) _override;
+    inline void pushLastCharBack() _override;
+    inline void clear() _override {}
 private:
     Encoding locale_;
     VM::CustomTypeFromStringFunctor * customTypeFromString_;
@@ -129,13 +137,13 @@ public:
     #endif
         , customTypeToString_(nullptr)
     {}
-    inline void operator ()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) override;
+    inline void operator ()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor * f)
     {
         customTypeToString_ = f;
     }
-    inline void writeRawString(const String &) override;
+    inline void writeRawString(const String &) _override;
 
 private:
     Encoding locale_;
@@ -201,7 +209,7 @@ public:
         , customTypeToString_(nullptr)
         , quietMode_(false)
     {}
-    inline void operator()(const VM::Variable & reference, Kumir::String * error) override;
+    inline void operator()(const VM::Variable & reference, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor * f)
     {
@@ -229,7 +237,7 @@ public:
         , customTypeFromString_(nullptr)
         , quietMode_(false)
     {}
-    inline void operator()(VM::Variable & reference, Kumir::String * error) override;
+    inline void operator()(VM::Variable & reference, Kumir::String * error) _override;
     inline void init(const std::deque<std::string> args);
     inline void init(int argc, char * argv[]);
     inline void setLocale(const Encoding loc) { locale_ = loc; }
