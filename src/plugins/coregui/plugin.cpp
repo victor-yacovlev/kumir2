@@ -772,6 +772,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
 //        m_kumirStateLabel->setText(tr("Running"));
         mainWindow_->clearMessage();
         mainWindow_->lockActions();
+        debugger_->setDebuggerEnabled(false);
     }
     else if (state==PluginInterface::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
