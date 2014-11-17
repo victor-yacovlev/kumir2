@@ -995,7 +995,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
             uint right = cw * highlightedTextColumnEndNumber_;
             left += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
             right += cw * 2 * editor_->document()->indentAt(highlightedTextLineNumber_);
-            p.drawRoundedRect(left, highlightRightRect.top(),
+            p.drawRoundedRect(left, highlightRightRect.top() - offset().y(),
                               int(right) - int(left), highlightRightRect.height(),
                               2, 2);
         }
