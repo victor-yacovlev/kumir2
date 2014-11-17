@@ -147,6 +147,9 @@ void Side::forceResizeItem(const QSize &sz)
     QWidget * who = qobject_cast<QWidget*>(sender());
     Q_ASSERT(who);
     const int index = indexOf(who);
+    if (-1 == index) {
+        return;
+    }
     Q_ASSERT(-1 != index);
     QList<int> szs = sizes();
     const int diff = Qt::Horizontal == orientation()
