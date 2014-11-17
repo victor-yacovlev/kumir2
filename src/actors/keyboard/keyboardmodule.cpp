@@ -392,8 +392,8 @@ int KeyboardModule::polyakovCodeOfKey(int qtCode, const QString & text)
             QPair<QString,int>("", 0)
         };
         size_t index = 0;
-        if (0 != normalized.at(0).toAscii()) {
-            return normalized.at(0).toAscii();
+        if (0 != normalized.at(0).toLatin1()) {
+            return normalized.at(0).toLatin1();
         }
         while (0 != CODES[index].second) {
             if (normalized == CODES[index].first)
