@@ -23,6 +23,7 @@ static const uint HIGHTLIGHT_LINE_VERTICAL_PADDING = 5u /*px*/;
 static const QColor PROTECTED_LINE_BACKGROUND(0x15, 0x79, 0x63, 0x40);
 static const QColor HIDDEN_LINE_BACKGROUND(0x00, 0x00, 0x00, 0x40);
 static const uint MARGIN_LINE_WIDTH = 3u /*px*/;
+static const uint COLLAPSED_MARGIN_LINE_WIDTH = 8u /*px*/;
 
 static const uint BREAKPOINT_PANE_WIDTH = 24u /*px*/;
 static const uint BREAKPOINT_MARKER_SIZE = 12u /*px*/;
@@ -309,10 +310,12 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         // inside a margin region
 
         // New margin position in pixels (normalized and bounded)
-        uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
+        const uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
 
         // New margin width in characters
-        const uint marginCharWidth = (width() - x) / charWidth();
+        const uint marginCharWidth = width() - COLLAPSED_MARGIN_LINE_WIDTH == x
+                ? 0
+                : (width() - x) / charWidth();
 
         // Store a settings value, this will be used on paint event
         editor_->mySettings()->setValue(MarginWidthKey, marginCharWidth);
@@ -746,7 +749,8 @@ void EditorPlane::initMouseCursor()
 
 int EditorPlane::marginCharactersCount() const
 {
-    return editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toInt();
+    int val = editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toInt();
+    return qMax(0, val);
 }
 
 QPoint EditorPlane::offset() const
@@ -1104,11 +1108,12 @@ uint EditorPlane::normalizedNewMarginLinePosition(uint x) const
             (editor_->plugin_->teacherMode_ && editor_->analizerInstance_
              ? LOCK_SYMBOL_WIDTH : 0 );
 
-    uint maximumLeftPosition = width() - charWidth() - MARGIN_LINE_WIDTH;
+    const uint maximumLeftPosition = width()/* - charWidth() */- COLLAPSED_MARGIN_LINE_WIDTH;
     x = qMax(minimumLeftPosition, qMin(maximumLeftPosition, x));
 
     // Make x-coordinate aligned to character matrix
-    x = ( x / charWidth() ) * charWidth();
+    if (maximumLeftPosition != x)
+        x = ( x / charWidth() ) * charWidth();
 //    qDebug() << "X = " << x;
     return x;
 }
@@ -1120,18 +1125,25 @@ void EditorPlane::paintNewMarginLine(QPainter *p)
     {
         // Draw only in case of moving margin line
 
-        uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
+        const uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
+        const uint w = width() - COLLAPSED_MARGIN_LINE_WIDTH == x
+                ? COLLAPSED_MARGIN_LINE_WIDTH : MARGIN_LINE_WIDTH;
 
         const QRect newMarginLineRect(
                     x,
                     0,
-                    MARGIN_LINE_WIDTH,
+                    w,
                     height()
                     );
 
         // Draw a transparent bordered rect
         p->setPen(QColor(Qt::black));
-        p->setBrush(Qt::NoBrush);
+        if (x < width() - COLLAPSED_MARGIN_LINE_WIDTH) {
+            p->setBrush(Qt::NoBrush);
+        }
+        else {
+            p->setBrush(Qt::BDiagPattern);
+        }
         p->drawRect(newMarginLineRect);
     }
 }
@@ -2036,12 +2048,13 @@ QRect EditorPlane::marginBackgroundRect() const
 
 QRect EditorPlane::marginLineRect() const
 {
-    return QRect(
-                marginLeftBound(), // left
-                0, // top
-                MARGIN_LINE_WIDTH, // width
-                height() // height
-                );
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+    if (sett && 0 == sett->value(MarginWidthKey, MarginWidthDefault).toUInt()) {
+        return QRect(width()-COLLAPSED_MARGIN_LINE_WIDTH, 0, COLLAPSED_MARGIN_LINE_WIDTH, height());
+    }
+    else {
+        return QRect(marginLeftBound(), 0, MARGIN_LINE_WIDTH, height());
+    }
 }
 
 /** Draws margin background and margin line
