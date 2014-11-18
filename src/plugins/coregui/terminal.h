@@ -8,6 +8,7 @@
 #include <QtGui>
 #endif
 
+#include "extensionsystem/settings.h"
 #include "extensionsystem/kplugin.h"
 
 namespace Terminal {
@@ -20,7 +21,10 @@ public:
     explicit Term(QWidget *parent = 0);
     bool isActiveComponent() const;
     QSize minimumSizeHint() const;
-    bool isEmpty() const;
+    bool isEmpty() const;    
+    ExtensionSystem::SettingsPtr settings() const;
+    void setSettings(const ExtensionSystem::SettingsPtr &settings);
+
 signals:
     void openTextEditor(const QString & suggestedFileName, const QString & text);
     void message(const QString &);
@@ -66,7 +70,7 @@ private:
     QList<class OneSession*> sessions_;
     QScrollBar * sb_vertical;
     QScrollBar * sb_horizontal;
-    class Plane * m_plane;
+    class Plane * plane_;
     QAction * a_saveAll;
     QAction * a_saveLast;
     QAction * a_copyAll;
@@ -77,6 +81,7 @@ private:
     QGridLayout * m_layout;
     QStringList inputFormats_;
     QVariantList inputValues_;
+    ExtensionSystem::SettingsPtr settings_;
 
 
 };

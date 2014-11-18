@@ -1356,36 +1356,26 @@ bool MainWindow::closeTab(int index)
 
 void MainWindow::createSettingsDialog()
 {
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     using namespace ExtensionSystem;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     settingsDialog_ = new Widgets::MultiPageDialog(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     settingsDialog_->setWindowTitle(tr("Preferences"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    settingsDialog_->setMinimumSize(800, 500);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    settingsDialog_->setMinimumSize(800, 500);    
     PluginManager * manager = PluginManager::instance();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     QList<KPlugin*> plugins = manager->loadedPlugins();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
     foreach (KPlugin * p, plugins) {
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         QWidget * page = p->settingsEditorPage();
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-        if (page) {
-            // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-            settingsDialog_->addPage(page);
-            // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+        QList<QWidget*> pages = p->settingsEditorPages();
+        if (page && !pages.contains(page)) {
+            pages.prepend(page);
         }
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+        foreach (QWidget *p, pages) {
+            settingsDialog_->addPage(p);
+        }
     }
 #ifndef Q_OS_MACX
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     settingsDialog_->addPage(openFileSettings);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 #endif
 }
 

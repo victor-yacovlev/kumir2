@@ -12,6 +12,7 @@
 #include "widgets/actionproxy.h"
 
 #include "guisettingspage.h"
+#include "iosettingseditorpage.h"
 
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
@@ -52,6 +53,7 @@ Plugin::Plugin() :
     helpViewer_ = 0;
     courseManager_ = 0;
     guiSettingsPage_ = 0;
+    ioSettingsPage_ = 0;
 }
 
 QString Plugin::InitialTextKey = "InitialText";
@@ -181,6 +183,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "Creating and connection I/O terminal";
 
     terminal_ = new Term(mainWindow_);
+    terminal_->setSettings(mySettings());
 
     mainWindow_->consolePlace_->addPersistentWidget(terminal_,
                                                               tr("Input/Output"));
@@ -731,16 +734,27 @@ void Plugin::updateSettings(const QStringList & keys)
     }
     if (mainWindow_)
         mainWindow_->updateSettings(mySettings(), keys);
+    if (terminal_ && (
+                keys.contains(IOSettingsEditorPage::UseFixedWidthKey) ||
+                keys.contains(IOSettingsEditorPage::WidthSizeKey)
+            ))
+    {
+        terminal_->setSettings(mySettings());
+    }
 }
 
-QWidget* Plugin::settingsEditorPage()
-{
+QList<QWidget*> Plugin::settingsEditorPages() {
     if (!guiSettingsPage_) {
         guiSettingsPage_ = new GUISettingsPage(mySettings(), 0);
         connect(guiSettingsPage_, SIGNAL(settingsChanged(QStringList)),
                 this, SLOT(updateSettings(QStringList)));
     }
-    return guiSettingsPage_;
+    if (!ioSettingsPage_) {
+        ioSettingsPage_ = new IOSettingsEditorPage(mySettings(), 0);
+        connect(ioSettingsPage_, SIGNAL(settingsChanged(QStringList)),
+                this, SLOT(updateSettings(QStringList)));
+    }
+    return QList<QWidget*>() << guiSettingsPage_ << ioSettingsPage_;
 }
 
 void Plugin::showActorWindow(const QByteArray &asciiName)
