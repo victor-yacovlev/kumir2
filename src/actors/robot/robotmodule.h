@@ -394,7 +394,7 @@ namespace ActorRobot {
         uint fieldSize;
         uint robo_x,robo_y;
         QWidget *Parent;
-        QPen BortLine,StLine,showLine;
+        QPen BortLine,StLine,showLine,WallLine;
        // CellDialog* cellDialog;
         bool WasEditFlag;
         //TOOLS

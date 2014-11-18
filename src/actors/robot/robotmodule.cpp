@@ -889,7 +889,7 @@ namespace ActorRobot {
             };
             Items.append(row);
         };
-       
+       timer->stop();
     };
     
     QPoint RoboField::upLeftCorner(int str,int stlb)
@@ -945,6 +945,7 @@ namespace ActorRobot {
         
         BortLine = QPen(WallColor,4);
         StLine=QPen(gridColor,3);
+        WallLine=QPen(WallColor,3);
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -996,7 +997,7 @@ namespace ActorRobot {
                                             new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                   upLeftCorner(i,j).y()+fieldSize,
                                                                   upLeftCorner(i,j).x()+fieldSize,
-                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                  upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->hasUpWall())
@@ -1005,7 +1006,7 @@ namespace ActorRobot {
                                           new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                 upLeftCorner(i,j).y(),
                                                                 upLeftCorner(i,j).x()+fieldSize,
-                                                                upLeftCorner(i,j).y()),StLine);
+                                                                upLeftCorner(i,j).y()),WallLine);
                     
                 };
                 if(row->at(j)->hasLeftWall())
@@ -1014,7 +1015,7 @@ namespace ActorRobot {
                                             new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                   upLeftCorner(i,j).y(),
                                                                   upLeftCorner(i,j).x(),
-                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                  upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->hasRightWall())
@@ -1023,7 +1024,7 @@ namespace ActorRobot {
                                              new QGraphicsLineItem(upLeftCorner(i,j).x()+fieldSize,
                                                                    upLeftCorner(i,j).y(),
                                                                    upLeftCorner(i,j).x()+fieldSize,
-                                                                   upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                   upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->isColored())
@@ -3078,11 +3079,15 @@ namespace ActorRobot {
     void RoboField::timerTic()
     {
         if(mode!=TEXT_MODE){
-         keyCursor->hide();
+         if(keyCursor)keyCursor->hide();
             timer->stop();  
         }
       qDebug()<<"TIK!"; 
-        if(!keyCursor)return;
+        if(!keyCursor)
+        {
+         timer->stop();
+            return;
+        }
       timer->start(500);
         if(keyCursor->isVisible())keyCursor->hide();
         else keyCursor->show();
@@ -3220,7 +3225,7 @@ namespace ActorRobot {
         
         
         
-        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        static const int points[] = {  14+2,6+3, 22+3,14+2, 14+3,22+3, 6+3,14+3 };
         QPolygon polygon;
         polygon.setPoints(4, points);
         QPolygonF polygonf = QPolygonF(polygon);
@@ -3279,12 +3284,12 @@ namespace ActorRobot {
         painter->setBrush(QColor("lightgray"));
         painter->setPen(QPen("black"));
         
-        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        static const int points[] = {  14+3,6+3, 22+3,14+3, 14+3,22+3, 6+3,14+3 };
         QVector<QPointF> up_crash,down_crash,left_crash,right_crash ;
-        up_crash << QPointF(14 , 6) << QPointF(10, 11) <<  QPointF(19 ,11);
-        down_crash << QPointF(14 , 22) << QPointF(11, 18) <<  QPointF(18 ,18);
-        left_crash << QPointF(7 , 14) << QPointF(11, 10) <<  QPointF(11 ,18);
-        right_crash << QPointF(22 , 14) << QPointF(18, 10) <<  QPointF(18 ,18);
+        up_crash << QPointF(14+3 , 6+3) << QPointF(13, 14) <<  QPointF(19+3 ,11+3);
+        down_crash << QPointF(14+3 , 22+3) << QPointF(11+3, 18+3) <<  QPointF(18+3 ,18+3);
+        left_crash << QPointF(7+3 , 14+3) << QPointF(11+3, 10+3) <<  QPointF(11+3 ,18+3);
+        right_crash << QPointF(22+3 , 14+3) << QPointF(18+3, 10+3) <<  QPointF(18+3 ,18+3);
         QPolygon polygon;
         polygon.setPoints(4, points);
         QPolygonF polygonf = QPolygonF(polygon);
@@ -3826,7 +3831,9 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runMark(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        int rws=field->rows();
+        int clmns=field->columns();
+        if(row-1>=field->rows() ||col-1>field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
