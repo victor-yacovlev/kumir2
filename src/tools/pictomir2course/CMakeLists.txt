@@ -1,11 +1,7 @@
 project(pictomir2course)
 cmake_minimum_required(VERSION 2.8.3)
 
-find_package(Boost REQUIRED)
-
-include_directories(${Boost_INCLUDE_DIRS})
-
-if (MSVC)
+if(MSVC)
     # Use provided ZLib sources
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib)
     set(3RDPARTY_LIBS )

@@ -77,6 +77,17 @@ endif(XCODE)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+file(GLOB THIRDPARTY_PACKAGES "${CMAKE_SOURCE_DIR}/src/3rdparty/*")
+foreach(PACKAGE IN ITEMS ${THIRDPARTY_PACKAGES})
+    if(EXISTS "${PACKAGE}/include")
+        include_directories("${PACKAGE}/include")
+    endif()
+    if(EXISTS "${PACKAGE}/CMakeLists.txt")
+        add_subdirectory("${PACKAGE}")
+    endif()
+endforeach(PACKAGE)
+
+
 add_subdirectory(shared)
 add_subdirectory(plugins)
 #if (NOT WIN32)
