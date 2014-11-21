@@ -29,6 +29,7 @@ signals:
 
 private slots:
     void handleVisiblityRequest(bool visible, const QSize & size);
+    void forceResizeItem(const QSize & sz);
 
 private /*methods*/:
     void resizeEvent(QResizeEvent * event);

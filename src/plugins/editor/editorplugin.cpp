@@ -83,11 +83,11 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
     return editor;
 }
 
-Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data)
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data, QString * error)
 {
     EditorInstance * editor = new EditorInstance(this, true, nullptr, nullptr);
     connectGlobalSignalsToEditor(editor);
-    editor->loadDocument(data);
+    editor->loadDocument(data, error);
     return editor;
 }
 
@@ -95,7 +95,7 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
         QIODevice *device,
         const QString &fileNameSuffix,
         const QString &sourceEncoding,
-        const QUrl & sourceUrl
+        const QUrl & sourceUrl, QString * error
         )
 {
     Shared::AnalizerInterface * analizerPlugin = nullptr;
@@ -114,11 +114,11 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(
 
     EditorInstance * editor = new EditorInstance(this, true, analizerPlugin, nullptr);
     connectGlobalSignalsToEditor(editor);
-    editor->loadDocument(device, fileNameSuffix, sourceEncoding, sourceUrl);
+    editor->loadDocument(device, fileNameSuffix, sourceEncoding, sourceUrl, error);
     return editor;
 }
 
-Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName)
+Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fileName, QString * error)
 {
     Shared::AnalizerInterface * analizerPlugin = nullptr;
 
@@ -136,7 +136,7 @@ Shared::Editor::InstanceInterface * EditorPlugin::loadDocument(const QString &fi
 
     EditorInstance * editor = new EditorInstance(this, true, analizerPlugin, nullptr);
     connectGlobalSignalsToEditor(editor);
-    editor->loadDocument(fileName);
+    editor->loadDocument(fileName, error);
     return editor;
 }
 

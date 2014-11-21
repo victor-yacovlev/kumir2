@@ -51,15 +51,15 @@ public:
     bool hasBreakpointSupport() const;
 
     void loadDocument(QIODevice * device,
-                              const QString & fileNameSuffix = "",
-                              const QString & sourceEncoding = "",
-                              const QUrl & sourceUrl = QUrl()
-            ) /* throws QString */;
-    void loadDocument(const QString & fileName) /* throws QString */;
-    void loadDocument(const Shared::Analizer::SourceFileInterface::Data &data) /* throws QString */;
+                              const QString & fileNameSuffix,
+                              const QString & sourceEncoding,
+                              const QUrl & sourceUrl, QString * error
+            ) override;
+    void loadDocument(const QString & fileName, QString * error) override;
+    void loadDocument(const Shared::Analizer::SourceFileInterface::Data &data, QString * error) override;
 
-    void saveDocument(const QString &fileName);
-    void saveDocument(QIODevice * device);
+    void saveDocument(const QString &fileName, QString * error) override;
+    void saveDocument(QIODevice * device, QString * error) override;
     uint32_t currentLineNumber() const;
     void setKumFile(const Shared::Analizer::SourceFileInterface::Data & data);
     void setPlainText(const QString & data);

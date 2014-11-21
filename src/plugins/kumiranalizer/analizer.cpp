@@ -31,6 +31,8 @@ void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
     if (moduleName==QString::fromLatin1("Strings"))
         AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
+    if (moduleName==QString::fromLatin1("Keyboard"))
+        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Клавиатура"));
 }
 
 Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
@@ -487,7 +489,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
 
         static const QList<QByteArray> Operators = QList<QByteArray>()
                 << "input" << "output" << "+" << "-" << "*" << "/" << "**"
-                << "=" << "<>" << "<" << ">";
+                << "=" << "<>" << "<" << ">" << ":=";
 
         AST::AlgorithmPtr alg = AST::AlgorithmPtr(new AST::Algorithm);
         alg->header.implType = AST::AlgorhitmExternal;

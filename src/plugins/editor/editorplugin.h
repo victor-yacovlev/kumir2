@@ -30,25 +30,25 @@ public:
 
     Shared::Editor::InstanceInterface * loadDocument(
             QIODevice * device,
-            const QString & fileNameSuffix = "",
-            const QString & sourceEncoding = "",
-            const QUrl & sourceUrl = QUrl()
-            ) /* throws QString */;
+            const QString & fileNameSuffix,
+            const QString & sourceEncoding,
+            const QUrl & sourceUrl, QString * error
+            ) override;
 
     Shared::Editor::InstanceInterface * loadDocument(
-            const QString & fileName) /* throws QString */;
+            const QString & fileName, QString * error) override;
 
     Shared::Editor::InstanceInterface * loadDocument(
-            const Shared::Analizer::SourceFileInterface::Data &data) /* throws QString */;
+            const Shared::Analizer::SourceFileInterface::Data &data, QString * error) override;
 
     int analizerDocumentId(int editorDocumentId) const;
     void closeDocument(int documentId);
     QWidget* settingsEditorPage();
     bool hasUnsavedChanges(int documentId) const;
     void setDocumentChangesSaved(int documentId);
-    QString loadDocument(int documentId, const QString & fileName, bool keepIndents);
-    QString loadDocument(int documentId, const Shared::Analizer::SourceFileInterface::Data &data);
-    QString saveDocument(int documentId, const QString & fileName);
+    QString loadDocument(int documentId, const QString & fileName, bool keepIndents, QString * error);
+    QString loadDocument(int documentId, const Shared::Analizer::SourceFileInterface::Data &data, QString * error);
+    QString saveDocument(int documentId, const QString & fileName, QString * error);
     Shared::Analizer::SourceFileInterface::Data documentContent(int documentId) const;
     Shared::AnalizerInterface * analizer(int documentId);
     quint32 errorsLinesCount(int documentId) const;

@@ -95,6 +95,7 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
         }
         QString algorithmName;
         TableOfVariables * locals = nullptr;
+        quint64 framePointer = 0u;
         if ( (row - globalsOffset == 0) && mainContext ) {
             algorithmName = QString::fromStdWString(mainContext->name);
             locals = &(mainContext->locals);
@@ -112,6 +113,7 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
                     if (index == counter) {
                         algorithmName = QString::fromStdWString(context.name);
                         locals = &(context.locals);
+                        framePointer = static_cast<quint64>(i);
                         break;
                     }
                 }
@@ -120,13 +122,17 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
         mutex_->unlock();
         for (int i=0; i<cache_.size(); i++) {
             KumVariableItem * item = cache_[i];
-            if (item->table() == locals) {
+            if (KumVariableItem::LocalsTable==item->itemType() &&
+                    item->framePointer()==framePointer &&
+                    item->name()==algorithmName)
+            {
                 result = item;
                 break;
             }
         }
         if (result == nullptr) {
             result = new KumVariableItem(locals, row, algorithmName);
+            result->setFramePointer(framePointer);
             cache_.push_back(result);
         }
     }
@@ -769,6 +775,7 @@ KumVariableItem::KumVariableItem(TableOfVariables *table, int row)
     , variable_(nullptr)
     , table_(table)
     , tableNumber_(row)
+    , framePointer_(0)
 {
 }
 
@@ -778,6 +785,7 @@ KumVariableItem::KumVariableItem(TableOfVariables *table, int row, const QString
     , table_(table)
     , tableNumber_(row)
     , algorithmName_(name)
+    , framePointer_(0)
 {
 }
 
@@ -787,6 +795,7 @@ KumVariableItem::KumVariableItem(const VM::Variable *variable, int row,
     , variable_(variable)
     , table_(table)
     , tableNumber_(row)
+    , framePointer_(0)
 {
 }
 
@@ -797,6 +806,7 @@ KumVariableItem::KumVariableItem(const VM::Variable *variable, int row,
     , table_(nullptr)
     , tableNumber_(row)
     , indeces_(indeces)
+    , framePointer_(0)
 {
 }
 

@@ -336,13 +336,8 @@ void Run::run()
             vm->entryPoint() == KumirVM::EP_Testing)
     {
         bool hasRetval = false;
-        try {
-            VM::AnyValue retval = vm->topLevelStackValue();
-            hasRetval = retval.isValid();
-        }
-        catch (...) {
-            hasRetval = false;
-        }
+        VM::AnyValue retval = vm->topLevelStackValue();
+        hasRetval = retval.isValid();
         if (hasRetval) {
             qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
         }
@@ -389,23 +384,6 @@ bool Run::loadProgramFromBinaryBuffer(std::list<char> &stream, const String & fi
     }
     return ok;
 }
-
-void Run::loadProgramFromTextBuffer(const std::string &stream, const String & filename)
-{
-    breakpoints_.clear();
-    Kumir::EncodingError encodingError;
-    String error;
-    if (!vm->loadProgramFromTextBuffer(stream, true, filename, error)) {
-        std::string msg;
-#if defined(WIN32) || defined(_WIN32)
-        msg = Kumir::Coder::encode(Kumir::CP866, error, encodingError);
-#else
-        msg = Kumir::Coder::encode(Kumir::UTF8, error, encodingError);
-#endif
-        std::cerr << msg << std::endl;
-    }
-}
-
 
 void Run::setEntryPointToMain()
 {
@@ -460,12 +438,7 @@ QVariant Run::valueStackTopItem() const
 {
     VMMutex_->lock();
     AnyValue value;
-    try {
-        value = vm->topLevelStackValue();
-    }
-    catch (std::string & e) {
-        qDebug() << e.c_str();
-    }
+    value = vm->topLevelStackValue();
     VMMutex_->unlock();
     QVariant result;
     if (value.isValid()) {

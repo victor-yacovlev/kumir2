@@ -701,15 +701,16 @@ static RulesLine parseRulesLine(const QString & line) {
         const QStringList caps = rxRule.capturedTexts();
         bool ok;
         result.priority = caps[1].toDouble(&ok);
-        if (!ok)
-            throw QString::fromLatin1("Wrong priority at line: %1").arg(line);
+        if (!ok) {
+            qWarning() << QString::fromLatin1("Wrong priority at line: %1").arg(line);
+        }
         result.leftPart = caps[2].simplified();
         result.rightPart = caps[3].simplified();
         if (caps.size()>4)
             result.data = caps[4].mid(1).simplified();
     }
     else {
-        throw QString::fromLatin1("Wrong rule line: %1").arg(line);
+        qWarning() << QString::fromLatin1("Wrong rule line: %1").arg(line);
     }
     return result;
 }
@@ -754,13 +755,9 @@ void prepareRules(const QStringList &files, QString &out)
     std::deque<QString> ruleLines = readAllRulesFiles(files);
 
     std::list<RulesLine> rules;
-    try {
-        for (std::deque<QString>::iterator it=ruleLines.begin(); it!=ruleLines.end(); ++it) {
-            rules.push_back(parseRulesLine(*it));
-        }
-    }
-    catch (const QString & error) {
-        qDebug() << "ERROR PARSING RULES: " << error;
+
+    for (std::deque<QString>::iterator it=ruleLines.begin(); it!=ruleLines.end(); ++it) {
+        rules.push_back(parseRulesLine(*it));
     }
 
     insertEpsilonRules(rules);

@@ -882,46 +882,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 ) const
 {
     QList<Shared::Analizer::Suggestion> result;
-    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);
-    // 1. Suggest locals and globals if any applicable
-    if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
-        QList<AST::VariablePtr> vars;
-        if (contextAlgorithm)
-            vars += contextAlgorithm->impl.locals;
-        if (contextModule)
-            vars += contextModule->impl.globals;
-
-        foreach (AST::VariablePtr  var , vars) {
-            if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
-                Shared::Analizer::Suggestion suggestion;
-                if (contextAlgorithm
-                        && contextAlgorithm->impl.locals.contains(var)
-                        && contextAlgorithm->header.name==var->name
-                        )
-                {
-                    // return-value
-                    suggestion.value = QString::fromUtf8("знач");
-                    suggestion.kind = Shared::Analizer::Suggestion::LocalVariable;
-                    suggestion.description = var->baseType.kind==AST::TypeUser
-                            ? var->baseType.name
-                            : lexer_->classNameByBaseType(var->baseType.kind);
-                    suggestion.description += " "+suggestion.value;
-                }
-                else {
-                    // local or global variable
-                    suggestion.value = var->name;
-                    suggestion.description = var->baseType.kind==AST::TypeUser
-                            ? var->baseType.name
-                            : lexer_->classNameByBaseType(var->baseType.kind);
-                    suggestion.description += " " + var->name;
-                    suggestion.kind = contextModule->impl.globals.contains(var)
-                            ? Shared::Analizer::Suggestion::GlobalVariable
-                            : Shared::Analizer::Suggestion::LocalVariable;
-                }
-                result.push_back(suggestion);
-            }
-        }
-    }
+    AST::ModulePtr currentModule = analizer_->findModuleByLine(lineNo);   
 
     // 2. Suggest algorithms if any applicable
     if (minimumDimension==0
@@ -936,7 +897,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
         if (contextModule)
             algs += contextModule->impl.algorhitms;
         foreach (const AST::ModulePtr  mod , ast_->modules) {
-            if (mod->isEnabledFor(currentModule))
+            if (mod->isEnabledFor(currentModule) || alwaysEnabledModules_.contains(mod->header.name))
                 algs += mod->header.algorhitms;
         }
 
@@ -988,6 +949,46 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     suggestion.description += ")";
                 }
                 suggestion.kind = Shared::Analizer::Suggestion::Function;
+                result.push_back(suggestion);
+            }
+        }
+    }
+
+    // 1. Suggest locals and globals if any applicable
+    if (!typeIsKnown || baseType.kind!=AST::TypeNone) {
+        QList<AST::VariablePtr> vars;
+        if (contextAlgorithm)
+            vars += contextAlgorithm->impl.locals;
+        if (contextModule)
+            vars += contextModule->impl.globals;
+
+        foreach (AST::VariablePtr  var , vars) {
+            if (isSuggestionValueApplicable(var, baseType, minimumDimension, accessType)) {
+                Shared::Analizer::Suggestion suggestion;
+                if (contextAlgorithm
+                        && contextAlgorithm->impl.locals.contains(var)
+                        && contextAlgorithm->header.name==var->name
+                        )
+                {
+                    // return-value
+                    suggestion.value = QString::fromUtf8("знач");
+                    suggestion.kind = Shared::Analizer::Suggestion::LocalVariable;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer_->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " "+suggestion.value;
+                }
+                else {
+                    // local or global variable
+                    suggestion.value = var->name;
+                    suggestion.description = var->baseType.kind==AST::TypeUser
+                            ? var->baseType.name
+                            : lexer_->classNameByBaseType(var->baseType.kind);
+                    suggestion.description += " " + var->name;
+                    suggestion.kind = contextModule->impl.globals.contains(var)
+                            ? Shared::Analizer::Suggestion::GlobalVariable
+                            : Shared::Analizer::Suggestion::LocalVariable;
+                }
                 result.push_back(suggestion);
             }
         }
@@ -1190,13 +1191,8 @@ void SyntaxAnalizer::buildTables(bool isInternalBuild)
             if (!programFile.is_open()) {
                 error = _("Can't open module file");
             }
-            else {
-                try {
-                    Bytecode::bytecodeFromDataStream(programFile, programData);
-                }
-                catch (...) {
-                    error = _("Module file is damaged");
-                }
+            else {                
+                Bytecode::bytecodeFromDataStream(programFile, programData);
             }
             programFile.close();
             if (error.length()==0) {
@@ -1804,13 +1800,8 @@ AST::ModulePtr SyntaxAnalizer::loadKodFile(const QString &name, QString &error)
     if (!programFile.is_open()) {
         error = _("Can't open module file");
     }
-    else {
-        try {
-            Bytecode::bytecodeFromDataStream(programFile, programData);
-        }
-        catch (...) {
-            error = _("Module file is damaged");
-        }
+    else {        
+        Bytecode::bytecodeFromDataStream(programFile, programData);
     }
     programFile.close();
     AST::ModulePtr result;
@@ -2059,7 +2050,7 @@ void SyntaxAnalizer::parseOutput(int str)
             expr3->baseType.kind = AST::TypeInteger;
             expr3->dimension = 0;
             expr3->kind = AST::ExprConst;
-            expr3->constant = QVariant(6);
+            expr3->constant = QVariant(0);
         }
         if (expr->baseType.kind==AST::TypeUser) {
             bool canConvert = makeCustomUnaryOperation<bool>(lexer_->outputLexemName(), expr, st.mod);
@@ -2727,9 +2718,32 @@ void SyntaxAnalizer::parseAssignment(int str)
             return;
         }
         QString err;
-        if (leftExpr->baseType!=rightExpr->baseType) {
-            AST::VariableBaseType a = leftExpr->baseType.kind;
-            AST::VariableBaseType b = rightExpr->baseType.kind;
+        const AST::Type & aa = leftExpr->baseType;
+        const AST::Type & bb = rightExpr->baseType;
+        const AST::VariableBaseType a = aa.kind;
+        const AST::VariableBaseType b = bb.kind;
+        if (aa != bb && (AST::TypeUser == a || AST::TypeUser == b)) {
+            AST::ModulePtr  convMod;
+            AST::AlgorithmPtr  convAlg;
+            if (findConversionAlgorithm(bb, aa, convMod, convAlg, st.mod)) {
+                AST::ExpressionPtr  convExpr = AST::ExpressionPtr(new AST::Expression);
+                convExpr->kind = AST::ExprFunctionCall;
+                convExpr->function = convAlg;
+                convExpr->operands.push_back(rightExpr);
+                convExpr->baseType = a;
+                convExpr->dimension = leftExpr->dimension;
+                rightExpr = convExpr;
+            }
+            else {
+                const QString aName = AST::TypeUser == a
+                        ? aa.name : lexer_->classNameByBaseType(a);
+                const QString bName = AST::TypeUser == b
+                        ? bb.name : lexer_->classNameByBaseType(b);
+
+                err = _("Can't %1:=%2", aName, bName);
+            }
+        }
+        else if (aa != bb) {
             if (a==AST::TypeInteger) {
                 if (b==AST::TypeReal) {
                     bool isRealConstant = false;
@@ -2835,25 +2849,6 @@ void SyntaxAnalizer::parseAssignment(int str)
                 }
                 else if (b==AST::TypeUser) {
                     err = _("Can't %1:=%2", lexer_->classNameByBaseType(leftExpr->baseType.kind), rightExpr->baseType.name);
-                }
-            }
-            else if (a==AST::TypeUser) {
-                AST::ModulePtr  convMod;
-                AST::AlgorithmPtr  convAlg;
-                if (findConversionAlgorithm(rightExpr->baseType, leftExpr->baseType, convMod, convAlg, st.mod)) {
-                    AST::ExpressionPtr  convExpr = AST::ExpressionPtr(new AST::Expression);
-                    convExpr->kind = AST::ExprFunctionCall;
-                    convExpr->function = convAlg;
-                    convExpr->operands.push_back(rightExpr);
-                    convExpr->baseType = a;
-                    convExpr->dimension = leftExpr->dimension;
-                    rightExpr = convExpr;
-                }
-                else if (b!=AST::TypeUser) {
-                    err = _("Can't %1:=%2", leftExpr->baseType.name, lexer_->classNameByBaseType(rightExpr->baseType.kind));
-                }
-                else if (b==AST::TypeUser) {
-                    err = _("Can't %1:=%2", leftExpr->baseType.name, rightExpr->baseType.name);
                 }
             }
         } // if (leftExpr->type!=rightExpr->type)

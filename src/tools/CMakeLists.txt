@@ -16,9 +16,7 @@ endif()
 add_subdirectory(run)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pictomir2course")
-    if(NOT APPLE AND NOT WIN32)
-	add_subdirectory(pictomir2course)
-    endif()
+    add_subdirectory(pictomir2course)
 endif()
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docbook2latex")

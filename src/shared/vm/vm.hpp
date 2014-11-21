@@ -35,11 +35,10 @@ public /*typedefs*/:
 
 public /*methods*/:
     /** Set parsed Kumir bytecode */
-    inline void setProgram(const Bytecode::Data & data, bool isMain, const String & filename);
+    inline void setProgram(const Bytecode::Data & data, bool isMain, const String & filename, Kumir::String * error);
     inline void setProgramDirectory(const Kumir::String & path) { programDirectory_.clear(); programDirectory_ = path; }
 
     inline bool loadProgramFromBinaryBuffer(std::list<char> & stream, bool isMain, const String & filename, String & error);
-    inline bool loadProgramFromTextBuffer(const std::string & stream, bool isMain, const String & filename, String & error);
 
     /** Set entry point to Main or Testing algorithm */
     inline void setEntryPoint(EntryPoint ep) { entryPoint_ = ep; }
@@ -386,7 +385,7 @@ void KumirVM::setFunctor(Functor * functor)
     }
 }
 
-void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const String & filename)
+void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const String & filename, Kumir::String * error)
 {
     if (isMain) {
         moduleContexts_.clear();
@@ -471,19 +470,24 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                         || !externalfile.is_open()
                    )
                 {
-                    int error = errno;
+                    int errorCode = errno;
                     Kumir::String errorMessage = Kumir::Core::fromUtf8("Не могу загрузить внешний исполнитель: ")
                             +modulePath
                             +Kumir::Core::fromUtf8(" (ошибка ")
-                            +Kumir::Converter::sprintfInt(error,10,0,0)
+                            +Kumir::Converter::sprintfInt(errorCode,10,0,0)
                             +Kumir::Core::fromAscii(") ")
                             ;
-                    throw errorMessage;
+                    if (error) {
+                        error->assign(errorMessage);
+                    }
+                    return;
                 }
                 Bytecode::Data programData;
                 Bytecode::bytecodeFromDataStream(externalfile, programData);
                 externalfile.close();
-                setProgram(programData, false, e.fileName);
+                setProgram(programData, false, e.fileName, error);
+                if (error && error->length())
+                    return;
             }
             uint32_t key = 0x00000000;
             uint32_t alg = e.algId;
@@ -510,7 +514,10 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                         Kumir::Core::fromUtf8("\" нет алгоритма \"")+
                         e.name+
                         Kumir::Core::fromAscii("\"");
-                throw errorMessage;
+                if (error) {
+                    error->assign(errorMessage);
+                }
+                return;
             }
             ExternReference reference;
             reference.platformDependent = false;
@@ -535,9 +542,13 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                         makeCanonicalName(e.fileName),
                         encodingError
                         );
-            moduleContexts_[currentModuleContext].externInits.push_back(reference);
-            if (externalModuleLoad_)
-                (*externalModuleLoad_)(reference.moduleAsciiName, reference.moduleLocalizedName);
+            moduleContexts_[currentModuleContext].externInits.push_back(reference);            
+            if (externalModuleLoad_) {
+                (*externalModuleLoad_)(reference.moduleAsciiName, reference.moduleLocalizedName, error);
+                if (error && error->length() > 0) {
+                    return;
+                }
+            }
         }
         else if (e.type==EL_EXTERN) {
             ExternReference reference;
@@ -562,8 +573,12 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
                 std::deque< std::string > algorithms =
                         (*externalModuleLoad_)(
                             reference.moduleAsciiName,
-                            reference.moduleLocalizedName
+                            reference.moduleLocalizedName,
+                            error
                             );
+                if (error && error->length() > 0) {
+                    return;
+                }
             }
         }
         else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_BELOWMAIN || e.type==EL_TESTING) {
@@ -912,16 +927,8 @@ void KumirVM::reset()
         {
             const ModuleRef & ref = * it;
             const std::string & moduleAsciiName = ref.first;
-            const Kumir::String & moduleLocalizedName = ref.second;
-            try {
-                (*externalModuleReset_)(moduleAsciiName, moduleLocalizedName);
-            }
-            catch (const std::string & msg) {
-                error_ = Kumir::Core::fromUtf8(msg);
-            }
-            catch (const Kumir::String & msg) {
-                error_ = msg;
-            }
+            const Kumir::String & moduleLocalizedName = ref.second;            
+            (*externalModuleReset_)(moduleAsciiName, moduleLocalizedName, &error_);
         }
     }
 
@@ -1214,17 +1221,10 @@ void KumirVM::do_call(uint8_t mod, uint16_t alg)
                 if (stacksMutex_) stacksMutex_->unlock();
                 AnyValue algResult;
                 Kumir::String localError;
-                try {
-                    algResult = (*externalModuleCall_)(
-                                moduleAsciiName, moduleLocalizedName, algKey, args
-                                );
-                }
-                catch (const std::string & error) {
-                    localError = Kumir::Core::fromUtf8(error);
-                }
-                catch (const Kumir::String & error) {
-                    localError = error;
-                }
+                algResult = (*externalModuleCall_)(
+                            moduleAsciiName, moduleLocalizedName, algKey, args, &localError
+                            );
+
                 if (stacksMutex_) stacksMutex_->lock();
                 if (localError.length()>0) {
                     if (error_.length()==0)
@@ -1937,15 +1937,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         }
         if (input_&& !fileIO && !Kumir::Files::overloadedStdIn() && !consoleInputBuffer_) {
             // input functor works like input operator here
-            try {
-                hasInput = (*input_)(references);
-            }
-            catch (const String & message) {
-                error_ = message;
-            }
-            catch (const std::string & message) {
-                error_ = Kumir::Core::fromUtf8(message);
-            }
+            hasInput = (*input_)(references, &error_);
         }
         else {
             hasInput = true;
@@ -2012,12 +2004,9 @@ void KumirVM::do_specialcall(uint16_t alg)
                     svalue.push_back('"');
                 }
                 else if (var.baseType()==VT_record) {
-                    try {
-                        svalue = (*customTypeToString_)(var);
-                    }
-                    catch (...) {
-                        // do nothing for margin value
-                    }
+                    String localError;
+                    svalue = (*customTypeToString_)(var, &localError);
+
                 }
                 else {
                     svalue = var.value().toString();
@@ -2059,22 +2048,14 @@ void KumirVM::do_specialcall(uint16_t alg)
             std::pair<int, int> format;
             format.second = valuesStack_.pop().toInt();
             format.first = valuesStack_.pop().toInt();
-            formats.push_back(format);
+            formats.push_front(format);
             const Variable & ref = valuesStack_.pop();
-            values.push_back(ref);
+            values.push_front(ref);
         }
         if (stacksMutex_) stacksMutex_->unlock();
         if (output_ && !fileIO && !Kumir::Files::overloadedStdOut()) {
             // output functor works like output operator here
-            try {
-                (*output_)(values, formats);
-            }
-            catch (const String & message) {
-                error_ = message;
-            }
-            catch (const std::string & message) {
-                error_ = Kumir::Core::fromUtf8(message);
-            }
+            (*output_)(values, formats, &error_);
         }
         else {
             for (int i=0; i<varsCount; i++) {
@@ -2229,15 +2210,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         int localId = argsCount; // Already removed from stack
         Variable ref = contextsStack_.top().locals[localId].toReference();
         if (stacksMutex_) stacksMutex_->unlock();
-        try {
-            (*getMainArgument_)(ref);
-        }
-        catch (const String & message) {
-            error_ = message;
-        }
-        catch (const std::string & message) {
-            error_ = Kumir::Core::fromUtf8(message);
-        }
+        (*getMainArgument_)(ref, &error_);
     }
     else if (alg==0xBB02) {
         if (stacksMutex_) stacksMutex_->lock();
@@ -2245,15 +2218,8 @@ void KumirVM::do_specialcall(uint16_t alg)
         int localId = argsCount; // Already removed from stack
         Variable ref = contextsStack_.top().locals[localId].toReference();
         if (stacksMutex_) stacksMutex_->unlock();
-        try {
-            (*returnMainValue_)(ref);
-        }
-        catch (const String & message) {
-            error_ = message;
-        }
-        catch (const std::string & message) {
-            error_ = Kumir::Core::fromUtf8(message);
-        }
+        (*returnMainValue_)(ref, &error_);
+
     }
 }
 
@@ -2426,12 +2392,8 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
             svalue = value.toBool()? YES : NO;
         }
         else if (t==VT_record) {
-            try {
-                svalue = (*customTypeToString_)(variable);
-            }
-            catch (...) {
-                // do nothing in case of margin value print
-            }
+            Kumir::String localError;
+            svalue = (*customTypeToString_)(variable, &localError);
         }
         if (debugHandler_ && svalue.length()>0) {
             const String message = name+Char('=')+svalue;
@@ -3299,16 +3261,12 @@ void KumirVM::do_halt(uint16_t)
 {
     if (stacksMutex_) stacksMutex_->lock();
     static const String STOP = Kumir::Core::fromUtf8("\nСТОП.");
-    static std::deque< std::pair<int,int> > formats;
+    std::deque< std::pair<int,int> > formats;
     formats.push_back(std::pair<int,int>(0,0));
-    static std::deque<Variable> values;
+    std::deque<Variable> values;
     values.push_back(Variable(STOP));
-    try {
-        (*output_)(values, formats);
-    }
-    catch(...) {
-        // it is not an error while halting program
-    }
+    String localError;
+    (*output_)(values, formats, &localError);
     contextsStack_.reset();
     if (stacksMutex_) stacksMutex_->unlock();
 }
@@ -3380,59 +3338,16 @@ bool KumirVM::loadProgramFromBinaryBuffer(std::list<char> &stream, bool isMain, 
     }
     Bytecode::Data d;
     bool ok;
-    try {
-        Bytecode::bytecodeFromDataStream(stream, d);
-        ok = true;
-    }
-    catch (const String & e) {
-        error = e;
-        ok = false;
-    }
-    catch (const std::string & e) {
-        error = Kumir::Core::fromUtf8(e);
-        ok = false;
-    }
-    if (ok) {
-        try {
-            setProgram(d, isMain, filename);
-            ok = true;
-        }
-        catch (const String & e) {
-            error = e;
-            ok = false;
-        }
-        catch (const std::string & e) {
-            error = Kumir::Core::fromUtf8(e);
-            ok = false;
-        }
-    }
+
+    Bytecode::bytecodeFromDataStream(stream, d);
+    ok = true;
+
+    setProgram(d, isMain, filename, &error);
+    ok = error.length() == 0;
+
     return ok;
 }
 
-bool KumirVM::loadProgramFromTextBuffer(const std::string &buffer, bool isMain, const String & filename, String & error)
-{
-    breakpointsTable_.reset();
-    error.clear();
-    Bytecode::Data d;
-    bool ok;
-    std::istringstream stream(buffer);
-    try {
-        Bytecode::bytecodeFromTextStream(stream, d);
-        ok = true;
-    }
-    catch (String e) {
-        error = e;
-        ok = false;
-    }
-    catch (std::string e) {
-        error = Kumir::Core::fromAscii(e);
-        ok = false;
-    }
-    if (ok) {
-        setProgram(d, isMain, filename);
-    }
-    return ok;
-}
 
 int KumirVM::contextByIds(int moduleId, int algorhitmId) const
 {

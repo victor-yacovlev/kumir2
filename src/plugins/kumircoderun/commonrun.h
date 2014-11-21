@@ -6,6 +6,14 @@
 #include "vm/vm_abstract_handlers.h"
 #include "interfaces/actorinterface.h"
 
+#ifndef _override
+#if defined(_MSC_VER)
+#   define _override
+#else
+#   define _override override
+#endif
+#endif
+
 namespace KumirCodeRun {
 namespace Common {
 
@@ -37,8 +45,8 @@ public:
             const std::string & asciiModuleName,
             const String & moduleName,
             const uint16_t algKey,
-            VariableReferencesList alist
-            )  /* throws std::string, Kumir::String */ ;
+            VariableReferencesList alist, Kumir::String * error
+            )  _override;
     ~ExternalModuleCallFunctor();
     void checkForActorConnected(const std::string & asciiModuleName);
 
@@ -56,8 +64,7 @@ class CustomTypeToStringFunctor
         : public VM::CustomTypeToStringFunctor
 {
 public:
-    String operator()(const Variable & variable)
-        /*throws Kumir::String, std::string*/;
+    String operator()(const Variable & variable, Kumir::String * error) _override;
 };
 
 class CustomTypeFromStringFunctor
@@ -69,8 +76,8 @@ public:
                 const std::string & moduleAsciiName,
                 const String & moduleName,
                 const std::string & typeAsciiName,
-                const String & typeName
-                ) /*throws Kumir::String, std::string*/;
+                const String & typeName, Kumir::String * error
+                ) _override;
 };
 
 }}

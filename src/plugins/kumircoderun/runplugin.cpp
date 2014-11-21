@@ -720,12 +720,11 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
                 RunnableProgram program;
                 program.executableData = f.readAll();
                 program.executableFileName = fileName;
-                try {
-                    loadProgram(program);
-                }
-                catch (const std::wstring & message) {
-                    return QString::fromStdWString(message);
-                }
+                loadProgram(program);
+
+//                if (localError.length() > 0) {
+//                    return QString::fromStdWString(message);
+//                }
             }
             if (pRun_->error().length() > 0) {
                 return pRun_->error();

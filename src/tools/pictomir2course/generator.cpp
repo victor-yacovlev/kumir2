@@ -182,7 +182,9 @@ string generator::create_kum_data(const program_t &program)
 string generator::create_kum_algorithm(const algorithm_t &algorithm,
                                        const size_t algorithm_index)
 {
-    static const char * Commands = " АБВГДЕ";
+    static const string Commands[] = {
+        " ", "А", "Б", "В", "Г", "Д", "Е"
+    };
     const string title = algorithm_index == 0u
             ? string("Главный")
             : string("Команда ") + Commands[algorithm_index];
@@ -218,7 +220,7 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
         if (algorithm.condition == COND_WAS_ACTION) {
             beg += "клетка закрашена";
         }
-        if (algorithm.condition == COND_NOT_WALL) {
+        if (algorithm.condition == COND_NOT_ACTION) {
             beg += "клетка не закрашена";
         }
         beg += " то\n";
@@ -251,7 +253,7 @@ string generator::create_kum_algorithm(const algorithm_t &algorithm,
     if (body.length() == 0)
         body = "\n";
     string result = "алг " + title + "|@protected\n" +
-            beg + body + end + "|@protected";
+            beg + body + end + "|@protected\n";
     return result;
 }
 
@@ -330,8 +332,11 @@ string generator::create_desc_data(const task_t &task, const size_t task_index)
     const string title = "Задание&nbsp;" + lexical_cast<string>(1 + task_index);
     string result = string(
                 "<html>\n"
-                "   <meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">\n"
-                "   <head><title>{%title%}</title></head>\n"
+                "   <head>\n"
+                "       <title>{%title%}</title>\n"
+                "       <meta charset=\"utf-8\"/>\n"
+                "       <meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\">\n"
+                "   </head>\n"
                 "   <body>\n"
                 "       <p>{%ext_title%}</p>\n"
                 "       {%hint%}\n"

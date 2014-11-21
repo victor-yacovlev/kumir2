@@ -181,25 +181,19 @@ int main(int argc, char *argv[])
 #endif
     std::string programName;
     std::deque<std::string> args;
-    bool forceTextForm = false;
     bool testingMode = false;
     bool quietMode = false;
     for (int i=1; i<argc; i++) {
         std::string  arg(argv[i]);
         if (arg.length()==0)
             continue;
-        static const std::string minus_s("-s");
-        static const std::string minus_S("-S");
         static const std::string minus_ansi("-ansi");
         static const std::string minus_t("-t");
         static const std::string minus_minus_testing("--test");
         static const std::string minus_p("-p");
         static const std::string minus_minus_pipe("--pipe");
         if (programName.empty()) {
-            if (arg==minus_s || arg==minus_S) {
-                forceTextForm = true;
-            }
-            else if (arg==minus_t || arg==minus_minus_testing) {
+            if (arg==minus_t || arg==minus_minus_testing) {
                 testingMode = true;
             }
             else if (arg==minus_p || arg==minus_minus_pipe) {
@@ -226,26 +220,10 @@ int main(int argc, char *argv[])
         return 1;
     }
     const std::string suffix = programName.substr(programName.length()-2);
-    bool textForm = suffix=="ks" || forceTextForm;
     Bytecode::Data programData;
-    try {
-        if (textForm)
-            Bytecode::bytecodeFromTextStream(programFile, programData);
-        else
-            Bytecode::bytecodeFromDataStream(programFile, programData);
-    }
-    catch (std::string e) {
-        std::cerr << "Can't load program file: " << e << std::endl;
-        return 2;
-    }
-    catch (String e) {
-        std::cerr << "Can't load program file: " << Coder::encode(LOCALE, e, encodingError) << std::endl;
-        return 2;
-    }
-    catch (...) {
-        std::cerr << "Can't load program file" << std::endl;
-        return 2;
-    }
+
+    Bytecode::bytecodeFromDataStream(programFile, programData);
+
     programFile.close();
 
     // Check if it's possible to run using regular runtime
@@ -291,19 +269,11 @@ int main(int argc, char *argv[])
 
     static const String LOAD_ERROR = Core::fromUtf8("ОШИБКА ЗАГРУЗКИ ПРОГРАММЫ: ");
 
-    try {
-        vm.setProgram(programData, true, Coder::decode(LOCALE, programName, encodingError));
-    }
-    catch (String & msg) {
-        String message = LOAD_ERROR + msg;
-        return showErrorMessage(message, 126);
-    }
-    catch (std::string & msg) {
-        String message = LOAD_ERROR + Core::fromAscii(msg);
-        return showErrorMessage(message, 126);
-    }
-    catch (...) {
-        String message = LOAD_ERROR;
+    String setProgramError;
+    vm.setProgram(programData, true, Coder::decode(LOCALE, programName, encodingError), &setProgramError);
+
+    if (setProgramError.length() > 0) {
+        const String message = LOAD_ERROR + setProgramError;
         return showErrorMessage(message, 126);
     }
 

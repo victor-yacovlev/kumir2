@@ -2,6 +2,9 @@
 #include "terminal_plane.h"
 #include "terminal_onesession.h"
 
+#include "iosettingseditorpage.h"
+
+#include "extensionsystem/settings.h"
 #include "extensionsystem/pluginmanager.h"
 
 namespace Terminal {
@@ -19,9 +22,9 @@ Term::Term(QWidget *parent) :
     l->setContentsMargins(0,0,0,0);
     l->setSpacing(0);
     setLayout(l);
-    m_plane = new Plane(this);
-    m_plane->installEventFilter(this);
-    l->addWidget(m_plane, 1, 1, 1, 1);
+    plane_ = new Plane(this);
+    plane_->installEventFilter(this);
+    l->addWidget(plane_, 1, 1, 1, 1);
     sb_vertical = new QScrollBar(Qt::Vertical, this);
 //    sb_vertical->setFixedWidth(qMin(10, sb_vertical->width()));
 //    static const char * ScrollBarCSS = ""
@@ -74,19 +77,19 @@ Term::Term(QWidget *parent) :
     a_clear->setEnabled(false);
     connect(a_clear, SIGNAL(triggered()), this, SLOT(clear()));
 
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
 
-    connect(sb_vertical,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
-    connect(sb_horizontal,SIGNAL(valueChanged(int)),m_plane, SLOT(update()));
+    connect(sb_vertical,SIGNAL(valueChanged(int)),plane_, SLOT(update()));
+    connect(sb_horizontal,SIGNAL(valueChanged(int)),plane_, SLOT(update()));
 
 
-    connect(m_plane, SIGNAL(inputTextChanged(QString)),
+    connect(plane_, SIGNAL(inputTextChanged(QString)),
             this, SLOT(handleInputTextChanged(QString)));
 
-    connect(m_plane, SIGNAL(inputCursorPositionChanged(quint16)),
+    connect(plane_, SIGNAL(inputCursorPositionChanged(quint16)),
             this, SLOT(handleInputCursorPositionChanged(quint16)));
 
-    connect(m_plane, SIGNAL(inputFinishRequest()),
+    connect(plane_, SIGNAL(inputFinishRequest()),
             this, SLOT(handleInputFinishRequested()));
 
 }
@@ -98,7 +101,7 @@ bool Term::isEmpty() const
 
 QSize Term::minimumSizeHint() const
 {
-    QSize result = m_plane->minimumSizeHint();
+    QSize result = plane_->minimumSizeHint();
     result.rwidth() = qMax(result.width(), 400);
     if (sb_vertical->isVisible()) {
         result.rwidth() += sb_vertical->width();
@@ -127,7 +130,7 @@ void Term::resizeEvent(QResizeEvent *e)
 
 bool Term::isActiveComponent() const
 {
-    return m_plane->hasFocus();
+    return plane_->hasFocus();
 }
 
 void Term::paintEvent(QPaintEvent *e)
@@ -139,7 +142,7 @@ void Term::paintEvent(QPaintEvent *e)
     p.end();
     QWidget::paintEvent(e);
     p.begin(this);
-    const QBrush br = m_plane->hasFocus()
+    const QBrush br = plane_->hasFocus()
             ? palette().brush(QPalette::Highlight)
             : palette().brush(QPalette::Window);
     p.setPen(QPen(br, 3));
@@ -153,7 +156,7 @@ bool Term::eventFilter(QObject *obj, QEvent *evt)
 {
     if (obj == sb_vertical && evt->type() == QEvent::Paint) {
         QPainter p(sb_vertical);
-        const QBrush br = m_plane->hasFocus()
+        const QBrush br = plane_->hasFocus()
                 ? palette().brush(QPalette::Highlight)
                 : palette().brush(QPalette::Window);
         p.setPen(QPen(br, 3));
@@ -163,7 +166,7 @@ bool Term::eventFilter(QObject *obj, QEvent *evt)
                    sb_vertical->width()-1, sb_vertical->height()-1);
         p.end();
     }
-    else if (obj == m_plane) {
+    else if (obj == plane_) {
         if (evt->type() == QEvent::FocusIn || evt->type() == QEvent::FocusOut) {
             sb_vertical->repaint();
         }
@@ -220,13 +223,13 @@ void Term::handleInputFinishRequested()
 void Term::focusInEvent(QFocusEvent *e)
 {
     QWidget::focusInEvent(e);
-    m_plane->setFocus();
+    plane_->setFocus();
 }
 
 void Term::focusOutEvent(QFocusEvent *e)
 {
     QWidget::focusOutEvent(e);
-    m_plane->clearFocus();
+    plane_->clearFocus();
 }
 
 void Term::clear()
@@ -235,7 +238,7 @@ void Term::clear()
         sessions_[i]->deleteLater();
     }
     sessions_.clear();
-    m_plane->update();
+    plane_->update();
     a_saveAll->setEnabled(false);
     a_saveLast->setEnabled(false);
     a_editLast->setEnabled(false);
@@ -244,32 +247,37 @@ void Term::clear()
 
 void Term::start(const QString & fileName)
 {
-    int fixedWidth = -1;
+    using CoreGUI::IOSettingsEditorPage;
+    const int fixedWidth = settings_ &&
+            settings_->value(IOSettingsEditorPage::UseFixedWidthKey, IOSettingsEditorPage::UseFixedWidthDefaultValue).toBool()
+            ? settings_->value(IOSettingsEditorPage::WidthSizeKey, IOSettingsEditorPage::WidthSizeDefaultValue).toInt()
+            : -1;
+
     OneSession * session = new OneSession(
                 fixedWidth,
                 fileName.isEmpty() ? tr("New Program") : QFileInfo(fileName).fileName(),
-                m_plane
+                plane_
                 );
-    session->relayout(m_plane->width(), 0, true);
-    connect(session, SIGNAL(updateRequest()), m_plane, SLOT(update()));
+    session->relayout(plane_->width(), 0, true);
+    connect(session, SIGNAL(updateRequest()), plane_, SLOT(update()));
     sessions_ << session;
     connect (sessions_.last(), SIGNAL(message(QString)),
              this, SIGNAL(message(QString)), Qt::DirectConnection);
     connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
              this, SLOT(handleInputDone(QVariantList)));
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
-    m_plane->update();
+    plane_->update();
 }
 
 void Term::finish()
 {
     if (sessions_.isEmpty())
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
 
     sessions_.last()->finish();
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
 }
@@ -277,21 +285,21 @@ void Term::finish()
 void Term::terminate()
 {
     if (sessions_.isEmpty())
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
     sessions_.last()->terminate();
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
-    m_plane->setInputMode(false);
+    plane_->setInputMode(false);
 }
 
 void Term::output(const QString & text)
 {
     emit showWindowRequest();
     if (sessions_.isEmpty())
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
     sessions_.last()->output(text, CS_Output);
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
 }
@@ -300,9 +308,9 @@ void Term::outputErrorStream(const QString & text)
 {
     emit showWindowRequest();
     if (sessions_.isEmpty())
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
     sessions_.last()->output(text, CS_Error);
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
 }
@@ -311,7 +319,7 @@ void Term::input(const QString & format)
 {
     emit showWindowRequest();
     if (sessions_.isEmpty()) {
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
         connect (sessions_.last(), SIGNAL(inputDone(QVariantList)),
                  this, SIGNAL(inputFinished(QVariantList)));
         connect (sessions_.last(), SIGNAL(message(QString)),
@@ -325,18 +333,18 @@ void Term::input(const QString & format)
     inputValues_.clear();
 
     lastSession->input(format);
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
-    m_plane->setInputMode(true);
+    plane_->setInputMode(true);
 
-    m_plane->setFocus();
-    m_plane->update();
+    plane_->setFocus();
+    plane_->update();
 }
 
 void Term::handleInputDone(const QVariantList & values)
 {
-    m_plane->setInputMode(false);
+    plane_->setInputMode(false);
     inputValues_ += values;
     if (inputValues_.size() < inputFormats_.size()) {
         QStringList formats = inputFormats_;
@@ -346,24 +354,36 @@ void Term::handleInputDone(const QVariantList & values)
         const QString format = formats.join(";");
         OneSession * lastSession = sessions_.last();
         lastSession->input(format);
-        m_plane->updateScrollBars();
+        plane_->updateScrollBars();
         if (sb_vertical->isEnabled())
             sb_vertical->setValue(sb_vertical->maximum());
-        m_plane->setInputMode(true);
-        m_plane->setFocus();
+        plane_->setInputMode(true);
+        plane_->setFocus();
     }
     else {
         emit inputFinished(inputValues_);
     }
 }
 
+ExtensionSystem::SettingsPtr Term::settings() const
+{
+    return settings_;
+}
+
+void Term::setSettings(const ExtensionSystem::SettingsPtr &settings)
+{
+    settings_ = settings;
+    plane_->update();
+}
+
+
 void Term::error(const QString & message)
 {
     emit showWindowRequest();
     if (sessions_.isEmpty())
-        sessions_ << new OneSession(-1,"unknown", m_plane);
+        sessions_ << new OneSession(-1,"unknown", plane_);
     sessions_.last()->error(message);
-    m_plane->updateScrollBars();
+    plane_->updateScrollBars();
     if (sb_vertical->isEnabled())
         sb_vertical->setValue(sb_vertical->maximum());
 }

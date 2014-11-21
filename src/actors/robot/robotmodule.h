@@ -394,7 +394,7 @@ namespace ActorRobot {
         uint fieldSize;
         uint robo_x,robo_y;
         QWidget *Parent;
-        QPen BortLine,StLine,showLine;
+        QPen BortLine,StLine,showLine,WallLine;
        // CellDialog* cellDialog;
         bool WasEditFlag;
         //TOOLS
@@ -436,6 +436,7 @@ namespace ActorRobot {
         }
         void setWindowSize(const QSize newGeometry);
     public slots:
+        void handleDocked();
         void changeEditMode(bool state);
         void setDock(bool);
         void reloadSett(ExtensionSystem::SettingsPtr settings);
@@ -446,9 +447,9 @@ namespace ActorRobot {
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
         void wheelEvent ( QWheelEvent * event );
-       
+        void showEvent ( QShowEvent * event );
     private:
-        bool pressed,inDock;
+        bool pressed,inDock,firstShow;
         int pressX,pressY;
         RoboField* robotField;
         QToolButton * textEditBtn;
@@ -510,7 +511,7 @@ namespace ActorRobot {
         QWidget* mainWidget() const;
         QWidget* pultWidget() const;
         static ExtensionSystem::SettingsPtr robotSettings();
-   public slots:
+   public slots:        
         void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();

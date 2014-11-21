@@ -45,7 +45,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     const std::string & asciiModuleName,
     const String & moduleName,
     const uint16_t algKey,
-    VariableReferencesList alist
+    VariableReferencesList alist, Kumir::String * error
 )
 {
     // Clear state
@@ -67,7 +67,9 @@ AnyValue ExternalModuleCallFunctor::operator ()
         const String errorMessage = QString::fromUtf8(
                     "Нельзя вызвать алгоритм из %1: исполнитель не загружен"
                     ).arg(qModuleName).toStdWString();
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+        }
     }
 
     if (! actor) {
@@ -99,7 +101,10 @@ AnyValue ExternalModuleCallFunctor::operator ()
     // Check for runtime error
     if (errorMessage.length()>0) {
         const String message = errorMessage.toStdWString();
-        throw message;
+        if (error) {
+            error->assign(message);
+        }
+        return AnyValue();
     }
 
     // Get result
@@ -143,8 +148,7 @@ void ExternalModuleCallFunctor::handleActorSync()
 }
 
 
-String CustomTypeToStringFunctor::operator ()(const Variable & variable)
-        /*throws Kumir::String, std::string*/
+String CustomTypeToStringFunctor::operator ()(const Variable & variable, Kumir::String * error)
 {
     const QByteArray modAsciiName =
             QByteArray(variable.recordModuleAsciiName().c_str());
@@ -162,8 +166,11 @@ String CustomTypeToStringFunctor::operator ()(const Variable & variable)
         result = qString.toStdWString();
     }
     else {
-        throw QString::fromUtf8("Нет такого исполнителя: %1").arg(modLocalizedName)
-                .toStdWString();
+        if (error) {
+            error->assign(
+                QString::fromUtf8("Нет такого исполнителя: %1").arg(modLocalizedName).toStdWString()
+                        );
+        }
     }
     return result;
 }
@@ -173,8 +180,8 @@ AnyValue CustomTypeFromStringFunctor::operator ()(
         const std::string & moduleAsciiName,
         const String & moduleName,
         const std::string & typeAsciiName,
-        const String & typeName
-        ) /*throws Kumir::String, std::string*/
+        const String & typeName, Kumir::String * error
+        )
 {
     AnyValue result;
     QString errorMessage;
@@ -199,8 +206,8 @@ AnyValue CustomTypeFromStringFunctor::operator ()(
         errorMessage = QString::fromUtf8("Исполнитель не доступен: %1")
                 .arg(modName);
     }
-    if (errorMessage.length()>0)
-        throw errorMessage.toStdWString();
+    if (errorMessage.length()>0 && error)
+        error->assign(errorMessage.toStdWString());
     return result;
 }
 

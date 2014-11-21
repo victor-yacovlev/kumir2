@@ -33,8 +33,10 @@ public:
     void setPreferredItemSize(const QSize & size);
 public slots:
     void activate(const QSize & prefSize);
+    void processResize(const QSize &sz);
 signals:
     void visiblityRequest(bool visible, const QSize &size);
+    void resizeRequest(const QSize & size);
 protected:
     void registerWindowHere(class SecondaryWindow * window);
     void tabInserted(int index);

@@ -35,7 +35,15 @@ public:
     PluginSpec pluginSpec() const;
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
+
+    /** DEPRECATED
+     * Use
+     *   QList<QWidget*> settingsEditorPages()
+     * instead
+     */
     inline virtual QWidget* settingsEditorPage() { return 0; }
+
+    inline virtual QList<QWidget*> settingsEditorPages() { return QList<QWidget*>(); }
 
     inline static SettingsPtr pluginSettings() { return self->mySettings(); }
     SettingsPtr mySettings() const;

@@ -1,11 +1,7 @@
 project(pictomir2course)
 cmake_minimum_required(VERSION 2.8.3)
 
-find_package(Boost REQUIRED)
-
-include_directories(${Boost_INCLUDE_DIRS})
-
-if (MSVC)
+if(MSVC)
     # Use provided ZLib sources
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib)
     set(3RDPARTY_LIBS )
@@ -44,8 +40,9 @@ if(WIN32)
 endif()
 
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++03")
-    #   due to bug in boost 1.49 (Ticket #6785)
+    set(CMAKE_CXX_FLAGS "-fexceptions -std=c++03")
+    #   1. -fexceptions:    Exceptions is widely used by Boost
+    #   2. -std=c++03:      Due to bug in boost 1.49 (Ticket #6785)
 endif()
 
 add_executable(pictomir2course ${SOURCES} ${3RDPARTY_SOURCES})

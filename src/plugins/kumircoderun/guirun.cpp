@@ -12,9 +12,8 @@ namespace Gui {
 
 VM::ExternalModuleLoadFunctor::NamesList
 ExternalModuleLoadFunctor::operator ()(const std::string & moduleAsciiName,
-                                       const Kumir::String & moduleName)
+                                       const Kumir::String & moduleName , Kumir::String * error)
 {
-    // In GUI mode this functor should not throw in any case
     NamesList result;
     Shared::ActorInterface * actor = Util::findActor(moduleAsciiName);
     if (actor) {
@@ -59,7 +58,7 @@ InputFunctor::~InputFunctor()
     delete finishedMutex_;
 }
 
-bool InputFunctor::operator ()(VariableReferencesList references)
+bool InputFunctor::operator ()(VariableReferencesList references, Kumir::String * error)
 {
     // Clear state
     finishedFlag_ = false;
@@ -244,7 +243,7 @@ void OutputFunctor::setRunnerInstance(Run *runner)
 
 void OutputFunctor::operator ()(
         VariableReferencesList values,
-        FormatsList formats
+        FormatsList formats, Kumir::String * error
         )
 {
     Kumir::IO::OutputStream os;
@@ -268,9 +267,12 @@ void OutputFunctor::operator ()(
         else if (values[i].baseType()==VT_record) {
             String svalue;
             if (converter_) {
-                svalue = (*converter_)(values[i]);
+                svalue = (*converter_)(values[i], error);
                 Kumir::IO::writeString(os, svalue, format.first);
             }
+        }
+        if (error && error->length() > 0) {
+            return;
         }
     }
     QString data = QString::fromStdWString(os.getBuffer());
@@ -325,7 +327,7 @@ GetMainArgumentFunctor::~GetMainArgumentFunctor()
     delete finishedMutex_;
 }
 
-void GetMainArgumentFunctor::operator ()(Variable & reference)
+void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * error)
 {
     QString format;
     if (reference.baseType()==VT_int)
@@ -454,7 +456,7 @@ bool GetMainArgumentFunctor::inputScalarArgument(
     return true;
 }
 
-void ReturnMainValueFunctor::operator()(const Variable & reference)
+void ReturnMainValueFunctor::operator()(const Variable & reference, Kumir::String * error)
 {
     if (!reference.isValid())
         return;
@@ -609,7 +611,7 @@ ExternalModuleResetFunctor::ExternalModuleResetFunctor()
 {
 }
 
-void ExternalModuleResetFunctor::operator ()(const std::string & moduleName, const String & localizedName)
+void ExternalModuleResetFunctor::operator ()(const std::string & moduleName, const String & localizedName, Kumir::String * error)
 {
     using namespace Shared;
     using namespace ExtensionSystem;
@@ -629,7 +631,10 @@ void ExternalModuleResetFunctor::operator ()(const std::string & moduleName, con
                     "Ошибка инициализации исполнителя: нет исполнителя "
                     "с именем %1"
                     ).arg(qModuleName).toStdWString();
-        throw errorMessage;
+        if (error) {
+            error->assign(errorMessage);
+        }
+        return;
     }
 
     emit showActorWindow(QByteArray(moduleName.c_str()));

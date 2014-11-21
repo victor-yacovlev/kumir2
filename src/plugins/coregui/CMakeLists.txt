@@ -37,6 +37,7 @@ set(SOURCES
     systemopenfilesettings.cpp
     guisettingspage.cpp
     toolbarcontextmenu.cpp
+    iosettingseditorpage.cpp
 )
 
 set(EXTRA_LIBS
@@ -68,6 +69,7 @@ set(MOC_HEADERS
     systemopenfilesettings.h
     guisettingspage.h
     toolbarcontextmenu.h
+    iosettingseditorpage.h
 )
 
 set(FORMS
@@ -76,6 +78,7 @@ set(FORMS
     switchworkspacedialog.ui
     systemopenfilesettings.ui
     guisettingspage.ui
+    iosettingseditorpage.ui
 )
 
 set(RESOURCES

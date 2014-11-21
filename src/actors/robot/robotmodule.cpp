@@ -764,7 +764,7 @@ namespace ActorRobot {
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
       //  textEditMode=false;
-       
+        mode=NORMAL_MODE;
         keyCursor=new QGraphicsLineItem(0,0,0,0);
         this->addItem(keyCursor); 
         keyCursor->hide();
@@ -889,7 +889,7 @@ namespace ActorRobot {
             };
             Items.append(row);
         };
-        wasEdit=true;
+       timer->stop();
     };
     
     QPoint RoboField::upLeftCorner(int str,int stlb)
@@ -945,6 +945,7 @@ namespace ActorRobot {
         
         BortLine = QPen(WallColor,4);
         StLine=QPen(gridColor,3);
+        WallLine=QPen(WallColor,3);
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -996,7 +997,7 @@ namespace ActorRobot {
                                             new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                   upLeftCorner(i,j).y()+fieldSize,
                                                                   upLeftCorner(i,j).x()+fieldSize,
-                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                  upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->hasUpWall())
@@ -1005,7 +1006,7 @@ namespace ActorRobot {
                                           new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                 upLeftCorner(i,j).y(),
                                                                 upLeftCorner(i,j).x()+fieldSize,
-                                                                upLeftCorner(i,j).y()),StLine);
+                                                                upLeftCorner(i,j).y()),WallLine);
                     
                 };
                 if(row->at(j)->hasLeftWall())
@@ -1014,7 +1015,7 @@ namespace ActorRobot {
                                             new QGraphicsLineItem(upLeftCorner(i,j).x(),
                                                                   upLeftCorner(i,j).y(),
                                                                   upLeftCorner(i,j).x(),
-                                                                  upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                  upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->hasRightWall())
@@ -1023,7 +1024,7 @@ namespace ActorRobot {
                                              new QGraphicsLineItem(upLeftCorner(i,j).x()+fieldSize,
                                                                    upLeftCorner(i,j).y(),
                                                                    upLeftCorner(i,j).x()+fieldSize,
-                                                                   upLeftCorner(i,j).y()+fieldSize),StLine);
+                                                                   upLeftCorner(i,j).y()+fieldSize),WallLine);
                     
                 };
                 if(row->at(j)->isColored())
@@ -1338,7 +1339,7 @@ namespace ActorRobot {
                                                                       fieldSize,
                                                                       fieldSize));
         };
-        wasEdit=true;
+        if(mode!=NORMAL_MODE)wasEdit=true;
     }
     
     void RoboField::reverseColorCurrent()
@@ -3078,11 +3079,15 @@ namespace ActorRobot {
     void RoboField::timerTic()
     {
         if(mode!=TEXT_MODE){
-         keyCursor->hide();
+         if(keyCursor)keyCursor->hide();
             timer->stop();  
         }
       qDebug()<<"TIK!"; 
-        if(!keyCursor)return;
+        if(!keyCursor)
+        {
+         timer->stop();
+            return;
+        }
       timer->start(500);
         if(keyCursor->isVisible())keyCursor->hide();
         else keyCursor->show();
@@ -3220,7 +3225,7 @@ namespace ActorRobot {
         
         
         
-        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        static const int points[] = {  14+2,6+3, 22+3,14+2, 14+3,22+3, 6+3,14+3 };
         QPolygon polygon;
         polygon.setPoints(4, points);
         QPolygonF polygonf = QPolygonF(polygon);
@@ -3279,12 +3284,12 @@ namespace ActorRobot {
         painter->setBrush(QColor("lightgray"));
         painter->setPen(QPen("black"));
         
-        static const int points[] = {  14,6, 22,14, 14,22, 6,14 };
+        static const int points[] = {  14+3,6+3, 22+3,14+3, 14+3,22+3, 6+3,14+3 };
         QVector<QPointF> up_crash,down_crash,left_crash,right_crash ;
-        up_crash << QPointF(14 , 6) << QPointF(10, 11) <<  QPointF(19 ,11);
-        down_crash << QPointF(14 , 22) << QPointF(11, 18) <<  QPointF(18 ,18);
-        left_crash << QPointF(7 , 14) << QPointF(11, 10) <<  QPointF(11 ,18);
-        right_crash << QPointF(22 , 14) << QPointF(18, 10) <<  QPointF(18 ,18);
+        up_crash << QPointF(14+3 , 6+3) << QPointF(13, 14) <<  QPointF(19+3 ,11+3);
+        down_crash << QPointF(14+3 , 22+3) << QPointF(11+3, 18+3) <<  QPointF(18+3 ,18+3);
+        left_crash << QPointF(7+3 , 14+3) << QPointF(11+3, 10+3) <<  QPointF(11+3 ,18+3);
+        right_crash << QPointF(22+3 , 14+3) << QPointF(18+3, 10+3) <<  QPointF(18+3 ,18+3);
         QPolygon polygon;
         polygon.setPoints(4, points);
         QPolygonF polygonf = QPolygonF(polygon);
@@ -3389,8 +3394,8 @@ void RobotModule::createGui()
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
     view->setWindowTitle(trUtf8("Робот - нет файла"));
+   // setWindowSize();
 }
-
 
 void RobotModule::copyFromPult(QString log)
     {
@@ -3551,7 +3556,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
                 createEmptyField(7,7);
 
             }
-            setWindowSize();
+            //setWindowSize();
         }
         if(sett->value("Robot/Dir").isValid())
         {
@@ -3826,7 +3831,9 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runMark(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        int rws=field->rows();
+        int clmns=field->columns();
+        if(row-1>=field->rows() ||col-1>field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4110,6 +4117,7 @@ void RobotModule::loadEnv()
 
         view->centerOn(field->m_height()/2,field->m_width()/2);
         NewWindow->close();
+        
         if(!field->isEditMode())editEnv();
     };
     void RobotModule::newEnv()
@@ -4319,6 +4327,7 @@ void RobotModule::setWindowSize()
         setScene(roboField);
         pressed=false;
         inDock=false;
+        firstShow=true;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setMouseTracking(true);
@@ -4451,7 +4460,11 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         }
         
     }
-    
+ void RobotView::showEvent ( QShowEvent * event )
+    {
+        if(firstShow)setWindowSize(size());
+        firstShow=false;
+    };
  void RobotView:: FindRobot()
     {
         centerOn(robotField->roboPosF());
@@ -4460,7 +4473,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
  void RobotView::setWindowSize(const QSize newGeometry)
     {
         QSize oldSize=this->size();
-        emit  resizeRequest(newGeometry);
+        
        if(inDock)
        {
            scale(1/c_scale,1/c_scale);
@@ -4481,6 +4494,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
            }
            return;
      }
+        emit  resizeRequest(newGeometry);
         if(newGeometry != oldSize)
        {centerOn(newGeometry.width()/2-(CurCellSize/2),newGeometry.height()/2-(CurCellSize/2));
         qDebug()<<"CenterON:"<<newGeometry.width()/2-CurCellSize/2<<newGeometry.width()/2-CurCellSize/2;
@@ -4491,8 +4505,14 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
     
 QSize	RobotView::sizeHint () const
     {
-        return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
-    }
+    return QSize(robotField->columns()*CurCellSize+CurCellSize, robotField->rows()*CurCellSize+CurCellSize);
+}
+
+void RobotView::handleDocked()
+{
+    qDebug() << "Robot is visible in dock. Size = " << size();
+    setWindowSize(size());
+}
 void RobotView::reloadSett(ExtensionSystem::SettingsPtr settings)
     {
        CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt(); 
@@ -4502,6 +4522,7 @@ void RobotView::setDock(bool docked)
     {
     qDebug() << "RobotView::setDock(" << docked << ")";
         inDock=docked;
+        if(inDock)setWindowSize(size());
     };
 void RobotView::changeEditMode(bool state)
     {

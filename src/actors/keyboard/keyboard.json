@@ -1,0 +1,222 @@
+{
+    "name": { "ascii": "Keyboard", "ru_RU": "Клавиатура" },
+    "gui": {},
+    "types": [
+        {
+            "name": { "ascii": "keycode", "ru_RU": "сканкод" },
+            "fields": [
+                { "name": "code", "baseType": "int" }
+            ]
+        }
+    ],
+    "methods": [
+        {
+            "name": { "ascii": "key hit", "ru_RU": "клавиша нажата" },
+            "returnType": "bool"
+        },
+        {
+            "name": { "ascii": "key code", "ru_RU": "код клавиши" },
+            "returnType": "int"
+        },
+        {
+            "name": { "ascii": "clear key buffer", "ru_RU": "очистить клавиши" }
+        },
+        {
+            "name": { "ascii": "input", "ru_RU": "ввод" },
+            "returnType": "keycode",
+            "arguments": [
+                { "name": "s", "baseType": "string" },
+                { "name": "ok", "baseType": "bool", "access": "out" }
+            ]
+        },
+        {
+            "name": { "ascii": "output", "ru_RU": "вывод" },
+            "returnType": "string",
+            "arguments": [
+                { "name": "x", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": ":=" },
+            "returnType": "keycode",
+            "arguments": [
+                { "name": "x", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": ":=" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "x", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "=" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "=" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "=" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "<>" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "<>" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "<>" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "<" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "<" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "<" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": ">" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": ">" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": ">" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "+" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "+" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "+" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "-" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "-" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "-" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        },
+        {
+            "name": { "ascii": "*" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "*" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "int" },
+                { "name": "other", "baseType": "keycode" }
+            ]
+        },
+        {
+            "name": { "ascii": "*" },
+            "returnType": "int",
+            "arguments": [
+                { "name": "self", "baseType": "keycode" },
+                { "name": "other", "baseType": "int" }
+            ]
+        }
+    ]
+}

@@ -36,6 +36,7 @@ namespace CoreGUI {
 using namespace Terminal;
 using namespace Shared;
 class GUISettingsPage;
+class IOSettingsEditorPage;
 
 class Plugin
         : public ExtensionSystem::KPlugin
@@ -103,7 +104,7 @@ protected:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void start();
     void stop();
-    QWidget* settingsEditorPage();
+    QList<QWidget*> settingsEditorPages() override;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     static void handleSIGUSR1(int, siginfo_t *, void *);
@@ -134,8 +135,9 @@ protected:
     bool sessionsDisableFlag_;
     static Plugin * instance_;
     QString fileNameToOpenOnReady_;
-    GUISettingsPage * guiSettingsPage_;
     QMap<QByteArray,QAction*> showActorActions_;
+    GUISettingsPage * guiSettingsPage_;
+    IOSettingsEditorPage * ioSettingsPage_;
 
 signals:
     void externalProcessCommandReceived(const QString & command);

@@ -356,9 +356,18 @@ void MainWindowTask::loadCourse()
          return;
      }
     bool createDefaultWorkFile=true;
-    QMessageBox::StandardButton ans;
-            ans = QMessageBox::question(this, trUtf8("Практикум"), trUtf8("Вы хотите создать тетрадь?"),
-                                                                                                                            QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
+    QMessageBox msgBoxCreateWorkbook(
+                QMessageBox::Question,
+                trUtf8("Практикум"),
+                trUtf8("Вы хотите создать тетрадь?"),
+                QMessageBox::Yes | QMessageBox::No,
+                this
+                );
+    msgBoxCreateWorkbook.button(QMessageBox::Yes)->setText(trUtf8("Создать"));
+    msgBoxCreateWorkbook.button(QMessageBox::No)->setText(trUtf8("Не создавать"));
+    int ans = msgBoxCreateWorkbook.exec();
+//            ans = QMessageBox::question(this, trUtf8("Практикум"), trUtf8("Вы хотите создать тетрадь?"),
+//                    QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
             if (ans == QMessageBox::Yes)
             {
                 createDefaultWorkFile=false;
@@ -660,14 +669,20 @@ void MainWindowTask::saveCourse()
 {
     editRoot->hide();
    markProgChange();
-    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir, "Work files(*.work.xml);;All files (*)");
-    dialog.setDefaultSuffix("work.xml");
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    if(!dialog.exec())return;
-    QFileInfo fi(dialog.selectedFiles().first());
-    //curDir=fi.absolutePath ();
-    qDebug()<<"curDir"<<curDir;
-    QString fileName=dialog.selectedFiles().first();
+//    QFileDialog dialog(this,trUtf8("Сохранить изменения"),curDir+"/", "Work files(*.work.xml);;All files (*)");
+//    dialog.setDefaultSuffix("work.xml");
+//    dialog.setAcceptMode(QFileDialog::AcceptSave);
+//    if(!dialog.exec())return;
+//    QFileInfo fi(dialog.selectedFiles().first());
+//    //curDir=fi.absolutePath ();
+//    qDebug()<<"curDir"<<curDir;
+//    QString fileName=dialog.selectedFiles().first();
+   const QString fileName = QFileDialog::getSaveFileName(
+               this,
+               trUtf8("Сохранить изменения"),
+               curDir,
+               tr("Work files(*.work.xml);;All files (*)")
+               );
    // QString type=fileName.right(9);
    // if(type!=".work.xml")fileName+=".work.xml";
     cursWorkFile.setFileName(fileName);

@@ -18,7 +18,8 @@
 #include <QtGui>
 #include "vodoley.h"
 #include "pult.h"
-
+#include <QSizePolicy>
+#include <QtGlobal>
 #include <QTextEdit>
 #include <QTextStream>
 #include <QCloseEvent>
@@ -136,19 +137,12 @@ Vodoley::Vodoley()
 	autoClose=false;
     pult=new VodoleyPult();
     pult->VodoleyObj=this;
-	//menuBar=new QMenuBar(this);
-//	menuBar->move(0,HEADER_SIZE);
-	//setMenuBar(menuBar);
-	//menu=menu = menuBar->addMenu(trUtf8("Задание"));
-	//menu->addAction(actNew);
-	//menu->addAction(actSave);
-	//menu->addAction(actLoad);
-//	menuBar->show();
+
 
 	scene = new QGraphicsScene(this);
 	view=new QGraphicsView(this);
-        view->setSceneRect(0,0,374,220);
-        view->resize(390,245);
+        view->setSceneRect(0,0,354,220);
+        view->resize(370,245);
 
 	//Asize()=80;Bsize()=7;Csize()=9; //Размер емкости
 	Maxfill.append(8);
@@ -170,14 +164,15 @@ Vodoley::Vodoley()
 	setCentralWidget(view);
 //	view->move(0,menuBar->height ()+HEADER_SIZE);
 	//qDebug()<<menuBar->height ();
-        this->setBaseSize (374,235);
-        this->resize(390,245+1);
+        this->setBaseSize (364,235);
+        this->resize(360,245+1);
 
 
 
 	this->setMinimumSize(this->size());
-	this->setMaximumSize(this->size());
-    this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	//this->setMaximumSize(this->size());
+    this->setSizePolicy(QSizePolicy::Expanding,
+                        QSizePolicy::Expanding);
 	this->statusBar()->hide();
 //	vodHeader->setChildWidget(this);
 
@@ -265,9 +260,9 @@ void Vodoley::CreateVodoley(void)
 {
     float literSize = MAX_SIZE/maxSize();
     qDebug()<<"Liter Size:"<<literSize;
-    Amen=new Menzurka(50,30+(maxSize()-Asize())*literSize,Asize(),literSize);
-    Bmen=new Menzurka(160,30+(maxSize()-Bsize())*literSize,Bsize(),literSize);
-    Cmen=new Menzurka(270,30+(maxSize()-Csize())*literSize,Csize(),literSize);
+    Amen=new Menzurka(30,30+(maxSize()-Asize())*literSize,Asize(),literSize);
+    Bmen=new Menzurka(140,30+(maxSize()-Bsize())*literSize,Bsize(),literSize);
+    Cmen=new Menzurka(250,30+(maxSize()-Csize())*literSize,Csize(),literSize);
 
     Amen->setCurFill(CurA());
     Bmen->setCurFill(CurB());
@@ -289,9 +284,9 @@ void Vodoley::CreateVodoley(void)
     Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
     Ctext=scene->addSimpleText("C");
     Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     
-    
-    
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     // Amen->move(20,20);
     
 }
@@ -319,7 +314,16 @@ void Vodoley::rotateImages()
 
 };
 
-
+void Vodoley::resizeEvent ( QResizeEvent * event )
+{
+    this->setSizePolicy(QSizePolicy::Expanding,
+                        QSizePolicy::Expanding);
+    view->resize(event->size());
+    QRectF sizeRect=QRectF(scene->sceneRect().topLeft(),QSize(qMax(scene->sceneRect().width(),scene->sceneRect().height()),qMax(scene->sceneRect().width(),scene->sceneRect().height())));
+    view->fitInView(sizeRect, Qt::KeepAspectRatio);
+   // view->scale(0.7,0.7);
+    QWidget::resizeEvent(event);
+}
 
 void Vodoley::reset()
 {

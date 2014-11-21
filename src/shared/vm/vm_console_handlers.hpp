@@ -9,6 +9,14 @@
 #include <fstream>
 #undef DO_NOT_DECLARE_STATIC
 
+#ifndef _override
+#if defined(_MSC_VER)
+#   define _override
+#else
+#   define _override override
+#endif
+#endif
+
 namespace VM {
 namespace Console {
 
@@ -42,22 +50,22 @@ public:
         , customTypeFromString_(nullptr)
         , stdin_(IO::makeInputStream(FileType(), true))
     {}
-    inline bool operator() (VariableReferencesList alist);
+    inline bool operator() (VariableReferencesList alist, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeFromStringFunctor(VM::CustomTypeFromStringFunctor *f)
     {
         customTypeFromString_ = f;
     }
-    inline bool readRawChar(Char &ch);
-    inline void pushLastCharBack();
-    inline void clear() {}
+    inline bool readRawChar(Char &ch) _override;
+    inline void pushLastCharBack() _override;
+    inline void clear() _override {}
 private:
     Encoding locale_;
     VM::CustomTypeFromStringFunctor * customTypeFromString_;
     IO::InputStream stdin_;
 };
 
-bool InputFunctor::operator() (VariableReferencesList alist)
+bool InputFunctor::operator() (VariableReferencesList alist, Kumir::String * error)
 {
     IO::InputStream stream = IO::makeInputStream(FileType(), true);
     for (size_t i=0; i<alist.size(); i++) {
@@ -85,7 +93,7 @@ bool InputFunctor::operator() (VariableReferencesList alist)
                 const String & modName = var.recordModuleLocalizedName();
                 const String & clsName = var.recordClassLocalizedName();
                 const std::string & asciiClsName = var.recordClassAsciiName();
-                var.setValue((*f)(s, modAsciiName, modName, asciiClsName, clsName));
+                var.setValue((*f)(s, modAsciiName, modName, asciiClsName, clsName, error));
             }
         }
 
@@ -93,7 +101,13 @@ bool InputFunctor::operator() (VariableReferencesList alist)
             int a, b;
             String message;
             stream.getError(message, a, b);
-            throw message;
+            if (error) {
+                error->assign(message);
+            }
+        }
+
+        if (error && error->length() > 0) {
+            break;
         }
     }
     return true;
@@ -123,13 +137,13 @@ public:
     #endif
         , customTypeToString_(nullptr)
     {}
-    inline void operator ()(VariableReferencesList alist, FormatsList formats);
+    inline void operator ()(VariableReferencesList alist, FormatsList formats, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor * f)
     {
         customTypeToString_ = f;
     }
-    inline void writeRawString(const String &);
+    inline void writeRawString(const String &) _override;
 
 private:
     Encoding locale_;
@@ -138,7 +152,7 @@ private:
 
 void OutputFunctor::operator ()(
         VariableReferencesList values,
-        FormatsList formats
+        FormatsList formats, Kumir::String * error
         )
 {
     IO::OutputStream os;
@@ -166,10 +180,13 @@ void OutputFunctor::operator ()(
                 static VM::CustomTypeToStringFunctor def;
                 f = &def;
             }
-            const String repr = (*f)(values[i]);
+            const String repr = (*f)(values[i], error);
             IO::writeString(os, repr, 0);
         }
-    }
+        if (error && error->length() > 0) {
+            return;
+        }
+    }    
     do_output(os.getBuffer(), locale_);
 }
 
@@ -192,7 +209,7 @@ public:
         , customTypeToString_(nullptr)
         , quietMode_(false)
     {}
-    inline void operator()(const VM::Variable & reference);
+    inline void operator()(const VM::Variable & reference, Kumir::String * error) _override;
     inline void setLocale(const Encoding loc) { locale_ = loc; }
     inline void setCustomTypeToStringFunctor(VM::CustomTypeToStringFunctor * f)
     {
@@ -220,7 +237,7 @@ public:
         , customTypeFromString_(nullptr)
         , quietMode_(false)
     {}
-    inline void operator()(VM::Variable & reference);
+    inline void operator()(VM::Variable & reference, Kumir::String * error) _override;
     inline void init(const std::deque<std::string> args);
     inline void init(int argc, char * argv[]);
     inline void setLocale(const Encoding loc) { locale_ = loc; }
@@ -237,7 +254,7 @@ private:
                                    const String & customModuleName,
                                    const std::string & customTypeAsciiName,
                                    const String & customTypeLocalizedName,
-                                   VM::AnyValue & val
+                                   VM::AnyValue & val, Kumir::String * error
                                    );
     inline static String decodeHttpStringValue(const std::string & s);
     std::deque< String > m_arguments;
@@ -319,7 +336,7 @@ bool GetMainArgumentFunctor::readScalarArgument(
         const String & customModuleName,
         const std::string & customTypeAsciiName,
         const String & customTypeLocalizedName,
-        VM::AnyValue &val
+        VM::AnyValue &val, Kumir::String * error
         )
 {
     IO::InputStream stream;
@@ -374,20 +391,17 @@ bool GetMainArgumentFunctor::readScalarArgument(
             static VM::CustomTypeFromStringFunctor def;
             f = &def;
         }
-        try {
-            val = (*f)(s, customModuleAsciiName, customModuleName, customTypeAsciiName, customTypeLocalizedName);
-        }
-        catch (const String & message) {
-            Core::abort(message);
-        }
-        catch (const std::string & message) {
-            Core::abort(Core::fromUtf8(message));
+        val = (*f)(s, customModuleAsciiName, customModuleName, customTypeAsciiName, customTypeLocalizedName, error);
+    }
+    if (Core::getError().length() > 0) {
+        if (error) {
+            error->assign(Core::getError());
         }
     }
-    return Core::getError().size()==0;
+    return error? error->length()==0: true; // Core::getError().size()==0;
 }
 
-void GetMainArgumentFunctor::operator()(VM::Variable &reference)
+void GetMainArgumentFunctor::operator()(VM::Variable &reference, Kumir::String * error)
 {
     String message = Core::fromUtf8("Введите ")+reference.name();
     static const String errorMessage = Core::fromUtf8("Не все аргументы первого алгоритма введены корректно");
@@ -401,10 +415,14 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                                reference.recordModuleLocalizedName(),
                                reference.recordClassAsciiName(),
                                reference.recordClassLocalizedName(),
-                               val))
+                               val, error))
             reference.setValue(val);
-        else
-            throw errorMessage;
+        else {
+            if (error) {
+                error->assign(errorMessage);
+            }
+            return;
+        }
     }
     else if (reference.dimension()==1) {
         int bounds[7];
@@ -422,10 +440,14 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                                    reference.recordModuleLocalizedName(),
                                    reference.recordClassAsciiName(),
                                    reference.recordClassLocalizedName(),
-                                   val))
+                                   val, error))
                 reference.setValue(x,val);
-            else
-                throw errorMessage;
+            else {
+                if (error) {
+                    error->assign(errorMessage);
+                }
+                return;
+            }
         }
     }
     else if (reference.dimension()==2) {
@@ -447,10 +469,14 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                                        reference.recordModuleLocalizedName(),
                                        reference.recordClassAsciiName(),
                                        reference.recordClassLocalizedName(),
-                                       val))
+                                       val, error))
                     reference.setValue(y,x,val);
-                else
-                    throw errorMessage;
+                else {
+                    if (error) {
+                        error->assign(errorMessage);
+                    }
+                    return;
+                }
             }
         }
     }
@@ -474,17 +500,21 @@ void GetMainArgumentFunctor::operator()(VM::Variable &reference)
                                            reference.recordModuleLocalizedName(),
                                            reference.recordClassAsciiName(),
                                            reference.recordClassLocalizedName(),
-                                           val))
+                                           val, error))
                         reference.setValue(z,y,x,val);
-                    else
-                        throw errorMessage;
+                    else {
+                        if (error) {
+                            error->assign(errorMessage);
+                        }
+                        return;
+                    }
                 }
             }
         }
     }
 }
 
-void ReturnMainValueFunctor::operator()(const VM::Variable & reference) {
+void ReturnMainValueFunctor::operator()(const VM::Variable & reference, Kumir::String * /*error*/) {
     if (!reference.isValid())
         return;
     String repr;

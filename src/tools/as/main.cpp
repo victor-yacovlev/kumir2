@@ -21,28 +21,10 @@ int usage(const char * programName)
     return 127;
 }
 
-int assemble(const std::string & inFileName, const std::string & outFileName)
+int assemble(const std::string & , const std::string & )
 {
-    std::ifstream inFile(inFileName.c_str());
-    if (!inFile.is_open()) {
-        std::cerr << "Can't open " << inFileName << std::endl;
-        return 1;
-    }
-    Bytecode::Data data;
-    Bytecode::bytecodeFromTextStream(inFile, data);
-    inFile.close();
-    std::ofstream outFile(outFileName.c_str());
-    if (!outFile.is_open()) {
-        std::cerr << "Can't open " << outFileName << std::endl;
-        return 2;
-    }
-    Bytecode::bytecodeToDataStream(outFile, data);
-    outFile.close();
-#if !defined(WIN32) && !defined(_WIN32)
-    static const mode_t mode = S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH;
-    chmod(outFileName.c_str(), mode);
-#endif
-    return 0;
+    std::cerr << "Assembling not supported in current version" << std::endl;
+    return 126;
 }
 
 int disassemble(const std::string & inFileName, const std::string & outFileName)

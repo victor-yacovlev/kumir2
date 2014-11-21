@@ -32,6 +32,8 @@ public:
     QString arrayRepresentation() const;
     bool hasValue() const;
     bool isReference() const;
+    inline quint64 framePointer() const { return framePointer_; }
+    inline void setFramePointer(quint64 p) { framePointer_ = p; }
 private:
     explicit KumVariableItem(TableOfVariables * table, int row);
     explicit KumVariableItem(TableOfVariables * table, int row,
@@ -51,6 +53,7 @@ private:
     int tableNumber_;
     QVector<int> indeces_;
     QString algorithmName_;
+    quint64 framePointer_;
 };
 
 class KumVariablesModel : public QAbstractItemModel

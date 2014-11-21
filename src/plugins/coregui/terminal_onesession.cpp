@@ -69,7 +69,11 @@ QSize OneSession::visibleSize() const
 {
     const QRegion region = QRegion() +
             headerRect_ + mainTextRegion_ + footerRect_;
-    return region.boundingRect().size();
+    QSize result = region.boundingRect().size();
+    if (-1 != fixedWidth()) {
+        result.rwidth() = qMax(result.rwidth(), (charSize().width() + 1) * fixedWidth());
+    }
+    return result;
 }
 
 QString OneSession::plainText(bool footer_header) const
@@ -209,8 +213,17 @@ void OneSession::draw(QPainter &p, const QRect & dirtyRect) const
 //    p.setPen(QColor(Qt::green));
 //    p.drawRect(footerRect_);
 //    p.restore();
+    if (-1 != fixedWidth()) {
+        int x = mainTextRegion_.left() + charSize().width() * fixedWidth();
+        int y0 = headerRect_.top() - 3;
+        int y1 = y0 + visibleSize().height() + 7;
+        p.drawLine(x, y0, x, y1);
+        p.save();
+        p.setPen(QPen(parent_->palette().brush(QPalette::Shadow), 1));
+        p.restore();
+    }
     drawUtilityText(p, visibleHeader_, headerProp_, headerRect_.topLeft());
-//    drawInputRect(p, 0);
+//    drawInputRect(p, 0);    
     drawMainText(p, mainTextRegion_.topLeft(), dirtyRect);
     drawUtilityText(p, visibleFooter_, footerProp_, footerRect_.topLeft());
     drawCursor(p);
@@ -228,7 +241,7 @@ void OneSession::drawCursor(QPainter &p) const
         uint left = mainTextRegion_.left() +
                 (inputPosStart_ + inputCursorPosition_) * atom.width();
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(Qt::black));
+        p.setBrush(parent_->palette().brush(QPalette::Text));
         p.drawRect(left, top, InputCursorThickness, atom.height());
         p.restore();
     }
