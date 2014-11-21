@@ -922,19 +922,29 @@ void Plugin::createSpecializedStartPage(Shared::StartpageWidgetInterface * plugi
     const QString title = plugin->startPageTitle();
     widget->setProperty("uncloseable", true);
     if (mainWindow_->tabWidget_->count()==0) {
-        QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
-        QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
-        QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
-        QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
 
+        const QMenu * mainWindowEditMenu = mainWindow_->ui->menuEdit;
+        const QString menuEditTitle = mainWindowEditMenu->title();
+        QMenu * editMenu = new QMenu(menuEditTitle, mainWindow_);
+        QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
         editNotAvailable->setEnabled(false);
-        insertNotAvailable->setEnabled(false);
+
+        const QMenu * mainWindowInsertMenu = mainWindow_->ui->menuInsert;
+        QList<QMenu*> menus = QList<QMenu*>() << editMenu;
+
+        if (mainWindowInsertMenu) {
+            const QString menuInsertTitle = mainWindowInsertMenu->title();
+            QMenu * insertMenu = new QMenu(menuInsertTitle, mainWindow_);
+            QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
+            insertNotAvailable->setEnabled(false);
+            menus << insertMenu;
+        }
 
         TabWidgetElement * twe = mainWindow_->addCentralComponent(
                     title,
                     widget,
                     QList<QAction*>(),
-                    QList<QMenu*>() << editMenu << insertMenu,
+                    menus,
                     MainWindow::StartPage
                     );
 
@@ -946,6 +956,11 @@ void Plugin::createSpecializedStartPage(Shared::StartpageWidgetInterface * plugi
 void Plugin::restoreSession()
 {
     if (!sessionsDisableFlag_) {
+    }
+    else if (mainWindow_->tabWidget_->count() > 0) {
+        mainWindow_->tabWidget_->setCurrentIndex(0);
+        mainWindow_->setTitleForTab(0);
+        mainWindow_->setFocusOnCentralWidget();
     }
     else {
         mainWindow_->newProgram();
