@@ -133,7 +133,9 @@ namespace ActorRobot {
         void setUpsepItem(FieldItm* ItmUp);
         
         void setDownsepItem(FieldItm* ItmDown);
-        
+        void removeDownsepItem();
+        void removeLeftsepItem();
+        void removeRightsepItem();
         void setWalls(int wallByte);
         
         int wallByte();
@@ -372,7 +374,10 @@ namespace ActorRobot {
         void roboMoved(QPointF pos);
         void cellDialogOk();
         void timerTic();
-        
+        void addRow();
+        void remRow();
+        void remCol();
+        void addCol();
     signals:
         void MousePress(qreal x,qreal y, bool Flag);
        // void was_edit();
@@ -384,7 +389,9 @@ namespace ActorRobot {
         void mousePressEvent ( QGraphicsSceneMouseEvent * mouseEvent );
        
         void mouseMoveEvent ( QGraphicsSceneMouseEvent * mouseEvent );
-        void keyPressEvent ( QKeyEvent * keyEvent );  
+        void keyPressEvent ( QKeyEvent * keyEvent );
+        void showButtons(bool yes);
+        void createResizeButtons();
         QTimer * timer;
         QList<QList<FieldItm * > > Items;
         QList<QGraphicsLineItem*> setka;
@@ -409,6 +416,8 @@ namespace ActorRobot {
         bool pressD;
         QDoubleSpinBox * radSpinBox;
         QSpinBox * tempSpinBox;
+        QGraphicsProxyWidget *wAddRow,*wAddCol,*wRemCol,*wRemRow;
+        QToolButton *btnAddRow,*btnAddCol,*btnRemCol,*btnRemRow;
         int mode;
           
     };

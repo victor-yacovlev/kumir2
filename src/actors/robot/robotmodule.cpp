@@ -201,7 +201,20 @@ namespace ActorRobot {
     {
         sepItmDown=ItmDown;
     }
-    
+    void FieldItm::removeDownsepItem()
+    {
+        sepItmDown=NULL;
+    };
+    void FieldItm::removeLeftsepItem()
+    {
+        
+        if(sepItmLeft)sepItmLeft->removeRightsepItem();
+        sepItmLeft=NULL;
+    };
+    void FieldItm::removeRightsepItem()
+    {
+        sepItmRight=NULL;
+    };
     void FieldItm::setWalls(int wallByte)
     {
         if((wallByte & UP_WALL) == UP_WALL)upWall=true;else upWall=false;
@@ -774,7 +787,14 @@ namespace ActorRobot {
         tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
-        
+ 
+    };
+  void RoboField::showButtons(bool yes)
+    {
+        wAddCol->setVisible(yes);
+        wAddRow->setVisible(yes);
+        wRemCol->setVisible(yes);
+        wRemRow->setVisible(yes);
     };
   void RoboField::setMode( int Mode) 
     { 
@@ -791,6 +811,7 @@ namespace ActorRobot {
            redrawRTFields();  
            view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
            view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+           showButtons(false);
            update();
        }
         if(mode==NEDIT_MODE)
@@ -802,6 +823,7 @@ namespace ActorRobot {
           redrawRTFields();  
           view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
           view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            showButtons(true);
             update();
         }
         
@@ -861,6 +883,7 @@ namespace ActorRobot {
     void RoboField::editField()
     {
        mode=NEDIT_MODE;
+        showButtons(true);
      //   connect(cellDialog->buttonBox,SIGNAL(accepted()),this,SLOT(cellDialogOk()));
     };
     /**
@@ -891,6 +914,81 @@ namespace ActorRobot {
         };
        timer->stop();
     };
+    void RoboField::addRow()
+    {
+        qDebug()<<"addRow";
+        QList<FieldItm*> row;
+        int old_rows=rows();
+        for(int i=0;i<columns();i++)
+        {
+            row.append(new FieldItm(0,this));
+            FieldItm* thisItm=row.last();
+            if(i>0)thisItm->setLeftsepItem(row[i-1]);
+            thisItm->setUpsepItem(Items[Items.count()-1].at(i));
+        }
+        Items.append(row);
+        drawField(fieldSize);
+        showButtons(true);
+        qDebug()<<"addRow";
+    };
+    void RoboField::remRow()
+    {
+        
+        if(Items.count()>1){
+            for(int i=0;i<columns();i++)
+            {
+                Items[Items.count()-2].at(i)->removeDownsepItem();
+            }
+        
+            Items.removeLast();
+            if(robotY()>rows()-1)
+            {
+                setRoboPos(robotX(), robotY()-1);
+            }
+        drawField(fieldSize);
+            showButtons(true);
+        }
+    };
+
+    void RoboField::remCol()
+    {
+        
+        if(Items.count()>0 && (Items[0].count()>1)){
+            for(int i=0;i<Items.count();i++)
+            {
+                Items[i].at(Items[i].count()-1)->removeLeftsepItem();
+                Items[i].removeLast();
+            }
+            if(robotX()>columns()-1)
+            {
+                setRoboPos(robotX()-1, robotY());
+            }
+         
+            drawField(fieldSize);
+            showButtons(true);
+        }
+    };
+    
+    void RoboField::addCol()
+    {
+        btnAddCol->setDown ( true );
+        
+        for(int i=0;i<Items.count();i++)
+        {
+            FieldItm* lastItm=Items[i].last();
+            Items[i].append(new FieldItm(0,this));
+            
+            Items[i].last()->setLeftsepItem(lastItm);
+            if(i>0)
+            {
+                Items[i].last()->setUpsepItem(Items[i-1].last());
+            }
+          
+        }
+   
+        drawField(fieldSize);
+        showButtons(true);
+    }
     
     QPoint RoboField::upLeftCorner(int str,int stlb)
     {
@@ -1042,10 +1140,65 @@ namespace ActorRobot {
                 
             };
         };
+        
+ 
+        createResizeButtons();
         destroyRobot();
         createRobot();
+      
+       // wAddRow->setVisible(yes);
+        //wRemCol->setVisible(yes);
+        //wRemRow->setVisible(yes);
+        
     }
-    
+    void RoboField::createResizeButtons()
+    {
+        btnAddRow=new QToolButton();btnAddCol=new QToolButton();btnRemCol=new QToolButton();btnRemRow=new QToolButton();
+        
+        btnAddRow->setCheckable(false);
+        btnAddRow->setIcon(QIcon(RobotModule::self->myResourcesDir().absoluteFilePath("plus.png")));
+        qDebug()<<RobotModule::self->myResourcesDir().absoluteFilePath("plus.png");
+        btnAddCol->setCheckable(false);
+        
+        btnAddCol->setIcon(QIcon(RobotModule::self->myResourcesDir().absoluteFilePath("plus.png")));
+        
+        btnRemCol->setCheckable(false);
+        btnRemRow->setCheckable(false);
+        btnRemCol->setIcon(QIcon(RobotModule::self->myResourcesDir().absoluteFilePath("minus.png")));
+        btnRemRow->setIcon(QIcon(RobotModule::self->myResourcesDir().absoluteFilePath("minus.png")));
+        
+        
+        
+        btnAddRow->setAutoRaise ( true);
+        btnAddCol->setAutoRaise ( true);
+        btnRemCol->setAutoRaise ( true);
+        btnRemRow->setAutoRaise ( true);
+       // connect(btnAddRow,SIGNAL(pressed ()),this,SLOT(addRow()));
+        
+        wAddRow=addWidget(btnAddRow);
+        wAddCol=addWidget(btnAddCol);wRemCol=addWidget(btnRemCol);wRemRow=addWidget(btnRemRow);
+        wAddRow->setZValue(200);
+        
+        wAddRow->resize(fieldSize, (float)fieldSize/2);
+        wRemRow->resize(fieldSize, (float)fieldSize/2);
+        
+        wAddCol->resize((float)fieldSize/2, fieldSize);
+        wRemCol->resize((float)fieldSize/2, fieldSize);
+        
+        
+        wAddRow->moveBy((fieldSize*(columns())/2) - (wAddRow->size().height()+3),fieldSize*(rows())+5);
+        wRemRow->moveBy(fieldSize*(columns())/2+2,fieldSize*((float)rows())+5);
+        
+        wAddCol->moveBy(fieldSize*((float)columns())+7,(fieldSize*(rows())/2) - (wAddRow->size().width()+1));
+        wRemCol->moveBy(fieldSize*((float)columns())+7,fieldSize*(rows())/2+1);
+        
+        
+        wAddCol->setZValue(200);
+         wRemRow->setZValue(200);
+         wRemCol->setZValue(200);
+        
+        showButtons(false);
+    };
     void RoboField::destroyField()
     {
         qDebug()<<"cols"<<columns();
@@ -2725,6 +2878,30 @@ namespace ActorRobot {
         int upD=fieldSize,downD=fieldSize,leftD=fieldSize,rightD=fieldSize;
         qreal delta_row=scenePos.y() - rowClicked * fieldSize;
         qreal delta_col=scenePos.x()- colClicked * fieldSize-3;
+        qDebug()<<"MousePress event";
+       if((rowClicked==rows())&&(scenePos.x()>((fieldSize*(columns())/2) - (wAddRow->size().height()+3)))&&(scenePos.x()<fieldSize*((float)columns()/2)) )
+       {
+           addRow();
+           return;
+       }
+        if((rowClicked==rows())   && (scenePos.x()>fieldSize*((float)columns()/2))  && (scenePos.x()<fieldSize*((float)columns()/2)+ wAddRow->size().height()+3 ))
+        {
+            remRow();
+            return;
+        }
+        if(  scenePos.x()>(fieldSize*((float)columns())+7)  && scenePos.y()>((fieldSize*(rows())/2) - (wAddRow->size().width()+1))
+           && scenePos.x()<(fieldSize*((float)columns())+7)+(fieldSize/2)+5 && scenePos.y()<((fieldSize*(rows())/2) - (wAddRow->size().width()+1))+fieldSize)
+        {
+            addCol();
+            return;
+        }
+        if( scenePos.x()>fieldSize*((float)columns())+7 && scenePos.y()>fieldSize*(rows())/2+1 &&
+           scenePos.x()<fieldSize*((float)columns())+7+(fieldSize/2)+5 && scenePos.y()<fieldSize*(rows())/2+1+fieldSize)
+        {
+            remCol();
+            return;
+            
+        }
         QGraphicsScene::mousePressEvent(mouseEvent);
         if(mouseEvent->isAccepted ())return;
         
