@@ -172,7 +172,7 @@ def __run_test(test_name):
     assert len(lines) == len(ranks) == len(props)
     print("\nBegin test ", test_name, "========================")
     for no in range(0, len(lines)):
-        out = "{:2d}: {:<30} # {:<8} {}".format(no+1, lines[no], ranks[no], props[no])
+        out = "{:2d}: {!s:<30} # {!s:<8} {}".format(no+1, lines[no], ranks[no], props[no])
         print(out)
     print("End test ", test_name, "==========================")
 
