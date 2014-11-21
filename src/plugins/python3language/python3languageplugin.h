@@ -10,7 +10,9 @@ extern "C" {
 
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
+#include "interfaces/startpage_widget_interface.h"
 #include "extensionsystem/kplugin.h"
+#include "sandboxwidget.h"
 
 
 namespace Python3Language {
@@ -25,6 +27,7 @@ class Python3LanguagePlugin
         : public ExtensionSystem::KPlugin
         , public AnalizerInterface
         , public RunInterface
+        , public StartpageWidgetInterface
 {
     friend class PythonRunThread;
     friend class PythonAnalizerInstance;
@@ -32,7 +35,7 @@ class Python3LanguagePlugin
 #if QT_VERSION >= 0x050000
     Q_PLUGIN_METADATA(IID "kumir2.Python3Language" FILE "")
 #endif
-    Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface)
+    Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface Shared::StartpageWidgetInterface)
 public:
     Python3LanguagePlugin();   
 
@@ -61,6 +64,12 @@ public:
     QAbstractItemModel * debuggerVariablesViewModel() const;
     void setStdInTextStream(QTextStream *stream);
     void setStdOutTextStream(QTextStream *stream);
+
+    // Start page interface methods
+    QWidget * startPageWidget();
+    QString startPageTitle() const;
+    QList<QAction*> startPageActions() const;
+    void setStartPageTitleChangeHandler(const QObject *, const char *);
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -102,6 +111,7 @@ private /*fields*/:
     PythonRunThread * runner_;
     QDateTime loadedProgramVersion_;
     QList<class PythonAnalizerInstance*> analizerInstances_;
+    SandboxWidget * sandboxWidget_;
 
 };
 

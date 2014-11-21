@@ -12,6 +12,7 @@ Python3LanguagePlugin::Python3LanguagePlugin()
     , fileHandler_(new PyFileHandler(this))
     , pyMain_(0)
     , runner_(0)
+    , sandboxWidget_(0)
 {    
 }
 
@@ -63,6 +64,9 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
     qDebug() << "Connecting signals/slots";
     connectRunThreadSignals();
     qDebug() << "Initialization done";
+
+    sandboxWidget_ = new SandboxWidget(0);
+
     return QString();
 }
 
@@ -108,6 +112,26 @@ void Python3LanguagePlugin::setStdInTextStream(QTextStream *stream)
 void Python3LanguagePlugin::setStdOutTextStream(QTextStream *stream)
 {
     runner_->setStdOutStream(stream);
+}
+
+QWidget *Python3LanguagePlugin::startPageWidget()
+{
+    return sandboxWidget_;
+}
+
+QString Python3LanguagePlugin::startPageTitle() const
+{
+    return tr("Python Sandbox");
+}
+
+QList<QAction *> Python3LanguagePlugin::startPageActions() const
+{
+    return QList<QAction*>();
+}
+
+void Python3LanguagePlugin::setStartPageTitleChangeHandler(const QObject *, const char *)
+{
+
 }
 
 

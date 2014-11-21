@@ -43,6 +43,7 @@ set(SOURCES
     actorshandler.cpp
     pyfilehandler.cpp
     variablesmodel.cpp
+    sandboxwidget.cpp
 )
 
 set(MOC_HEADERS
@@ -53,6 +54,7 @@ set(MOC_HEADERS
     actorshandler.h
     pyfilehandler.h
     variablesmodel.h
+    sandboxwidget.h
 )
 
 if(${USE_QT} GREATER 4)
