@@ -787,10 +787,11 @@ namespace ActorRobot {
         tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
- 
+        btnAddRow=new QToolButton();btnAddCol=new QToolButton();btnRemCol=new QToolButton();btnRemRow=new QToolButton();
     };
   void RoboField::showButtons(bool yes)
     {
+        if(!wAddCol)return;
         wAddCol->setVisible(yes);
         wAddRow->setVisible(yes);
         wRemCol->setVisible(yes);
@@ -912,6 +913,8 @@ namespace ActorRobot {
             };
             Items.append(row);
         };
+        createResizeButtons();
+        
        timer->stop();
     };
     void RoboField::addRow()
@@ -1209,7 +1212,7 @@ namespace ActorRobot {
                 if(itm)itm->cleanSelf();
             }
         };
-        
+       
         clear();
         setka.clear();
         robot=NULL;
