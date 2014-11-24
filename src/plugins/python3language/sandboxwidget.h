@@ -8,6 +8,7 @@
 #include <QTextEdit>
 #include <QString>
 #include <QImage>
+#include <QMutex>
 
 extern "C" {
 #include <Python.h>
@@ -27,6 +28,7 @@ public:
 Q_SIGNALS:
 
 public Q_SLOTS:
+    void createWelcomeFrame();
     void reset();
     void addDefaultInputItem();
     void addInputItem(const QString & promptText);
@@ -37,6 +39,7 @@ public Q_SLOTS:
     void processCurrentInputFrame();
 
 private:
+
     explicit SandboxWidget(const QString &pythonPath, QWidget *parent);
 
     static SandboxWidget * self;
@@ -44,18 +47,25 @@ private:
     static PyObject* write_output(PyObject *, PyObject * args);
     static PyObject* write_error(PyObject *, PyObject * args);
     static PyObject* read_input(PyObject *, PyObject * args);
+    static PyObject* _reset(PyObject *, PyObject *);
 
     bool eventFilter(QObject *obj, QEvent *evt);
     bool filterKeyPressEvent(QKeyEvent *event);
+    void performEditOperation(QKeyEvent *event);
     void focusInEvent(QFocusEvent *event);
     ExtensionSystem::SettingsPtr editorSettings();
+    bool darkScheme() const;
     quint32 commandNumber_;
-    QTextEdit *contents_;
+    QTextEdit *editor_;
     PyThreadState *py_;
     PyObject *mainModule_;
+
     QString lastCommandOutput_;
     QString lastCommandError_;
     QString pythonPath_;
+
+    bool resetFlag_;
+    QMutex resetMutex_;
 };
 
 } // namespace Python3Language

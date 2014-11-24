@@ -12,7 +12,6 @@ enum FrameType {
     FrameInput,
     FrameOutput,
     FrameError,
-    FrameResult,
     FrameHtml,
     FrameImage
 };
