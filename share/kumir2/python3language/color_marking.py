@@ -5,7 +5,7 @@ from io import BytesIO
 from kumir_constants import *
 import parser
 import analizer_instance
-from static_analisys import GLOBAL_SYMBOL_LIST, Function, Module, Class, static_analisys, Variable
+from static_analisys import GLOBAL_SYMBOL_LIST, Function, Module, Class, run_static_analisys, Variable
 
 SECONDARY_KWD = ("in", "as", "is", "and", "or", "not", "pass", "break", "continue", "return", "else", "elif",
                  "if", "except", "finally", "try", "raise")
@@ -16,7 +16,7 @@ color_marks = [[]]
 line_ranks = [0]
 
 def set_color_marks_and_ranks(source_code_str):
-    static_analisys(source_code_str)
+    run_static_analisys(source_code_str)
     global color_marks
     global line_ranks
     color_marks = [[]]

@@ -1,5 +1,5 @@
 ﻿""" static analyzer for python 3"""
-
+# -*- coding: utf-8 -*-
 import keyword
 import token
 import parser
@@ -75,7 +75,7 @@ class Callable(Name):
             for used in self.global_used:
                 for var in self.local_names:
                     if used[0].name == var.name:
-                        err = Error(used[1], used[2], "error, use local variable before defining" + " line " + str(used[1]) + " position " + str(used[2]))
+                        err = MyError(used[1], used[2], "error, use local variable before defining" + " line " + str(used[1]) + " position " + str(used[2]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
 
@@ -95,13 +95,13 @@ class Callable(Name):
                                 var_name += name[1]
 
                     if not is_local_identified(Name(var_name)) and not is_global_identified(Name(var_name)):
-                        err = Error(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                        err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
                 elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_local_identified(Name(st[1][1]))) and (is_global_identified(Name(st[1][1]))):
                     self.global_used.append([Variable(st[1][1]), st[1][2], st[1][3]])
                 elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_local_identified(Name(st[1][1]))) and (not is_global_identified(Name(st[1][1]))):
-                    err = Error(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
+                    err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
                 else:
@@ -147,7 +147,7 @@ class Callable(Name):
                                         p.parse(p.body, p.visible_names + self.local_names)
                                 break
                     else:
-                        err = Error(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                        err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
                 elif st[0] == 319 and len(st) != 3:
@@ -214,16 +214,19 @@ class Callable(Name):
                     except ImportError:
                         print("Import Error, No module named " + module_name)
                         exit()
+                    new_module = Module(module_name)
+                    new_module.SYMBOL_LIST = []
                     syms = inspect.getmembers(module)
                     for sym in syms:
                         if inspect.isfunction(sym[1]):
-                            self.local_names.append(Function(dot_name+'.' + sym[0]))
+                            #new_module.SYMBOL_LIST.append(Function(dot_name+'.' + sym[0]))
+                            new_module.SYMBOL_LIST.append(Function(sym[0]))
                         elif inspect.isbuiltin(sym[1]):
-                            self.local_names.append(Function(dot_name+'.' + sym[0]))
+                            new_module.SYMBOL_LIST.append(Function(sym[0]))
                         elif inspect.ismethod(sym[1]):
                             pass
                         elif inspect.isgeneratorfunction:
-                            self.local_names.append(Function(dot_name+'.' + sym[0]))
+                            new_module.SYMBOL_LIST.append(Function(sym[0]))
                         elif inspect.isgenerator(sym[1]):
                             pass
                         elif inspect.istraceback(sym[1]):
@@ -247,9 +250,10 @@ class Callable(Name):
                         elif inspect.ismemberdescriptor(sym[1]):
                             pass
                         elif inspect.isclass(sym[1]):
-                            self.local_names.append(Class(dot_name+'.' + sym[0], [], []))
+                            new_module.SYMBOL_LIST.append(Class(sym[0], [], []))
                         else:
                             print(sym[0])
+                        self.local_names.append(new_module)
                 else:
                     for j in range(1,len(s1)):
                         import_name(s1[j])
@@ -421,6 +425,7 @@ class Class(BaseModule):
 class Module(BaseModule):
     def __init__(self, name, body=[]):
         BaseModule.__init__(self, name, body)
+        SYMBOL_LIST = []
 
 
 NON_TERMINAL = range(256, 338)  # non terminal symbols of python grammar
@@ -452,14 +457,14 @@ def parse_main(st):
                         if not isinstance(name, int):
                             var_name += name[1]
                 if not is_identified(Name(var_name)):
-                    err = Error(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                    err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
                 else:
                     for j in range(1,len(st)):
                         parse_right_part(st[j])
             elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_identified(Name(st[1][1]))):
-                err = Error(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
+                err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
                 if err not in ERROR_LIST:
                     ERROR_LIST.append(err)
             else:
@@ -490,7 +495,7 @@ def parse_main(st):
                                     p.parse(p.body, p.visible_names + GLOBAL_SYMBOL_LIST)
                             break
                 else:
-                    err = Error(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                    err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
             elif st[0] == 319 and len(st)!=3:
@@ -558,16 +563,19 @@ def parse_main(st):
                     exit()
 
                 a = dir(module)
+                new_module = Module(module_name)
+                new_module.SYMBOL_LIST = []
                 syms = inspect.getmembers(module)
                 for sym in syms:
                     if inspect.isfunction(sym[1]):
-                        GLOBAL_SYMBOL_LIST.append(Function(dot_name+'.' + sym[0]))
+                        #new_module.SYMBOL_LIST.append(Function(dot_name+'.' + sym[0]))
+                        new_module.SYMBOL_LIST.append(Function(sym[0]))
                     elif inspect.isbuiltin(sym[1]):
-                        GLOBAL_SYMBOL_LIST.append(Function(dot_name+'.' + sym[0]))
+                        new_module.SYMBOL_LIST.append(Function(sym[0]))
                     elif inspect.ismethod(sym[1]):
                         pass
                     elif inspect.isgeneratorfunction:
-                        GLOBAL_SYMBOL_LIST.append(Function(dot_name+'.' + sym[0]))
+                        new_module.SYMBOL_LIST.append(Function(sym[0]))
                     elif inspect.isgenerator(sym[1]):
                         pass
                     elif inspect.istraceback(sym[1]):
@@ -591,9 +599,10 @@ def parse_main(st):
                     elif inspect.ismemberdescriptor(sym[1]):
                         pass
                     elif inspect.isclass(sym[1]):
-                        GLOBAL_SYMBOL_LIST.append(Class(dot_name+'.' + sym[0], [], []))
+                        new_module.SYMBOL_LIST.append(Class(sym[0], [], []))
                     else:
                         print(sym[0])
+                GLOBAL_SYMBOL_LIST.append(new_module)
             else:
                 for j in range(1,len(s1)):
                     import_name(s1[j])
@@ -780,7 +789,7 @@ def parse_main(st):
     parse(st)
 
 
-class Error:
+class MyError:
     def __init__(self, row, col, info, ID = 0):
         self.row = row
         self.col = col
@@ -794,11 +803,44 @@ class Error:
             return False
 
 
+def run_static_analisys(source_code_str):
+    try:
+        a = compile(source_code_str, '', 'exec')
+    except Exception as error:
+        if isinstance("", SyntaxError):
+            message = {'type': 'F',
+                       'row': error.lineno,
+                       'column': error.offset,
+                       'text': error.message}
+        else:
+            message = {'type': 'F',
+                       'row': -1,
+                       'column': -1,
+                       'text': str(error)}
+        print(message)
+        #exit()
+        return
+
+
+    st_main = parser.suite(source_code_str)
+    statements = parser.st2list(st_main, line_info=True, col_info=True)
+
+    parse_main(statements)
+
+
+    for s in GLOBAL_SYMBOL_LIST:
+        if isinstance(s, Function) and len(s.body) >= 1:
+            s.do_all(s.body, GLOBAL_SYMBOL_LIST)
+
+
+
 if __name__ == "__main__":
-    file_str = '/home/kolya/PycharmProjects/coursepaper/static_analyzer/MyTests/test1.py'
-    file = open(file_str, 'r')
-    source_code_str = file.read()
-    file.close()
+    import os
+    base = os.path.dirname(os.path.abspath(__file__)) + "/"
+    test_name = "MyTests/test1.py"
+    source_file = open(base + test_name, 'r')
+    source_code_str = source_file.read()
+    source_file.close()
 
 
     try:
