@@ -32,7 +32,7 @@ extern PyObject* QStringToPyUnicode(const QString & qstring)
     return result;
 }
 
-extern void printPythonTraceback()
+extern PythonError fetchPythonErrorAsString()
 {
     PyObject * ptype, *pvalue, *ptraceback;
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -42,12 +42,22 @@ extern void printPythonTraceback()
     QString qvalue = PyUnicodeToQString(pvalueRepr);
     QString qtraceback = PyUnicodeToQString(ptracebackRepr);
 
+    PythonError result;
+    result.value = qvalue;
+    result.traceback = qtraceback;
+    return result;
+}
+
+extern void printPythonTraceback()
+{
+    const PythonError pyError = fetchPythonErrorAsString();
+
 #ifdef PYTHON_SCRIPT_DEBUG
-    QString message = QString("Error: %1\nTraceback:\n%2").arg(qvalue).arg(qtraceback);
+    QString message = QString("Error: %1\nTraceback:\n%2").arg(pyError.value).arg(pyError.traceback);
     QMessageBox::warning(0, "Python error", message);
 #else
-    qWarning() << qvalue;
-    qWarning() << qtraceback;
+    qWarning() << pyError.value;
+    qWarning() << pyError.traceback;
 #endif
 }
 
@@ -410,12 +420,13 @@ extern PyObject* compileModule(
         const QString &fileName,
         const QString &source,
         int * errorLineNumber,
-        QString * errorText
+        QString * errorText,
+        int flags
         )
 {
     const std::string cfileName(fileName.toUtf8().constData());
     const std::string csource(source.toUtf8().constData());
-    PyObject* result = Py_CompileString(csource.c_str(), cfileName.c_str(), Py_file_input);
+    PyObject* result = Py_CompileString(csource.c_str(), cfileName.c_str(), flags);
     if (!result && errorLineNumber && errorText) {
         PyObject * ptype, *pvalue, *ptraceback;
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -471,6 +482,8 @@ extern PyObject* findCreatedModule(const QString &name)
         return 0;
     }
 }
+
+
 
 }
 

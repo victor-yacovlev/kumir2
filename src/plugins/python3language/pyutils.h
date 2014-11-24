@@ -8,6 +8,12 @@ extern "C" {
 
 namespace Python3Language {
 
+struct PythonError {
+    QString value;
+    QString traceback;
+};
+
+extern PythonError fetchPythonErrorAsString();
 extern void printPythonTraceback();
 extern void printError(const QString & message);
 
@@ -60,7 +66,8 @@ extern PyObject* compileModule(
         const QString &fileName,
         const QString &source,
         int * errorLineNumber = 0,
-        QString * errorText = 0
+        QString * errorText = 0,
+        int compileFlags = Py_file_input
         );
 
 extern PyObject* createModuleFromSource(
