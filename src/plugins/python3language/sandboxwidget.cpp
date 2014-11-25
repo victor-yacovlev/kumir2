@@ -136,7 +136,7 @@ void SandboxWidget::addInputItem(const QString &promptText)
 void SandboxWidget::addTextOutputItem(const QString &outputText, const Sandbox::FrameType frameType)
 {
     QString frameHeading = tr("Out [%1]: ");
-    QColor frameColor = darkScheme() ? Qt::white : Qt::green;
+    QColor frameColor = darkScheme() ? Qt::white : Qt::darkGreen;
     if (Sandbox::FrameError == frameType) {
         frameHeading = tr("Error [%1]: ");
         frameColor = darkScheme() ? QColor("orangered") : QColor(Qt::red);
