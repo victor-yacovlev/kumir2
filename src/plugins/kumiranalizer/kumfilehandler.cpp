@@ -45,8 +45,7 @@ SourceFileInterface::Data KumFileHandler::fromString(const QString &s) const
     for (int i=0; i<lines.count(); i++) {
         QString line = lines[i];
 
-        while (line.startsWith(" "))
-            line.remove(0, 1);
+        trimLeadingSpaces(line);
 
         if (line.startsWith("|@signature ") && line.endsWith("|@hidden"))
         {
@@ -75,6 +74,37 @@ SourceFileInterface::Data KumFileHandler::fromString(const QString &s) const
         }
     }
     return data;
+}
+
+QString &KumFileHandler::trimLeadingSpaces(QString &line)
+{
+    // 1. Find not screened comment marker
+    QChar literalQuote = QChar(0);
+    int commentStartPosition = -1;
+    int spacesBeforeFirstSymbol = 0;
+    for (int i=0; i<line.length(); ++i) {
+        const QChar current = line.at(i);
+        if (i==spacesBeforeFirstSymbol && current.isSpace()) {
+            ++spacesBeforeFirstSymbol;
+        }
+        else if (literalQuote.isNull() && ('"'==current || '\''==current)) {
+            literalQuote = current;
+        }
+        else if ( ! literalQuote.isNull() && current == literalQuote ) {
+            literalQuote = QChar(0);
+        }
+        else if (literalQuote.isNull() && ('|'==current || '!'==current)) {
+            commentStartPosition = i;
+            break;
+        }
+    }
+    if (-1 != commentStartPosition && commentStartPosition == spacesBeforeFirstSymbol) {
+        // Do nothing in case of preserve comments formatting
+    }
+    else if (spacesBeforeFirstSymbol > 0) {
+        line.remove(0, spacesBeforeFirstSymbol);
+    }
+    return line;
 }
 
 
