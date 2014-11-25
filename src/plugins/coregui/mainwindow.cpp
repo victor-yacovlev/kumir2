@@ -1862,11 +1862,18 @@ void MainWindow::showHelp()
 
     TabWidgetElement * twe =
             qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
+
+    bool foundApiDocumentation = false;
+
     if (twe->editor() && twe->editor()->supportsContextHelp()) {
         ApiHelpItem item = twe->editor()->contextHelpItem();
         if (ApiHelpItem::Function == item.kind) {
             m_plugin->helpViewer_->navigateToApiFunction(item.packageName, item.itemName);
+            foundApiDocumentation = true;
         }
+    }
+    if (!foundApiDocumentation) {
+        m_plugin->helpViewer_->clearNavigationFilters();
     }
     m_plugin->helpWindow_->activate();
     if (twe->editor() && twe->editor()->supportsContextHelp() && !m_plugin->helpWindow_->isSeparateWindow()) {

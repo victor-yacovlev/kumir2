@@ -99,6 +99,11 @@ void DocBookView::navigateToApiFunction(const QString &package, const QString & 
     pImpl_->navigateToApiFunction(package, function);
 }
 
+void DocBookView::clearNavigationFilters()
+{
+    pImpl_->clearNavigationFilters();
+}
+
 QStringList DocBookView::booksList() const
 {
     return pImpl_->booksList();

@@ -202,6 +202,14 @@ void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
     }
 }
 
+void SidePanel::clearNavigationFilters()
+{
+    ui->searchAlgorithms->setText("");
+    ui->searchContents->setText("");
+    ui->searchTables->setText("");
+    ui->searchExamples->setText("");
+}
+
 void SidePanel::createNavigationItems(QTreeWidgetItem *item,
                                             ModelPtr model)
 {
