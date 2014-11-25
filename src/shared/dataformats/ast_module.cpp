@@ -10,12 +10,15 @@ namespace AST {
 
 Module::Module()
 {
+    impl.firstLineNumber = impl.lastLineNumber = -1;
     builtInID = 0;
     header.type = ModTypeUser;
 }
 
 Module::Module(const ModulePtr src)
 {
+    impl.firstLineNumber = src->impl.firstLineNumber;
+    impl.lastLineNumber = src->impl.lastLineNumber;
     for (int i=0; i<src->impl.globals.size(); i++) {
         impl.globals << src->impl.globals[i];
     }

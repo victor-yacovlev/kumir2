@@ -896,12 +896,22 @@ SyntaxAnalizer::suggestValueAutoComplete(
         QList<AST::AlgorithmPtr> algs;
         if (contextModule)
             algs += contextModule->impl.algorhitms;
-        foreach (const AST::ModulePtr  mod , ast_->modules) {
-            if (mod->isEnabledFor(currentModule) || alwaysEnabledModules_.contains(mod->header.name))
-                algs += mod->header.algorhitms;
-        }
+        QList<AST::ModulePtr> enabledModules;
+        std::copy_if(ast_->modules.begin(),
+                     ast_->modules.end(),
+                     std::back_inserter(enabledModules),
+                     [this, currentModule](AST::ModulePtr p)
+        {
+            return p->isEnabledFor(currentModule) ||
+                    alwaysEnabledModules_.contains(p->header.name);
+        });
+        std::for_each(enabledModules.begin(), enabledModules.end(),
+                      [&algs](AST::ModulePtr p) {algs += p->header.algorhitms;});
 
-        foreach (const AST::AlgorithmPtr  alg , algs) {
+        // Filter algs list by return type matching
+        std::remove_if(algs.begin(), algs.end(),
+                     [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)
+        {
             bool typeMatch = alg->header.returnType==baseType;
             if (accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn) {
                 // It is possible to cast int->real and char->string
@@ -912,6 +922,14 @@ SyntaxAnalizer::suggestValueAutoComplete(
             }
             if (!typeIsKnown)
                 typeMatch = alg->header.returnType.kind != AST::TypeNone;
+
+            return !typeMatch;
+        });
+
+        // Filter algs list by access type
+        std::remove_if(algs.begin(), algs.end(),
+                       [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)
+        {
             bool accessMatch = false;
                 // Can pass an algorithm here
             if (typeIsKnown && baseType.kind==AST::TypeNone) {
@@ -923,35 +941,46 @@ SyntaxAnalizer::suggestValueAutoComplete(
                 accessMatch = accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn;
             }
 
-            if (typeMatch
-                    && accessMatch
-                    && alg->header.name.length()>0
-                    && !alg->header.name.startsWith('@')
-                    )
-            {
-                Shared::Analizer::Suggestion suggestion;
-                suggestion.value = alg->header.name;
-                suggestion.description = QString::fromUtf8("алг ");
-                suggestion.description += alg->header.returnType.kind==AST::TypeUser
-                        ? alg->header.returnType.name
-                        : lexer_->classNameByBaseType(alg->header.returnType.kind);
-                if (!suggestion.description.endsWith(' '))
-                    suggestion.description += " ";
-                suggestion.description += alg->header.name;
-                if (alg->header.arguments.size()>0) {
-                    suggestion.description += "(";
-                    for (int i=0; i<alg->header.arguments.size(); i++) {
-                        const AST::VariablePtr  arg = alg->header.arguments[i];
-                        suggestion.description += arg->name;
-                        if (i>0)
-                            suggestion.description += ",";
-                    }
-                    suggestion.description += ")";
+            return !accessMatch;
+        });
+
+        // Filter algs list by name
+        const bool allowTeacherAlgorithms =
+                AST::ModTypeTeacher==currentModule->header.type ||
+                AST::ModTypeTeacherMain==currentModule->header.type;
+        std::remove_if(algs.begin(), algs.end(),
+                       [allowTeacherAlgorithms](AST::AlgorithmPtr alg)
+        {
+            const QString & name = alg->header.name;
+            return name.isEmpty() || ( name.startsWith("@") && !allowTeacherAlgorithms );
+        });
+
+        // Create suggestions list
+        std::transform(algs.begin(), algs.end(), std::back_inserter(result),
+                       [this](AST::AlgorithmPtr alg)
+        {
+            Shared::Analizer::Suggestion suggestion;
+            suggestion.value = alg->header.name;
+            suggestion.description = QString::fromUtf8("алг ");
+            suggestion.description += alg->header.returnType.kind==AST::TypeUser
+                    ? alg->header.returnType.name
+                    : lexer_->classNameByBaseType(alg->header.returnType.kind);
+            if (!suggestion.description.endsWith(' '))
+                suggestion.description += " ";
+            suggestion.description += alg->header.name;
+            if (alg->header.arguments.size()>0) {
+                suggestion.description += "(";
+                for (int i=0; i<alg->header.arguments.size(); i++) {
+                    const AST::VariablePtr  arg = alg->header.arguments[i];
+                    suggestion.description += arg->name;
+                    if (i>0)
+                        suggestion.description += ",";
                 }
-                suggestion.kind = Shared::Analizer::Suggestion::Function;
-                result.push_back(suggestion);
+                suggestion.description += ")";
             }
-        }
+            suggestion.kind = Shared::Analizer::Suggestion::Function;
+            return suggestion;
+        });
     }
 
     // 1. Suggest locals and globals if any applicable
