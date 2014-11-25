@@ -121,6 +121,42 @@ void TextCursor::toggleComment()
     }
 }
 
+void TextCursor::toggleLock()
+{
+    if (!enabledFlag_)
+        return;
+    TextDocument * doc = editor_->document();
+    if (hasSelection()) {
+        int start = -1;
+        int end = -1;
+        for (int i=0; i<doc->linesCount(); i++) {
+            if ((i>0 && doc->lineEndSelectedAt(i-1)) || doc->selectionMaskAt(i).contains(true)) {
+                if (start==-1) {
+                    start = i;
+                }
+                end = i;
+            }
+        }
+        bool allProtected = true;
+        for (int i=start; i<=end; ++i) {
+            const TextLine & line = doc->at(i);
+            allProtected = allProtected && line.protecteed;
+        }
+
+        bool newFlag = allProtected ? false : true;
+        for (int i=start; i<=end; ++i) {
+            TextLine & line = doc->at(i);
+            line.protecteed = newFlag;
+        }
+    }
+    else {
+        if (row_ < doc->linesCount()) {
+            doc->at(row_).protecteed = ! doc->at(row_).protecteed;
+        }
+    }
+    emit updateRequest();
+}
+
 bool TextCursor::isFreeCursorMovement() const
 {
     using namespace Shared;

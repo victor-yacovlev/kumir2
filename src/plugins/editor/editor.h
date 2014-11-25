@@ -175,6 +175,7 @@ private /* fields */:
     QAction * deleteLine_;
     QAction * deleteTail_;
     QAction * toggleComment_;
+    QAction * toggleLock_;
 
     QAction * find_;
     QAction * replace_;
