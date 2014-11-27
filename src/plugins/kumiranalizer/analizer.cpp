@@ -1024,7 +1024,7 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
     std::copy_if(d->ast->modules.begin(),
                  d->ast->modules.end(),
                  std::back_inserter(sourceProvidedModules),
-                 [this](AST::ModulePtr p)
+                 [this](AST::ModulePtr p)->bool
     {
         const AST::ModuleType type = p->header.type;
         return
@@ -1036,7 +1036,7 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
     QList<AST::ModulePtr>::iterator entry = std::find_if(
                 sourceProvidedModules.begin(),
                 sourceProvidedModules.end(),
-                [lineNo](AST::ModulePtr p)
+                [lineNo](AST::ModulePtr p)->bool
     {
         const int start = p->impl.firstLineNumber;
         const int end = p->impl.lastLineNumber;

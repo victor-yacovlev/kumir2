@@ -910,7 +910,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 
         // Filter algs list by return type matching
         std::remove_if(algs.begin(), algs.end(),
-                     [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)
+                     [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)->bool
         {
             bool typeMatch = alg->header.returnType==baseType;
             if (accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn) {
@@ -928,7 +928,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 
         // Filter algs list by access type
         std::remove_if(algs.begin(), algs.end(),
-                       [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)
+                       [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)->bool
         {
             bool accessMatch = false;
                 // Can pass an algorithm here
@@ -949,7 +949,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
                 AST::ModTypeTeacher==currentModule->header.type ||
                 AST::ModTypeTeacherMain==currentModule->header.type;
         std::remove_if(algs.begin(), algs.end(),
-                       [allowTeacherAlgorithms](AST::AlgorithmPtr alg)
+                       [allowTeacherAlgorithms](AST::AlgorithmPtr alg)->bool
         {
             const QString & name = alg->header.name;
             return name.isEmpty() || ( name.startsWith("@") && !allowTeacherAlgorithms );
@@ -957,7 +957,7 @@ SyntaxAnalizer::suggestValueAutoComplete(
 
         // Create suggestions list
         std::transform(algs.begin(), algs.end(), std::back_inserter(result),
-                       [this](AST::AlgorithmPtr alg)
+                       [this](AST::AlgorithmPtr alg)->Shared::Analizer::Suggestion
         {
             Shared::Analizer::Suggestion suggestion;
             suggestion.value = alg->header.name;
