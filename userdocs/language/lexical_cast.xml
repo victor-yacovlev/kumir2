@@ -122,5 +122,103 @@
 ]]>
             </programlisting>
         </example>
-    </section>
+    </section>	
+	<section>
+		<title>Цел</title>
+		<funcsynopsis role="кумир">
+			<funcprototype>
+				<funcdef>алг цел <function>Цел</function></funcdef>
+				<paramdef>лит<parameter>строка</parameter></paramdef>
+				<paramdef>цел<parameter>по умолчанию</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<para>
+			Переводит строку <parameter>строка</parameter> в целочисленное представление. 
+			Если строка не является целым числом, возвращается значение 
+			<parameter>по умолчанию</parameter>.
+		</para>
+		<example>
+			<programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит неправ = "1а"
+  лит прав = "2"
+  вывод Цел(неправ, 0), нс
+  вывод Цел(прав, 0)
+кон
+			]]>
+			</programlisting>
+		</example>
+	</section>
+	<section>
+		<title>Вещ</title>
+		<funcsynopsis role="кумир">
+			<funcprototype>
+				<funcdef>алг вещ <function>Вещ</function></funcdef>
+				<paramdef>лит<parameter>строка</parameter></paramdef>
+				<paramdef>вещ<parameter>по умолчанию</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<para>
+			Переводит строку <parameter>строка</parameter> в вещественное представление. 
+			Если строка не является вещественным числом, возвращается значение 
+			<parameter>по умолчанию</parameter>.
+		</para>
+		<example>
+			<programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит неправ = "1,4"
+  лит прав = "2.5"
+  вывод Вещ(неправ, 0.0), нс
+  вывод Вещ(прав, 0.0)
+кон
+			]]>
+			</programlisting>
+		</example>
+	</section>
+	<section>
+		<title>Лог</title>
+		<funcsynopsis role="кумир">
+			<funcprototype>
+				<funcdef>алг лог <function>Лог</function></funcdef>
+				<paramdef>лит<parameter>строка</parameter></paramdef>
+				<paramdef>лог<parameter>по умолчанию</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<para>
+			Переводит строку <parameter>строка</parameter> в логическое представление. 
+			Если строка не является логическим значением, возвращается значение 
+			<parameter>по умолчанию</parameter>.
+		</para>
+		<para>
+			Данная функция распознает такие строки:
+			<itemizedlist>
+				<listitem><code>"да"</code>,</listitem>
+				<listitem><code>"1"</code>,</listitem>
+				<listitem><code>"истина"</code></listitem>
+			</itemizedlist>
+			как истину, а строки:
+			<itemizedlist>
+				<listitem><code>"нет"</code>,</listitem>
+				<listitem><code>"0"</code>,</listitem>
+				<listitem><code>"ложь"</code></listitem>
+			</itemizedlist>
+			как ложь.
+		</para>
+		<example>
+			<programlisting role="кумир"><![CDATA[
+алг
+нач
+  лит неправ = "плюс"
+  лит прав_1 = "да"
+  лит прав_2 = "1"
+  вывод Лог(неправ, нет), нс
+  вывод Лог(прав_1, нет), нс
+  вывод Лог(прав_2, нет)
+кон
+			]]>
+			</programlisting>
+		</example>
+	</section>
 </section>

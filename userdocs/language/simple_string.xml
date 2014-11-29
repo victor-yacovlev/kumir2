@@ -52,7 +52,7 @@
 нач
   сим а
   цел ц
-  вывод "введите символ"
+  вывод "введите символ "
   ввод а
   ц := код(а)
   вывод ц
@@ -74,4 +74,45 @@
             Возвращает порядковый номер символа в таблице Unicode.
         </para>
     </section>
+	
+	<section>
+		<title>символ</title>
+		<funcsynopsis role="кумир">
+			<funcprototype>
+				<funcdef>алг сим <function>символ</function></funcdef>
+				<paramdef>цел <parameter>n</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<para>
+			Возвращает символ, имеющий в таблице КОИ8-Р порядковый номер <parameter>n</parameter>
+			(в соответствии со стандартом RFC&nbsp;1489).
+		</para>
+		<example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  сим а
+  цел ц
+  вывод "введите число "
+  ввод ц
+  а := символ(ц)
+  вывод а
+кон
+]]>
+            </programlisting>
+        </example>
+	</section>
+	
+	<section>
+		<title>символ2</title>
+		<funcsynopsis role="кумир">
+			<funcprototype>
+				<funcdef>алг сим <function>символ2</function></funcdef>
+				<paramdef>цел <parameter>n</parameter></paramdef>
+			</funcprototype>
+		</funcsynopsis>
+		<para>
+			Возвращает символ, имеющий в таблице Unicode порядковый номер <parameter>n</parameter>.
+		</para>
+	</section>
 </section>
