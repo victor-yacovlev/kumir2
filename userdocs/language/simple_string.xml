@@ -12,11 +12,11 @@
         <funcsynopsis role="кумир">
             <funcprototype>
                 <funcdef>алг цел <function>длин</function></funcdef>
-                <paramdef>лит <parameter>s</parameter></paramdef>
+                <paramdef>лит <parameter>строка</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>
-            Возвращает количество символов в строке <parameter>s</parameter>.
+            Возвращает количество символов в строке <parameter>строка</parameter>.
         </para>
         <example>
             <programlisting role="кумир"><![CDATA[
