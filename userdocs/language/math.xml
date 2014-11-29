@@ -538,7 +538,7 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Возвращает остаток максимальное целое число, не превосходящее вещественного значения
+			Возвращает целую часть числа <parameter>x</parameter> -- максимальное целое число, не превосходящее вещественного значения
             <parameter>x</parameter>.
         </para>
         <example>
@@ -614,6 +614,21 @@
         <para>
             Случайное целое число от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
             последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
+        </para>
+    </section>
+	
+	<section>
+        <title>irand</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг цел <function>irnd</function></funcdef>
+                <paramdef>цел <parameter>x</parameter></paramdef>
+				<paramdef>цел <parameter>y</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+            Случайное целое число от <parameter>x</parameter> до <parameter>y</parameter>: при последовательных вызовах этой функции получается
+            последовательность случайных чисел, равномерно распределенных на [<parameter>x</parameter>,&nbsp;<parameter>y</parameter>].
         </para>
     </section>
 
