@@ -75,10 +75,10 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг <function>закрыть</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>Закрывает ранее открытый для чтения или записи текстовый файл <parameter>ключ</parameter>.</para>
+        <para>Закрывает ранее открытый для чтения или записи текстовый файл <parameter>имя файла</parameter>.</para>
         <para>После закрытия файл становится доступным для повторного открытия.</para>
         <para>Все файлы должны быть закрыты до окончания работы программы, иначе возникнет ошибка выполнения при
             завершении выполнения программы.
@@ -92,10 +92,10 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг <function>начать чтение</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>Сбрасывает указатель чтения файла <parameter>ключ</parameter> на его начало.</para>
+        <para>Сбрасывает указатель чтения файла <parameter>имя файла</parameter> на его начало.</para>
     </section>
     <section>
         <title>конец файла</title>
@@ -105,7 +105,7 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг лог<function>конец файла</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>Возвращает <code role="кумир">да</code>, если указатель находится в самом конце файла и
@@ -120,11 +120,11 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг лог <function>есть данные</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>Возвращает <code role="кумир">да</code>, если после текущей позиции чтения в файле
-            <parameter>ключ</parameter> есть хотя бы один видимый символ.
+            <parameter>имя файла</parameter> есть хотя бы один видимый символ.
         </para>
         <para>
             Если алгоритм <function>есть данные</function> возвращает значение
