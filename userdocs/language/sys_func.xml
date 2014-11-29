@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+        [
+                <!ENTITY % times SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-lat1.ent">
+                <!ENTITY % hellip SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent">
+                ]>
+<section id="sys_func">
+	<title>Системные функции</title>
+    <section>
+        <title>ждать</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг <function>ждать</function></funcdef>
+				<paramdef>цел <parameter>x</parameter></paramdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+			Приостанавливает работу программы на <parameter>x</parameter> миллисекунд.
+        </para>
+    </section>
+	<section>
+        <title>время</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+				<funcdef>алг цел <function>время</function></funcdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+			Возвращает текущее время в виде количества секунд, прошедших с @@СПРОСИТЬ!!!@@.
+        </para>
+		<example>
+            <programlisting role="кумир"><![CDATA[
+алг
+нач
+  вывод время
+кон
+]]>
+            </programlisting>
+        </example>
+    </section>
+</section>

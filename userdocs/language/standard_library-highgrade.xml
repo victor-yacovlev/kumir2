@@ -19,4 +19,5 @@
     <xi:include href="simple_string.xml"/>
     <xi:include href="stringutils.xml"/>
     <xi:include href="files.xml"/>
+	<xi:include href="sys_func.xml"/>
 </chapter>
