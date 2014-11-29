@@ -564,7 +564,7 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Случайное число от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
+			Случайное число из интервала от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
             последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
         </para>
         <example>
@@ -592,14 +592,14 @@
         <funcsynopsis role="кумир">
             <funcprototype>
                 <funcdef>алг вещ <function>rand</function></funcdef>
-                <paramdef>вещ <parameter>a</parameter></paramdef>
-                <paramdef>вещ <parameter>b</parameter></paramdef>
+                <paramdef>вещ <parameter>x</parameter></paramdef>
+                <paramdef>вещ <parameter>y</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>
-            Случайное число от <parameter>a</parameter> до <parameter>b</parameter>:
+            Случайное число из интервала от <parameter>x</parameter> до <parameter>y</parameter>:
             при последовательных вызовах этой функции получается последовательность случайных чисел,
-            равномерно распределенных на [<parameter>a</parameter>,&nbsp;<parameter>b</parameter>].
+            равномерно распределенных на [<parameter>x</parameter>,&nbsp;<parameter>y</parameter>].
         </para>
     </section>
 
@@ -612,7 +612,7 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Случайное целое число от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
+            Случайное целое число из интервала от 0 до <parameter>x</parameter>: при последовательных вызовах этой функции получается
             последовательность случайных чисел, равномерно распределенных на [0,&nbsp;<parameter>x</parameter>].
         </para>
     </section>
@@ -627,8 +627,9 @@
             </funcprototype>
         </funcsynopsis>
         <para>
-            Случайное целое число от <parameter>x</parameter> до <parameter>y</parameter>: при последовательных вызовах этой функции получается
-            последовательность случайных чисел, равномерно распределенных на [<parameter>x</parameter>,&nbsp;<parameter>y</parameter>].
+            Случайное целое число из интервала от <parameter>x</parameter> до <parameter>y</parameter>: при последовательных вызовах 
+			этой функции получается последовательность случайных чисел, равномерно распределенных на 
+			[<parameter>x</parameter>,&nbsp;<parameter>y</parameter>].
         </para>
     </section>
 
