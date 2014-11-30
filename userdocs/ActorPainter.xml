@@ -316,7 +316,7 @@ from painter import *
                     </listitem>
                     <listitem>
                         <para>
-                            <parameter>s</parameter>
+                            <parameter>l</parameter>
                             -- значение интенсивности цвета (от
                             <code>0</code>
                             до
@@ -644,6 +644,269 @@ from painter import *
                 </itemizedlist>
             </para>
         </section>
+		<section id="разложить в CMYK">
+			<title>разложить в CMYK</title>
+			<funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг
+                        <function>CMYK</function>
+                    </funcdef>
+					<paramdef>цвет
+						<parameter>цв</parameter>
+					</paramdef>
+					<paramdef>аргрез цел
+                        <parameter>c</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>m</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>y</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>k</parameter>
+                    </paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Позволяет получить значения параметров модели CMYK для анализируемого цвета.
+				<itemizedlist>
+					<listitem>
+                        <para>
+                            <parameter>цв</parameter>
+							-- анализируемый цвет;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>c</parameter>
+                            -- величина бирюзовой составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>m</parameter>
+                            -- величина пурпурной составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>y</parameter>
+                            -- величина желтой составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>k</parameter>
+                            -- величина черной составляющей цвета.
+                        </para>
+                    </listitem>
+                </itemizedlist>
+				Все значения состовляющих должны быть от
+                <code>0</code>
+                до<code>255</code>.
+			</para>
+		</section>
+		<section id="разложить в RGB">
+			<title>разложить в RGB</title>
+			<funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг
+                        <function>RGB</function>
+                    </funcdef>
+					<paramdef>цвет
+						<parameter>цв</parameter>
+					</paramdef>
+					<paramdef>аргрез цел
+                        <parameter>r</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>g</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>b</parameter>
+                    </paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Позволяет получить значения параметров модели RGB для анализируемого цвета.
+				<itemizedlist>
+					<listitem>
+                        <para>
+                            <parameter>цв</parameter>
+							-- анализируемый цвет;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>r</parameter>
+                            -- величина красной составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>g</parameter>
+                            -- величина зеленой составляющей цвета;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>b</parameter>
+                            -- величина синей составляющей цвета.
+                        </para>
+                    </listitem>
+                </itemizedlist>
+				Все значения состовляющих должны быть от
+                <code>0</code>
+                до<code>255</code>.
+			</para>
+				<example>
+				<title>Разложение в RGB</title>
+				<programlisting role="кумир"><![CDATA[
+использовать Рисователь
+алг
+нач
+  цвет цв = фиолетовый
+  цел r, g, b
+  разложить в RGB(цв, r, g, b)
+  вывод r, нс, g, нс, b
+кон
+]]>
+				</programlisting>
+			</example>
+		</section>
+		<section id="разложить в HSL">
+			<title>разложить в HSL</title>
+			<funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг
+                        <function>HSL</function>
+                    </funcdef>
+					<paramdef>цвет
+						<parameter>цв</parameter>
+					</paramdef>
+					<paramdef>аргрез цел
+                        <parameter>h</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>s</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>l</parameter>
+                    </paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Позволяет получить значения параметров модели HSL для анализируемого цвета.
+				<itemizedlist>
+					<listitem>
+                        <para>
+                            <parameter>цв</parameter>
+							-- анализируемый цвет;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>h</parameter>
+                            -- тон цвета (значения в градусах от
+                            <code>0</code>
+                            до
+                            <code>359</code>);
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>s</parameter>
+                            -- значение насыщенности цвета (от
+                            <code>0</code>
+                            до
+                            <code>255</code>);
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>l</parameter>
+                            -- значение интенсивности цвета (от
+                            <code>0</code>
+                            до
+                            <code>255</code>).
+                        </para>
+                    </listitem>
+                </itemizedlist>
+			</para>
+		</section>
+		<section id="разложить в HSV">
+			<title>разложить в HSV</title>
+			<funcsynopsis role="кумир">
+                <funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>алг
+                        <function>HSV</function>
+                    </funcdef>
+					<paramdef>цвет
+						<parameter>цв</parameter>
+					</paramdef>
+					<paramdef>аргрез цел
+                        <parameter>h</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>s</parameter>
+                    </paramdef>
+					<paramdef>аргрез цел
+                        <parameter>v</parameter>
+                    </paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Позволяет получить значения параметров модели HSL для анализируемого цвета.
+				<itemizedlist>
+					<listitem>
+                        <para>
+                            <parameter>цв</parameter>
+							-- анализируемый цвет;
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>h</parameter>
+                            -- тон цвета (значения в градусах от
+                            <code>0</code>
+                            до
+                            <code>359</code>);
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>s</parameter>
+                            -- значение насыщенности цвета (от
+                            <code>0</code>
+                            до
+                            <code>255</code>);
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <parameter>v</parameter>
+                            -- значение яркости цвета (от
+                            <code>0</code>
+                            до
+                            <code>255</code>).
+                        </para>
+                    </listitem>
+                </itemizedlist>
+			</para>
+		</section>
     </section>
     <section id="Информационные алгоритмы">
         <title>Информационные алгоритмы</title>
