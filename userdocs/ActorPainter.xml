@@ -937,8 +937,14 @@ from painter import *
 			</funcsynopsis>
 			<para>
 				Рисует отрезок.
-				<orderedlist>
-				</orderedlist>
+				<itemizedlist>
+					<listitem>
+						<para><code role="кумир">(x1,y1)</code> -- координаты начала отрезка;</para>
+					</listitem>
+					<listitem>
+						<para><code role="кумир">(x2,y2)</code> -- координаты конца отрезка.</para>
+					</listitem>
+				</itemizedlist>
 			</para>
 		</section>
         <section id="линия в точку">
@@ -975,9 +981,21 @@ from painter import *
 				</funcprototype>
 			</funcsynopsis>
 			<para>
-				Рисует многоугольник, имеющий <parameter>n</parameter> вершин. Каждая вершина с номером <code>i</code>
-				имеет координаты <code>(xx[i], yy[i])</code>. Размер обих массивов координат должен совпадать с 
-				количеством вершин <parameter>n</parameter>. Многоугольник может быть незамкнутым.
+				Рисует многоугольник. 
+				<itemizedlist>
+					<listitem>
+						<para><parameter>n</parameter> -- количество вершин многоугольника;</para>
+					</listitem>
+					<listitem>
+						<para><parameter>xx</parameter> -- массив абсцисс вершин;</para>
+					</listitem>
+					<listitem>
+						<para><parameter>yy</parameter> -- массив ординат вершин.</para>
+					</listitem>
+				</itemizedlist>
+				Каждая вершина с номером <code role="кумир">i</code> имеет координаты <code role="кумир">(xx[i], yy[i])</code>. 
+				Размеры обих массивов координат должен совпадать с количеством вершин 
+				<parameter>n</parameter>.
 			</para>
 		</section>
         <section id="пиксель">
@@ -1053,8 +1071,14 @@ from painter import *
                 <itemizedlist>
                     <listitem>
                         <para><parameter>x1</parameter> -- координата левой границы прямоугольника, в который вписан эллипс;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>y1</parameter> -- координата верхней границы прямоугольника, в который вписан эллипс;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>x2</parameter> -- координата правой границы прямоугольника, в который вписан эллипс;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>y2</parameter> -- координата нижней границы прямоугольника, в который вписан эллипс.</para>
                     </listitem>
                 </itemizedlist>
@@ -1076,7 +1100,11 @@ from painter import *
                 <itemizedlist>
                     <listitem>
                         <para><parameter>xc</parameter> -- координата центра окружности по горизонтали;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>yc</parameter> -- координата центра окружности по вертикали;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>r</parameter> -- радиус окружности.</para>
                     </listitem>
                 </itemizedlist>
@@ -1098,7 +1126,11 @@ from painter import *
                 <itemizedlist>
                     <listitem>
                         <para><parameter>x</parameter> -- координата левой границы прямоугольника, в который вписана надпись;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>y</parameter> -- координата верхней границы прямоугольника, в который вписана надпись;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>текст</parameter> -- текст надписи.</para>
                     </listitem>
                 </itemizedlist>
@@ -1146,7 +1178,11 @@ from painter import *
                 <itemizedlist>
                     <listitem>
                         <para><parameter>ширина</parameter> -- ширина нового листа в пикселях;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>высота</parameter> -- высота нового листа в пикселях;</para>
+					</listitem>
+					<listitem>
                         <para><parameter>фон</parameter> -- цвет фона нового листа.</para>
                     </listitem>
                 </itemizedlist>
