@@ -739,7 +739,7 @@ from painter import *
         </section>
         <section id="значение в точке">
             <title>значение в точке</title>
-            <funcsynopsis>
+			<funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг цвет <function>значение в точке</function></funcdef>
@@ -836,6 +836,54 @@ from painter import *
                 </itemizedlist>
             </para>
         </section>
+		<section id="убрать кисть">
+			<title>убрать кисть</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>убрать кисть</function>
+                    </funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Отключает кисть. Вся дальнейшая работа с Рисователем будет происходить без заливки. 
+				Чтобы снова начать использовать кисть, нужно выполнить <code role="кумир">кисть</code>.
+			</para>
+			<example>
+				<programlisting role="кумир"><![CDATA[
+использовать Рисователь
+алг
+нач
+  цвет залив = красный
+  кисть(залив)
+  окружность(0,0,50)
+  убрать кисть
+  окружность(0,0,100)
+кон
+]]>
+				</programlisting>
+			</example>
+		</section>
+		<section id="плотность">
+			<title>плотность</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Рисователь</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>плотность</function>
+						<paramdef>цел <parameter>значение</parameter></paramdef>
+                    </funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Устанавливает плотность заливки, равную параметру <parameter>значение</parameter>.
+			</para>
+		</section>
         <section id="шрифт">
             <title>шрифт</title>
             <funcsynopsis role="кумир">
