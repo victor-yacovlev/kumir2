@@ -224,4 +224,157 @@
             </para>
         </section>
     </section>
+	<section configuration="teacher" id="Алгоритмы контроля обстановки Вертуна">
+		<title>Алгоритмы контроля обстановки исполнителя "Вертун"</title>
+		<para>
+			Алгоритмы, описанные ниже могут быть вызваны только из "скрытой" части программы. Они служат для получении
+			различных данных о текущей обстановке исполнителя <emphasis role="bold">Вертун</emphasis>.
+		</para>
+		<section id="@@есть точка">
+			<title>@@есть точка</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>лог</type><function>@@есть точка</function></funcdef>
+					<paramdef>цел <parameter>x</parameter></paramdef>
+					<paramdef>цел <parameter>y</parameter></paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>bool</type><function>@@is_marked</function></funcdef>
+					<paramdef>int <parameter>x</parameter></paramdef>
+					<paramdef>int <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Проверяет, есть ли точка в клетке с координатами 
+				<code role="кумир">(<parameter>x</parameter>, <parameter>y</parameter>)</code>.
+				Если точка в клетке есть, возвращает <code role="кумир">да</code>, иначе -- 
+				<code role="кумир">нет</code>.
+			</para>
+		</section>
+		<section id="@@клетка закрашена">
+			<title>@@клетка закрашена</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>лог</type><function>@@клетка закрашена</function></funcdef>
+					<paramdef>цел <parameter>x</parameter></paramdef>
+					<paramdef>цел <parameter>y</parameter></paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>bool</type><function>@@is_painted</function></funcdef>
+					<paramdef>int <parameter>x</parameter></paramdef>
+					<paramdef>int <parameter>y</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Проверяет, закрашена ли клетка с координатами 
+				<code role="кумир">(<parameter>x</parameter>, <parameter>y</parameter>)</code>.
+				Если клетка закрашена, возвращает <code role="кумир">да</code>, иначе -- 
+				<code role="кумир">нет</code>.
+			</para>
+		</section>
+		<section id="@@положение робота x">
+			<title>@@положение робота x</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>@@положение робота x</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>int</type><function>@@position_x</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Возвращает <code>x</code>-координату текущего положения исполнителя "Вертун".
+			</para>
+		</section>
+		<section id="@@положение робота y">
+			<title>@@положение робота y</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>@@положение робота y</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>int</type><function>@@position_y</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Возвращает <code>y</code>-координату текущего положения исполнителя "Вертун".
+			</para>
+		</section>
+		<section id="@@размер поля x">
+			<title>@@размер поля x</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>@@размер поля x</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>int</type><function>@@size_x</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Возвращает ширину обстановки исполнителя "Вертун".
+			</para>
+		</section>
+		<section id="@@размер поля y">
+			<title>@@размер поля y</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+                    <package>Вертун</package>
+                </funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>@@размер поля y</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<funcsynopsis role="python">
+                <funcsynopsisinfo>
+                    <package>isometric_robot</package>
+                </funcsynopsisinfo>
+                <funcprototype>
+                    <funcdef>def <type>int</type><function>@@size_y</function></funcdef>
+                </funcprototype>
+            </funcsynopsis>
+			<para>
+				Возвращает высоту обстановки исполнителя "Вертун".
+			</para>
+		</section>
+	</section>
 </article>
