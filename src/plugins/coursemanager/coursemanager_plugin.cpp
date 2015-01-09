@@ -269,7 +269,7 @@ void Plugin::setTestingResult(ProgramRunStatus status, int value)
 
     if (status==AbortedOnError || status==UserTerminated)
     {
-        MW->setMark(0);
+        MW->setMark(1);
         field_no=0;
         prevFld->setEnabled(field_no>0);
         nextFld->setEnabled((field_no+1)<cur_task->minFieldCount() && cur_task->minFieldCount()>0);
