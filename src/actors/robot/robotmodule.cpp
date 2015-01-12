@@ -851,6 +851,7 @@ namespace ActorRobot {
             
             redrawEditFields();
             redrawRTFields();
+            showButtons(false);
             update();
             
         }
@@ -869,6 +870,7 @@ namespace ActorRobot {
             
             redrawEditFields();
             redrawRTFields();
+            showButtons(false);
             update();
             
         }
@@ -878,6 +880,8 @@ namespace ActorRobot {
             radSpinBox->hide();
             redrawRTFields();
             setTextEditMode(true);
+            showButtons(false);
+            update();
         }
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
