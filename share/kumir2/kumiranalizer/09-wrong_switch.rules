@@ -1,4 +1,0 @@
-[9] ВЫБОР -> выбор ИНАЧЕ_ВСЕ : { setCurrentError("No one 'case'"); processCorrectSwitch(); }
-[9] ВЫБОР -> выбор ФРАГМЕНТ_АЛГОРИТМА* ИНАЧЕ_ВСЕ : { setCurrentError("No 'case' after 'switch'"); processCorrectSwitch(); }
-[9] ФРАГМЕНТ_АЛГОРИТМА* -> нц ФРАГМЕНТ_АЛГОРИТМА* КОН_ВМЕСТО_КЦ : {processCorrectBeginOfLoop();}
-

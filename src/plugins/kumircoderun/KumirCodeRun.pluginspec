@@ -1,2 +1,0 @@
-name    = KumirCodeRun
-provides= Runner
