@@ -3099,15 +3099,17 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
         alg->header.specialType = AST::AlgorithmTypeTesting;
     }
 
-    if (teacherMode_ && alg->header.name==lexer_->testingAlgorhitmName()) {
+    const bool teacherModule = AST::ModTypeTeacher==mod->header.type || AST::ModTypeTeacherMain==mod->header.type;
+    const bool allowTeacherModeAlgorithms = teacherModule || teacherMode_ || internalBuildFlag;
+
+    if (allowTeacherModeAlgorithms && alg->header.name==lexer_->testingAlgorhitmName()) {
         alg->header.specialType = AST::AlgorithmTypeTesting;
     }
-    else if ( (teacherMode_ || internalBuildFlag) && alg->header.name.startsWith("@")) {
+    else if ( allowTeacherModeAlgorithms && alg->header.name.startsWith("@")) {
         alg->header.specialType = AST::AlgorithmTypeTeacher;
     }
 
-    if (!(teacherMode_ || internalBuildFlag) && alg->header.specialType!=AST::AlgorithmTypeTesting
-            && alg->header.name.startsWith("@"))
+    if (!allowTeacherModeAlgorithms && alg->header.name.startsWith("@"))
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)
