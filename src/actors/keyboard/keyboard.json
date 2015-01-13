@@ -11,15 +11,15 @@
     ],
     "methods": [
         {
-            "name": { "ascii": "key hit", "ru_RU": "клавиша нажата" },
+            "name": { "ascii": "key hit", "ru_RU": "сигнал клав" },
             "returnType": "bool"
         },
         {
-            "name": { "ascii": "key code", "ru_RU": "код клавиши" },
+            "name": { "ascii": "key code", "ru_RU": "код клав" },
             "returnType": "int"
         },
         {
-            "name": { "ascii": "clear key buffer", "ru_RU": "очистить клавиши" }
+            "name": { "ascii": "clear key buffer", "ru_RU": "сброс клав" }
         },
         {
             "name": { "ascii": "input", "ru_RU": "ввод" },
