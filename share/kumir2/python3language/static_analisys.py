@@ -6,6 +6,7 @@ import parser
 import importlib
 import inspect
 
+import analizer_instance
 
 class Name:
     """ super class for all names (variables, functions etc)
@@ -85,7 +86,8 @@ class Callable(Name):
             for used in self.global_used:
                 for var in self.local_names:
                     if used[0].name == var.name and (not self.is_as_global(var)):
-                        err = MyError(used[1], used[2], "error, use local variable before defining" + " line " + str(used[1]) + " position " + str(used[2]))
+                        err = analizer_instance.Error(used[1]-1, used[2], len(used.name), "Undefined local variable")
+                        # err = MyError(used[1], used[2], "error, use local variable before defining" + " line " + str(used[1]) + " position " + str(used[2]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
 
@@ -105,13 +107,15 @@ class Callable(Name):
                                 var_name += name[1]
 
                     if not is_local_identified(Name(var_name)) and not is_global_identified(Name(var_name)):
-                        err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                        err = analizer_instance.Error(st[1][1][2]-1, st[1][1][3], len(var_name), "Undefined name")
+                        # err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
                 elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_local_identified(Name(st[1][1]))) and (is_global_identified(Name(st[1][1]))):
                     self.global_used.append([Variable(st[1][1]), st[1][2], st[1][3]])
                 elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_local_identified(Name(st[1][1]))) and (not is_global_identified(Name(st[1][1]))):
-                    err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
+                    err = analizer_instance.Error(st[1][2]-1, st[1][3], len(st[1][1]), "Undefined name")
+                    # err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
                 elif (st[0] == 320) and len(st)>2 and (st[2][0]==321):
@@ -164,7 +168,8 @@ class Callable(Name):
                                         p.parse(p.body, p.visible_names + self.local_names)
                                 break
                     else:
-                        err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                        err = analizer_instance.Error(st[1][1][2]-1, st[1][1][3], len(sym.name), "Undefined function name")
+                        # err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                         if err not in ERROR_LIST:
                             ERROR_LIST.append(err)
                 elif st[0] == 319 and len(st) != 3:
@@ -496,14 +501,16 @@ def parse_main(st):
                         if not isinstance(name, int):
                             var_name += name[1]
                 if not is_identified(Name(var_name)):
-                    err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                    err = analizer_instance.Error(st[1][1][2]-1, st[1][1][3], len(var_name), "Undefined variable")
+                    # err = MyError(st[1][1][2], st[1][1][3], "error, undefined variable" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
                 else:
                     for j in range(1,len(st)):
                         parse_right_part(st[j])
             elif (st[0] == 320) and (st[1][0] == token.NAME) and (not is_identified(Name(st[1][1]))):
-                err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
+                err = analizer_instance.Error(st[1][2]-1, st[1][3], len(st[1][1]), "Undefined variable")
+                # err = MyError(st[1][2], st[1][3], "error, undefined variable" + " line " + str(st[1][2]) + " position " + str(st[1][3]))
                 if err not in ERROR_LIST:
                     ERROR_LIST.append(err)
             elif (st[0] == 320) and len(st)>2 and (st[2][0]==321):
@@ -541,7 +548,8 @@ def parse_main(st):
                                     p.parse(p.body, p.visible_names + GLOBAL_SYMBOL_LIST)
                             break
                 else:
-                    err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
+                    err = analizer_instance.Error(st[1][1][2]-1, st[1][1][3], len(sym.name), "Undefined function")
+                    # err = MyError(st[1][1][2],st[1][1][3],"error, undefined function" + " line " + str(st[1][1][2]) + " position " + str(st[1][1][3]))
                     if err not in ERROR_LIST:
                         ERROR_LIST.append(err)
             elif st[0] == 319 and len(st)!=3:
@@ -892,6 +900,14 @@ def run_static_analisys(source_code_str):
             s.do_all(s.body, GLOBAL_SYMBOL_LIST)
 
 
+def get_errors():
+    global ERROR_LIST
+    return ERROR_LIST
+
+
+def clear_errors():
+    global ERROR_LIST
+    ERROR_LIST.clear()
 
 if __name__ == "__main__":
     import os

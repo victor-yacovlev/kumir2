@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Analizer instance module
 NOTE: Each analizer instance runs in it's own interpreter
@@ -7,10 +8,10 @@ import os
 from kumir_constants import *
 
 import color_marking
+import static_analisys
 
 SOURCE_DIR_NAME = ""
 SOURCE_TEXT = ""
-ERRORS = []
 LINE_PROPERTIES = []
 LINE_RANKS = []
 
@@ -37,6 +38,9 @@ class Error:
         self.length = length
         self.message = message
 
+    def __eq__(self, other):
+        return self.line_no == other.line_no and self.start_pos == other.start_pos
+
 
 def set_source_dir_name(path):
     """
@@ -47,8 +51,6 @@ def set_source_dir_name(path):
     global SOURCE_DIR_NAME
     SOURCE_DIR_NAME = path
 
-
-from static_analisys import *  # не используемый import
 
 
 def set_source_text(text):
@@ -62,6 +64,8 @@ def set_source_text(text):
 
     global LINE_PROPERTIES
     global LINE_RANKS
+    static_analisys.clear_errors()
+    static_analisys.run_static_analisys(text)
     color_marking.set_color_marks_and_ranks(SOURCE_TEXT)
     LINE_RANKS = color_marking.get_ranks()
     # VY: Результат -- это список пар чисел
@@ -98,6 +102,13 @@ def set_source_text(text):
 
 
     LINE_PROPERTIES = color_marking.get_colors()
+    for error in get_errors():
+        if 0 <= error.line_no <= len(LINE_PROPERTIES):
+            props = LINE_PROPERTIES[error.line_no]
+            start = error.start_pos
+            end = start + error.length
+            for i in range(start, end):
+                props[i] |= LxTypeError
 
 
 def get_errors():
@@ -105,8 +116,7 @@ def get_errors():
     Get a list of errors generated while 'set_source_text'
         returns a list of Error class instances
     """
-    global ERRORS
-    return ERRORS
+    return static_analisys.ERROR_LIST
 
 
 def get_line_properties():
@@ -168,11 +178,21 @@ def __run_test(test_name):
     lines = SOURCE_TEXT.split('\n')
     ranks = get_line_ranks()
     props = [[LinePropPrintHex(item) for item in row] for row in get_line_properties()]
+    errors = get_errors()
 
     assert len(lines) == len(ranks) == len(props)
     print("\nBegin test ", test_name, "========================")
     for no in range(0, len(lines)):
         out = "{:2d}: {!s:<30} # {!s:<8} {}".format(no+1, lines[no], ranks[no], props[no])
+        print(out)
+    if errors:
+        print("\n")
+    for error in errors:
+        print("Error: ", error.message)
+        line = lines[error.line_no]
+        out = "{:2d}: {:s}".format(error.line_no+1, line)
+        print(out)
+        out = "    " + " " * error.start_pos + "^" * error.length
         print(out)
     print("End test ", test_name, "==========================")
 
@@ -182,7 +202,8 @@ if __name__ == "__main__":
         "MyTests/test2.py",
         "MyTests/test3.py",
         "MyTests/test4.py",
-        "MyTests/test5.py"
+        "MyTests/test5.py",
+        "MyTests/undefined_names.py"
     ]
     for test in TESTS:
         __run_test(test)

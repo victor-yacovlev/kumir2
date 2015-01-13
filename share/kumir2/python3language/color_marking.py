@@ -1,3 +1,4 @@
+# coding=utf-8
 from tokenize import generate_tokens, tokenize, TokenError
 import keyword
 import token
@@ -142,7 +143,8 @@ def set_color_marks_and_ranks(source_code_str):
             pair_line_ranks.append((line_ranks[i], 0))
     line_ranks = []
     line_ranks.extend(pair_line_ranks)
-    print(line_ranks)
+    if __name__ == "__main__":
+        print(line_ranks)
 
 
 def get_colors():
