@@ -215,7 +215,11 @@ QSize StatusBar::messageItemSize() const
 QFont StatusBar::statusBarFont() const
 {
     QFont fnt = font();
+#ifdef Q_OS_LINUX
+    fnt.setPointSize(9);
+#else
     fnt.setPointSize(12);
+#endif
     return fnt;
 }
 
@@ -259,7 +263,7 @@ void StatusBar::paintEvent(QPaintEvent *event)
     QStyleOption opt;
     opt.initFrom(this);
     st->drawPrimitive(QStyle::PE_PanelStatusBar, &opt, &p, this);
-    const QPen pen(palette().brush(QPalette::Text), 1);
+    const QPen pen(palette().brush(QPalette::WindowText), 1);
     p.setFont(statusBarFont());
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
@@ -428,7 +432,7 @@ void StatusBar::paintMessageItem(QPainter &p, int x)
 
 QColor StatusBar::normalColor() const
 {
-    return palette().brush(QPalette::Text).color();
+    return palette().brush(QPalette::WindowText).color();
 }
 
 QColor StatusBar::alternateColor() const
