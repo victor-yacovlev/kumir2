@@ -286,6 +286,11 @@ void DocBookViewImpl::navigateToApiFunction(const QString & package, const QStri
     }
 }
 
+void DocBookViewImpl::clearNavigationFilters()
+{
+    sidePanel_->clearNavigationFilters();
+}
+
 void DocBookViewImpl::removeDocument(const Document & existingDocument)
 {
 

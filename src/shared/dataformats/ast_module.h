@@ -106,6 +106,9 @@ struct ModuleImplementation {
 
     ActorPtr actor;
 
+    int firstLineNumber;
+    int lastLineNumber;
+
     explicit ModuleImplementation() { actor = nullptr; }
 
 };

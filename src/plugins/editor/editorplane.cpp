@@ -1556,6 +1556,10 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
             if (editor_->hasBreakpointSupport())
                 editor_->toggleBreakpoint();
         }
+        else if (e->key()==Qt::Key_L && e->modifiers().testFlag(Qt::ControlModifier)) {
+            if (editor_->plugin_->teacherMode_)
+                editor_->cursor()->toggleLock();
+        }
         else if (e->key()==Qt::Key_Tab) {
             if (editor_->analizerPlugin_ &&
                     Shared::AnalizerInterface::HardIndents!=editor_->analizerPlugin_->indentsBehaviour()) {

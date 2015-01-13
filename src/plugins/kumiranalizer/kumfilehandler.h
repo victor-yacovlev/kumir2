@@ -35,7 +35,8 @@ public:
         QString string = stream.readAll();
         return fromString(string);
     }
-
+private:
+    static QString& trimLeadingSpaces(QString &line);
 };
 
 } // namespace KumirAnalizer

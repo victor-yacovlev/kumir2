@@ -40,6 +40,7 @@ public:
 public slots:
     void selectItem(ModelPtr model);
     void selectItem(ModelPtr model, const QString & searchText);
+    void clearNavigationFilters();
 
 signals:
     void itemPicked(ModelPtr model);

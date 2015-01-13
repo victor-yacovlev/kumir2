@@ -787,14 +787,23 @@ namespace ActorRobot {
         tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
- 
+        btnAddRow=new QToolButton();btnAddCol=new QToolButton();btnRemCol=new QToolButton();btnRemRow=new QToolButton();
     };
   void RoboField::showButtons(bool yes)
     {
+        if(!wAddCol)return;
         wAddCol->setVisible(yes);
         wAddRow->setVisible(yes);
         wRemCol->setVisible(yes);
         wRemRow->setVisible(yes);
+        if(yes)
+        {
+            wAddRow->setPos((fieldSize*(columns())/2) - (wAddRow->size().height()+3),fieldSize*(rows())+5);
+            wRemRow->setPos(fieldSize*(columns())/2+2,fieldSize*((float)rows())+5);
+            
+            wAddCol->setPos(fieldSize*((float)columns())+7,(fieldSize*(rows())/2) - (wAddRow->size().width()+1));
+            wRemCol->setPos(fieldSize*((float)columns())+7,fieldSize*(rows())/2+1);
+        }
     };
   void RoboField::setMode( int Mode) 
     { 
@@ -912,6 +921,8 @@ namespace ActorRobot {
             };
             Items.append(row);
         };
+        createResizeButtons();
+        
        timer->stop();
     };
     void RoboField::addRow()
@@ -1153,7 +1164,10 @@ namespace ActorRobot {
     }
     void RoboField::createResizeButtons()
     {
+       
         btnAddRow=new QToolButton();btnAddCol=new QToolButton();btnRemCol=new QToolButton();btnRemRow=new QToolButton();
+        
+        
         
         btnAddRow->setCheckable(false);
         btnAddRow->setIcon(QIcon(RobotModule::self->myResourcesDir().absoluteFilePath("plus.png")));
@@ -1178,7 +1192,7 @@ namespace ActorRobot {
         wAddRow=addWidget(btnAddRow);
         wAddCol=addWidget(btnAddCol);wRemCol=addWidget(btnRemCol);wRemRow=addWidget(btnRemRow);
         wAddRow->setZValue(200);
-        
+     
         wAddRow->resize(fieldSize, (float)fieldSize/2);
         wRemRow->resize(fieldSize, (float)fieldSize/2);
         
@@ -1186,12 +1200,8 @@ namespace ActorRobot {
         wRemCol->resize((float)fieldSize/2, fieldSize);
         
         
-        wAddRow->moveBy((fieldSize*(columns())/2) - (wAddRow->size().height()+3),fieldSize*(rows())+5);
-        wRemRow->moveBy(fieldSize*(columns())/2+2,fieldSize*((float)rows())+5);
-        
-        wAddCol->moveBy(fieldSize*((float)columns())+7,(fieldSize*(rows())/2) - (wAddRow->size().width()+1));
-        wRemCol->moveBy(fieldSize*((float)columns())+7,fieldSize*(rows())/2+1);
-        
+
+    //     return;
         
         wAddCol->setZValue(200);
          wRemRow->setZValue(200);
@@ -1209,10 +1219,11 @@ namespace ActorRobot {
                 if(itm)itm->cleanSelf();
             }
         };
-        
+       
         clear();
         setka.clear();
         robot=NULL;
+        keyCursor=NULL;
         this->update();
     }
    void RoboField::setTextEditMode(bool flag)

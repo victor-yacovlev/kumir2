@@ -67,6 +67,7 @@ public:
 
 public slots:
     void toggleComment();
+    void toggleLock();
     void undo();
     void redo();
     void handleUndoChanged(bool v);

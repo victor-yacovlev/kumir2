@@ -593,6 +593,8 @@ EditorInstance::EditorInstance(
     plane_->addContextMenuAction(paste_);
 
     cursor_->setTeacherMode(plugin_->teacherMode_);
+    toggleLock_->setVisible(plugin_->teacherMode_);
+    toggleLock_->setEnabled(plugin_->teacherMode_);
 
     createConnections();
 
@@ -903,6 +905,13 @@ void EditorInstance::createActions()
     QObject::connect(toggleComment_, SIGNAL(triggered()),
                      cursor_, SLOT(toggleComment()));
 
+    toggleLock_ = new QAction(plane_);
+    toggleLock_->setText(QObject::tr("(Un)Lock lines from editing"));
+    toggleLock_->setShortcut(QKeySequence("Ctrl+L"));
+    toggleLock_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QObject::connect(toggleLock_, SIGNAL(triggered()),
+                     cursor_, SLOT(toggleLock()));
+
     recordMacro_ = new QAction(plane_);
     recordMacro_->setEnabled(true);
     recordMacro_->setCheckable(true);
@@ -939,6 +948,7 @@ void EditorInstance::createActions()
 
     editMenu_->addSeparator();
     editMenu_->addAction(toggleComment_);
+    editMenu_->addAction(toggleLock_);
 
 
     editMenu_->addSeparator();

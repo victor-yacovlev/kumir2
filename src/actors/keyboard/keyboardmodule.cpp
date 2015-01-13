@@ -94,7 +94,7 @@ void KeyboardModule::finalizeRun()
     QWidgetList widgets = QApplication::allWidgets();
     Q_FOREACH(QWidget * w, widgets) {
         w->removeEventFilter(this);
-    }
+    }    
 }
 
 /* public slot */ void KeyboardModule::setAnimationEnabled(bool enabled)
@@ -108,9 +108,7 @@ void KeyboardModule::finalizeRun()
 /* public slot */ bool KeyboardModule::runKeyHit()
 {
     /* алг лог клавиша нажата */
-    bufferLock_.lock();
-    const bool result = ! buffer_.isEmpty();
-    bufferLock_.unlock();
+    const bool result = ! buffer_.empty();
     return result;
     
 }
@@ -118,10 +116,7 @@ void KeyboardModule::finalizeRun()
 /* public slot */ int KeyboardModule::runKeyCode()
 {
     /* алг цел код клавиши */
-    bufferLock_.lock();
-    const int result = buffer_.isEmpty() ? 0 : buffer_.dequeue().kumirCode;
-    qDebug() << "Got key code : " << result << "; keys left in buffer: " << buffer_.size();
-    bufferLock_.unlock();
+    const int result = buffer_.dequeue().kumirCode;
     return result;
     
 }
@@ -129,12 +124,11 @@ void KeyboardModule::finalizeRun()
 /* public slot */ void KeyboardModule::runClearKeyBuffer()
 {
     /* алг очистить клавиши */
-
-    bufferLock_.lock();
+    lastPressedLock_.lock();
     lastPressed_ = KeyEvent();
-    buffer_.clear();
-    bufferLock_.unlock();
-    
+    lastPressedLock_.unlock();
+
+    buffer_.clear();    
 }
 
 /* public slot */ int KeyboardModule::runKEY_UP()
@@ -361,9 +355,10 @@ bool KeyboardModule::eventFilter(QObject *obj, QEvent *event)
         const int code = polyakovCodeOfKey(keyEvent->key(), keyEvent->text());
         if (code) {
             qDebug() << "Catched code: " << code;
-            bufferLock_.lock();
+
             const KeyEvent keyEvent(code);
             bool addToBuffer = true;
+            lastPressedLock_.lock();
             if (lastPressed_.kumirCode) {
                 qint64 delta = keyEvent.timestamp - lastPressed_.timestamp;
                 if (delta < KeyEvent::MAX_DELTA) {
@@ -371,10 +366,11 @@ bool KeyboardModule::eventFilter(QObject *obj, QEvent *event)
                 }
             }
             lastPressed_ = keyEvent;
+            lastPressedLock_.unlock();
+
             if (addToBuffer) {
                 buffer_.enqueue(KeyEvent(code));
             }
-            bufferLock_.unlock();
         }
     }
     return QObject::eventFilter(obj, event);

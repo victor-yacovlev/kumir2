@@ -14,6 +14,7 @@ You should change it corresponding to functionality.
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
+#include "utils/lockedqueue.hpp"
 
 // Qt includes
 #include <QtCore>
@@ -96,9 +97,9 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
     static int polyakovCodeOfKey(int qtCode, const QString & text);
 
-    QQueue<KeyEvent> buffer_;
+    kumir2::LockedQueue<KeyEvent> buffer_;
     KeyEvent lastPressed_;
-    QMutex bufferLock_;
+    QMutex lastPressedLock_;
 
 
 

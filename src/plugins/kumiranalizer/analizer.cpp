@@ -958,6 +958,11 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
         for (int i=0; i<blocks.size(); i++) {
             ModuleStatementsBlock & block = blocks[i];
             QList<TextStatementPtr> & statements = block.statements;
+            const int firstLineNumber = statements.empty()
+                    ? -1 : statements.first()->data.first()->lineNo;
+            const int lastLineNumber = statements.empty()
+                    ? -1 : statements.last()->data.first()->lineNo;
+
             if (statements.startsWith(block.begin))
                 statements.pop_front();
             if (statements.endsWith(block.end))
@@ -974,6 +979,8 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
             else {
                 blockModule = unnamedUserModule;
             }
+            blockModule->impl.firstLineNumber = firstLineNumber;
+            blockModule->impl.lastLineNumber = lastLineNumber;
             foreach (TextStatementPtr st, statements)
                 st->mod = blockModule;
             if (block.begin)
@@ -1012,40 +1019,38 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
     if (lineNo==-1)
         return AST::ModulePtr();
 
-    // Find named module
-    for (int i=0; i<d->ast->modules.size(); i++) {
-        const AST::ModulePtr module = d->ast->modules.at(i);
-        AST::ModuleType moduleType = module->header.type;
-        bool useThisModule =
-                moduleType == AST::ModTypeUser ||
-                moduleType == AST::ModTypeUserMain;
-        if (teacherMode_) {
-            useThisModule = useThisModule ||
-                    moduleType == AST::ModTypeTeacher ||
-                    moduleType == AST::ModTypeTeacherMain;
-        }
-        const bool moduleHasText =
-                (module->impl.beginLexems.size() > 0 &&
-                module->impl.endLexems.size() > 0); // explicit begin/end
+    // Filter modules to be sources available for
+    QList<AST::ModulePtr> sourceProvidedModules;
+    std::copy_if(d->ast->modules.begin(),
+                 d->ast->modules.end(),
+                 std::back_inserter(sourceProvidedModules),
+                 [this](AST::ModulePtr p)->bool
+    {
+        const AST::ModuleType type = p->header.type;
+        return
+                (AST::ModTypeUser == type || AST::ModTypeUserMain == type) ||
+                (teacherMode_ && (AST::ModTypeTeacher == type || AST::ModTypeTeacherMain == type));
+    });
 
-        if (useThisModule && moduleHasText) {
-            const int start = module->impl.beginLexems.at(0)->lineNo;
-            const int end = module->impl.endLexems.at(0)->lineNo;
-            if (start <= lineNo && lineNo <= end) {
-                return module;
-            }
-        }
+    // Find module corresponding to line number
+    QList<AST::ModulePtr>::iterator entry = std::find_if(
+                sourceProvidedModules.begin(),
+                sourceProvidedModules.end(),
+                [lineNo](AST::ModulePtr p)->bool
+    {
+        const int start = p->impl.firstLineNumber;
+        const int end = p->impl.lastLineNumber;
+        return start <= lineNo && lineNo <= end;
+    });
+
+    if (sourceProvidedModules.end() == entry) {
+        // Emergency: return first module in case if AST not initialized yet
+        entry = sourceProvidedModules.begin();
     }
 
-    // If named module not found -- return unnamed main module
-    for (int i=0; i<d->ast->modules.size(); i++) {
-        if (
-                (d->ast->modules[i]->header.type==AST::ModTypeUserMain)
-                && d->ast->modules[i]->header.name.isEmpty()
-                )
-            return d->ast->modules[i];
-    }
-    return AST::ModulePtr();
+    AST::ModulePtr result = d->ast->modules.end() == entry ? AST::ModulePtr() : * entry;
+
+    return result;
 }
 
 const AST::AlgorithmPtr Analizer::findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const
