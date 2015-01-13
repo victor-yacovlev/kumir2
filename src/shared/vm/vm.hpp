@@ -85,7 +85,7 @@ public /*methods*/:
      * Returns top-level value stack scalar item or returns invalid if not
      * applicable
      */
-    inline AnyValue topLevelStackValue() const /* nothrow */;
+    inline uint8_t returnCode() const /* nothrow */;
 
     /** The following two functions are basic to use for actual run:
      *  while ( vm.hasMoreInstructions() )
@@ -160,6 +160,8 @@ private /*fields*/:
     ReturnMainValueFunctor * returnMainValue_;
     PauseFunctor * pause_;
     DelayFunctor * delay_;
+
+    uint8_t evaluationResult_;
 
     Context lastContext_;
     int backtraceSkip_;
@@ -256,13 +258,17 @@ private /*instruction methods*/:
 
 /**** IMPLEMENTATION ******/
 
-AnyValue KumirVM::topLevelStackValue() const {
-    AnyValue result;
+uint8_t KumirVM::returnCode() const {
+    AnyValue stackResult;
     if (valuesStack_.size() > 0) {
         const Variable & var = valuesStack_.top();
         if (var.dimension() == 0) {
-            result = var.value();
+            stackResult = var.value();
         }
+    }
+    uint8_t result = evaluationResult_;
+    if (stackResult.toInt() > result) {
+        result = stackResult.toInt();
     }
     return result;
 }
@@ -774,6 +780,7 @@ void KumirVM::reset()
     contextsStack_.reset();
     previousLineNo_ = -1;
     previousColStart_ = previousColEnd_ = 0u;
+    evaluationResult_ = 0u;
 
     checkFunctors();
 
@@ -1586,6 +1593,18 @@ void KumirVM::do_stdcall(uint16_t alg)
         String sv = valuesStack_.pop().toString();
         bool v = Kumir::Converter::stringToBoolDef(sv, def);
         valuesStack_.push(Variable(v));
+        break;
+    }
+    /* алг @поставить оценку(цел значение) */
+    case 0x002A: {
+        int value = valuesStack_.pop().toInt();
+        if (value < 0) {
+            value = 0;
+        }
+        if (value > 10) {
+            value = 10;
+        }
+        evaluationResult_ = static_cast<uint8_t>(value);
         break;
     }
     default: {

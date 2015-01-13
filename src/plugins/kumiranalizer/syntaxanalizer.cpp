@@ -1548,7 +1548,19 @@ QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestAutoComplete(
             filteredResult.push_back(s);
         }
     }
-    return filteredResult;
+
+    QList<Shared::Analizer::Suggestion> extraFilteredResult;
+    foreach (Shared::Analizer::Suggestion s , filteredResult) {
+        bool remove = false;
+        if (!teacherMode_ && s.value.startsWith("@"))
+            remove = true;
+        if (s.value.trimmed().isEmpty())
+            remove = true;
+        if (!remove)
+            extraFilteredResult.append(s);
+    }
+
+    return extraFilteredResult;
 }
 
 
