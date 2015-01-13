@@ -2742,7 +2742,7 @@ void SyntaxAnalizer::parseAssignment(int str)
             assignOp->error = _("Assignment of array");
             return;
         }
-        if ( (leftExpr->kind==AST::ExprVariable) && (leftExpr->variable->accessType==AST::AccessArgumentIn) ) {
+        if ( (leftExpr->kind==AST::ExprVariable || AST::ExprArrayElement==leftExpr->kind) && (leftExpr->variable->accessType==AST::AccessArgumentIn) ) {
             assignOp->error = _("Assignment to in- argument");
             return;
         }
