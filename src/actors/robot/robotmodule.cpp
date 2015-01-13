@@ -4021,7 +4021,7 @@ bool RobotModule::runIsColor()
     {
         int rws=field->rows();
         int clmns=field->columns();
-        if(row-1>=field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>field->columns()|| row-1<0 || col-1<0)
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4368,6 +4368,7 @@ void RobotModule::saveEnv()
         //CurrentFileName = RobotFile;
         
         SaveToFile(RobotFile);
+        
          RobotModule::robotSettings()->setValue("Robot/StartField/File",RobotFile);
         updateLastFiles(RobotFile);
         
@@ -4452,7 +4453,8 @@ void RobotModule::setWindowSize()
   
  void RobotModule::openRecent()
     {
-        
+        QAction *s = qobject_cast<QAction*>(sender());
+        QString txt = s->text();
         if(field->WasEdit())
         {
             QMessageBox::StandardButton r;
@@ -4487,13 +4489,15 @@ void RobotModule::setWindowSize()
             
         }
 
-        QAction *s = qobject_cast<QAction*>(sender());
-        QString txt = s->text();
+        
+       
         txt.remove(0,1);
         QStringList words = txt.split(" ");
         if(words.count()<2)return;
         QString RobotFile=words[1];
         if( LoadFromFile(RobotFile)!=0)QMessageBox::information( mainWidget(), "", QString::fromUtf8("Ошибка открытия файла! ")+RobotFile, 0,0,0);
+        reset();
+        view->setWindowSize(view->size());
         
     };
  void RobotModule::updateLastFiles(const QString newFile )
@@ -4680,6 +4684,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
              c_scale=c_scale/maxDisp;
             maxDisp=qMax(w*(1/maxDisp)/oldSize.width(),h*(1/maxDisp)/oldSize.height());
            }
+           centerOn(sceneRect().width()/2, sceneRect().height());
            return;
      }
         emit  resizeRequest(newGeometry);

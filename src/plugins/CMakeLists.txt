@@ -3,19 +3,37 @@ find_package(PythonLibs 3.2)
 
 # Mainstream plugins to be always build
 
-add_subdirectory(kumiranalizer)
-add_subdirectory(kumircodegenerator)
-add_subdirectory(kumircoderun)
-add_subdirectory(kumircompilertool)
 add_subdirectory(browser)
 add_subdirectory(editor)
 add_subdirectory(coregui)
 add_subdirectory(coursemanager)
-if(Llvm_FOUND)
-    add_subdirectory(llvmcodegenerator)
-else()
-    message(WARNING "LLVM developer libraries not found, building of LLVM support disabled")
-endif(Llvm_FOUND)
+
+
+# Plugins related to kumir language only
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumiranalizer")
+    add_subdirectory(kumiranalizer)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumircodegenerator")
+    add_subdirectory(kumircodegenerator)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumircoderun")
+    add_subdirectory(kumircoderun)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumircompilertool")
+    add_subdirectory(kumircompilertool)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/llvmcodegenerator")
+    if(Llvm_FOUND)
+	add_subdirectory(llvmcodegenerator)
+    else()
+	message(WARNING "LLVM developer libraries not found, building of LLVM support disabled")
+    endif(Llvm_FOUND)
+endif()
 
 
 # Experimental plugins from various git branches

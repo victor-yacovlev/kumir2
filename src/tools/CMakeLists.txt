@@ -13,8 +13,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/as")
     endif()
 endif()
 
-add_subdirectory(run)
-
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pictomir2course")
     add_subdirectory(pictomir2course)
 endif()
@@ -31,5 +29,9 @@ endif()
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/courseeditor")
     add_subdirectory(courseeditor)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/run")
+    add_subdirectory(run)
 endif()
 
