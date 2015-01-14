@@ -312,10 +312,12 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
         // New margin position in pixels (normalized and bounded)
         const uint x = normalizedNewMarginLinePosition(marginMousePressedPoint_.x());
 
-        // New margin width in characters
-        const uint marginCharWidth = width() - COLLAPSED_MARGIN_LINE_WIDTH == x
+        const uint marginPixelWidth = width() - COLLAPSED_MARGIN_LINE_WIDTH == x
                 ? 0
-                : (width() - x) / charWidth();
+                : width() - x;
+
+        // New margin width in characters
+        const uint marginCharWidth = marginPixelWidth / charWidth();
 
         // Store a settings value, this will be used on paint event
         editor_->mySettings()->setValue(MarginWidthKey, marginCharWidth);
@@ -363,6 +365,15 @@ void EditorPlane::mouseReleaseEvent(QMouseEvent *e)
     // Set repaint flag due to something may be changed and accept event
     update();
     e->accept();
+}
+
+uint EditorPlane::textLeftPosition() const
+{
+    QPoint lineNumbersOffset(charWidth() * LEFT_MARGIN_SIZE , 0);
+    QPoint lockSymbolOffset (editor_->plugin_->teacherMode_ ? LOCK_SYMBOL_WIDTH : 0, 0);
+    QPoint breakpointsOffset (editor_->hasBreakpointSupport() ? BREAKPOINT_PANE_WIDTH : 0, 0);
+
+    return lineNumbersOffset.x() + lockSymbolOffset.x() + breakpointsOffset.x();
 }
 
 bool EditorPlane::eventFilter(QObject *, QEvent *event)
@@ -529,7 +540,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
 
     // Begin processing of move event.
-    // There is three actions possible to perform:
+    // There are three actions possible to perform:
     //  1) move margin line;
     //  2) move visible/hidden ruler;
     //  3) perform text selection or start drag'n'drop
@@ -749,7 +760,8 @@ void EditorPlane::initMouseCursor()
 
 int EditorPlane::marginCharactersCount() const
 {
-    int val = editor_->mySettings()->value(MarginWidthKey, MarginWidthDefault).toInt();
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+    int val = sett? sett->value(MarginWidthKey, MarginWidthDefault).toInt() : 0;
     return qMax(0, val);
 }
 
@@ -1104,16 +1116,14 @@ void EditorPlane::paintHiddenTextDelimeterLine(QPainter *p)
 uint EditorPlane::normalizedNewMarginLinePosition(uint x) const
 {
     // Bound x value
-    uint minimumLeftPosition = (LEFT_MARGIN_SIZE + 1) * charWidth() +
-            (editor_->plugin_->teacherMode_ && editor_->analizerInstance_
-             ? LOCK_SYMBOL_WIDTH : 0 );
+    uint minimumLeftPosition = textLeftPosition();
 
     const uint maximumLeftPosition = width()/* - charWidth() */- COLLAPSED_MARGIN_LINE_WIDTH;
     x = qMax(minimumLeftPosition, qMin(maximumLeftPosition, x));
 
     // Make x-coordinate aligned to character matrix
     if (maximumLeftPosition != x)
-        x = ( x / charWidth() ) * charWidth();
+        x = minimumLeftPosition + ( (x-minimumLeftPosition) / charWidth() ) * charWidth();
 //    qDebug() << "X = " << x;
     return x;
 }
@@ -2035,9 +2045,13 @@ QRect EditorPlane::cursorRect() const
 
 uint EditorPlane::marginLeftBound() const
 {
-    return (widthInChars() + LEFT_MARGIN_SIZE) * charWidth() +
-            (editor_->plugin_->teacherMode_ && editor_->analizerInstance_
-             ? LOCK_SYMBOL_WIDTH : 0 ) - MARGIN_LINE_WIDTH / 2 ;
+    const uint marginCharWidth = marginCharactersCount();
+    if (0 == marginCharWidth) {
+        return width() - COLLAPSED_MARGIN_LINE_WIDTH;
+    }
+    else {
+        return width() - marginCharWidth * charWidth();
+    }
 }
 
 QRect EditorPlane::marginBackgroundRect() const
@@ -2045,7 +2059,7 @@ QRect EditorPlane::marginBackgroundRect() const
     return QRect(
                 marginLeftBound() + MARGIN_LINE_WIDTH, // left
                 1, // top
-                width() - marginLeftBound() - MARGIN_LINE_WIDTH -3, // width
+                width() - marginLeftBound() - MARGIN_LINE_WIDTH -2, // width
                 height() - 2 // height
                 );
 }
