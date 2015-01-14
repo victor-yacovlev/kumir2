@@ -4,9 +4,9 @@ Analizer instance module
 NOTE: Each analizer instance runs in it's own interpreter
 """
 import os
+import check_syntax
 
 from kumir_constants import *
-
 import color_marking
 import static_analisys
 
@@ -14,6 +14,7 @@ SOURCE_DIR_NAME = ""
 SOURCE_TEXT = ""
 LINE_PROPERTIES = []
 LINE_RANKS = []
+ERRORS = []
 
 
 class Error:
@@ -52,8 +53,46 @@ def set_source_dir_name(path):
     SOURCE_DIR_NAME = path
 
 
+def _make_syntax_checks(text):
+    global ERRORS
+    for checker in check_syntax.__all__:
+        checker.set_source_text(text)
+        errors = checker.get_errors()
+        for error in errors:
+            error.origin = checker.__name__
+            if error not in ERRORS:
+                ERRORS += [error]
+
 
 def set_source_text(text):
+    """
+    Set the source text and require complete analisis
+        text -- complete python program source; line delimiter is '\n' (str)
+    """
+    assert isinstance(text, str)
+    global SOURCE_TEXT
+    global LINE_PROPERTIES
+    global LINE_RANKS
+    global ERRORS
+
+    SOURCE_TEXT = text
+    ERRORS.clear()
+    color_marking.set_color_marks_and_ranks(SOURCE_TEXT)
+    LINE_RANKS = color_marking.get_ranks()
+    LINE_PROPERTIES = color_marking.get_colors()
+
+    _make_syntax_checks(SOURCE_TEXT)
+
+    for error in get_errors():
+        if 0 <= error.line_no <= len(LINE_PROPERTIES):
+            props = LINE_PROPERTIES[error.line_no]
+            start = error.start_pos
+            end = start + error.length
+            for i in range(start, end):
+                props[i] |= LxTypeError
+
+
+def set_source_text_old(text):
     """
     Set the source text and require complete analisis
         text -- complete python program source; line delimiter is '\n' (str)
@@ -116,7 +155,7 @@ def get_errors():
     Get a list of errors generated while 'set_source_text'
         returns a list of Error class instances
     """
-    return static_analisys.ERROR_LIST
+    return ERRORS
 
 
 def get_line_properties():
@@ -166,7 +205,8 @@ def get_line_property(line_no, line_text):
 
 
 def __run_test(test_name):
-    base = os.path.dirname(os.path.abspath(__file__)) + "/"
+    # base = os.path.dirname(os.path.abspath(__file__)) + "/"
+    base = ""
     source_file = open(base + test_name, 'r')
     set_source_text(source_file.read())
     source_file.close()
@@ -203,7 +243,9 @@ if __name__ == "__main__":
         "MyTests/test3.py",
         "MyTests/test4.py",
         "MyTests/test5.py",
-        "MyTests/undefined_names.py"
+        "MyTests/undefined_names.py",
+        "MyTests/reference_before_assignment.py",
+        "MyTests/structure_syntax_check.py"
     ]
     for test in TESTS:
         __run_test(test)

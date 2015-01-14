@@ -114,14 +114,14 @@ def set_color_marks_and_ranks(source_code_str):
                     previous_tok_ecol = tok[3][1]
             #global pair_line_ranks
     except TokenError as err:
-        print(err)
+        #print(err)
         if(err.args[0] == 'EOF in multi-line string'):
             ml = source_code_str.split('\n')
 
             analizer_instance.ERRORS.append(analizer_instance.Error(err.args[1][0],err.args[1][1],1,"Нет парной \"\"\" " ))
             color_marks[i].extend((len(ml[i])-err.args[1][0]+3)*[LxTypeError | LxConstLiteral])
             for k in range(err.args[1][0],len(ml)):
-                print(ml[k])
+                #print(ml[k])
                 color_marks.append(len(ml[k])*[LxTypeError | LxConstLiteral])
         elif err.args[0] == 'EOF in multi-line statement':
             for j in range(len(color_marks[i])):
