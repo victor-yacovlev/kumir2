@@ -832,6 +832,7 @@ void Plugin::start()
     if (!sessionsDisableFlag_ && showDialogOnStartup) {
         if (!showWorkspaceChooseDialog()) {
             ExtensionSystem::PluginManager::instance()->shutdown();
+            return;
         }
     }
     else {
