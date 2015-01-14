@@ -165,7 +165,7 @@ Vodoley::Vodoley()
 //	view->move(0,menuBar->height ()+HEADER_SIZE);
 	//qDebug()<<menuBar->height ();
         this->setBaseSize (364,235);
-        this->resize(160,245+1);
+        this->resize(160,145+1);
 
 
 
