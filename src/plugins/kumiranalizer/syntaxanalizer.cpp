@@ -1548,7 +1548,19 @@ QList<Shared::Analizer::Suggestion> SyntaxAnalizer::suggestAutoComplete(
             filteredResult.push_back(s);
         }
     }
-    return filteredResult;
+
+    QList<Shared::Analizer::Suggestion> extraFilteredResult;
+    foreach (Shared::Analizer::Suggestion s , filteredResult) {
+        bool remove = false;
+        if (!teacherMode_ && s.value.startsWith("@"))
+            remove = true;
+        if (s.value.trimmed().isEmpty())
+            remove = true;
+        if (!remove)
+            extraFilteredResult.append(s);
+    }
+
+    return extraFilteredResult;
 }
 
 
@@ -2742,7 +2754,7 @@ void SyntaxAnalizer::parseAssignment(int str)
             assignOp->error = _("Assignment of array");
             return;
         }
-        if ( (leftExpr->kind==AST::ExprVariable) && (leftExpr->variable->accessType==AST::AccessArgumentIn) ) {
+        if ( (leftExpr->kind==AST::ExprVariable || AST::ExprArrayElement==leftExpr->kind) && (leftExpr->variable->accessType==AST::AccessArgumentIn) ) {
             assignOp->error = _("Assignment to in- argument");
             return;
         }
@@ -3099,15 +3111,17 @@ void SyntaxAnalizer::parseAlgHeader(int str, bool onlyName, bool internalBuildFl
         alg->header.specialType = AST::AlgorithmTypeTesting;
     }
 
-    if (teacherMode_ && alg->header.name==lexer_->testingAlgorhitmName()) {
+    const bool teacherModule = AST::ModTypeTeacher==mod->header.type || AST::ModTypeTeacherMain==mod->header.type;
+    const bool allowTeacherModeAlgorithms = teacherModule || teacherMode_ || internalBuildFlag;
+
+    if (allowTeacherModeAlgorithms && alg->header.name==lexer_->testingAlgorhitmName()) {
         alg->header.specialType = AST::AlgorithmTypeTesting;
     }
-    else if ( (teacherMode_ || internalBuildFlag) && alg->header.name.startsWith("@")) {
+    else if ( allowTeacherModeAlgorithms && alg->header.name.startsWith("@")) {
         alg->header.specialType = AST::AlgorithmTypeTeacher;
     }
 
-    if (!(teacherMode_ || internalBuildFlag) && alg->header.specialType!=AST::AlgorithmTypeTesting
-            && alg->header.name.startsWith("@"))
+    if (!allowTeacherModeAlgorithms && alg->header.name.startsWith("@"))
     {
         for (int i=1; i<st.data.size(); i++) {
             if (st.data[i]->type==LxNameAlg)

@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
     }
 
     if (testingMode)
-        return vm.topLevelStackValue().toInt();
+        return vm.returnCode();
     else
         return 0;
 }

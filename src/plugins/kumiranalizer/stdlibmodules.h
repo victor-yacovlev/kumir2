@@ -415,6 +415,16 @@ public:
         func.arguments << Argument("defvalue", Bool);
         result << func;
 
+        /* алг @поставить оценку(цел значение) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.id = 0x002A;
+        func.asciiName = "@Evaluate";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("@поставить оценку");
+        func.returnType = Void;
+        func.arguments << Argument("value", Int);
+        result << func;
+
 
         return result;
     }

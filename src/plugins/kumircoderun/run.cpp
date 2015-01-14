@@ -335,12 +335,7 @@ void Run::run()
     if (vm->error().length() == 0 && !stoppingFlag_ &&
             vm->entryPoint() == KumirVM::EP_Testing)
     {
-        bool hasRetval = false;
-        VM::AnyValue retval = vm->topLevelStackValue();
-        hasRetval = retval.isValid();
-        if (hasRetval) {
-            qApp->setProperty("returnCode", vm->topLevelStackValue().toInt());
-        }
+        qApp->setProperty("returnCode", vm->returnCode());
     }
 //    bool wasError = vm->error().length()>0;
     // Unclosed files is an error only if program reached end
@@ -438,7 +433,7 @@ QVariant Run::valueStackTopItem() const
 {
     VMMutex_->lock();
     AnyValue value;
-    value = vm->topLevelStackValue();
+    value = vm->returnCode();
     VMMutex_->unlock();
     QVariant result;
     if (value.isValid()) {
