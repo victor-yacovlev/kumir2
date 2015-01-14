@@ -76,6 +76,8 @@ DocBookViewImpl::DocBookViewImpl(DocBookView *pClass)
     background_->setStyleSheet("background-color: rgba(0,0,0,192);");
     sidePanel_->setAutoFillBackground(true);
     splitter_->handle(1)->setAutoFillBackground(true);
+
+    switchToCompactMode(true);
 }
 
 
@@ -121,7 +123,7 @@ void DocBookViewImpl::setSize(const QSize &size)
     background_->move(0, 0);
     background_->resize(size);
     if (size.width() < minWidth) {
-        switchToCompactMode();
+//        switchToCompactMode();
     }
     else {
         switchToEnoughtSizeMode();
@@ -175,8 +177,12 @@ void DocBookViewImpl::showSidePanel()
 
 QSize DocBookViewImpl::minimumSizeHint() const
 {
-    int minW = qMax(sidePanel_->minimumSizeHint().width(),
-                    content_->minimumSizeHint().width());
+//    int minW = qMax(sidePanel_->minimumSizeHint().width(),
+//                    content_->minimumSizeHint().width());
+    int minW = sidePanel_->minimumSizeHint().width() +
+            content_->minimumSizeHint().width() +
+            splitter_->handleWidth();
+    minW = qMax(minW, 300);
     int minH = qMax(sidePanel_->minimumSizeHint().height(),
                     content_->minimumSizeHint().height());
     return QSize(minW, minH);

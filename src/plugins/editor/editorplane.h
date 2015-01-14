@@ -62,6 +62,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);
+    uint textLeftPosition() const;
     bool eventFilter(QObject *, QEvent *);
     void leaveEvent(QEvent *e);
     void contextMenuEvent(QContextMenuEvent *);

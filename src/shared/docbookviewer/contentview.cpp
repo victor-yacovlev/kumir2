@@ -73,7 +73,7 @@ ContentView::ContentView(QWidget *parent)
 
 QSize ContentView::minimumSizeHint() const
 {
-    return QSize(500, 230);
+    return QSize(80, 230);
 }
 
 void ContentView::reset()
@@ -1201,7 +1201,7 @@ QVariant ContentView::loadResource(int type, const QUrl &name)
     QVariant result;
     bool ignore = true;
     if (type == QTextDocument::ImageResource) {
-        const QString link = name.toString();
+        const QString link = name.path();
         if (link.startsWith("model_ptr:")) {
             ignore = false;
             QByteArray linkPtr = QByteArray::fromHex(link.toLatin1().mid(10));

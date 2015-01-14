@@ -62,8 +62,7 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
 
     if (analizerPlugin) {
         QString initialTextFileName =
-                mySettings()->value(SettingsPage::KeyProgramTemplateFile
-                                    + "." + analizerPlugin->defaultDocumentFileNameSuffix(),
+                mySettings()->value(SettingsPage::KeyProgramTemplateFile,
                                     SettingsPage::DefaultProgramTemplateFile
                                     + "." + analizerPlugin->defaultDocumentFileNameSuffix()
                                     ).toString();

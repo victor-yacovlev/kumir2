@@ -851,6 +851,7 @@ namespace ActorRobot {
             
             redrawEditFields();
             redrawRTFields();
+            showButtons(false);
             update();
             
         }
@@ -869,6 +870,7 @@ namespace ActorRobot {
             
             redrawEditFields();
             redrawRTFields();
+            showButtons(false);
             update();
             
         }
@@ -878,6 +880,8 @@ namespace ActorRobot {
             radSpinBox->hide();
             redrawRTFields();
             setTextEditMode(true);
+            showButtons(false);
+            update();
         }
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
@@ -4358,7 +4362,7 @@ void RobotModule::saveEnv()
         robotSettings()->setValue("Robot/Dir",QVariant(curDir));
         if (RobotFile.contains("*") || RobotFile.contains("?"))
         {
-            QMessageBox::information( 0, "", QString::fromUtf8("Недопустимый символ в имени файла!"), 0,0,0);
+            QMessageBox::information( 0, "", trUtf8("Недопустимый символ в имени файла!"), 0,0,0);
             return;
         }
         //QString	RobotFile =  QFileDialog::getSaveFileName(MV,QString::fromUtf8 ("Сохранить в файл"),"/home", "(*.fil)");
@@ -4372,7 +4376,7 @@ void RobotModule::saveEnv()
          RobotModule::robotSettings()->setValue("Robot/StartField/File",RobotFile);
         updateLastFiles(RobotFile);
         
-
+        mainWidget()->setWindowTitle(trUtf8("Робот - ")+info.baseName());
     }
     
     
