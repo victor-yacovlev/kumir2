@@ -88,8 +88,9 @@ def set_source_text(text):
             props = LINE_PROPERTIES[error.line_no]
             start = error.start_pos
             end = start + error.length
-            for i in range(start, end):
-                props[i] |= LxTypeError
+            if end <= len(props):
+                for i in range(start, end):
+                    props[i] |= LxTypeError
 
 
 def set_source_text_old(text):
@@ -228,7 +229,10 @@ def __run_test(test_name):
     if errors:
         print("\n")
     for error in errors:
-        print("Error: ", error.message)
+        error_message = error.message
+        if error.id:
+            error_message += " [" + error.id + "]"
+        print("Error: ", error_message)
         line = lines[error.line_no]
         out = "{:2d}: {:s}".format(error.line_no+1, line)
         print(out)
@@ -245,7 +249,11 @@ if __name__ == "__main__":
         "MyTests/test5.py",
         "MyTests/undefined_names.py",
         "MyTests/reference_before_assignment.py",
-        "MyTests/structure_syntax_check.py"
+        "MyTests/structure_syntax_check.py",
+        "MyTests/arguments_count_mismatch.py",
+        "MyTests/arguments_types_mismatch.py",
+        # "MyTests/sa.py",
+        # "MyTests/st_an.py",
     ]
     for test in TESTS:
         __run_test(test)

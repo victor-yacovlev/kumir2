@@ -1,7 +1,7 @@
 class Error:
     """ One error message """
 
-    def __init__(self, line_no, start_pos, length, message):
+    def __init__(self, line_no, start_pos, length, message, internal_id=""):
         """
             line_no -- line number (int)
             start_pos -- start position from 0 (int)
@@ -17,6 +17,7 @@ class Error:
         self.length = length
         self.message = message
         self.origin = None
+        self.id = internal_id
 
     def __eq__(self, other):
         return self.line_no == other.line_no and self.start_pos == other.start_pos
