@@ -165,7 +165,7 @@ Vodoley::Vodoley()
 //	view->move(0,menuBar->height ()+HEADER_SIZE);
 	//qDebug()<<menuBar->height ();
         this->setBaseSize (364,235);
-        this->resize(360,245+1);
+        this->resize(160,245+1);
 
 
 
@@ -319,8 +319,10 @@ void Vodoley::resizeEvent ( QResizeEvent * event )
     this->setSizePolicy(QSizePolicy::Expanding,
                         QSizePolicy::Expanding);
     view->resize(event->size());
-    QRectF sizeRect=QRectF(scene->sceneRect().topLeft(),QSize(qMax(scene->sceneRect().width(),scene->sceneRect().height()),qMax(scene->sceneRect().width(),scene->sceneRect().height())));
+    QRectF sizeRect=QRectF(scene->sceneRect().topLeft(),QSize(qMax(scene->sceneRect().width(),scene->sceneRect().height())+43,qMax(scene->sceneRect().width(),scene->sceneRect().height())));
     view->fitInView(sizeRect, Qt::KeepAspectRatio);
+    needFrame->move(view->width()/2-10,5);
+    //qDebug()<<sizeRect<<" view:"<<view->geometry();
    // view->scale(0.7,0.7);
     QWidget::resizeEvent(event);
 }
@@ -675,6 +677,7 @@ void Vodoley::mousePressEvent(QMouseEvent *event)
 	Amen->setGp(point.x());
 	view->update();
 	scene->update();
+    qDebug()<<"View geometrey"<<view->geometry();
 };
 NewDialog::NewDialog()
 {
@@ -709,6 +712,7 @@ NewDialog::NewDialog()
 	layout->addWidget(valueFrame);
 	layout->addWidget(buttonFrame);
 	this->setLayout(layout);
+    
 };
 //void Vodoley::closeEvent ( QCloseEvent * event )
 //{
