@@ -1032,6 +1032,10 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
                 (teacherMode_ && (AST::ModTypeTeacher == type || AST::ModTypeTeacherMain == type));
     });
 
+    if (sourceProvidedModules.isEmpty()) {
+        return AST::ModulePtr();
+    }
+
     // Find module corresponding to line number
     QList<AST::ModulePtr>::iterator entry = std::find_if(
                 sourceProvidedModules.begin(),

@@ -836,9 +836,9 @@ bool RobotView::isPainted()
 
 bool RobotView::isPainted(int x, int y) const
 {
-    if (y>m_field.size())
+    if (y>m_field.size() || y<0)
         return false;
-    if (x>m_field[y].size())
+    if (x>m_field[y].size() || x<0)
         return false;
     RobotCell cell = m_field[y][x];
     return cell.painted;
@@ -846,9 +846,9 @@ bool RobotView::isPainted(int x, int y) const
 
 bool RobotView::isPointed(int x, int y) const
 {
-    if (y>m_field.size())
+    if (y>m_field.size() || y<0)
         return false;
-    if (x>m_field[y].size())
+    if (x>m_field[y].size() || x<0)
         return false;
     RobotCell cell = m_field[y][x];
     return cell.pointed;
