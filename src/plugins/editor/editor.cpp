@@ -508,8 +508,11 @@ void EditorInstance::handleCompleteCompilationRequiest(
     QString vt;
     for (int i=0; i<visibleText.size(); i++) {
         vt += visibleText[i];
-//        if (i<visibleText.size()-1)
+        if (i<visibleText.size()-1)
             vt += "\n";
+    }
+    if (hiddenText.size() > 0) {
+        vt += "\n";
     }
     for (int i=0; i<hiddenText.size(); i++) {
         vt += hiddenText[i];
@@ -562,7 +565,7 @@ void EditorInstance::updateFromAnalizer()
         Shared::Analizer::Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            doc_->marginAt(lineNo).errors.append(err.code);
+            doc_->marginAt(lineNo).errors.append(err.message);
         }
     }
     plane_->update();
@@ -1102,7 +1105,11 @@ void EditorInstance::setKumFile(const Shared::Analizer::SourceFileInterface::Dat
     if (analizerInstance_) {
         toggleComment_->setVisible(true);
         toggleComment_->setEnabled(true);
-        analizerInstance_->setSourceText(data.visibleText + "\n" + data.hiddenText);
+        QString plainText = data.visibleText;
+        if (data.hasHiddenText) {
+            plainText += "\n" + data.hiddenText;
+        }
+        analizerInstance_->setSourceText(plainText);
         updateFromAnalizer();
     }
     else {
