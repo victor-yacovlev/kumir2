@@ -47,8 +47,8 @@ class Report(pep8.BaseReport):
         assert isinstance(text, str)
         first_space_pos = text.find(' ')
         msg_id = text[:first_space_pos]
-        message = text[first_space_pos+1:].capitalize()
-        self.errors += [Error(line_number-1, offset, 1, message, msg_id)]
+        message = text[first_space_pos + 1:].capitalize()
+        self.errors += [Error(line_number - 1, offset, 1, message, msg_id)]
         return super().error(line_number, offset, text, check)
 
     def get_statistics(self, prefix=''):
@@ -66,6 +66,7 @@ class Report(pep8.BaseReport):
                 # mark whole line (except leading spaces)
                 error.start_pos = 0
                 error.length = len(line) - error.start_pos
+
 
 def set_source_text(text):
     global _reporter

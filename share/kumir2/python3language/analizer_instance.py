@@ -3,8 +3,10 @@
 Analizer instance module
 NOTE: Each analizer instance runs in it's own interpreter
 """
+import copy
 import os
 import check_syntax
+import check_syntax.pep8_wrapper
 
 from kumir_constants import *
 import color_marking
@@ -15,7 +17,7 @@ SOURCE_TEXT = ""
 LINE_PROPERTIES = []
 LINE_RANKS = []
 ERRORS = []
-
+USE_PEP8 = False
 
 class Error:
     # VY: В соответствии с PEP-8 и Google Coding Standards, имена классов - CamelCase
@@ -55,7 +57,11 @@ def set_source_dir_name(path):
 
 def _make_syntax_checks(text):
     global ERRORS
-    for checker in check_syntax.__all__:
+    global USE_PEP8
+    checkers = copy.copy(check_syntax.__all__)
+    if USE_PEP8:
+        checkers += [check_syntax.pep8_wrapper]
+    for checker in checkers:
         checker.set_source_text(text)
         errors = checker.get_errors()
         for error in errors:
@@ -63,6 +69,10 @@ def _make_syntax_checks(text):
             if error not in ERRORS:
                 ERRORS += [error]
 
+
+def set_use_pep8(use):
+    global USE_PEP8
+    USE_PEP8 = use
 
 def set_source_text(text):
     """
@@ -82,19 +92,19 @@ def set_source_text(text):
         color_marking.set_color_marks_and_ranks(SOURCE_TEXT)
         LINE_RANKS = color_marking.get_ranks()
         LINE_PROPERTIES = color_marking.get_colors()
-    except:
+    except Exception as e:
         pass
 
-    _make_syntax_checks(SOURCE_TEXT)
-
-    for error in get_errors():
-        if 0 <= error.line_no <= len(LINE_PROPERTIES):
-            props = LINE_PROPERTIES[error.line_no]
-            start = error.start_pos
-            end = start + error.length
-            if end <= len(props):
-                for i in range(start, end):
-                    props[i] |= LxTypeError
+    if SOURCE_TEXT:
+        _make_syntax_checks(SOURCE_TEXT)
+        for error in get_errors():
+            if 0 <= error.line_no <= len(LINE_PROPERTIES):
+                props = LINE_PROPERTIES[error.line_no]
+                start = error.start_pos
+                end = start + error.length
+                if end <= len(props):
+                    for i in range(start, end):
+                        props[i] |= LxTypeError
 
 
 def set_source_text_old(text):
@@ -160,6 +170,7 @@ def get_errors():
     Get a list of errors generated while 'set_source_text'
         returns a list of Error class instances
     """
+    global ERRORS
     return ERRORS
 
 

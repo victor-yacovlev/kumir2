@@ -33,6 +33,11 @@ public:
     QList<LineProp> lineProperties() const;
     QList<QPoint> lineRanks() const;
     LineProp lineProp(int lineNo, const QString &text) const;
+    void setUsePep8(bool use);
+    void connectUpdateRequest(QObject * receiver, const char * method);
+
+Q_SIGNALS:
+    void internallyReanalized();
 
 protected /*methods*/:
     void stopPythonInterpreter();
@@ -55,6 +60,7 @@ private /*fields*/:
     ::PyObject* py_getLineProperties;
     ::PyObject* py_getLineRanks;
     ::PyObject* py_getLineProperty;
+    ::PyObject* py_setUsePep8;
     QList<Error> errors_;
     QList<LineProp> lineProperties_;
     QList<QPoint> lineRanks_;

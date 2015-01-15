@@ -5,6 +5,7 @@
 #include "pyfilehandler.h"
 #include "pyutils.h"
 #include "sandboxwidget.h"
+#include "syntaxchecksettingspage.h"
 
 namespace Python3Language {
 
@@ -14,7 +15,20 @@ Python3LanguagePlugin::Python3LanguagePlugin()
     , pyMain_(0)
     , runner_(0)
     , sandboxWidget_(0)
+    , syntaxCheckSettingsPage_(0)
 {    
+}
+
+QList<QWidget *> Python3LanguagePlugin::settingsEditorPages()
+{
+    QList<QWidget*> result;
+    if (!syntaxCheckSettingsPage_) {
+        syntaxCheckSettingsPage_ = new SyntaxCheckSettingsPage(mySettings());
+        connect (syntaxCheckSettingsPage_, SIGNAL(settingsChanged(QStringList)),
+                 this, SLOT(updateSettings(QStringList)));
+        result.append(syntaxCheckSettingsPage_);
+    }
+    return result;
 }
 
 Analizer::SourceFileInterface * Python3LanguagePlugin::sourceFileHandler()
@@ -96,13 +110,36 @@ void Python3LanguagePlugin::stop()
         instance->stopPythonInterpreter();
     QCoreApplication::instance()->processEvents();
     PyEval_AcquireThread(pyMain_);
-//    Py_Finalize();
+    //    Py_Finalize();
+}
+
+void Python3LanguagePlugin::updateSettings(const QStringList & keys)
+{
+    if (syntaxCheckSettingsPage_) {
+        syntaxCheckSettingsPage_->setSettingsObject(mySettings());
+    }
+    if (mySettings() && keys.contains(SyntaxCheckSettingsPage::UsePep8Key)) {
+        Q_FOREACH(PythonAnalizerInstance * analizer, analizerInstances_) {
+            analizer->setUsePep8(
+                        mySettings()->value(
+                            SyntaxCheckSettingsPage::UsePep8Key,
+                            SyntaxCheckSettingsPage::UsePep8DefaultValue
+                            ).toBool()
+                        );
+        }
+    }
 }
 
 Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
 {
     static const QString ExtraPythonPath = myResourcesDir().absolutePath();
     analizerInstances_.append(new PythonAnalizerInstance(this, ExtraPythonPath));
+    analizerInstances_.last()->setUsePep8(
+                mySettings()->value(
+                    SyntaxCheckSettingsPage::UsePep8Key,
+                    SyntaxCheckSettingsPage::UsePep8DefaultValue
+                    ).toBool()
+                );
     return analizerInstances_.last();
 }
 

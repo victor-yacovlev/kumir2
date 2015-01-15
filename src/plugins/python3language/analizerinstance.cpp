@@ -16,6 +16,7 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
     , py_getLineProperties(0)
     , py_getLineRanks(0)
     , py_getLineProperty(0)
+    , py_setUsePep8(0)
 { 
 #ifdef Q_OS_WIN32
     if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
@@ -83,6 +84,10 @@ void PythonAnalizerInstance::initializePyAnalizer()
                 py_analizerInstance, "get_line_property"
                 );
     if (!py_getLineProperty) { printError("'get_line_property' not implemented"); }
+    py_setUsePep8 = ::PyObject_GetAttrString(
+                py_analizerInstance, "set_use_pep8"
+                );
+    if (!py_setUsePep8) { printError("'set_use_pep8' not implemented"); }
 }
 
 Shared::AnalizerInterface * PythonAnalizerInstance::plugin()
@@ -273,6 +278,18 @@ LineProp PythonAnalizerInstance::lineProp(int lineNo, const QString &text) const
         result[i] = (LexemType) alist.at(i).toUInt();
     }
     return result;
+}
+
+void PythonAnalizerInstance::setUsePep8(bool use)
+{
+    callPythonFunction(py_, py_setUsePep8, use);
+    setSourceText(currentSourceText_);  // Perform complete analisys again
+    Q_EMIT internallyReanalized();
+}
+
+void PythonAnalizerInstance::connectUpdateRequest(QObject *receiver, const char *method)
+{
+    connect(this, SIGNAL(internallyReanalized()), receiver, method);
 }
 
 } // namespace Python3Language

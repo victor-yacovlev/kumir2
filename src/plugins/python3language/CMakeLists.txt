@@ -44,6 +44,7 @@ set(SOURCES
     pyfilehandler.cpp
     variablesmodel.cpp
     sandboxwidget.cpp
+    syntaxchecksettingspage.cpp
 )
 
 set(MOC_HEADERS
@@ -55,6 +56,7 @@ set(MOC_HEADERS
     pyfilehandler.h
     variablesmodel.h
     sandboxwidget.h
+    syntaxchecksettingspage.h
 )
 
 if(${USE_QT} GREATER 4)

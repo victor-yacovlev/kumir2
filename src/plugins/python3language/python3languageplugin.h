@@ -20,6 +20,7 @@ namespace Python3Language {
 struct Python3Module;
 class PythonRunThread;
 class PyFileHandler;
+class SyntaxCheckSettingsPage;
 
 using namespace Shared;
 
@@ -37,7 +38,10 @@ class Python3LanguagePlugin
 #endif
     Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface Shared::StartpageWidgetInterface)
 public:
-    Python3LanguagePlugin();   
+    Python3LanguagePlugin();
+
+    // KPlugin methods
+    QList<QWidget*> settingsEditorPages();
 
     // Analizer interface methods
     Analizer::InstanceInterface * createInstance();
@@ -100,10 +104,10 @@ protected:
     void connectRunThreadSignals();
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void stop();
-    inline void updateSettings(const QStringList &) {}
     static QString extractFunction(const QString & source, const QString &funcName);
 
 protected Q_SLOTS:
+    void updateSettings(const QStringList &);
 
 private /*fields*/:
     PyFileHandler * fileHandler_;
@@ -112,6 +116,7 @@ private /*fields*/:
     QDateTime loadedProgramVersion_;
     QList<class PythonAnalizerInstance*> analizerInstances_;
     SandboxWidget * sandboxWidget_;
+    SyntaxCheckSettingsPage * syntaxCheckSettingsPage_;
 
 };
 
