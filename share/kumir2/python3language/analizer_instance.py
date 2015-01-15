@@ -77,9 +77,13 @@ def set_source_text(text):
 
     SOURCE_TEXT = text
     ERRORS.clear()
-    color_marking.set_color_marks_and_ranks(SOURCE_TEXT)
-    LINE_RANKS = color_marking.get_ranks()
-    LINE_PROPERTIES = color_marking.get_colors()
+    # noinspection PyBroadException
+    try:
+        color_marking.set_color_marks_and_ranks(SOURCE_TEXT)
+        LINE_RANKS = color_marking.get_ranks()
+        LINE_PROPERTIES = color_marking.get_colors()
+    except:
+        pass
 
     _make_syntax_checks(SOURCE_TEXT)
 
