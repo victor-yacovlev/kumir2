@@ -21,8 +21,22 @@
 			"name": {"ascii": "task complited", "ru_RU": "@решено"},
 			"async": false,
 			"returnType": "bool"
-		}		
-		
+		},
+        {
+			"name": {"ascii": "size A", "ru_RU": "размер A"},
+			"async": false,
+			"returnType": "int"
+		},
+                {
+			"name": {"ascii": "size B", "ru_RU": "размер B"},
+			"async": false,
+			"returnType": "int"
+		},
+                {
+			"name": {"ascii": "size C", "ru_RU": "размер C"},
+			"async": false,
+			"returnType": "int"
+		}
 	],
 	"gui": {
 		"windows": [

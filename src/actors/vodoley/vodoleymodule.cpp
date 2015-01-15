@@ -253,6 +253,18 @@ private:
     return MainWindow->ready();
     
 }
+    int VodoleyModule::runSizeA()
+    {
+        return MainWindow->Asize();
+    };
+    int VodoleyModule::runSizeB()
+    {
+        return MainWindow->Bsize();
+    };
+    int VodoleyModule::runSizeC()
+    {
+        return MainWindow->Csize();
+    };
 
     void VodoleyModule::openRecent()
     {
