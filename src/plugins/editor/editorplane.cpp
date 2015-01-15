@@ -2239,6 +2239,13 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                     height());
     }
 
+    const QColor bgColor = palette().color(QPalette::Window);
+    int darknessBase = bgColor.red() + bgColor.green() + bgColor.blue();
+    bool darkWindowTheme = false;
+    if (darknessBase / 3 <= 127) {
+        darkWindowTheme = true;
+    }
+
     if (lockSymbolOffset) {
         p->setPen(QPen(palette().brush(QPalette::Disabled, QPalette::WindowText), 1));
         p->drawLine(lockSymbolOffset + 2,
@@ -2264,7 +2271,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
                                );
         }
 
-        const QColor textColor = realLineNumber <= editor_->document()->linesCount()
+        QColor textColor = realLineNumber <= editor_->document()->linesCount()
                   // If line exists, draw number using regular fg color
                 ? QColor(palette().brush(QPalette::WindowText).color())
                   // else draw using lighter color
@@ -2272,7 +2279,10 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 //                : QColor(Qt::lightGray);
 
 
-        p->setPen(textColor);        
+        if (darkWindowTheme && realLineNumber > editor_->document()->linesCount()) {
+            textColor = textColor.darker();  // make it more contrast to real line numbers
+        }
+        p->setPen(textColor);
         if (-1!=highlightedTextLineNumber_ && highlightedTextLineNumber_ + 1== realLineNumber) {
             p->setPen(QColor(Qt::black));
         }
@@ -2281,6 +2291,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
         int textWidth = QFontMetrics(font()).width(txt);
         int xx = charWidth() * 3 - textWidth + lockSymbolOffset;
         int yy = i * lineHeight();
+
         p->drawText(xx, yy, txt);
 
         if (editor_->plugin_->teacherMode_) {

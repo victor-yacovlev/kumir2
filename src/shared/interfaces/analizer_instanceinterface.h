@@ -26,8 +26,8 @@ struct Error
     int start; // position in line from 0
     int len; // error markup length
     QString message; // error message
-    QByteArray msgid; // internal identifier
-    QByteArray origin; // syntax analizer origin
+    QByteArray msgid;  // internal message id
+    QByteArray origin;  // message origin name (PyLint, PyFlakes etc.)
 };
 
 typedef QVector<LexemType> LineProp;

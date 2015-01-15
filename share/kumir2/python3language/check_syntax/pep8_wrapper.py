@@ -12,6 +12,11 @@ description = {
 
 priority = 0.0
 
+try:
+    import _kumir
+    debug = _kumir.debug
+except ImportError:
+    debug = print
 
 class Report(pep8.BaseReport):
     def __init__(self, options):
@@ -47,8 +52,8 @@ class Report(pep8.BaseReport):
         assert isinstance(text, str)
         first_space_pos = text.find(' ')
         msg_id = text[:first_space_pos]
-        message = text[first_space_pos + 1:].capitalize()
-        self.errors += [Error(line_number - 1, offset, 1, message, msg_id)]
+        message = text[first_space_pos+1:].capitalize()
+        self.errors += [Error(line_number-1, offset, 1, message, msg_id)]
         return super().error(line_number, offset, text, check)
 
     def get_statistics(self, prefix=''):
@@ -67,12 +72,14 @@ class Report(pep8.BaseReport):
                 error.start_pos = 0
                 error.length = len(line) - error.start_pos
 
-
 def set_source_text(text):
     global _reporter
     assert isinstance(text, str)
     text_lines = [line + '\n' for line in text.split('\n')]
     text_lines[-1] = text_lines[-1][:-1]
+    if not text_lines[-1]:
+        text_lines = text_lines[:-1]
+    debug("Text lines: " + str(text_lines))
     style_guide = pep8.StyleGuide(parse_argv=False, config_file=False)
     options = style_guide.options
     _reporter = Report(options)
