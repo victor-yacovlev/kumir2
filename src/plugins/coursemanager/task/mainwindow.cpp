@@ -255,7 +255,7 @@ for(int i=0;i<marksElList.count();i++)
  changes.setMark(taskId,mark);
  };
 
-qDebug()<<"Loading user prgs...";
+//qDebug()<<"Loading user prgs...";
 QDomNodeList prgElList=root.elementsByTagName("USER_PRG");//Программы
 for(int i=0;i<prgElList.count();i++)
  {
