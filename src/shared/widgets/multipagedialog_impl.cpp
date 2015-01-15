@@ -4,9 +4,10 @@
 #include <QObject>
 #include <QMetaObject>
 #include <QMetaMethod>
-#include <QListWidgetItem>
+#include <QTreeWidgetItem>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QLabel>
 
 namespace Widgets {
 
@@ -21,12 +22,13 @@ void MultiPageDialogImpl::setupUi()
     QGridLayout * grid = new QGridLayout;
     pClass_->setMinimumSize(400, 300);
     pClass_->setLayout(grid);
-    list_ = new QListWidget(pClass_);
+    list_ = new QTreeWidget(pClass_);
+    list_->setHeaderHidden(true);
     grid->addWidget(list_, 0, 0);
     stack_ = new QStackedWidget(pClass_);
     grid->addWidget(stack_, 0, 1);
-    connect(list_, SIGNAL(currentRowChanged(int)),
-            this, SLOT(handleGroupSelected(int)));    
+    connect(list_, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
+            this, SLOT(handleGroupSelected(QTreeWidgetItem*,QTreeWidgetItem*)));
     buttonBox_ = new QDialogButtonBox(pClass_);
     grid->addWidget(buttonBox_, 1, 0, 1, 2);
 
@@ -116,36 +118,69 @@ void MultiPageDialogImpl::init()
     }
 }
 
-void MultiPageDialogImpl::handleGroupSelected(int index)
+void MultiPageDialogImpl::handleGroupSelected(QTreeWidgetItem * current, QTreeWidgetItem * )
 {
+    const int index = current->data(0, Qt::UserRole).toInt();
     stack_->setCurrentIndex(index);
 }
 
-void MultiPageDialogImpl::addPage(QWidget* page)
+void MultiPageDialogImpl::addPage(const QString & groupTitle, QWidget* page)
 {
     if (!page)
         return;
     page->setParent(pClass_);
-    QListWidgetItem * item = new QListWidgetItem(list_);
-    item->setText(page->windowTitle());
-    list_->addItem(item);
+    QTreeWidgetItem * groupItem = nullptr;
+    for (int i=0; i<list_->topLevelItemCount(); ++i) {
+        QTreeWidgetItem * topLevel = list_->topLevelItem(i);
+        if (topLevel->text(0) == groupTitle) {
+            groupItem = topLevel;
+            break;
+        }
+    }
+    if (!groupItem) {
+        groupItem = new QTreeWidgetItem(list_, QStringList() << groupTitle);
+        QFont fnt = groupItem->font(0);
+        fnt.setBold(true);
+        groupItem->setFont(0, fnt);
+        list_->addTopLevelItem(groupItem);
+        groupItem->setExpanded(true);
+        const Qt::ItemFlags flags = Qt::ItemIsEnabled;
+        groupItem->setFlags(flags);
+    }
+    QTreeWidgetItem * item = new QTreeWidgetItem(groupItem);
+    item->setText(0, page->windowTitle());
+    item->setData(0, Qt::UserRole, pages_.size());
+    groupItem->addChild(item);
+    QWidget * pageContainer = new QWidget(pClass_);
+    QVBoxLayout * layout = new QVBoxLayout;
+    pageContainer->setLayout(layout);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(20);
+    QLabel * pageLabel = new QLabel(pClass_);
+    QFont fnt = pageLabel->font();
+    fnt.setPointSize(fnt.pointSize() + 2);
+    pageLabel->setFont(fnt);
+    pageLabel->setText(groupTitle + " : " + page->windowTitle());
+    pageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    layout->addWidget(pageLabel);
     QScrollArea * scroll = new QScrollArea(pClass_);
     scroll->setWidgetResizable(true);
     scroll->setWidget(page);
-    stack_->addWidget(scroll);
+    layout->addWidget(scroll);
+    stack_->addWidget(pageContainer);
     pages_ << page;
     updateListWidth();
 }
 
 void MultiPageDialogImpl::updateListWidth()
 {
-    int w = 200;
-    static const int Padding = 4;
-    for (int i=0; i<list_->count(); i++) {
-        QListWidgetItem * item = list_->item(i);
-        QFontMetrics fm = QFontMetrics(item->font());
-        w = qMax(w, 2 * Padding + fm.width(item->text()));
-    }
+    int w = 240;
+//    static const int Padding = 4;
+//    for (int i=0; i<list_->count(); i++) {
+//        QListWidgetItem * item = list_->item(i);
+//        QFontMetrics fm = QFontMetrics(item->font());
+//        w = qMax(w, 2 * Padding + fm.width(item->text()));
+//    }
     list_->setFixedWidth(w);
 }
 
