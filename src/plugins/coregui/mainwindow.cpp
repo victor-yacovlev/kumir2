@@ -1357,11 +1357,16 @@ bool MainWindow::closeTab(int index)
 void MainWindow::createSettingsDialog()
 {
     using namespace ExtensionSystem;
+    using namespace Shared;
     settingsDialog_ = new Widgets::MultiPageDialog(this);
     settingsDialog_->setWindowTitle(tr("Preferences"));
     settingsDialog_->setMinimumSize(800, 500);    
     PluginManager * manager = PluginManager::instance();
     QList<KPlugin*> plugins = manager->loadedPlugins();
+
+    QList<QWidget*> generalPages;
+    QList<QWidget*> languagePages;
+    QList<QWidget*> actorPages;
 
     foreach (KPlugin * p, plugins) {
         QWidget * page = p->settingsEditorPage();
@@ -1369,14 +1374,39 @@ void MainWindow::createSettingsDialog()
         if (page && !pages.contains(page)) {
             pages.prepend(page);
         }
-        foreach (QWidget *p, pages) {
-            settingsDialog_->addPage(p);
+        if (!pages.isEmpty()) {
+            AnalizerInterface * analizer = qobject_cast<AnalizerInterface*>(p);
+            RunInterface * runner = qobject_cast<RunInterface*>(p);
+            ActorInterface * actor = qobject_cast<ActorInterface*>(p);
+            QList<QWidget*> * targetGroup = & generalPages;
+            if (actor) {
+                targetGroup = & actorPages;
+            }
+            else if (analizer || runner) {
+                targetGroup = & languagePages;
+            }
+            targetGroup->append(pages);
         }
     }
+    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
 #ifndef Q_OS_MACX
-    SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
-    settingsDialog_->addPage(openFileSettings);
+    if (analizer && "kum" == analizer->defaultDocumentFileNameSuffix()) {
+        SystemOpenFileSettings * openFileSettings = new SystemOpenFileSettings;
+        generalPages.append(openFileSettings);
+    }
 #endif
+    const QString languageGroupTitle = analizer
+            ? tr("%1 language settings").arg(analizer->languageName())
+            : tr("Runtime settings");
+    foreach (QWidget *p, generalPages) {
+        settingsDialog_->addPage(tr("General settings"), p);
+    }
+    foreach (QWidget *p, languagePages) {
+        settingsDialog_->addPage(languageGroupTitle, p);
+    }
+    foreach (QWidget *p, actorPages) {
+        settingsDialog_->addPage(tr("Actor settings"), p);
+    }
 }
 
 void MainWindow::showPreferences()

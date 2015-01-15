@@ -19,7 +19,7 @@ class WIDGETS_EXPORT MultiPageDialog
 
 public:
     explicit MultiPageDialog(QWidget *parent = 0);
-    void addPage(QWidget* page);
+    void addPage(const QString & groupTitle, QWidget* page);
 
 public slots:
     int exec();
