@@ -65,6 +65,10 @@ public:
         return qobject_cast<ExternalExecutableCompilerInterface*>(me);
     }
 
+    inline virtual void connectUpdateRequest(QObject * receiver, const char * method) {
+        Q_UNUSED(receiver); Q_UNUSED(method);
+    }
+
     virtual AnalizerInterface * plugin() = 0;
 
 };
