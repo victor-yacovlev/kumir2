@@ -252,6 +252,7 @@ if __name__ == "__main__":
         "MyTests/structure_syntax_check.py",
         "MyTests/arguments_count_mismatch.py",
         "MyTests/arguments_types_mismatch.py",
+        "MyTests/legacy_syntax.py",
         # "MyTests/sa.py",
         # "MyTests/st_an.py",
     ]

@@ -36,9 +36,22 @@ class Reporter(ReporterBase):
         if isinstance(message, UndefinedName):
             self.errors += [Error(message.lineno - 1, message.col, len(message.message_args[0]), "Undefined name")]
 
-
     def reset(self):
         self.errors.clear()
+
+    def improve_errors_positions(self, source_text):
+        lines = source_text.split('\n')
+        for error in self.errors:
+            line = lines[error.line_no]
+            assert isinstance(line, str)
+            if error.start_pos >= len(line):
+                error.start_pos = 0
+                for char in line:
+                    if ' ' == char:
+                        error.start_pos += 1
+                    else:
+                        break
+                error.length = len(line) - error.start_pos
 
 
 _reporter = Reporter()
@@ -46,8 +59,10 @@ _reporter = Reporter()
 
 def set_source_text(text):
     global _reporter
+    assert isinstance(_reporter, Reporter)
     _reporter.reset()
     check(text, "<stdin>", _reporter)
+    _reporter.improve_errors_positions(text)
 
 
 def get_errors():
