@@ -79,7 +79,7 @@ def set_source_text(text):
     text_lines[-1] = text_lines[-1][:-1]
     if not text_lines[-1]:
         text_lines = text_lines[:-1]
-    debug("Text lines: " + str(text_lines))
+    # debug("Text lines: " + str(text_lines))
     style_guide = pep8.StyleGuide(parse_argv=False, config_file=False)
     options = style_guide.options
     _reporter = Report(options)
