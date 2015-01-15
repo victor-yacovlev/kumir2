@@ -508,8 +508,11 @@ void EditorInstance::handleCompleteCompilationRequiest(
     QString vt;
     for (int i=0; i<visibleText.size(); i++) {
         vt += visibleText[i];
-//        if (i<visibleText.size()-1)
+        if (i<visibleText.size()-1)
             vt += "\n";
+    }
+    if (hiddenText.size() > 0) {
+        vt += "\n";
     }
     for (int i=0; i<hiddenText.size(); i++) {
         vt += hiddenText[i];
