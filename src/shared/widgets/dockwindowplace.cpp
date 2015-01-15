@@ -58,9 +58,11 @@ void DockWindowPlace::resizeEvent(QResizeEvent *e)
     }
     else {
         QWidget * curW = currentWidget();
-        const QSize currentWidgetSize = curW->size();
-        if (curW && currentWidgetSize.width() && currentWidgetSize.height()) {
-            pImpl_->preferredSize_ = currentWidgetSize;
+        if (curW) {
+            const QSize currentWidgetSize = curW->size();
+            if (curW && currentWidgetSize.width() && currentWidgetSize.height()) {
+                pImpl_->preferredSize_ = currentWidgetSize;
+            }
         }
     }
     QTabWidget::resizeEvent(e);
