@@ -437,7 +437,7 @@ QColor StatusBar::normalColor() const
 
 QColor StatusBar::alternateColor() const
 {
-    const QColor bg = palette().brush(QPalette::Base).color();
+    const QColor bg = palette().brush(QPalette::Window).color();
     const int value = bg.red() + bg.green() + bg.blue();
     const int Thereshold = 128 * 3;
     if (value < Thereshold) {
