@@ -22,6 +22,7 @@ _not_errors = [
     "W0613",  # Unused argument
     "W0621",  # Redefining name from outer scope
     "W0612",  # Undefined variable
+    "W0704",  # Except doesn't do anything
 ]
 
 priority = 10.0
@@ -94,9 +95,14 @@ class Reporter(BaseReporter):
                     found_exact_position = True
             if not found_exact_position:
                 # can't determine exact error position, so
-                # mark whole line
+                # mark whole line (except leading spaces)
                 error.start_pos = 0
-                error.length = len(line)
+                for char in line:
+                    if ' ' == char:
+                        error.start_pos += 1
+                    else:
+                        break
+                error.length = len(line) - error.start_pos
 
 
 

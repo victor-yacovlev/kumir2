@@ -559,7 +559,7 @@ void EditorInstance::updateFromAnalizer()
         Shared::Analizer::Error err = errors[i];
         int lineNo = err.line;
         if (lineNo>=0) {
-            doc_->marginAt(lineNo).errors.append(err.code);
+            doc_->marginAt(lineNo).errors.append(err.message);
         }
     }
     plane_->update();

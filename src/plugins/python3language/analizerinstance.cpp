@@ -152,11 +152,24 @@ void PythonAnalizerInstance::queryErrors() {
             printError(QString("Item %1 in 'get_errors' result do not have 'message' property").arg(i));
             return;
         }
+        if (!classDict.contains("id")) {
+            printError(QString("Item %1 in 'get_errors' result do not have 'id' property").arg(i));
+            return;
+        }
         Error error;
         error.line = classDict["line_no"].toInt();
         error.start = classDict["start_pos"].toInt();
         error.len = classDict["length"].toInt();
-        error.code = classDict["message"].toString();
+        error.message = classDict["message"].toString();
+        error.msgid = classDict["id"].toString().toLatin1();
+        // TODO translate error messages
+        bool show_msg_id = true;
+#if defined(NDEBUG) || defined(QT_NO_DEBUG)
+        show_msg_id = false;
+#endif
+        if (show_msg_id) {
+            error.message += " [" + error.msgid + "]";
+        }
         result.append(error);
     }
     errors_ = result;
