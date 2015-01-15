@@ -778,6 +778,11 @@ QList<Shared::Editor::Breakpoint> EditorInstance::breakpoints() const
     return result;
 }
 
+void EditorInstance::forceCompleteCompilation()
+{
+    document()->forceCompleteRecompilation(QPoint(0, 0));
+}
+
 void EditorInstance::paintEvent(QPaintEvent * e)
 {
     QPainter p(this);

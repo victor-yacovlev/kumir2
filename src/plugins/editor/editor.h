@@ -102,6 +102,8 @@ public:
     QList<Shared::Editor::Breakpoint> breakpoints() const;
 
 public slots:
+    void forceCompleteCompilation();
+
     void undo();
     void redo();
 

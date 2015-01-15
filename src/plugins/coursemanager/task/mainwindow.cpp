@@ -255,7 +255,7 @@ for(int i=0;i<marksElList.count();i++)
  changes.setMark(taskId,mark);
  };
 
-qDebug()<<"Loading user prgs...";
+//qDebug()<<"Loading user prgs...";
 QDomNodeList prgElList=root.elementsByTagName("USER_PRG");//Программы
 for(int i=0;i<prgElList.count();i++)
  {
@@ -677,14 +677,14 @@ void MainWindowTask::saveCourse()
 //    //curDir=fi.absolutePath ();
 //    qDebug()<<"curDir"<<curDir;
 //    QString fileName=dialog.selectedFiles().first();
-   const QString fileName = QFileDialog::getSaveFileName(
+  QString fileName = QFileDialog::getSaveFileName(
                this,
                trUtf8("Сохранить изменения"),
                curDir,
                tr("Work files(*.work.xml);;All files (*)")
                );
-   // QString type=fileName.right(9);
-   // if(type!=".work.xml")fileName+=".work.xml";
+    QString type=fileName.right(9);
+    if(type!=".work.xml")fileName+=".work.xml";
     cursWorkFile.setFileName(fileName);
     updateLastFiles(fileName);
     saveCourseFile();
@@ -834,7 +834,7 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
   {
       QMessageBox::StandardButton ans;
             ans = QMessageBox::question(this, trUtf8("Курсы"), trUtf8("Вы хотите сохранить работу?"),
-                              QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+                              QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
             if (ans == QMessageBox::No)
 
             {

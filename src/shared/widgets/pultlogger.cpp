@@ -56,7 +56,7 @@ void logLine::moveDown()
 void pultLogger::appendText(QString kumCommand, QString text, QString replay)
 {
     while(pos>H-68)downBtnPressed();
-    lines.append(logLine(kumCommand,text,replay,dummyFrame,respFrame,pos));
+    lines.append(logLine(kumCommand+'\n',text,replay,dummyFrame,respFrame,pos));
     pos=pos+TEXT_STEP;
 }
 

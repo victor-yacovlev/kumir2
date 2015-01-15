@@ -2210,6 +2210,7 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
             tabWidget_->setCurrentIndex(tabWidget_->count()-1);
             tabWidget_->currentWidget()->setFocus();
             setupContentForTab();
+            editor->forceCompleteCompilation();
         }
     }        
     else if (type==StartPage && m_plugin->plugin_browser) {
@@ -2267,6 +2268,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                     courseManagerTab->editor();
             QString error;
             editor->loadDocument(src, &error);
+            editor->forceCompleteCompilation();
         }
         else {
             QString error;
@@ -2282,6 +2284,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                         );
             courseManagerTab->setEditor(editor);
             courseManagerTab->setCourseManagerTab(true);
+            editor->forceCompleteCompilation();
         }
         courseManagerTab->setCourseTitle(data.title);
 
