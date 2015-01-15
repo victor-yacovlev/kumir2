@@ -7,6 +7,8 @@ from pylint.reporters import BaseReporter
 from check_syntax.error import Error
 import re
 
+name = "PyLint"
+
 description = {
     "generic": "PyLint error checker",
     "russian": "Анализатор PyLint"

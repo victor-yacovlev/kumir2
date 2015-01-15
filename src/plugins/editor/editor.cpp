@@ -1090,7 +1090,11 @@ void EditorInstance::setKumFile(const Shared::Analizer::SourceFileInterface::Dat
     if (analizerInstance_) {
         toggleComment_->setVisible(true);
         toggleComment_->setEnabled(true);
-        analizerInstance_->setSourceText(data.visibleText + "\n" + data.hiddenText);
+        QString plainText = data.visibleText;
+        if (data.hasHiddenText) {
+            plainText += "\n" + data.hiddenText;
+        }
+        analizerInstance_->setSourceText(plainText);
         updateFromAnalizer();
     }
     else {

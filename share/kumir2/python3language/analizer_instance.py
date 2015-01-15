@@ -59,7 +59,7 @@ def _make_syntax_checks(text):
         checker.set_source_text(text)
         errors = checker.get_errors()
         for error in errors:
-            error.origin = checker.__name__
+            error.origin_name = checker.name
             if error not in ERRORS:
                 ERRORS += [error]
 

@@ -16,8 +16,8 @@ class Error:
         self.start_pos = start_pos
         self.length = length
         self.message = message
-        self.origin = None
         self.id = internal_id
+        self.origin_name = ""
 
     def __eq__(self, other):
         return self.line_no == other.line_no and self.start_pos == other.start_pos

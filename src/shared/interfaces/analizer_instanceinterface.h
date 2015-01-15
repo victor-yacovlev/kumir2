@@ -27,6 +27,7 @@ struct Error
     int len; // error markup length
     QString message; // error message
     QByteArray msgid; // internal identifier
+    QByteArray origin; // syntax analizer origin
 };
 
 typedef QVector<LexemType> LineProp;

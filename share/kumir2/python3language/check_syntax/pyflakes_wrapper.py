@@ -4,6 +4,8 @@ from pyflakes.reporter import Reporter as ReporterBase
 from check_syntax.error import Error
 from pyflakes.messages import *
 
+name = "PyFlakes"
+
 description = {
     "generic": "PyFlakes error checker",
     "russian": "Анализатор PyFlakes"

@@ -156,19 +156,27 @@ void PythonAnalizerInstance::queryErrors() {
             printError(QString("Item %1 in 'get_errors' result do not have 'id' property").arg(i));
             return;
         }
+        if (!classDict.contains("origin_name")) {
+            printError(QString("Item %1 in 'get_errors' result do not have 'origin_name' property").arg(i));
+            return;
+        }
         Error error;
         error.line = classDict["line_no"].toInt();
         error.start = classDict["start_pos"].toInt();
         error.len = classDict["length"].toInt();
         error.message = classDict["message"].toString();
         error.msgid = classDict["id"].toString().toLatin1();
+        error.origin = classDict["origin_name"].toString().toLatin1();
         // TODO translate error messages
         bool show_msg_id = true;
 #if defined(NDEBUG) || defined(QT_NO_DEBUG)
         show_msg_id = false;
 #endif
-        if (show_msg_id) {
+        if (show_msg_id && error.msgid.length() > 0) {
             error.message += " [" + error.msgid + "]";
+        }
+        if (error.origin.toLower().contains("pep-8") || error.origin.toLower().contains("pep8")) {
+            error.message = "PEP-8: " + error.message;
         }
         result.append(error);
     }
