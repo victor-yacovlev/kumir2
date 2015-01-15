@@ -152,6 +152,9 @@ void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::D
 
     analizerPlugin_ = analizerPlugin;
     analizerInstance_ = analizerInstance;
+    if (analizerInstance_) {
+        analizerInstance_->connectUpdateRequest(this, SLOT(updateFromAnalizer()));
+    }
     documentUrl_ = data.sourceUrl;
     setKumFile(data);
 }
@@ -605,6 +608,10 @@ EditorInstance::EditorInstance(
     updatePosition(cursor_->row(), cursor_->column());
 
     plane_->updateScrollBars();
+
+    if (analizerInstance_) {
+        analizerInstance_->connectUpdateRequest(this, SLOT(updateFromAnalizer()));
+    }
 }
 
 void EditorInstance::setupUi()
