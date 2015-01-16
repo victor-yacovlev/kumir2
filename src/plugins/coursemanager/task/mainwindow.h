@@ -100,6 +100,7 @@ Q_SIGNALS:
     void activateRequest();
 
 public slots:
+    bool safeToQuit();
     void aboutToQuit ();
     void openRescent();
     void loadCourse();
