@@ -133,7 +133,7 @@ void KumirCompilerToolPlugin::start()
                     QFileInfo(filename).fileName() +
                     ":" + QString::number(e.line+1) +
                     ":" + QString::number(e.start+1) + "-" + QString::number(e.start+e.len) +
-                    ": " + e.code;
+                    ": " + e.message;
 #ifdef Q_OS_WIN32
             QTextCodec * cp866 = QTextCodec::codecForName("CP866");
             fprintf(stderr, "%s\n", cp866->fromUnicode(errorMessage).constData());

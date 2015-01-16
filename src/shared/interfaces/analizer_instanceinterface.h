@@ -25,7 +25,9 @@ struct Error
     int line; // line number from 0
     int start; // position in line from 0
     int len; // error markup length
-    QString code; // error code
+    QString message; // error message
+    QByteArray msgid;  // internal message id
+    QByteArray origin;  // message origin name (PyLint, PyFlakes etc.)
 };
 
 typedef QVector<LexemType> LineProp;
@@ -61,6 +63,10 @@ public:
         QObject * me = dynamic_cast<QObject*>(this);
         if (!me) return 0;
         return qobject_cast<ExternalExecutableCompilerInterface*>(me);
+    }
+
+    inline virtual void connectUpdateRequest(QObject * receiver, const char * method) {
+        Q_UNUSED(receiver); Q_UNUSED(method);
     }
 
     virtual AnalizerInterface * plugin() = 0;

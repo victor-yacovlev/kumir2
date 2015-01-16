@@ -102,6 +102,8 @@ public:
     QList<Shared::Editor::Breakpoint> breakpoints() const;
 
 public slots:
+    void forceCompleteCompilation();
+
     void undo();
     void redo();
 
@@ -138,6 +140,7 @@ private slots:
     void enableInsertActions();
     void toggleRecordMacro(bool on);
     void editMacros();
+    void updateFromAnalizer();
 
 private /* methods */:
     ExtensionSystem::SettingsPtr mySettings() const;
@@ -148,8 +151,7 @@ private /* methods */:
 
     void focusInEvent(QFocusEvent *e);
     void loadMacros();    
-    void createActions();
-    void updateFromAnalizer();
+    void createActions();    
     void timerEvent(QTimerEvent *e);
 
 private /* fields */:

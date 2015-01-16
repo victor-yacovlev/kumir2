@@ -10,9 +10,9 @@ MultiPageDialog::MultiPageDialog(QWidget *parent)
     pImpl_->setupUi();
 }
 
-void MultiPageDialog::addPage(QWidget *page)
+void MultiPageDialog::addPage(const QString & groupTitle, QWidget *page)
 {
-    pImpl_->addPage(page);
+    pImpl_->addPage(groupTitle, page);
 }
 
 int MultiPageDialog::exec()

@@ -572,12 +572,12 @@ QList<Shared::Analizer::Error> Analizer::errors() const
                 err.line = lx->lineNo;
                 err.start = lx->linePos;
                 err.len = lx->length;
-                err.code = ErrorMessages::message(
+                err.message = ErrorMessages::message(
                             "KumirAnalizer",
                             AnalizerPrivate::nativeLanguage,
                             lx->error
                             );
-                if (result.size()>0 && result.last().line==err.line && result.last().code==err.code) {
+                if (result.size()>0 && result.last().line==err.line && result.last().message==err.message) {
                     Shared::Analizer::Error prev = result.last();
                     result.pop_back();
                     prev.len = (err.start+err.len-prev.start);

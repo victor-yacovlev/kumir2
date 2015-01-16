@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QStackedWidget>
-#include <QListWidget>
+#include <QTreeWidget>
 #include <QScrollArea>
 #include <QDialogButtonBox>
 
@@ -15,12 +15,12 @@ class MultiPageDialogImpl : public QObject
     Q_OBJECT
 private /*methods*/:
     explicit MultiPageDialogImpl(class MultiPageDialog *parent);
-    void addPage(QWidget * page);
+    void addPage(const QString & groupTitle, QWidget * page);
     void setupUi();
     void updateListWidth();
     
 private slots:
-    void handleGroupSelected(int index);
+    void handleGroupSelected(QTreeWidgetItem * current, QTreeWidgetItem * previous);
     void acceptAllPages();
     void resetAllPages();
     void init();
@@ -29,7 +29,7 @@ private /*fields*/:
     class MultiPageDialog * pClass_;
     QList<QWidget*> pages_;
     QStackedWidget * stack_;
-    QListWidget * list_;
+    QTreeWidget * list_;
     QDialogButtonBox * buttonBox_;
     
 };
