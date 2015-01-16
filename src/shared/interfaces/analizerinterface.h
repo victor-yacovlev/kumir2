@@ -20,6 +20,7 @@ public:
     virtual bool caseInsensitiveGrammatic() const = 0;
     virtual IndentsBehaviour indentsBehaviour() const = 0;
     virtual QString languageName() const = 0;
+    inline virtual QByteArray asciiLanguageIdentifier() const { return languageName().toLower().toLatin1(); }
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 
     virtual Analizer::InstanceInterface * createInstance() = 0;
