@@ -41,6 +41,7 @@ public:
 
     inline QString defaultDocumentFileNameSuffix() const { return "kum"; }
     inline QString languageName() const { return QString::fromUtf8("Кумир"); }    
+    inline QByteArray asciiLanguageIdentifier() const { return "kumir"; }
     inline void updateSettings(const QStringList &) {}
 
 protected:
