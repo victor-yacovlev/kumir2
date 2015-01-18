@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<KURS root="true" xml:id="0" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Python">
+ <T root="true" xml:id="61" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Введение">
+  <T root="false" xml:id="1" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Простейшие инструкции">
+   <DESC>html/01-01.html</DESC>
+   <CS>Python</CS>
+   <READY>false</READY>
+   <PROGRAM>py/01-01.py</PROGRAM>
+  </T>
+  <T root="false" xml:id="11" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Строки">
+   <DESC>html/01-02.html</DESC>
+   <CS>Python</CS>
+   <READY>false</READY>
+   <PROGRAM>py/01-02.py</PROGRAM>
+   <MARK/>
+  </T>
+  <T root="false" xml:id="21" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Имена">
+   <DESC>html/01-03.html</DESC>
+   <CS>Python</CS>
+   <READY>false</READY>
+   <PROGRAM>py/01-03.py</PROGRAM>
+   <MARK/>
+  </T>
+  <T root="false" xml:id="31" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Ввод и строковые операции">
+   <DESC>html/01-04.html</DESC>
+   <CS>Python</CS>
+   <READY>false</READY>
+   <PROGRAM>py/01-04.py</PROGRAM>
+   <MARK/>
+  </T>
+  <T root="false" xml:id="41" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Списки">
+   <DESC>html/01-05.html</DESC>
+   <CS>Python</CS>
+   <READY>false</READY>
+   <PROGRAM>py/01-05.py</PROGRAM>
+   <MARK/>
+  </T>
+  <DESC>html/01-035.html</DESC>
+  <CS>Python</CS>
+  <READY>false</READY>
+  <PROGRAM>py/01-01.py</PROGRAM>
+  <MARK/>
+ </T>
+ <DESC></DESC>
+ <MARK/>
+</KURS>

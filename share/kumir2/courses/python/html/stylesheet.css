@@ -1,0 +1,61 @@
+body {
+    color: black;
+    background-color: #cccccc;
+    font-size: 10pt;
+    line-height: 12pt;
+}
+
+h1 {
+    line-height: 20pt;
+    font-size: 18pt;
+    text-align: center;
+    font-weight: bold;
+    padding-bottom: 9pt;
+    border-bottom: 1pt solid #555555;
+}
+
+h2 {
+    font-size: 10pt;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 24pt;
+}
+
+h3 {
+    font-size: 10pt;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 24pt;
+}
+
+table {
+    width: 100%;
+    font-size: 10pt;
+    font-family: sans-serif;
+    border: 1pt solid #555555;
+    text-align: center;
+    border-spacing: 0;
+}
+
+table thead {
+    font-weight: bold;    
+}
+
+table thead tr td {
+    border-bottom: 1pt solid #555555;
+}
+
+table tr td {
+    border-right: 1pt solid #555555;
+}
+
+pre {
+    padding: 2pt;
+    background-color: white;
+    border: 1pt solid #555555;
+}
+
+code {
+    font-family: monospace;
+}
