@@ -326,7 +326,9 @@ void MainWindowTask::loadCourse()
     ui->splitter->setEnabled(true);
     QString dir=settings->value("Directories/Kurs","").toString();
     QDir chD(dir);
-    if(!chD.exists())dir=QDir::homePath();
+    QDir resDir=interface->myResourcesDir();
+    resDir.cdUp();
+    if(!chD.exists())dir=resDir.canonicalPath();
 //    QFileDialog dialog(this,trUtf8("Открыть файл"),dir, "(*.kurs.xml *.work.xml)");
 //     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 //     if(!dialog.exec())return;
