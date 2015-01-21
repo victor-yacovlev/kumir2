@@ -1,0 +1,40 @@
+<!DOCTYPE macros>
+<macros>
+    <macro title="if __name__ == &quot;__main__&quot;:" key="Ь">
+        <command name="InsertText" text="i"/>
+        <command name="InsertText" text="f"/>
+        <command name="InsertText" text=" "/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="n"/>
+        <command name="InsertText" text="a"/>
+        <command name="InsertText" text="m"/>
+        <command name="InsertText" text="e"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text=" "/>
+        <command name="InsertText" text="="/>
+        <command name="InsertText" text="="/>
+        <command name="InsertText" text=" "/>
+        <command name="InsertText" text="\&quot;"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="m"/>
+        <command name="InsertText" text="a"/>
+        <command name="InsertText" text="i"/>
+        <command name="InsertText" text="n"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="_"/>
+        <command name="InsertText" text="\&quot;"/>
+        <command name="InsertText" text=":"/>
+        <command name="InsertText" text="\n"/>
+        <command name="InsertText" text="    "/>
+        <command name="InsertText" text="p"/>
+        <command name="InsertText" text="a"/>
+        <command name="InsertText" text="s"/>
+        <command name="InsertText" text="s"/>
+        <command name="MoveToStartOfLine"/>
+        <command name="InsertText" text="\n    "/>
+        <command name="MoveToPreviousLine"/>
+    </macro>
+</macros>
