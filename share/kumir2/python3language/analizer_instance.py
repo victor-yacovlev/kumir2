@@ -5,8 +5,8 @@ NOTE: Each analizer instance runs in it's own interpreter
 """
 import copy
 import os
-import check_syntax
-import check_syntax.pep8_wrapper
+from check_syntax import *
+from check_syntax import pep8_wrapper
 
 from kumir_constants import *
 import color_marking
@@ -58,9 +58,9 @@ def set_source_dir_name(path):
 def _make_syntax_checks(text):
     global ERRORS
     global USE_PEP8
-    checkers = copy.copy(check_syntax.__all__)
+    checkers = [pylint_wrapper, pyflakes_wrapper]
     if USE_PEP8:
-        checkers += [check_syntax.pep8_wrapper]
+        checkers += [pep8_wrapper]
     for checker in checkers:
         checker.set_source_text(text)
         errors = checker.get_errors()
