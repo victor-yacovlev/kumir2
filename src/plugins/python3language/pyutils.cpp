@@ -406,11 +406,19 @@ extern void prepareBundledSysPath()
             << KumirRoot + "\\python\\Lib"
             << KumirRoot + "\\python\\DLLs"
             << KumirRoot + "\\python\\Lib\\site-packages"
-               ;
-    PyObject * sysPath = PyList_New(PathItems.size());
+               ;    
+    QDir siteRoot(QDir::fromNativeSeparators(KumirRoot)+"/python/Lib/site-packages");
+    QStringList eggs = siteRoot.entryList(QStringList() << "*.egg", QDir::Dirs);
+    PyObject * sysPath = PyList_New(PathItems.size()+eggs.size());
     for (int i=0; i<PathItems.size(); i++) {
         PyObject * pyItem = QStringToPyUnicode(PathItems[i]);
         PyList_SetItem(sysPath, i, pyItem);
+    }
+    for (int i=0; i<eggs.size(); i++) {
+        const QString eggPath = KumirRoot + "\\python\\Lib\\site-packages\\" + eggs[i];
+        PyObject * pyItem = QStringToPyUnicode(eggPath);
+        int index = PathItems.size() + i;
+        PyList_SetItem(sysPath, index, pyItem);
     }
     PySys_SetObject("path", sysPath);
 }
