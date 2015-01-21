@@ -1,7 +1,7 @@
 # coding=utf-8
 from astroid.builder import AstroidBuilder
 from logilab.common.interface import implements
-from pylint import lint
+from pylint import lint, utils
 from pylint.interfaces import *
 from pylint.reporters import BaseReporter
 from check_syntax.error import Error
@@ -145,7 +145,7 @@ def _init_linter():
     global _reporter
     _linter = lint.PyLinter(reporter=_reporter)
     _linter.load_default_plugins()
-    _walker = lint.PyLintASTWalker(_linter)
+    _walker = utils.PyLintASTWalker(_linter)
     checkers = _linter.prepare_checkers()
     _token_checkers = [c for c in checkers if implements(c, ITokenChecker) and c is not _linter]
     _raw_checkers = [c for c in checkers if implements(c, IRawChecker)]
