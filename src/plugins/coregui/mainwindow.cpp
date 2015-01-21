@@ -282,13 +282,13 @@ MainWindow::MainWindow(Plugin * p) :
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    if (!analizer || analizer->languageName()!=QString::fromUtf8("Кумир")) {
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-        ui->menuInsert->deleteLater();
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-        ui->menuInsert = nullptr;
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    }
+//    if (!analizer || analizer->languageName()!=QString::fromUtf8("Кумир")) {
+//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+//        ui->menuInsert->deleteLater();
+//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+//        ui->menuInsert = nullptr;
+//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+//    }
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     createSettingsDialog();
     // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
@@ -1094,13 +1094,13 @@ void MainWindow::prepareEditMenu()
 
     if (tabMenu) {
         ui->menuEdit->menuAction()->setMenu(tabMenu);
-        foreach (const QObject * child, ui->menubar->children()) {
-            qDebug() << child->metaObject()->className();
-            if (QByteArray("QMenu") == child->metaObject()->className()) {
-                const QMenu * m = qobject_cast<const QMenu*>(child);
-                qDebug() << m->title();
-            }
-        }
+//        foreach (const QObject * child, ui->menubar->children()) {
+//            qDebug() << child->metaObject()->className();
+//            if (QByteArray("QMenu") == child->metaObject()->className()) {
+//                const QMenu * m = qobject_cast<const QMenu*>(child);
+//                qDebug() << m->title();
+//            }
+//        }
 
     }
     else {
