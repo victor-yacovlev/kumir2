@@ -145,7 +145,7 @@ void TextDocument::removeText(QString &removedText, const Shared::Analizer::Inst
     int cnt = count;
     int p = pos;
     int removedCounter = line;
-    while (cnt>0) {
+    while (cnt>0 && line < data_.size()) {
         TextLine tl = data_[line];
         tl.changed = true;
         int thisLineRemoveCount = qMin(cnt, tl.text.length() - p);
