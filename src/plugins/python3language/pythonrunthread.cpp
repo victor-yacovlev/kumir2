@@ -414,6 +414,9 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
     mustStop = self->stopping_;
     self->mutex_->unlock();
 
+    if (mustStop) {
+        PyErr_SetString(PyExc_SystemError, "program terminated by user");
+    }
     return mustStop;
 }
 
