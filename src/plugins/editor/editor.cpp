@@ -1195,10 +1195,12 @@ quint32 EditorInstance::errorLinesCount() const
 {
     QSet<int> lines;
     if (analizerInstance_) {
-        QList<Shared::Analizer::Error> errors = analizerInstance_->errors();
+        QList<Shared::Analizer::Error> errors = analizerInstance_->errors();        
         foreach (const Shared::Analizer::Error & e, errors) {
-            if (e.line >= 0) {
-                lines.insert(e.line);
+            if (e.line >= 0 && e.line < doc_->linesCount()) {
+                if (plugin_->teacherMode_ || !doc_->at(e.line).hidden) {
+                    lines.insert(e.line);
+                }
             }
         }
     }
