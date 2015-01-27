@@ -164,6 +164,7 @@ void MultiPageDialogImpl::addPage(const QString & groupTitle, QWidget* page)
     pageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
     layout->addWidget(pageLabel);
     QScrollArea * scroll = new QScrollArea(pClass_);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scroll->setWidgetResizable(true);
     scroll->setWidget(page);
     layout->addWidget(scroll);

@@ -44,6 +44,7 @@ public slots:
     void copyLast();
     void copyAll();
     void editLast();
+    void setTerminalFont(const QFont & font);
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     inline QAction * actionSaveAll() const { return a_saveAll; }
     inline QAction * actionSaveLast() const { return a_saveLast; }

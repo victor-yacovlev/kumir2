@@ -183,6 +183,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "Creating and connection I/O terminal";
 
     terminal_ = new Term(mainWindow_);
+    terminal_->setTerminalFont(plugin_editor->defaultEditorFont());
     terminal_->setSettings(mySettings());
 
     mainWindow_->consolePlace_->addPersistentWidget(terminal_,
@@ -740,6 +741,9 @@ void Plugin::updateSettings(const QStringList & keys)
             ))
     {
         terminal_->setSettings(mySettings());
+    }
+    if (terminal_ && plugin_editor) {
+        terminal_->setTerminalFont(plugin_editor->defaultEditorFont());
     }
 }
 

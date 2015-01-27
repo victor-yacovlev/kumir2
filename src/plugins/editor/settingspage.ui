@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="Widgets::GroupBox" name="groupKeyboard">
+    <widget class="QGroupBox" name="groupKeyboard">
      <property name="title">
       <string>Keyboard</string>
      </property>
@@ -103,7 +103,7 @@
     </widget>
    </item>
    <item>
-    <widget class="Widgets::GroupBox" name="groupFont">
+    <widget class="QGroupBox" name="groupFont">
      <property name="title">
       <string>Font</string>
      </property>
@@ -171,7 +171,7 @@
     </widget>
    </item>
    <item>
-    <widget class="Widgets::GroupBox" name="groupSyntax">
+    <widget class="QGroupBox" name="groupSyntax">
      <property name="title">
       <string>Syntax highlighting</string>
      </property>
@@ -491,7 +491,7 @@
     </widget>
    </item>
    <item>
-    <widget class="Widgets::GroupBox" name="groupInitial">
+    <widget class="QGroupBox" name="groupInitial">
      <property name="title">
       <string>Initial Text</string>
      </property>
@@ -572,7 +572,7 @@
     </widget>
    </item>
    <item>
-    <widget class="Widgets::GroupBox" name="groupOther">
+    <widget class="QGroupBox" name="groupOther">
      <property name="title">
       <string>Other</string>
      </property>
@@ -648,14 +648,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Widgets::GroupBox</class>
-   <extends>QGroupBox</extends>
-   <header location="global">widgets/groupbox.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -63,6 +63,7 @@ public:
     QByteArray saveState(int documentId);
     void restoreState(int documentId, const QByteArray & data);
     void updateSettings(const QStringList & keys);
+    QFont defaultEditorFont() const;
 
 signals:
     void settingsUpdateRequest(const QStringList & keys);
@@ -98,6 +99,8 @@ private:
     bool teacherMode_;
 //    DocBookViewer::DocBookView * helpViewer_;
     QString currentDirectory_;
+    mutable QFont ptMonoFont_;
+    bool bundledFontsLoaded_;
 };
 
 }
