@@ -12,6 +12,8 @@ namespace Shared
 class EditorInterface
 {
 public:
+    virtual QFont defaultEditorFont() const = 0;
+
     virtual Editor::InstanceInterface * loadDocument(
             QIODevice * device,
             const QString & fileNameSuffix,

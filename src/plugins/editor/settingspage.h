@@ -80,10 +80,9 @@ public:
     static bool DefaultBoldDoc;
     static bool DefaultBoldComment;
     static bool DefaultFontName;
-    static bool DefaultFontSize;
 
     static QString defaultFontFamily();
-    static int defaultFontSize;
+    static int DefaultFontSize;
 
     static QString KeyTempSwitchLayoutButton;
 

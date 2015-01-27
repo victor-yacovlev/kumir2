@@ -457,4 +457,9 @@ void Term::editLast()
     emit openTextEditor(suggestedFileName, plainText);
 }
 
+void Term::setTerminalFont(const QFont &font)
+{
+    plane_->setFont(font);
+}
+
 } // namespace Terminal

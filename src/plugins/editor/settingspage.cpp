@@ -83,7 +83,7 @@ QString SettingsPage::defaultFontFamily()
     return result;
 }
 
-int SettingsPage::defaultFontSize = 12;
+int SettingsPage::DefaultFontSize = 12;
 
 SettingsPage::SettingsPage(ExtensionSystem::SettingsPtr  settings, QWidget *parent) :
     QWidget(parent),
@@ -156,11 +156,11 @@ void SettingsPage::accept()
 
     settings_->setValue(KeyFreeCursorMovement, freeCursor);
 
-    settings_->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
-    settings_->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
-    settings_->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
-    settings_->setValue("Settings/InitialCollapsed", ui->groupInitial->isCollapsed());
-    settings_->setValue("Settings/OtherCollapsed", ui->groupOther->isCollapsed());
+//    settings_->setValue("Settings/FontCollapsed", ui->groupFont->isCollapsed());
+//    settings_->setValue("Settings/KeyboardCollapsed", ui->groupKeyboard->isCollapsed());
+//    settings_->setValue("Settings/SyntaxCollapsed", ui->groupSyntax->isCollapsed());
+//    settings_->setValue("Settings/InitialCollapsed", ui->groupInitial->isCollapsed());
+//    settings_->setValue("Settings/OtherCollapsed", ui->groupOther->isCollapsed());
 
     settings_->setValue(KeyProgramTemplateFile,
                          QDir::fromNativeSeparators(ui->templateFileName->text())
@@ -175,11 +175,11 @@ void SettingsPage::init()
     ui->invertColors->setChecked(settings_->value(KeyInvertColorsIfDarkSystemTheme,
                                                   DefaultInvertColorsIfDarkSystemTheme).toBool());
 
-    ui->groupFont->setCollapsed(settings_->value("Settings/FontCollapsed", 1).toBool());
-    ui->groupKeyboard->setCollapsed(settings_->value("Settings/KeyboardCollapsed", 1).toBool());
-    ui->groupSyntax->setCollapsed(settings_->value("Settings/SyntaxCollapsed", 1).toBool());
-    ui->groupOther->setCollapsed(settings_->value("Settings/OtherCollapsed", 1).toBool());
-    ui->groupInitial->setCollapsed(settings_->value("Settings/InitialCollapsed", 1).toBool());
+//    ui->groupFont->setCollapsed(settings_->value("Settings/FontCollapsed", 1).toBool());
+//    ui->groupKeyboard->setCollapsed(settings_->value("Settings/KeyboardCollapsed", 1).toBool());
+//    ui->groupSyntax->setCollapsed(settings_->value("Settings/SyntaxCollapsed", 1).toBool());
+//    ui->groupOther->setCollapsed(settings_->value("Settings/OtherCollapsed", 1).toBool());
+//    ui->groupInitial->setCollapsed(settings_->value("Settings/InitialCollapsed", 1).toBool());
 
     setButtonColor(ui->kwColor, QColor(settings_->value(KeyColorKw, DefaultColorKw).toString()));
     setButtonColor(ui->typeColor, QColor(settings_->value(KeyColorType, DefaultColorType).toString()));
@@ -202,7 +202,7 @@ void SettingsPage::init()
     QFont f;
     f.setFamily(settings_->value(KeyFontName, defaultFontFamily()).toString());
     ui->fontFamily->setCurrentFont(f);
-    ui->fontSize->setValue(settings_->value(KeyFontSize, defaultFontSize).toInt());
+    ui->fontSize->setValue(settings_->value(KeyFontSize, DefaultFontSize).toInt());
 
     Qt::Key key = Qt::Key(settings_->value(KeyTempSwitchLayoutButton, DefaultTempSwitchLayoutButton).toUInt());
     QString keyText = "Alt";
@@ -267,6 +267,11 @@ void SettingsPage::init()
                                   );
     validateProgramTemplateFile();
     updateFontPreview();
+
+    ui->label->setVisible(false);
+    ui->label_3->setVisible(false);
+    ui->fontFamily->setVisible(false);
+    ui->fontPreview->setVisible(false);
 }
 
 void SettingsPage::resetToDefaults()
@@ -294,7 +299,7 @@ void SettingsPage::resetToDefaults()
     QFont f;
     f.setFamily(defaultFontFamily());
     ui->fontFamily->setCurrentFont(f);
-    ui->fontSize->setValue(defaultFontSize);
+    ui->fontSize->setValue(DefaultFontSize);
 
     Qt::Key key = Qt::Key(DefaultTempSwitchLayoutButton);
     QString keyText = "Alt";

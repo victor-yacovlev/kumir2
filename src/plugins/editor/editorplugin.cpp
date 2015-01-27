@@ -21,6 +21,7 @@ EditorPlugin::EditorPlugin()
     editors_ = QVector< Ed > ( 128, Ed(0,0,-1));
     settingsPage_ = 0;
     teacherMode_ = false;
+    bundledFontsLoaded_ = false;
 //    helpViewer_ = nullptr;
 }
 
@@ -154,13 +155,36 @@ void EditorPlugin::updateSettings(const QStringList & keys)
     emit settingsUpdateRequest(keys);
 }
 
+QFont EditorPlugin::defaultEditorFont() const
+{
+    QFont fnt;
+    if (!bundledFontsLoaded_)
+        fnt = QApplication::font();
+    else
+        fnt = ptMonoFont_;
+    int fntSize = mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::DefaultFontSize).toInt();
+    fnt.setPointSize(fntSize);
+    return fnt;
+}
+
 
 QString EditorPlugin::initialize(const QStringList &arguments, const ExtensionSystem::CommandLine &)
 {
     if (arguments.contains("teacher"))
         teacherMode_ = true;
     else
-        teacherMode_ = false;
+        teacherMode_ = false;    
+    const QDir fontsDir = myResourcesDir();
+    const QStringList ttfFiles = fontsDir.entryList(QStringList() << "*.ttf" << "*.otf");
+    foreach (const QString & fileName, ttfFiles) {
+        const QString filePath = fontsDir.absoluteFilePath(fileName);
+        int id = QFontDatabase::addApplicationFont(filePath);
+        if (id == -1) {
+            qWarning() << "Can't load font " << filePath;
+        }
+    }
+    bundledFontsLoaded_ = true;
+    ptMonoFont_ = QFont("PT Mono");
     return 0;
 }
 
