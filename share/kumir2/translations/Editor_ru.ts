@@ -907,7 +907,7 @@
     <message>
         <location filename="../../../src/plugins/editor/editor.cpp" line="909"/>
         <source>(Un)Lock lines from editing</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить/отменить защиту строк</translation>
     </message>
 </context>
 </TS>
