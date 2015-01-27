@@ -16,21 +16,21 @@
 		<listitem>
 			<para>
 				Кнопки <guibutton>Новая программа</guibutton>, <guibutton>Загрузить</guibutton> и <guibutton>Сохранить</guibutton> 
-				дублируют соответствующие пункты меню <guimenuitem>Программа</guimenuitem>. 
+				дублируют соответствующие пункты меню <guimenu>Программа</guimenu>. 
 			</para>
 		</listitem>
 		<listitem>
 			<para>
 				Кнопки <guibutton>Вырезать</guibutton>, <guibutton>Скопировать</guibutton> и <guibutton>Вставить</guibutton>, а также 
 				<guibutton>Отменить последнее действие</guibutton> и <guibutton>Повторить отменённое действие</guibutton> дублируют 
-				соответствующие пункты меню <guimenuitem>Редактирование</guimenuitem>.
+				соответствующие пункты меню <guimenu>Редактирование</guimenu>.
 			</para>
 		</listitem>
 		<listitem>
 			<para>
 				 Кнопки <guibutton>Без показа на полях</guibutton>, <guibutton>Обычное выполнение</guibutton>, <guibutton>Остановить 
 				 выполнение</guibutton>, а также <guibutton>ШАГ</guibutton>, <guibutton>шаг</guibutton> и <guibutton>До конца 
-				 алгоритма</guibutton> дублируют соответствующие пункты меню <guimenuitem>Выполнение</guimenuitem>. Кнопки 
+				 алгоритма</guibutton> дублируют соответствующие пункты меню <guimenu>Выполнение</guimenu>. Кнопки 
 				 <guibutton>Остановить выполнение</guibutton> и <guibutton>До конца алгоритма</guibutton> активны только во время 
 				 выполнения программы.
 			</para>
@@ -40,8 +40,8 @@
 				 Кнопки <guibutton>Практикум</guibutton>, <guibutton>Водолей</guibutton>, <guibutton>Водолей – Пульт</guibutton>, 
 				 <guibutton>Черепашка</guibutton>, <guibutton>Черепашка – Пульт</guibutton>, <guibutton>Робот</guibutton>, 
 				 <guibutton>Робот – Пульт</guibutton>, <guibutton>Рисователь</guibutton>, <guibutton>Вертун</guibutton>, 
-				 <guibutton>Кузнечик</guibutton> и <guibutton>Кузнечик - Пульт</guibutton> дублируют соответствующие пункты 
-				 меню <guimenuitem>Окна</guimenuitem>.
+				 <guibutton>Кузнечик</guibutton> и <guibutton>Кузнечик – Пульт</guibutton> дублируют соответствующие пункты 
+				 меню <guimenu>Окна</guimenu>.
 			</para>
 		</listitem>
 	</orderedlist>
