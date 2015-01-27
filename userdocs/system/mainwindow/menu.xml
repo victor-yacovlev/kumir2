@@ -241,12 +241,22 @@
 				</listitem>
 				<listitem>
 					<para>
+						<guimenuitem>Вертун – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Вертун».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
 						<guimenuitem>Кузнечик</guimenuitem> -- отображает дополнительное окно исполнителя «Кузнечик».
 					</para>
 				</listitem>
 				<listitem>
 					<para>
 						<guimenuitem>Кузнечик – Пульт</guimenuitem> -- отображает окно пульта управления исполнителем «Кузнечик».
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						<guimenuitem>Чертёжник</guimenuitem> -- отображает дополнительное окно исполнителя «Чертёжник».
 					</para>
 				</listitem>
             </orderedlist>
