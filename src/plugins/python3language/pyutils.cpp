@@ -491,6 +491,16 @@ extern PyObject* findCreatedModule(const QString &name)
     }
 }
 
+void createSysArgv(const QStringList &arguments)
+{
+    PyObject * py_args = PyList_New(arguments.size());
+    for (ssize_t i=0; i<arguments.size(); ++i) {
+        PyObject * py_arg = QStringToPyUnicode(arguments.at(i));
+        PyList_SetItem(py_args, i, py_arg);
+    }
+    PySys_SetObject("argv", py_args);
+}
+
 
 
 }

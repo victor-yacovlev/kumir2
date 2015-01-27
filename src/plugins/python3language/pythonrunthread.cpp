@@ -140,7 +140,8 @@ void PythonRunThread::run()
         prepareBundledSysPath();
     #else
         appendToSysPath(pythonPath_);
-    #endif
+    #endif        
+        createSysArgv(QStringList() << QDir::current().relativeFilePath(sourceProgramPath_));
         PyObject* py_run_wrapper = PyImport_ImportModule("run_wrapper");
         if (!py_run_wrapper) { printPythonTraceback(); return; }
         PyEval_ReleaseThread(py);

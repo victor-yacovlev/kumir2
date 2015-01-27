@@ -81,6 +81,7 @@ extern void clearCreatedModules();
 extern PyObject* findCreatedModule(const QString & name);
 
 extern void appendToSysPath(const QString & path);
+extern void createSysArgv(const QStringList &arguments);
 
 #ifdef Q_OS_WIN32
 extern void prepareBundledSysPath();

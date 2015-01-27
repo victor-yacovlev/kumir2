@@ -74,6 +74,7 @@ void SandboxWidget::reset()
 #else
     appendToSysPath(pythonPath_);
 #endif
+    createSysArgv(QStringList() << "");
     mainModule_ = PyImport_AddModule("__main__");
     PyObject* py_sandbox_wrapper = PyImport_ImportModule("sandbox_wrapper");
     if (!py_sandbox_wrapper) { printPythonTraceback(); return; }

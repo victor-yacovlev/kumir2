@@ -33,6 +33,7 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
 #else
     appendToSysPath(extraPythonPath);
 #endif
+    createSysArgv(QStringList() << "");
     initializePyAnalizer();
     ::PyEval_ReleaseThread(py_);
 }
