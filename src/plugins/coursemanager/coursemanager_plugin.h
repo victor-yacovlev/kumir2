@@ -47,7 +47,7 @@ public:
          return mySettings()->value("Courses/LastFiles","").toString().split(";",QString::SkipEmptyParts); 
      }
     void rebuildRescentMenu();
-
+    bool isSafeToQuit();
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);

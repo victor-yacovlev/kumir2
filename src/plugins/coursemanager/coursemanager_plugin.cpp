@@ -262,6 +262,7 @@ void Plugin::setEnabled(bool value)
 {
 
 }
+    bool Plugin::isSafeToQuit(){return MW->safeToQuit();};
 
 void Plugin::setTestingResult(ProgramRunStatus status, int value)
 {

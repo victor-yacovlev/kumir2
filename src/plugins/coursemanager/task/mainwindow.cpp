@@ -326,7 +326,9 @@ void MainWindowTask::loadCourse()
     ui->splitter->setEnabled(true);
     QString dir=settings->value("Directories/Kurs","").toString();
     QDir chD(dir);
-    if(!chD.exists())dir=QDir::homePath();
+    QDir resDir=interface->myResourcesDir();
+    resDir.cdUp();
+    if(!chD.exists())dir=resDir.canonicalPath();
 //    QFileDialog dialog(this,trUtf8("Открыть файл"),dir, "(*.kurs.xml *.work.xml)");
 //     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 //     if(!dialog.exec())return;
@@ -830,28 +832,47 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
     qDebug()<<"CLOSE TASK WINDOW";
   if(!course)return;
   qDebug()<<"START CLOSE TASK WINDOW";
-  if(!cursWorkFile.exists())
-  {
-      QMessageBox::StandardButton ans;
-            ans = QMessageBox::question(this, trUtf8("Курсы"), trUtf8("Вы хотите сохранить работу?"),
-                              QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
-            if (ans == QMessageBox::No)
-
-            {
-                event->accept();
-                if(course)delete course;
-                course=NULL;
-                return;
-             };
-            if(ans == QMessageBox::Cancel){event->ignore();
-                return;};
-
-            saveCourse();
-  }
+ 
         markProgChange();
         qDebug()<<"CLOSE TASK WINDOW";
+        event->accept();
         close();
 
+};
+bool MainWindowTask::safeToQuit()
+{
+    if(!course)return true;
+    if(!cursWorkFile.exists())
+    {
+        QMessageBox msgBoxCreateWorkbook(
+                                         QMessageBox::Question,
+                                         trUtf8("Практикум"),
+                                         trUtf8("Вы хотите сохранить работу?"),
+                                         QMessageBox::Yes | QMessageBox::No|QMessageBox::Cancel,
+                                         this
+                                         );
+        msgBoxCreateWorkbook.button(QMessageBox::Yes)->setText(trUtf8("Да"));
+        msgBoxCreateWorkbook.button(QMessageBox::No)->setText(trUtf8("Нет"));
+        msgBoxCreateWorkbook.button(QMessageBox::Cancel)->setText(trUtf8("Отмена"));
+        int ans = msgBoxCreateWorkbook.exec();
+        //            ans = QMessageBox::question(this, trUtf8("Практикум"), trUtf8("Вы хотите создать тетрадь?"),
+        //                    QMessageBox::Yes | QMessageBox::No , QMessageBox::Yes);
+        if (ans == QMessageBox::Yes)
+        {
+           
+           saveCourse();
+            return true;
+        };
+        if (ans == QMessageBox::No)
+        {
+           return true; 
+        }
+        if(ans == QMessageBox::Cancel)
+        {
+            return false;
+        }
+    }
+    return true;
 };
 void MainWindowTask::returnTested()
 {
