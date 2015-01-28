@@ -69,11 +69,13 @@ EditorPlane::EditorPlane(EditorInstance * editor)
 void EditorPlane::updateSettings(const QStringList & keys)
 {
     if (keys.isEmpty() || keys.contains(SettingsPage::KeyFontName) || keys.contains(SettingsPage::KeyFontSize)) {
-        QFont defaultFont;
-        defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
-        defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
-        setFont(defaultFont);
-        marginHintBox_->setFont(defaultFont);
+//        QFont defaultFont;
+//        defaultFont.setFamily(editor_->mySettings()->value(SettingsPage::KeyFontName, SettingsPage::defaultFontFamily()).toString());
+//        defaultFont.setPointSize(editor_->mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::defaultFontSize).toInt());
+//        setFont(defaultFont);
+//        marginHintBox_->setFont(defaultFont);
+        setFont(editor_->plugin_->defaultEditorFont());
+        marginHintBox_->setFont(editor_->plugin_->defaultEditorFont());
     }
 }
 
@@ -1637,7 +1639,7 @@ void EditorPlane::doAutocomplete()
         emit disableInsertActions();
         editor_->cursor()->removeSelection();
         editor_->cursor()->removeRectSelection();
-        editor_->autocompleteWidget_->init(before, suggestions, nullptr);
+        editor_->autocompleteWidget_->init(before, suggestions, editor_->plugin_, nullptr);
         editor_->autocompleteWidget_->move(mapToGlobal(cursorRect().topLeft()+offset()));
         editor_->autocompleteWidget_->setVisible(true);
         editor_->autocompleteWidget_->activateWindow();

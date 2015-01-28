@@ -58,6 +58,7 @@ SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget)
     , itemModel_(new QStandardItemModel)
     , keyPressedFlag_(false)
     , editorWidget_(editorWidget)
+    , editorPlugin_(0)
 {
     ui->setupUi(this);
     ui->alist->setModel(itemModel_);
@@ -74,16 +75,17 @@ SuggestionsWindow::SuggestionsWindow(QWidget *editorWidget)
 void SuggestionsWindow::updateSettings(const ExtensionSystem::SettingsPtr settings)
 {
     createIcons(settings);
-    QFont f;
-    f.setFamily(settings->value(
-                    SettingsPage::KeyFontName,
-                    SettingsPage::defaultFontFamily()
-                    ).toString());
-    f.setPointSize(settings->value(
-                       SettingsPage::KeyFontSize,
-                       SettingsPage::defaultFontSize
-                       ).toInt());
-    ui->alist->setFont(f);
+//    QFont f;
+//    f.setFamily(settings->value(
+//                    SettingsPage::KeyFontName,
+//                    SettingsPage::defaultFontFamily()
+//                    ).toString());
+//    f.setPointSize(settings->value(
+//                       SettingsPage::KeyFontSize,
+//                       SettingsPage::defaultFontSize
+//                       ).toInt());
+//    ui->alist->setFont(f);
+    ui->alist->setFont(editorPlugin_->defaultEditorFont());
 }
 
 void SuggestionsWindow::createIcons(const ExtensionSystem::SettingsPtr settings)
@@ -190,9 +192,10 @@ void SuggestionsWindow::acceptItem()
 
 SuggestionItem::SuggestionItem(const Shared::Analizer::Suggestion &suggestion,
                                SuggestionsWindow *factory,
+                               Shared::EditorInterface * editorPlugin,
                                DocBookViewer::DocBookView * helpViewer
                                )
-    : QStandardItem()
+    : QStandardItem()    
 {
     setText(suggestion.value);
     setToolTip(suggestion.description);
@@ -225,9 +228,11 @@ SuggestionItem::SuggestionItem(const Shared::Analizer::Suggestion &suggestion,
 void SuggestionsWindow::init(
         const QString &,
         const QList<Shared::Analizer::Suggestion> &suggestions,
+        Shared::EditorInterface * editorPlugin,
         DocBookViewer::DocBookView * helpViewer
         )
 {
+    editorPlugin_ = editorPlugin;
     keyPressedFlag_ = false;
     itemModel_->clear();
     int prefWidth = 100;
@@ -235,7 +240,7 @@ void SuggestionsWindow::init(
     int prefHeight = fm.height()*(5+suggestions.size());
     for (int index = 0; index<suggestions.size(); index++) {
         const Shared::Analizer::Suggestion & s = suggestions.at(index);
-        SuggestionItem * item = new SuggestionItem(s, this, helpViewer);
+        SuggestionItem * item = new SuggestionItem(s, this, editorPlugin, helpViewer);
         itemModel_->appendRow(item);
         prefWidth = qMax(prefWidth, 100+fm.width(s.value));
     }

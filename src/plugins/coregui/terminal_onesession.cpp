@@ -28,22 +28,23 @@ OneSession::OneSession(int fixedWidth, const QString & fileName, QWidget * paren
     inputCursorPosition_ = -1;
     timerId_ = -1;
     inputCursorVisible_ = false;
-    QString defaultFontFamily = "Courier";
-#ifdef Q_WS_X11
-    defaultFontFamily = "DejaVu Sans Mono";
-#endif
-#ifdef Q_OS_WIN32
-    if (QSysInfo::WindowsVersion>=0x0080)
-        defaultFontFamily = "Consolas";
-#endif
-#ifdef Q_OS_MAC
-    defaultFontFamily = "Courier"; // TODO implement me
-#endif
-    int defaultFontSize = 12;
-    QFont fnt = font();
-    fnt.setFamily(defaultFontFamily);
-    fnt.setPointSize(defaultFontSize);
-    setFont(fnt);
+//    QString defaultFontFamily = "Courier";
+//#ifdef Q_WS_X11
+//    defaultFontFamily = "DejaVu Sans Mono";
+//#endif
+//#ifdef Q_OS_WIN32
+//    if (QSysInfo::WindowsVersion>=0x0080)
+//        defaultFontFamily = "Consolas";
+//#endif
+//#ifdef Q_OS_MAC
+//    defaultFontFamily = "Courier"; // TODO implement me
+//#endif
+//    int defaultFontSize = 12;
+//    QFont fnt = font();
+//    fnt.setFamily(defaultFontFamily);
+//    fnt.setPointSize(defaultFontSize);
+//    setFont(fnt);
+    setFont(parent_->font());
     startTime_ = QDateTime::currentDateTime();
 }
 

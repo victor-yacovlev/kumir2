@@ -11,8 +11,10 @@
 #endif
 
 #include "interfaces/analizerinterface.h"
+#include "interfaces/editorinterface.h"
 
 namespace Editor {
+
 
 namespace Ui {
 class SuggestionsWindow;
@@ -24,6 +26,7 @@ class SuggestionItem
 public:
     explicit SuggestionItem(const Shared::Analizer::Suggestion & suggestion,
                             class SuggestionsWindow * factory,
+                            Shared::EditorInterface * editorPlugin,
                             DocBookViewer::DocBookView * helpViewer);
     inline bool hasHelpEntry() const { return hasHelpEntry_; }
 private:
@@ -45,6 +48,7 @@ public:
     explicit SuggestionsWindow(QWidget *editorWidget);
     void init(const QString & before,
               const QList<Shared::Analizer::Suggestion> & suggestions,
+              Shared::EditorInterface * editorPlugin,
               DocBookViewer::DocBookView * helpViewer
               );
     ~SuggestionsWindow();
@@ -75,6 +79,7 @@ private:
     QIcon icon_kumfile_;
     QIcon icon_other_;
     QWidget * editorWidget_;
+    Shared::EditorInterface * editorPlugin_;
 
 };
 
