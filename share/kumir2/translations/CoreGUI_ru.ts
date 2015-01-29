@@ -796,7 +796,7 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1178"/>
         <source>Executable file generation in progress.</source>
-        <translation>Сохдается выполняемый файл.</translation>
+        <translation>Создается выполняемый файл.</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.cpp" line="1182"/>
