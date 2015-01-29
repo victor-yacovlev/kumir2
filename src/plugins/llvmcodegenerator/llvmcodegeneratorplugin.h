@@ -40,7 +40,7 @@ public:
                 );
 
     void setOutputToText(bool flag);
-    inline void setVerbose(bool) {}
+    inline void setVerbose(bool v) { verboseOutput_ = v; }
     inline void setTemporaryDir(const QString &, bool ) {}
     inline void updateSettings(const QStringList &) {}
 
@@ -66,6 +66,8 @@ private:
     bool textForm_;
     bool runToolChain_;
     DebugLevel debugLevel_;
+    static bool verboseOutput_;
+    static bool keepTemporaryFiles_;
 
 };
 

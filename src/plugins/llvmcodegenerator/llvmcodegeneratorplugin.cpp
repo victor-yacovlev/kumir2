@@ -51,6 +51,9 @@ LLVMCodeGeneratorPlugin::LLVMCodeGeneratorPlugin()
 {
 }
 
+bool LLVMCodeGeneratorPlugin::verboseOutput_ = false;
+bool LLVMCodeGeneratorPlugin::keepTemporaryFiles_ = false;
+
 LLVMCodeGeneratorPlugin::~LLVMCodeGeneratorPlugin()
 {
     delete d;
@@ -91,6 +94,16 @@ LLVMCodeGeneratorPlugin::acceptableCommandLineParameters() const
                   false,
                   't', "stdlib",
                   tr("Link stdlib here (in conjuntion with -c flag)")
+                  );
+    result << CommandLineParameter(
+                  false,
+                  'v', "verbose",
+                  tr("Show external tools output messages")
+                  );
+    result << CommandLineParameter(
+                  false,
+                  'k', "keep",
+                  tr("Keep generated temporary files")
                   );
     return result;
 }
@@ -414,7 +427,12 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
 #endif
     process.setProcessChannelMode(QProcess::MergedChannels);
     process.start(LLC, llcArguments);
-    qDebug() << "Starting: " << LLC << llcArguments;
+    if (verboseOutput_) {
+        const QString verboseMessage = QString::fromLatin1("Starting: %1 %2\n")
+                .arg(LLC).arg(llcArguments.join(" "));
+        std::cout << verboseMessage.toStdString();
+
+    }
     if (!process.waitForFinished()) {
         errorMessage = QString("== ERROR == %1 %2 failed: %3")
                 .arg(LLC)
@@ -425,7 +443,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     else {
         output = process.readAllStandardOutput() + "\n" +
                 process.readAllStandardError();
-        qDebug() << output;
+        if (verboseOutput_)
+            std::cout << std::string(output.constData()) << std::endl;
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
@@ -453,7 +472,12 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     #endif
         process.setProcessChannelMode(QProcess::MergedChannels);
         process.start(AS, asArguments);
-        qDebug() << "Starting: " << AS << asArguments;
+        if (verboseOutput_) {
+            const QString verboseMessage = QString::fromLatin1("Starting: %1 %2\n")
+                    .arg(AS).arg(asArguments.join(" "));
+            std::cout << verboseMessage.toStdString();
+
+        }
         if (!process.waitForFinished()) {
             errorMessage = QString("== ERROR == %1 %2 failed: %3")
                     .arg(AS)
@@ -464,7 +488,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
         else {
             output = process.readAllStandardOutput() + "\n" +
                     process.readAllStandardError();
-            qDebug() << output;
+            if (verboseOutput_)
+                std::cout << std::string(output.constData()) << std::endl;
             const int status = process.exitStatus();
             if (0 != status) {
                 errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
@@ -506,7 +531,12 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     process.setWorkingDirectory(bundledToolchainPath);
 #endif
     process.setProcessChannelMode(QProcess::MergedChannels);
-    qDebug() << "Starting: " << LD << ldArguments;
+    if (verboseOutput_) {
+        const QString verboseMessage = QString::fromLatin1("Starting: %1 %2\n")
+                .arg(LD).arg(ldArguments.join(" "));
+        std::cout << verboseMessage.toStdString();
+
+    }
     process.start(LD, ldArguments);
     if (!process.waitForFinished()) {
         errorMessage = QString("== ERROR == %1 %2 failed: %3")
@@ -518,7 +548,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     else {
         output = process.readAllStandardOutput() + "\n" +
                 process.readAllStandardError();
-        qDebug() << output;
+        if (verboseOutput_)
+            std::cout << std::string(output.constData()) << std::endl;
         const int status = process.exitStatus();
         if (0 != status) {
             errorMessage = QString("== ERROR == %1 %2 exited with status: %3")
@@ -526,7 +557,8 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
         }
     }
 
-//    QFile::remove(objFileName);
+    if (!keepTemporaryFiles_)
+        QFile::remove(objFileName);
 
     if (errorMessage.length() > 0) {
         std::cerr << errorMessage.toStdString() << std::endl;
@@ -539,8 +571,9 @@ QByteArray LLVMCodeGeneratorPlugin::runExternalToolsToGenerateExecutable(const Q
     QFile executableFile(exeFileName);
     executableFile.open(QIODevice::ReadOnly);
     const QByteArray result = executableFile.readAll();
-    executableFile.close();    
-    QFile::remove(exeFileName);
+    executableFile.close();
+    if (!keepTemporaryFiles_)
+        QFile::remove(exeFileName);
     return result;
 }
 
@@ -591,6 +624,9 @@ QString LLVMCodeGeneratorPlugin::initialize(
         linkStdLib_ = true;
         linkAllUnits_ = true;
     }
+
+    setVerbose(runtimeArguments.hasFlag('v'));
+    keepTemporaryFiles_ = runtimeArguments.hasFlag('k');
 
     DebugLevel debugLevel = LinesOnly;
     if (runtimeArguments.value('g').isValid()) {
