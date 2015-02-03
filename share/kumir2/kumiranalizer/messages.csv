@@ -57,6 +57,7 @@
 "Can't boolean:=integer";"Нельзя “лог := цел”";"";"";"";"";
 "Can't boolean:=real";"Нельзя “лог := вещ”";"";"";"";"";
 "Can't boolean:=string";"Нельзя “лог := лит”";"";"";"";"";
+"Can't call function while initialization";"Здесь нельзя вызывать алгоритм";"";"";"";"";
 "Can't charect:=%1";"";"";"";"";"";
 "Can't charect:=boolean";"Нельзя “сим := лог”";"";"";"";"";
 "Can't charect:=integer";"Нельзя “сим := цел”";"";"";"";"";

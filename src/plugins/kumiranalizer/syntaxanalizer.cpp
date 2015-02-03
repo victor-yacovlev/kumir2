@@ -13,8 +13,6 @@
 #include "interfaces/actorinterface.h"
 #include "vm/vm_bytecode.hpp"
 
-#define BADNAME_KEYWORD TN_BAD_NAME_3
-#define BADNAME_OPERATOR TN_BAD_NAME_1
 
 using namespace Shared;
 
@@ -3918,7 +3916,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                 if (initValue.isEmpty()) {
                     group.lexems[z-1]->error = _("Initial value is empty");
                     return result;
-                }
+                }                
                 int maxDim = 0;
                 QVariant constValue = parseConstant(initValue.toStdList(),
                                                     var->baseType.kind,
@@ -3928,6 +3926,7 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                     AST::Type userConstType;
                     QVariant userConstValue;
                     QString longLexem;
+                    bool success = false;
                     foreach (const LexemPtr lx, initValue) {
                         if (longLexem.length() > 0) longLexem += " ";
                         longLexem += lx->data;
@@ -3940,8 +3939,24 @@ QList<AST::VariablePtr> SyntaxAnalizer::parseVariables(int statementIndex, Varia
                             lx->type = Shared::LxTypeConstant;
                             lx->error.clear();
                         }
+                        success = true;
                     }
-                    else {
+                    else if (longLexem.contains('(')) {
+                        // Trying to call function
+                        bool bracketFound = false;
+                        foreach (const LexemPtr lx, initValue) {
+                            if (Shared::LxOperLeftBr == lx->type) {
+                                bracketFound = true;
+                            }
+                            if (bracketFound) {
+                                lx->error.clear();
+                            }
+                            else {
+                                lx->error = _("Can't call function while initialization");
+                            }
+                        }
+                    }
+                    if (!success) {
                         return result;
                     }
                 }
