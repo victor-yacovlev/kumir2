@@ -327,8 +327,14 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
     using namespace Shared;
 
     bool ok = false;
+    const QUrl sourceProgramUrl = editor_->documentContents().sourceUrl;
     QString sourceProgramPath;
-    sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+    if (sourceProgramUrl.isLocalFile()) {
+        sourceProgramPath = sourceProgramUrl.toLocalFile();
+    }
+    else if ("course" == sourceProgramUrl.scheme()) {
+        sourceProgramPath = QDir::cleanPath(sourceProgramUrl.path());
+    }
     RunInterface::RunnableProgram program;
     program.sourceFileName = sourceProgramPath;
     program.sourceData = editor_->analizer()->plugin()->sourceFileHandler()->toString(editor_->documentContents());

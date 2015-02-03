@@ -2314,6 +2314,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                 ExtensionSystem::PluginManager::instance()
                 ->findPlugin<Shared::AnalizerInterface>()
                 ->defaultDocumentFileNameSuffix();
+        src.sourceUrl = data.url;
 
         if (courseManagerTab) {
             // Reuse existing tab
