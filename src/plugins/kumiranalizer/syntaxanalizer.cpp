@@ -5530,7 +5530,9 @@ AST::ExpressionPtr  SyntaxAnalizer::parseFunctionCall(const QList<LexemPtr> &lex
         return AST::ExpressionPtr();
     }
     splitLexemsByOperator(argLine, LxOperComa, arguments, comas);
-    int diff = arguments.size()-function->header.arguments.size();
+    int functionArgumentsCount = function->header.arguments.size();
+    functionArgumentsCount -= function->header.external.algorithmAsciiName.count("%");
+    int diff = arguments.size()-functionArgumentsCount;
     if (diff>0) {
         for (int i=0; i<diff; i++) {
             QList<LexemPtr> lxs = arguments[arguments.size()-1-i];
