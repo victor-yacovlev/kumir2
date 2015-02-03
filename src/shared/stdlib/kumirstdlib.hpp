@@ -969,11 +969,11 @@ public:
         }
         if ((expform || 0==decimals) && std::string::npos != rpart.find('.')) {
             while (rpart.size() > 1 && '0' == rpart.at(rpart.size()-1)) {
-                rpart.pop_back();
+                rpart.resize(rpart.length()-1);
             }
             if ('.' == rpart.at(rpart.length()-1)) {
                 if (expform)
-                    rpart.pop_back();
+                    rpart.resize(rpart.length()-1);
                 else
                     rpart.push_back('0');
             }

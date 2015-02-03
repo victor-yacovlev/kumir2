@@ -28,6 +28,27 @@ namespace Ui {
 }
 
 
+class MakeNativeExecutableWorker
+        : public QThread
+{
+    Q_OBJECT
+public:
+    Shared::GeneratorInterface * generator;
+    Shared::Analizer::InstanceInterface * analizer;
+    QString fileName;
+    QString fileSuffix;
+    QByteArray buffer;
+    QMessageBox * progressDialog;
+    bool canceled;
+    mutable QMutex canceledMutex;
+    bool isCanceled() const;
+public slots:
+    void cancel();
+private:
+    void run();
+
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -93,6 +114,7 @@ public slots:
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void updateStartPageTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
     void makeNativeExecutable();
+    void saveNativeExecutable();
 
 private slots:
     void loadRecentFile();
@@ -123,6 +145,7 @@ private slots:
 
 
 private:
+
     void createSettingsDialog();
 
     void prepareLayoutChange();
