@@ -329,10 +329,11 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
     bool ok = false;
     const QUrl sourceProgramUrl = editor_->documentContents().sourceUrl;
     QString sourceProgramPath;
+    qDebug()<<sourceProgramUrl<<sourceProgramUrl.scheme()<<sourceProgramUrl.path();
     if (sourceProgramUrl.isLocalFile()) {
         sourceProgramPath = sourceProgramUrl.toLocalFile();
     }
-    else if ("course" == sourceProgramUrl.scheme()) {
+    else if ("course" == sourceProgramUrl.scheme().toLower()) {
         sourceProgramPath = QDir::cleanPath(sourceProgramUrl.path());
     }
     RunInterface::RunnableProgram program;

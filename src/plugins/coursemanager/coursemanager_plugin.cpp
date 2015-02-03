@@ -92,6 +92,7 @@ void Plugin::setPreProgram(QVariant param)
       QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
       base.setScheme("Course");
       text.url=base;
+      qDebug()<<base.isLocalFile()<<base.path ();
    gui->setProgramSource(text);
      
       ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
