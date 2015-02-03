@@ -48,6 +48,7 @@ public:
     inline QDateTime startTime() const { return startTime_; }
     inline QDateTime endTime() const { return endTime_; }
     inline int fixedWidth() const { return fixedWidth_; }
+    inline int flexibleWidth() const;
     void draw(QPainter &p, const QRect & dirtyRect) const;
     void drawInputRect(QPainter &p, const uint mainTextY) const;
     uint drawUtilityText(QPainter &p,
