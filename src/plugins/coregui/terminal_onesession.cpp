@@ -84,7 +84,7 @@ QSize OneSession::visibleSize() const
     int visibleCharsInLine =
             -1 == fixedWidth()
             ? flexibleWidth() : fixedWidth();
-    result.rwidth() = qMax(result.rwidth(), charSize().width() * (1+visibleCharsInLine));
+    result.rwidth() = qMax(result.rwidth(), charSize().width() * (visibleCharsInLine));
     return result;
 }
 
