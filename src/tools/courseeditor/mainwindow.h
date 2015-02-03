@@ -39,7 +39,10 @@ public:
     KumZadanie task;
     void setup();
      QString getFileName(QString fileName);
-
+    QFileInfo baseCourceFile()
+    {
+        return baseKursFile;
+    }
 public slots:
     void aboutToQuit ();
     void loadCourse();

@@ -212,11 +212,13 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
         LeftB->hide();
         turnLeft=new MainButton(resdir,this);
     turnLeft->setGeometry(LeftB->geometry());
+    turnLeft->setText(" ");
         turnLeft->loadIcon(resdir.absoluteFilePath("160_55l.png"));
  
        // RightB->hide();
         turnRight=new MainButton(resdir,this);
     turnRight->setGeometry(RightB->geometry());
+     turnRight->setText(" ");
         turnRight->loadIcon(resdir.absoluteFilePath("160_55r.png"));
         
 //        StenaB->hide();
@@ -245,6 +247,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
 
 
         QIcon toKumirIco(resdir.absoluteFilePath("kumir.png"));
+    toKumir->setEnabled(true);
     toKumir->setIcon(toKumirIco);
 	
 //	CenterB->setIcon(QIcon(":/icons/robo_field.png"));
