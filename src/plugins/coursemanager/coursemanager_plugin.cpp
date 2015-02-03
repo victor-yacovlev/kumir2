@@ -89,6 +89,8 @@ void Plugin::setPreProgram(QVariant param)
    else if (analizer->defaultDocumentFileNameSuffix()=="py") {
        text.language = Shared::GuiInterface::ProgramSourceText::Python;
    }
+      QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
+      text.url=base;
    gui->setProgramSource(text);
      
       ExtensionSystem::PluginManager::instance()->switchGlobalState(PluginInterface::GS_Unlocked);
@@ -116,6 +118,9 @@ bool Plugin::setTextFromFile(QString fname)
     else if (fname.endsWith(".py")) {
         text.language = Shared::GuiInterface::ProgramSourceText::Python;
     }
+    QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
+    text.url=base;
+    qDebug()<<base.isLocalFile()<<base.path ();
     gui->setProgramSource(text);
     return true;
 }

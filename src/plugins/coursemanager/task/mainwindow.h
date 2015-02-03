@@ -95,10 +95,13 @@ public:
      QString getFileName(QString fileName);
      void setTeacher(bool mode);
     QList<QAction*> getActions();
-
+    QString baseCourseFile()
+    {
+        return baseKursFile.absoluteFilePath();
+    }
 Q_SIGNALS:
     void activateRequest();
-
+ 
 public slots:
     bool safeToQuit();
     void aboutToQuit ();
