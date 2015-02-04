@@ -113,7 +113,7 @@ void LLVMCodeGeneratorPlugin::setDebugLevel(DebugLevel debugLevel)
     debugLevel_ = debugLevel;
 }
 
-void LLVMCodeGeneratorPlugin::generateExecuable(
+void LLVMCodeGeneratorPlugin::generateExecutable(
             const AST::DataPtr tree,
             QByteArray & out,
             QString & mimeType,

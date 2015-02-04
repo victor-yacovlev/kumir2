@@ -75,7 +75,7 @@ void KumirCodeGeneratorPlugin::stop()
 
 }
 
-void KumirCodeGeneratorPlugin::generateExecuable(
+void KumirCodeGeneratorPlugin::generateExecutable(
         const AST::DataPtr tree,
         QByteArray & out,
         QString & mimeType,

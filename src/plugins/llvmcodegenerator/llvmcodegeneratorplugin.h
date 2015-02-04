@@ -32,7 +32,7 @@ public:
     QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const;
 
     void setDebugLevel(DebugLevel debugLevel);
-    void generateExecuable(
+    void generateExecutable(
                 const AST::DataPtr tree,
                 QByteArray & out,
                 QString & mimeType,

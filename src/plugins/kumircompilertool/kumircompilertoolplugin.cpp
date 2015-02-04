@@ -146,7 +146,7 @@ void KumirCompilerToolPlugin::start()
         QString suffix;
         QString mimeType;
         QByteArray outData;
-        generator_->generateExecuable(ast, outData, mimeType, suffix);
+        generator_->generateExecutable(ast, outData, mimeType, suffix);
 
         if (qApp->property("returnCode").toInt() != 0) {
             return;

@@ -1141,7 +1141,7 @@ void MakeNativeExecutableWorker::run()
 {
     const AST::DataPtr ast = analizer->compiler()->abstractSyntaxTree();
     QString mimeType;
-    generator->generateExecuable(ast, buffer, mimeType, fileSuffix);
+    generator->generateExecutable(ast, buffer, mimeType, fileSuffix);
 //    sleep(5);
 }
 

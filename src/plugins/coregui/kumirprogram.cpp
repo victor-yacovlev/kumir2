@@ -356,7 +356,7 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
         kumirCodeGenerator()->setOutputToText(false);
         kumirCodeGenerator()->setDebugLevel(debugLevel);
         QString fileNameSuffix, mimeType;
-        kumirCodeGenerator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
+        kumirCodeGenerator()->generateExecutable(ast, bufArray, mimeType, fileNameSuffix);
 
         program.executableData = bufArray;
         runner()->loadProgram(program);
