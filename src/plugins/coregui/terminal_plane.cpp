@@ -414,7 +414,7 @@ void Plane::paintEvent(QPaintEvent *e)
             p.save();
             p.translate(off.x(), y+off.y());
             const QRect sessionDirtyRect = QRect(
-                        0, dirtyRect.top()-sessionRect.top(),
+                        -off.x(), dirtyRect.top()-sessionRect.top(),
                         width(), dirtyRect.height()
                         );
             session->draw(p, sessionDirtyRect);

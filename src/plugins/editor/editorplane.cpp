@@ -1660,7 +1660,7 @@ static unsigned int findNumberOfOverlappingTrailingCharacters(
         const QString tail = source.mid(source.size()-i);
         if (pattern.startsWith(tail)) {
             result = (unsigned int) i;
-            break;
+//            break;
         }
     }
     return result;

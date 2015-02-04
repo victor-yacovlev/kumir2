@@ -21,7 +21,7 @@ public:
       * @returns pair of string: first is error (or empty), second is mimetype
       */
     virtual void setDebugLevel(DebugLevel debugLevel) = 0;
-    virtual void generateExecuable(
+    virtual void generateExecutable(
             const AST::DataPtr tree,
             QByteArray & out,
             QString & mimeType,

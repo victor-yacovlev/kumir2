@@ -1137,16 +1137,67 @@ void MainWindow::prepareInsertMenu()
     }
 }
 
+void MakeNativeExecutableWorker::run()
+{
+    const AST::DataPtr ast = analizer->compiler()->abstractSyntaxTree();
+    QString mimeType;
+    generator->generateExecutable(ast, buffer, mimeType, fileSuffix);
+//    sleep(5);
+}
+
+void MakeNativeExecutableWorker::cancel()
+{
+    canceledMutex.lock();
+    canceled = true;
+    canceledMutex.unlock();
+}
+
+bool MakeNativeExecutableWorker::isCanceled() const
+{
+    bool result = false;
+    canceledMutex.lock();
+    result = canceled;
+    canceledMutex.unlock();
+    return result;
+}
+
 void MainWindow::makeNativeExecutable()
 {
     TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
     twe->editor()->ensureAnalized();
-    const AST::DataPtr ast = twe->editor()->analizer()->compiler()->abstractSyntaxTree();
-    QString fileSuffix;
-    QString mimeType;
-    QByteArray buffer;
-    twe->kumirProgram()->kumirNativeGenerator()->generateExecuable(ast, buffer, mimeType, fileSuffix);
-    QString fileName = twe->editor()->documentContents().sourceUrl.toLocalFile();
+
+    MakeNativeExecutableWorker * worker = new MakeNativeExecutableWorker();
+    connect(worker, SIGNAL(finished()), this, SLOT(saveNativeExecutable()));
+    worker->analizer = twe->editor()->analizer();
+    worker->generator = KumirProgram::kumirNativeGenerator();
+    worker->fileName = twe->editor()->documentContents().sourceUrl.toLocalFile();
+    worker->canceled = false;
+    worker->progressDialog = new QMessageBox(
+                QMessageBox::NoIcon,
+                tr("Please wait..."),
+                tr("Executable file generation in progress."),
+                QMessageBox::Cancel,
+                this
+                );
+    worker->progressDialog->button(QMessageBox::Cancel)->setText(tr("Cancel"));
+    connect(worker->progressDialog->button(QMessageBox::Cancel), SIGNAL(clicked()),
+            worker, SLOT(cancel()));
+    worker->progressDialog->show();
+    worker->start(QThread::IdlePriority);
+
+}
+
+void MainWindow::saveNativeExecutable()
+{
+    MakeNativeExecutableWorker * worker = qobject_cast<MakeNativeExecutableWorker*>(sender());
+    worker->progressDialog->close();
+    if (worker->isCanceled()) {
+        worker->progressDialog->deleteLater();
+        worker->deleteLater();
+        return;
+    }
+    QString fileName = worker->fileName;
+    QString fileSuffix = worker->fileSuffix;
 #ifndef Q_OS_WIN32
     fileSuffix = "bin";
 #endif
@@ -1170,7 +1221,7 @@ void MainWindow::makeNativeExecutable()
         else {
             initialPath = QFileInfo(lastFileName).absoluteDir().absolutePath();
         }
-        initialPath += "/" + suggestNewFileName(fileSuffix, twe->editor()->analizer(), initialPath);
+        initialPath += "/" + suggestNewFileName(fileSuffix, worker->analizer, initialPath);
     }
     else {
         initialPath = fileName;
@@ -1192,13 +1243,15 @@ void MainWindow::makeNativeExecutable()
         m_plugin->mySettings()->setValue(Plugin::RecentFileKey, settingsEntry);
         QFile f(fileName);
         if (f.open(QIODevice::WriteOnly)) {
-            f.write(buffer);
+            f.write(worker->buffer);
             f.close();
             QFile::Permissions ps = f.permissions();
             ps |= QFile::ExeGroup | QFile::ExeOwner | QFile::ExeOther;
             QFile::setPermissions(fileName, ps);
         }
     }
+    worker->progressDialog->deleteLater();
+    worker->deleteLater();
 }
 
 bool MainWindow::saveCurrentFileAs()
@@ -2261,6 +2314,7 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
                 ExtensionSystem::PluginManager::instance()
                 ->findPlugin<Shared::AnalizerInterface>()
                 ->defaultDocumentFileNameSuffix();
+        src.sourceUrl = data.url;
 
         if (courseManagerTab) {
             // Reuse existing tab

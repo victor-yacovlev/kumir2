@@ -66,14 +66,25 @@ QString OneSession::fileName() const
     return fileName_.contains(".") ? fileName_ : QString();
 }
 
+int OneSession::flexibleWidth() const
+{
+    // TODO change to std::algorithms after MSVC2010 support drop
+    int result = 0;
+    Q_FOREACH(const QString & line, lines_) {
+        result = qMax(result, line.length());
+    }
+    return result;
+}
+
 QSize OneSession::visibleSize() const
 {
     const QRegion region = QRegion() +
             headerRect_ + mainTextRegion_ + footerRect_;
     QSize result = region.boundingRect().size();
-    if (-1 != fixedWidth()) {
-        result.rwidth() = qMax(result.rwidth(), (charSize().width() + 1) * fixedWidth());
-    }
+    int visibleCharsInLine =
+            -1 == fixedWidth()
+            ? flexibleWidth() : fixedWidth();
+    result.rwidth() = qMax(result.rwidth(), charSize().width() * (visibleCharsInLine));
     return result;
 }
 
@@ -356,15 +367,30 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft, const QRect &
     for (size_t i=0; i<visibleLines_.size(); i++) {
         uint xx = topLeft.x();
         uint yy = topLeft.y() + i * atom.height() + atom.height();
-        const QRect thisLineFullWidthRect(0, yy-atom.height(), dirtyRect.width(), atom.height());
-        if (!dirtyRect.intersects(thisLineFullWidthRect)) {
-            continue;
-        }
         const VisibleLine & vline = visibleLines_.at(i);
         const QString & text = vline.text;
         const LineProp & prop = vline.prop;
-        const size_t from = vline.from;
-        const size_t to = vline.to;
+
+        QRect thisLineFullWidthRect;
+        if (-1 == fixedWidth()) {
+            thisLineFullWidthRect = QRect(0, yy-atom.height(),
+                                          text.length() * atom.width(),
+                                          atom.height());
+        }
+        else {
+            thisLineFullWidthRect = QRect(0, yy-atom.height(),
+                                          dirtyRect.width(),
+                                          atom.height());
+        }
+        if (!dirtyRect.intersects(thisLineFullWidthRect)) {
+            continue;
+        }        
+        size_t from = vline.from;
+        size_t to = vline.to;
+        if (-1 == fixedWidth()) {
+            from = 0;
+            to = text.length();
+        }
         for (size_t j=from; j<to; j++) {
             const QChar symbol = text.at(j);
             const CharSpec spec = prop.at(j);

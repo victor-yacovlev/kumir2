@@ -4025,7 +4025,7 @@ bool RobotModule::runIsColor()
     {
         int rws=field->rows();
         int clmns=field->columns();
-        if(row-1>=field->rows() ||col-1>field->columns()|| row-1<0 || col-1<0)
+        if(row-1>=field->rows() ||col-1>=field->columns()|| row-1<0 || col-1<0)
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4036,7 +4036,9 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runColored(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        int rows=field->rows();
+        
+        if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4047,7 +4049,7 @@ bool RobotModule::runIsColor()
     };
     void RobotModule::runRobotPos(int& row, int& col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4060,7 +4062,7 @@ bool RobotModule::runIsColor()
     
     QChar RobotModule::runUpChar(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>=field->columns())
         {
            
             setError(trUtf8("Нет какой клетки!"));
@@ -4072,7 +4074,7 @@ bool RobotModule::runIsColor()
     };
     int RobotModule::runCellTemp(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4084,7 +4086,7 @@ bool RobotModule::runIsColor()
     };
     qreal RobotModule::runCellRad(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
             setError(trUtf8("Нет какой клетки!"));
@@ -4097,7 +4099,7 @@ bool RobotModule::runIsColor()
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {
-        if(row-1>field->rows() ||col-1>field->columns())
+        if(row-1>=field->rows() ||col-1>=field->columns())
             {
         
         setError(trUtf8("Нет какой клетки!"));

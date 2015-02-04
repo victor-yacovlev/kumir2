@@ -327,8 +327,15 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
     using namespace Shared;
 
     bool ok = false;
+    const QUrl sourceProgramUrl = editor_->documentContents().sourceUrl;
     QString sourceProgramPath;
-    sourceProgramPath = editor_->documentContents().sourceUrl.toLocalFile();
+    qDebug()<<sourceProgramUrl<<sourceProgramUrl.scheme()<<sourceProgramUrl.path();
+    if (sourceProgramUrl.isLocalFile()) {
+        sourceProgramPath = sourceProgramUrl.toLocalFile();
+    }
+    else if ("course" == sourceProgramUrl.scheme().toLower()) {
+        sourceProgramPath = QDir::cleanPath(sourceProgramUrl.path());
+    }
     RunInterface::RunnableProgram program;
     program.sourceFileName = sourceProgramPath;
     program.sourceData = editor_->analizer()->plugin()->sourceFileHandler()->toString(editor_->documentContents());
@@ -349,7 +356,7 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
         kumirCodeGenerator()->setOutputToText(false);
         kumirCodeGenerator()->setDebugLevel(debugLevel);
         QString fileNameSuffix, mimeType;
-        kumirCodeGenerator()->generateExecuable(ast, bufArray, mimeType, fileNameSuffix);
+        kumirCodeGenerator()->generateExecutable(ast, bufArray, mimeType, fileNameSuffix);
 
         program.executableData = bufArray;
         runner()->loadProgram(program);
