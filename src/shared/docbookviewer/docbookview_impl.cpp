@@ -295,6 +295,8 @@ void DocBookViewImpl::navigateToApiFunction(const QString & package, const QStri
 void DocBookViewImpl::clearNavigationFilters()
 {
     sidePanel_->clearNavigationFilters();
+    showSidePanel();
+    sidePanel_->focusToSearchLine();
 }
 
 void DocBookViewImpl::removeDocument(const Document & existingDocument)

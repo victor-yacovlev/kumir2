@@ -210,6 +210,17 @@ void SidePanel::clearNavigationFilters()
     ui->searchExamples->setText("");
 }
 
+void SidePanel::focusToSearchLine()
+{
+    QObjectList childs = ui->stackedWidget->currentWidget()->children();
+    foreach (QObject * child, childs) {
+        if ("QLineEdit" == QByteArray(child->metaObject()->className())) {
+            qobject_cast<QWidget*>(child)->setFocus();
+            break;
+        }
+    }
+}
+
 void SidePanel::createNavigationItems(QTreeWidgetItem *item,
                                             ModelPtr model)
 {
