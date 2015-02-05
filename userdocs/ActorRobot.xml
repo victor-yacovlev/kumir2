@@ -1250,7 +1250,7 @@ robot.do_paint()
 		<section id="@@размер поля">
 			<title>@@размер поля
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1274,7 +1274,7 @@ robot.do_paint()
 		<section id="@@закрашена">
 			<title>@@закрашена
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1301,7 +1301,7 @@ robot.do_paint()
 		<section id="@@метка">
 			<title>@@метка
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1328,7 +1328,7 @@ robot.do_paint()
 		<section id="@@робот">
 			<title>@@робот
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1352,7 +1352,7 @@ robot.do_paint()
 		<section id="@@верхняя буква">
 			<title>@@верхняя буква
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1379,7 +1379,7 @@ robot.do_paint()
 		<section id="@@нижняя буква">
 			<title>@@нижняя буква
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1406,7 +1406,7 @@ robot.do_paint()
 		<section id="@@температура">
 			<title>@@температура
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
@@ -1432,7 +1432,7 @@ robot.do_paint()
 		<section id="@@радиация">
 			<title>@@радиация
 			</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo>
 					<package>Подготовка программ в учительском режиме</package>
 				</funcsynopsisinfo>
