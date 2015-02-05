@@ -154,7 +154,7 @@ QString ContentView::wrapHTML(const QString &body) const
 {
     const QPalette pal = palette();
     const QColor fg = pal.brush(QPalette::Text).color();
-    const QColor bg = pal.brush(QPalette::Background).color();
+    const QColor bg = pal.brush(QPalette::Base).color();
     return QString() +
             "<html><head>"
             "<style type=\"text/css\">"
@@ -200,6 +200,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-family: " + GuiElementsFontFamily + ";"
             "   background-color: lightgray;"
             "   color: black;"
+            "   min-width: 1em;"
             "}"
             "</style></head>"
             "<body>\n" + body +"\n</body></html>";
