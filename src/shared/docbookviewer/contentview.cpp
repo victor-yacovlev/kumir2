@@ -1578,16 +1578,16 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
 
 void ContentView::handleInternalLink(const QUrl &url)
 {
-    if (url.toEncoded().startsWith("model_ptr:")) {
-        const QByteArray path = url.toEncoded().mid(10);
+    if (url.path().startsWith("model_ptr:")) {
+        const QByteArray path = url.path().toLatin1().mid(10);
         QByteArray data = QByteArray::fromHex(path);
         QDataStream ds(&data, QIODevice::ReadOnly);
         quintptr ptr = 0u;
         ds >> ptr;
         emit itemRequest(findModelByRawPtr(ptr));
     }
-    else if (url.toEncoded().startsWith("to_clipboard:")) {
-        const QByteArray b64 = url.toEncoded().mid(13);
+    else if (url.path().startsWith("to_clipboard:")) {
+        const QByteArray b64 = url.path().toLatin1().mid(13);
         const QByteArray u8 = QByteArray::fromBase64(b64);
         const QString text = QString::fromUtf8(u8).trimmed();
         QClipboard * clipboard = QApplication::clipboard();
