@@ -1214,7 +1214,7 @@ from painter import *
         </para>
         <section id="в точку">
             <title>в точку</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>в точку</function></funcdef>
@@ -1236,7 +1236,7 @@ from painter import *
         </section>
 		<section id="линия">
 			<title>линия</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
 				<funcprototype>
 					<funcdef>алг <function>линия</function></funcdef>
@@ -1260,7 +1260,7 @@ from painter import *
 		</section>
         <section id="линия в точку">
             <title>линия в точку</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>линия в точку</function></funcdef>
@@ -1282,7 +1282,7 @@ from painter import *
         </section>
 		<section id="многоугольник">
 			<title>многоугольник</title>
-			<funcsynopsis>
+			<funcsynopsis role="кумир">
 				<funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
 				<funcprototype>
 					<funcdef>алг <function>многоугольник</function></funcdef>
@@ -1311,13 +1311,13 @@ from painter import *
 		</section>
         <section id="пиксель">
             <title>пиксель</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>пиксель</function></funcdef>
                     <paramdef>цел <parameter>x</parameter></paramdef>
                     <paramdef>цел <parameter>y</parameter></paramdef>
-                    <paramdef>цвет <parameter>значение</parameter></paramdef>
+                    <paramdef><type>цвет</type> <parameter>значение</parameter></paramdef>
                 </funcprototype>
             </funcsynopsis>
             <para>
@@ -1337,7 +1337,7 @@ from painter import *
         </section>
         <section id="прямоугольник">
             <title>прямоугольник</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>прямоугольник</function></funcdef>
@@ -1367,7 +1367,7 @@ from painter import *
         </section>
         <section id="эллипс">
             <title>эллипс</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>эллипс</function></funcdef>
@@ -1397,7 +1397,7 @@ from painter import *
         </section>
         <section id="окружность">
             <title>окружность</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>окружность</function></funcdef>
@@ -1423,7 +1423,7 @@ from painter import *
         </section>
         <section id="надпись">
             <title>надпись</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>надпись</function></funcdef>
@@ -1449,7 +1449,7 @@ from painter import *
         </section>
         <section id="залить">
             <title>залить</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>залить</function></funcdef>
@@ -1475,13 +1475,13 @@ from painter import *
         <title>Алгоритмы работы с листами</title>
         <section id="новый лист">
             <title>новый лист</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>новый лист</function></funcdef>
                     <paramdef>цел <parameter>ширина</parameter></paramdef>
                     <paramdef>цел <parameter>высота</parameter></paramdef>
-                    <paramdef>цвет <parameter>фон</parameter></paramdef>
+                    <paramdef><type>цвет</type> <parameter>фон</parameter></paramdef>
                 </funcprototype>
             </funcsynopsis>
             <para>
@@ -1501,7 +1501,7 @@ from painter import *
         </section>
         <section id="загрузить лист">
             <title>загрузить лист</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>загрузить лист</function></funcdef>
@@ -1519,7 +1519,7 @@ from painter import *
         </section>
         <section id="сохранить лист">
             <title>сохранить лист</title>
-            <funcsynopsis>
+            <funcsynopsis role="кумир">
                 <funcsynopsisinfo><package>Рисователь</package></funcsynopsisinfo>
                 <funcprototype>
                     <funcdef>алг <function>сохранить лист</function></funcdef>
