@@ -36,6 +36,9 @@ private:
     void wheelEvent(QWheelEvent *e);
     void contextMenuEvent(QContextMenuEvent *e);
 
+    QString codeFontSize() const;
+    QString codeFontFamily() const;
+
     QString wrapHTML(const QString & body) const;
     QString renderModel(ModelPtr data) const;
     QString renderElement(ModelPtr data) const;

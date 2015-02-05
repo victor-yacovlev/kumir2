@@ -3,6 +3,7 @@
 #include "mathmlrenderer.h"
 
 #include "extensionsystem/pluginmanager.h"
+#include "interfaces/editorinterface.h"
 #include "widgets/iconprovider.h"
 
 #include <QUrl>
@@ -184,8 +185,8 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-size: " + GuiElementsFontSize + ";"
             "}"
             ".code {"
-            "   font-family: " + CodeFontFamily + ";"
-            "   font-size: " + CodeFontSize + ";"
+            "   font-family: " + codeFontFamily() + ";"
+            "   font-size: " + codeFontSize() + ";"
             "}"
             "th {"
             "   font-weight: bold;"
@@ -1750,6 +1751,36 @@ void ContentView::contextMenuEvent(QContextMenuEvent *e)
 {
     contextMenu_->exec(e->globalPos());
     e->accept();
+}
+
+QString ContentView::codeFontSize() const
+{
+    using Shared::EditorInterface;
+    using ExtensionSystem::PluginManager;
+
+    EditorInterface * editor =
+            PluginManager::instance()->findPlugin<EditorInterface>();
+    if (editor) {
+        return QString::fromLatin1("%1pt").arg(editor->defaultEditorFont().pointSize());
+    }
+    else {
+        return CodeFontSize;
+    }
+}
+
+QString ContentView::codeFontFamily() const
+{
+    using Shared::EditorInterface;
+    using ExtensionSystem::PluginManager;
+
+    EditorInterface * editor =
+            PluginManager::instance()->findPlugin<EditorInterface>();
+    if (editor) {
+        return editor->defaultEditorFont().family();
+    }
+    else {
+        return CodeFontFamily;
+    }
 }
 
 void ContentView::clearLastAnchorUrl()
