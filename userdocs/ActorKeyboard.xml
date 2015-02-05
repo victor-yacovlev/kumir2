@@ -5,75 +5,12 @@
     []
 >
 <article>
-    <title>Исполнитель "Клавиатура"</title>
-	<titleabbrev>Клавиатура</titleabbrev>
-	<section id="общие сведения">
-		<title>Использование исполнителя</title>
-		<para>Исполнитель "Клавиатура" входит в Вашу поставку Кумир, но его функции не являются частью языка 
-		программирования. Для его использования необходимо в программе явно указать использование данного исполнителя: 
-		<programlisting role="кумир"><![CDATA[
-использовать Клавиатура
-| теперь функции Клавиатуры доступны
-| для использования в программе
-]]>
-        </programlisting>
-		</para>
-	</section>
-	<section id="тип сканкод">
-		<title>Тип величины "сканкод"</title>
-		<para>В этом исполнителе реализован новый тип величин -- <type>сканкод</type>. Переменная этого типа представляет 
-		собой ASCII-код символа. Поскольку ASCII-код  является обычным целым числом, то переменной типа <type>сканкод</type> 
-		можно присвоить целое число. Для этого типа также реализованы операции сравнения (<code>=</code>, 
-		<code>&#60;&#62;</code>, <code>&#60;</code>, <code>&#62;</code>) и 3 арифметические операции 
-		(<code>+</code>, <code>-</code>, <code>*</code>). Сравнивать переменную типа <type>сканкод</type> можно 
-		не только с другой переменной такого же типа, но и с целым числом. Это же касается и арифметических операций.</para>
-		<example>
-			<title>Получение ASCII-кода символа</title>
-            <programlisting role="кумир"><![CDATA[
-использовать Клавиатура
-алг
-нач
-  сканкод скод
-  сим симв
-  ввод симв
-  скод := код клав
-  вывод "ascii(", симв, ") = ", скод
-кон
-]]>
-            </programlisting>
-        </example>
-	</section>
-	<section id="команды действий">
-		<title>Команды действий</title>
-		<section>
-			<title>клавиша нажата</title>
-			<funcsynopsis role="кумир">
-			<funcsynopsisinfo><package>Клавиатура</package></funcsynopsisinfo>
-			<funcprototype>
-				<funcdef>алг <type>лог</type><function>клавиша нажата</function></funcdef>
-			</funcprototype>
-		</funcsynopsis>
-		<para>Возвращает <code role="кумир">да</code>, если во время работы программы была нажата клавиша. </para>
-		</section>
-		<section>
-			<title>код клавиши</title>
-			<funcsynopsis role="кумир">
-			<funcsynopsisinfo><package>Клавиатура</package></funcsynopsisinfo>
-			<funcprototype>
-				<funcdef>алг <type>цел</type><function>код клавиши</function></funcdef>
-			</funcprototype>
-		</funcsynopsis>
-		<para>Возвращает ASCII-код символа, который соответствует нажатой клавише.</para>
-		</section>
-		<section>
-			<title>очистить клавиши</title>
-			<funcsynopsis role="кумир">
-			<funcsynopsisinfo><package>Клавиатура</package></funcsynopsisinfo>
-			<funcprototype>
-				<funcdef>алг <function>очистить клавиши</function></funcdef>
-			</funcprototype>
-		</funcsynopsis>
-		<para>Удаляет из оперативной памяти информацию о клавишах, которые были нажаты во время работы программы.</para>
-		</section>
-	</section>
+    <title>Клавиатура</title>
+    <!--
+        Write module documentation here.
+
+        See DocBook specification for more details,
+        or use some GUI tool to edit this file (like "Serna Free").
+
+    -->
 </article>
