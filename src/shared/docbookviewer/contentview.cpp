@@ -186,7 +186,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "}"
             ".code {"
             "   font-family: " + codeFontFamily() + ";"
-            "   font-size: " + codeFontSize() + ";"
+            "   font-size: " + CodeFontSize + ";"
             "}"
             "th {"
             "   font-weight: bold;"
