@@ -1060,7 +1060,7 @@ Using Qt version %2</source>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="578"/>
         <source>Actor&apos;s References</source>
-        <translation>Руководство по работе с исполнителями</translation>
+        <translation>Исполнители</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="902"/>
