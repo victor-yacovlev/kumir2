@@ -410,6 +410,10 @@ void EditorInstance::updateInsertMenu()
         connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
     }
     editMacros_->setEnabled(userMacros_.size() > 0);
+    Widgets::CyrillicMenu * insMenu = qobject_cast<Widgets::CyrillicMenu*>(insertMenu_);
+    if (insMenu) {
+        insMenu->updateUbuntuShortcutTexts();
+    }
 }
 
 bool EditorInstance::tryEscKeyAction(const QString &text)
