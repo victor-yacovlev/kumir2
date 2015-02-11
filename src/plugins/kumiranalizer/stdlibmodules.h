@@ -352,12 +352,12 @@ public:
         func.arguments << Argument("n", Int);
         result << func;
 
-        /* алг сим символ2(цел n) */
+        /* алг сим юнисимвол(цел n) */
         func.localizedNames.clear();
         func.arguments.clear();
         func.id = 0x0024;
         func.asciiName = "unisymbol";
-        func.localizedNames[QLocale::Russian] = QString::fromUtf8("символ2");
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("юнисимвол");
         func.returnType = Char;
         func.arguments << Argument("n", Int);
         result << func;

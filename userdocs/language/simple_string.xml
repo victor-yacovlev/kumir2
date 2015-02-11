@@ -104,10 +104,10 @@
 	</section>
 	
 	<section>
-		<title>символ2</title>
+		<title>юнисимвол</title>
 		<funcsynopsis role="кумир">
 			<funcprototype>
-				<funcdef>алг сим <function>символ2</function></funcdef>
+				<funcdef>алг сим <function>юнисимвол</function></funcdef>
 				<paramdef>цел <parameter>n</parameter></paramdef>
 			</funcprototype>
 		</funcsynopsis>
