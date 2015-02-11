@@ -602,6 +602,10 @@ EditorInstance::EditorInstance(
     plane_->addContextMenuAction(copy_);
     plane_->addContextMenuAction(paste_);
 
+    if (plugin_->teacherMode_) {
+        plane_->addContextMenuAction(toggleLock_);
+    }
+
     cursor_->setTeacherMode(plugin_->teacherMode_);
     toggleLock_->setVisible(plugin_->teacherMode_);
     toggleLock_->setEnabled(plugin_->teacherMode_);
