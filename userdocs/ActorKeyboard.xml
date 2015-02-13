@@ -343,7 +343,7 @@
 			алгоритма была нажата клавиша.</para>
 		</section>
 		<section>
-			<title>код клавиши</title>
+			<title>код клав</title>
 			<funcsynopsis role="кумир">
 			<funcsynopsisinfo><package>Клавиатура</package></funcsynopsisinfo>
 			<funcprototype>
@@ -353,11 +353,11 @@
 		<para>Возвращает код символа, который можно сравнивать с одной из величин типа <type>сканкод</type>.</para>
 		</section>
 		<section>
-			<title>очистить клавиши</title>
+			<title>сброс клав</title>
 			<funcsynopsis role="кумир">
 			<funcsynopsisinfo><package>Клавиатура</package></funcsynopsisinfo>
 			<funcprototype>
-				<funcdef>алг <function>очистить клавиши</function></funcdef>
+				<funcdef>алг <function>сброс клав</function></funcdef>
 			</funcprototype>
 		</funcsynopsis>
 		<para>Удаляет информацию о событиях нажатия клавиш.</para>
