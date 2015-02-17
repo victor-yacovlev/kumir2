@@ -249,7 +249,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
         QIcon toKumirIco(resdir.absoluteFilePath("kumir.png"));
     toKumir->setEnabled(true);
     toKumir->setIcon(toKumirIco);
-	
+	ClearLog->setIcon(QIcon(resdir.absoluteFilePath("clear.png")));
 //	CenterB->setIcon(QIcon(":/icons/robo_field.png"));
 //	connect(buttFwd,SIGNAL(clicked()),this,SLOT(Up()));
 
@@ -266,7 +266,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
         connect(toKumir,SIGNAL(clicked()),this,SLOT(logToKumir()));
         connect(recolorB,SIGNAL(clicked()),this,SLOT(ColorUnColor()));
 //	connect(CopyLog,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
-    setMinimumSize(280,400);
+    setMinimumSize(254,400);
     link=true;
 };
 
