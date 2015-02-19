@@ -330,8 +330,8 @@ void PainterModule::runPoint(const int x, const int y, const Color& color)
 void PainterModule::runDensity(const int value)
 {
     int dens = value;
-    dens = qMax(8, dens);
-    dens = qMin(0, dens);
+    dens = qMin(8, dens);
+    dens = qMax(0, dens);
     if (dens==0) {
         brush.setStyle(Qt::NoBrush);
     }
