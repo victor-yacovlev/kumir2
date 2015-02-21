@@ -26,6 +26,9 @@ struct ABSTRACTSYNTAXTREE_EXPORT Data
 
     explicit Data();
     explicit Data(const DataPtr src);
+
+
+    AST::ModulePtr findModuleByType(const ModuleType moduleType) const;
 };
 
 }

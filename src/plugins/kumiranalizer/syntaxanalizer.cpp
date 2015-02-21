@@ -4382,6 +4382,12 @@ QVariant SyntaxAnalizer::createConstValue(const QString & str
     return result;
 }
 
+static bool moduleUsedByMain(const AST::DataPtr ast, const AST::ModulePtr module)
+{
+    AST::ModulePtr mainModule = ast->findModuleByType(AST::ModTypeUserMain);
+    return mainModule && module->isEnabledFor(mainModule);
+}
+
 bool SyntaxAnalizer::findAlgorithm(
         const QString &name,
         const AST::ModulePtr currentModule,
@@ -4399,7 +4405,11 @@ bool SyntaxAnalizer::findAlgorithm(
                 module->builtInID == 0xF0 ||
                 module->isEnabledFor(currentModule) ||
                 alwaysEnabledModules_.contains(module->header.name) ||
-                (currentAlgorithm && currentAlgorithm->header.name.startsWith("@"));
+
+                // #kumir2-1821 -- bug here!
+                (currentAlgorithm &&
+                 currentAlgorithm->header.name.startsWith("@") &&
+                 moduleUsedByMain(ast_, module));
                 ;
         bool sameFileModule =
                 module->header.type==AST::ModTypeUser ||

@@ -20,5 +20,15 @@ Data::Data(const DataPtr src)
     }
 }
 
+ModulePtr Data::findModuleByType(const ModuleType moduleType) const
+{
+    Q_FOREACH(AST::ModulePtr module, modules) {
+        if (moduleType == module->header.type) {
+            return module;
+        }
+    }
+    return ModulePtr();
+}
+
 
 }
