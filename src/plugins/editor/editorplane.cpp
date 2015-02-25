@@ -1734,9 +1734,10 @@ void EditorPlane::ensureMarginNotTooLarge()
     ExtensionSystem::SettingsPtr sett = editor_->mySettings();
 
     if (sett && isVisible()) {
-        int widthInChars = sett->value(MarginWidthKey, MarginWidthDefault).toInt();
-        int marginWidthInPixels = charWidth() * widthInChars;
-        int minEditableAreaSize = textLeftPosition() + charWidth();
+        int widthInChars = qMin(1000, sett->value(MarginWidthKey, int(MarginWidthDefault)).toInt());
+        int cw = charWidth();
+        int marginWidthInPixels = cw * widthInChars;
+        int minEditableAreaSize = textLeftPosition() + cw;
         int maxMarginWidthInPixels = width() - minEditableAreaSize;
         if (marginWidthInPixels >= maxMarginWidthInPixels) {
             int newMarginSizeInChars = maxMarginWidthInPixels / charWidth();
