@@ -3535,7 +3535,7 @@ void RobotModule::createGui()
 {
     field=new RoboField(0);
     //field->editField();
-    field->createField(10,15);
+    field->createField(7,7);
 
     field->setRoboPos(0,0);
       field->createRobot();
@@ -3742,9 +3742,9 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
             if(LoadFromFile(runtimeParameters.value("field").toString())!=0)return "Error loading:"+runtimeParameters.value("field").toString();
             return "";
         }
-        if(sett->value("Robot/SFF").isValid())
+        if(RobotModule::robotSettings()->value("Robot/SFF").isValid())
         {
-            if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
+            if(LoadFromFile(RobotModule::robotSettings()->value("Robot/SFF").toString())!=0){
                 createEmptyField(7,7);
 
             }
@@ -4112,6 +4112,7 @@ QChar RobotModule::runDownChar(const int row, const int col)
     
  int RobotModule::LoadFromFile(QString p_FileName)
     {
+        qDebug() <<"LoadField "<<p_FileName;
         if(field->loadFromFile(p_FileName)!=0)return 1;
         startField=field->Clone();
         field->dropWasEdit();
@@ -4138,7 +4139,7 @@ QChar RobotModule::runDownChar(const int row, const int col)
         //delete btnFind;
         //CreatebtnFind();
         
-        RobotModule::robotSettings()->setValue("Robot/StartField/File",p_FileName);
+        RobotModule::robotSettings()->setValue("Robot/SFF",p_FileName);
         field->drawField(FIELD_SIZE_SMALL);
        // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
         qDebug() << "File " << p_FileName ;
