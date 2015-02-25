@@ -25,15 +25,6 @@ AboutDialog::AboutDialog(QWidget *parent) :
         ui->lastModified->setText(timeStamp.toString());
     }
 
-    ui->tableWidget->setColumnCount(2);
-    ui->tableWidget->setColumnWidth(1, 1000);
-    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
-
-    addExecuablePath();
-    addOsVersion();
-    addQtVersion();
-    addLoadedModules();
-
     connect(ui->btnCopyEnvironmentAndVersion,
             SIGNAL(clicked()), this, SLOT(copySystemInformationToClipboard()));
 
@@ -72,6 +63,26 @@ void AboutDialog::copySystemInformationToClipboard()
                 .arg(textToCopy).replace("\n", "<br/>"),
                 QMessageBox::Ok
                 );
+}
+
+void AboutDialog::initializeEnvironmentData()
+{
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setColumnWidth(1, 1000);
+    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+
+    addExecuablePath();
+    addOsVersion();
+    addQtVersion();
+    addLoadedModules();
+    addSettingsFilesPaths();
+}
+
+void AboutDialog::showEvent(QShowEvent *event)
+{
+    initializeEnvironmentData();
+    QDialog::showEvent(event);
 }
 
 void AboutDialog::addQtVersion()
@@ -144,6 +155,20 @@ void AboutDialog::addLoadedModules()
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Loaded Modules")));
     ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(names.join(", ")));
+}
+
+void AboutDialog::addSettingsFilesPaths()
+{
+    using namespace ExtensionSystem;
+    const QList<const KPlugin *> plugins = PluginManager::instance()->loadedConstPlugins();
+    QStringList settingsFiles;
+    Q_FOREACH( const KPlugin *plugin, plugins ) {
+        const QString fileName = plugin->pluginSettings()->settingsFilePath();
+        settingsFiles << fileName;
+    }
+    ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 0, new QTableWidgetItem(tr("Settings Files")));
+    ui->tableWidget->setItem(ui->tableWidget->rowCount()-1, 1, new QTableWidgetItem(settingsFiles.join(";")));
 }
 
 AboutDialog::~AboutDialog()

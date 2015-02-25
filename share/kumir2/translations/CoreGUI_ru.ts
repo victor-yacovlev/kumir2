@@ -112,12 +112,12 @@ p, li { white-space: pre-wrap; }
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="70"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="61"/>
         <source>Copied to clipboard</source>
         <translation>Скопировано в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="71"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="62"/>
         <source>&lt;b&gt;The following text has been copied to clipboard:&lt;/b&gt;
 
 %1</source>
@@ -126,24 +126,29 @@ p, li { white-space: pre-wrap; }
 %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="80"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="91"/>
         <source>Qt Version</source>
         <translation>Версия Qt</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="87"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="98"/>
         <source>Operating System</source>
         <translation>Система</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="132"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="143"/>
         <source>Execuable Path</source>
         <translation>Выполняемый файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="145"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="156"/>
         <source>Loaded Modules</source>
         <translation>Модули системы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="170"/>
+        <source>Settings Files</source>
+        <translation>Файлы настроек</translation>
     </message>
 </context>
 <context>
@@ -387,17 +392,17 @@ Right click to navigate target</source>
         <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="481"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="488"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="490"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="497"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="472"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="479"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
@@ -1318,7 +1323,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>CoreGUI::TabWidgetElement</name>
     <message>
-        <location filename="../../../src/plugins/coregui/tabwidgetelement.cpp" line="242"/>
+        <location filename="../../../src/plugins/coregui/tabwidgetelement.cpp" line="230"/>
         <source>%1 (Course)</source>
         <translation>%1 (Практикум)</translation>
     </message>
@@ -1359,57 +1364,57 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::OneSession</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="724"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="750"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process started</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Начало выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="734"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="760"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process finished</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="790"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="816"/>
         <source>INPUT raw data to console stream</source>
         <translation>Ввод данных в файл &quot;консоль&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="793"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="819"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="800"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="826"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="802"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="828"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="804"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="830"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="806"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="832"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="808"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="834"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="971"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="997"/>
         <source>INPUT ERROR: Not a &apos;%1&apos; value</source>
         <translation>ОШИБКА ВВОДА: Это не значение &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="980"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1006"/>
         <source>INPUT ERROR: Extra input</source>
         <translation>ОШИБКА ВВОДА: Введено лишнее</translation>
     </message>
@@ -1418,7 +1423,7 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Это не значение типа %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1024"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1050"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
     </message>
@@ -1426,12 +1431,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::Plane</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="22"/>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="27"/>
         <source>Copy to clipboard</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="26"/>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="31"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>
