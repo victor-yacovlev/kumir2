@@ -3692,7 +3692,14 @@ void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QS
     field->setColorFromSett();
     CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
     view->reloadSett(settings);
-   
+    if(RobotModule::robotSettings()->value("Robot/SFF").isValid())
+    {
+        if(LoadFromFile(RobotModule::robotSettings()->value("Robot/SFF").toString())!=0){
+            createEmptyField(7,7);
+            
+        }
+        setWindowSize();
+    }
     createRescentMenu();
 }
 
