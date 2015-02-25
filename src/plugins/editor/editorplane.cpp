@@ -1732,7 +1732,8 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
 void EditorPlane::ensureMarginNotTooLarge()
 {
     ExtensionSystem::SettingsPtr sett = editor_->mySettings();
-    if (sett) {
+
+    if (sett && isVisible()) {
         int widthInChars = sett->value(MarginWidthKey, MarginWidthDefault).toInt();
         int marginWidthInPixels = charWidth() * widthInChars;
         int minEditableAreaSize = textLeftPosition() + charWidth();
