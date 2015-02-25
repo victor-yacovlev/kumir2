@@ -77,6 +77,7 @@ void EditorPlane::updateSettings(const QStringList & keys)
         setFont(editor_->plugin_->defaultEditorFont());
         marginHintBox_->setFont(editor_->plugin_->defaultEditorFont());
     }
+    ensureMarginNotTooLarge();
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)
@@ -1728,6 +1729,22 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     emit message(QString());
 }
 
+void EditorPlane::ensureMarginNotTooLarge()
+{
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+    if (sett) {
+        int widthInChars = sett->value(MarginWidthKey, MarginWidthDefault).toInt();
+        int marginWidthInPixels = charWidth() * widthInChars;
+        int minEditableAreaSize = textLeftPosition() + charWidth();
+        int maxMarginWidthInPixels = width() - minEditableAreaSize;
+        if (marginWidthInPixels >= maxMarginWidthInPixels) {
+            int newMarginSizeInChars = maxMarginWidthInPixels / charWidth();
+            sett->setValue(MarginWidthKey, newMarginSizeInChars);
+            update();
+        }
+    }
+}
+
 void EditorPlane::selectAll()
 {
     editor_->cursor()->evaluateCommand(KeyCommand::SelectAll);
@@ -1990,6 +2007,7 @@ void EditorPlane::dragEnterEvent(QDragEnterEvent *e)
 void EditorPlane::resizeEvent(QResizeEvent *e)
 {
     QWidget::resizeEvent(e);
+    ensureMarginNotTooLarge();
     updateScrollBars();
 }
 
