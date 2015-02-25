@@ -2042,7 +2042,7 @@ void MainWindow::ensureSeconrarySideVisible()
             szs[0] -= secondarySide_->minimumSizeHint().width();
             szs[1] = secondarySide_->minimumSizeHint().width();
         }
-        if (isColumnFirstLayout()) {
+        else {
             szs[0] -= secondarySide_->minimumSizeHint().height();
             szs[1] = secondarySide_->minimumSizeHint().height();
         }
