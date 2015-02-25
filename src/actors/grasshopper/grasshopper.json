@@ -21,7 +21,7 @@
 	"gui": {
 		"windows": [
 			{ "role": "main", "icon": "grasshopper" },
-			{ "role": "pult", "icon": "grasshopper-rc" }
+			{ "role": "pult", "icon": "grasshopper-pult" }
 		],
 		"menus": [
             {
