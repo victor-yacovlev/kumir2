@@ -33,8 +33,7 @@ Build requirements (Windows)
 not use it
 2. Python interpreter version at least 2.7.0
 3. Microsoft Visual Studio Express 2010 or 2012
-4. Qt4 SDK version at least 4.8.0 or Qt5 version at least 5.3.0. The Qt build
-must match used MSVC compiler
+4. Qt4 SDK version at least 4.8.0. Qt5 not well-tested on this platform
 5. Boost and ZLib development files which bundled in this repository
 6. Python development files at least 3.2 in case of building branch `python`
 
@@ -95,17 +94,36 @@ This will build entire project into `build/Release` directory.
 To build native code generation feature there are additional options required
 to be passed to cmake:
 
-1. `-DCLANG_EXECUTABLE=` -- path to `clang.exe`, which built using MinGW 
+1. `-DCLANG_EXECUTABLE=` - path to `clang.exe`, which built using MinGW 
 toolchain. This CLang compiler is used to generate LLVM bytecode for standard 
 and runtime libraries
-2. `-DLLVM_ROOT=`, `-DLlvm_INCLUDE_DIR=` and `-DLlvm_CONFIG_EXECUTABLE=` -- 
+2. `-DLLVM_ROOT=`, `-DLlvm_INCLUDE_DIR=` and `-DLlvm_CONFIG_EXECUTABLE=` - 
 paths to prebuild LLVM root directory, `include` subdirectory and 
 `llvm-config.exe` executable
-3. `-DBOOST_ROOT=` -- path to Boost root version at least 1.57.0. Remove 
+3. `-DBOOST_ROOT=` - path to Boost root version at least 1.57.0. Remove 
 bundled boost first
 
+Deployment 3-rd party libraries (Windows)
+-----------------------------------------
 
+The following files must be copied into `bin` build subdirectory:
+```
+phonon4.dll
+QtCore4.dll
+QtSql4.dll
+QtDeclarative4.dll
+QtGui4.dll
+QtNetwork4.dll
+QtOpenGL4.dll
+QtScript4.dll
+QtSvg4.dll
+QtWebKit4.dll
+QtXml4.dll
+QtXmlPatterns4.dll
+```
 
+In order to use native code generation feature the following files from MinGW 
+*version 4.6.1* must be copied into `llvm-mingw` build subdirectory:
+```
 
-
-
+```
