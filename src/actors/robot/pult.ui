@@ -637,6 +637,9 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Скопировать</string>
+   </property>
    <property name="text">
     <string>...</string>
    </property>
