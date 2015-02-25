@@ -125,5 +125,24 @@ QtXmlPatterns4.dll
 In order to use native code generation feature the following files from MinGW 
 *version 4.6.1* must be copied into `llvm-mingw` build subdirectory:
 ```
-
+as.exe
+crt2.o
+crtbegin.o
+crtend.o
+files-list.txt
+ld.exe
+libadvapi32.a
+libgcc.a
+libgcc_s_dw2-1.dll
+libkernel32.a
+libmingw32.a
+libmingwex.a
+libmoldname.a
+libmsvcrt.a
+libpthread.a
+libshell32.a
+libstdc++-6.dll
+libstdc++.a
+libuser32.a
+llc.exe
 ```
