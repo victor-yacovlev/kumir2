@@ -129,7 +129,6 @@ as.exe
 crt2.o
 crtbegin.o
 crtend.o
-files-list.txt
 ld.exe
 libadvapi32.a
 libgcc.a
