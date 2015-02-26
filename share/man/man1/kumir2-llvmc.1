@@ -1,0 +1,50 @@
+.TH kumir2-llvmc 1 "" "" "Kumir utilities"
+.SH NAME
+kumir2-llvmc \- compiles Kumir program into native executable
+.SH SYNOPSIS
+.B kumir2-llvmc
+[\-c] [\-S] [\-m] [\-l] [\-t] [\-v] [\-k] [\-g=<int>] [\-e=<string>] [\-o=<string>] PROGRAM.kum
+
+.B kumir2-llvmc
+[\-\-compile] [\-\-assembly] [\-\-main] [\-\-link] [\-\-stdlib] [\-\-verbose] [\-\-keep] [\-\-debuglevel=<int>] [\-\-encoding=<string>] [\-\-out=<string>] PROGRAM.kum
+.SH DESCRIPTION
+Compiles Kumir source program text into native executable using LLVM toolchain.
+.SH OPTIONS
+.TP
+.B \-\-compile or \-c
+just compile to LLVM bitcode module, but do not link a program
+.TP
+.B \-\-assembly or \-S
+generates human-readable form of generated LLVM bitcode if present (assumes \-c)
+.TP
+.B \-\-main or \-m
+generates entry point for program to make module runnable (assumes \-c)
+.TP
+.B \-\-link or \-l
+link all used external units into generated LLVM bitcode module (assumes \-c)
+.TP
+.B \-\-stdlib or \-t
+link Kumir runtime and standard library into generated LLVM bitcode module (assumes \-c)
+.TP
+.B \-\-verbose or \-v
+show external tools output messages
+.TP
+.B \-\-keep or \-k
+do not delete temporary generated files while passing to external tools
+.TP
+.BI \-g=<int>\ or\ \-\-debuglevel=<int>
+set generated debug level from 0 (no debug) to 2 (maximum debug information)
+.TP
+.BI \-e=<string>\ or\ \-\-encoding=<string>
+force source input text encoding
+.TP
+.BI \-o=<source>\ or\ \-\-out=<source>
+override default output file name
+.TP
+.BI PROGRAM.kum
+source file name
+.SH SEE ALSO
+.BR kumir2-bc (1)
+.BR kumir2-run (1)
+.BR kumir2-xrun (1)
+
