@@ -1,5 +1,4 @@
 [Desktop Entry]
-Encoding=UTF-8
 Type=Application
 Exec=kumir2-run %U
 Name=Kumir .kod file open helper
