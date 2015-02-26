@@ -1,3 +1,5 @@
+include(${CMAKE_SOURCE_DIR}/kumir2_common.cmake)
+
 # -- linux
 if(NOT APPLE AND NOT MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${LIB_BASENAME}/kumir2'")
@@ -33,7 +35,7 @@ else()
             OUTPUT_VARIABLE GIT_HASH
         )
         execute_process(
-            COMMAND ${GIT} describe --abbrev=0 --tags
+            COMMAND ${GIT} describe --abbrev=0 --tags --exact-match
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             OUTPUT_VARIABLE GIT_TAG
             RESULT_VARIABLE GIT_TAG_ERROR
@@ -77,53 +79,33 @@ endif (MSVC_IDE)
 
 if(NOT APPLE)
     # Various GUI configurations
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-classic")
-	add_subdirectory(kumir2-classic)
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-highgrade")
-	add_subdirectory(kumir2-highgrade)
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-ide")
-	add_subdirectory(kumir2-ide)
-    endif()
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-teacher")
-	add_subdirectory(kumir2-teacher)
+    add_opt_subdirectory(kumir2-classic)
+    add_opt_subdirectory(kumir2-highgrade)
+    add_opt_subdirectory(kumir2-ide)
+    add_opt_subdirectory(kumir2-teacher)
+
+    if(PYTHONLIBS_FOUND)
+        add_opt_subdirectory(kumir2-python)
+        add_opt_subdirectory(kumir2-python-teacher)
+    else()
+        message(STATUS "No Python 3.x libs found, building of Python language support disabled")
     endif()
 
-    # Check if Python present in this git branch and Python3 libraries found
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-python")
-        if(PYTHONLIBS_FOUND)
-            add_subdirectory(kumir2-python)
-            add_subdirectory(kumir2-python-teacher)
-        else()
-            message(WARNING "No Python 3.x libs found, building of Python language support disabled")
-        endif()
-    endif() # kumir2-python exists
-
-    # Check if Pascal present in this git branch
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-pascal")
-        add_subdirectory(kumir2-pascal)
-    endif() # kumir2-pascal exists
+    add_opt_subdirectory(kumir2-pascal)
 endif(NOT APPLE)
 
 if(APPLE)
     # Apple platform has exact one GUI configuration
-    add_subdirectory(kumir2-macx)
+    add_opt_subdirectory(kumir2-macx)
 endif(APPLE)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-bc")
-    add_subdirectory(kumir2-bc)
-endif()
+add_opt_subdirectory(kumir2-bc)
+add_opt_subdirectory(kumir2-xrun)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-xrun")
-    add_subdirectory(kumir2-xrun)
-endif()
 
 # kumir2-llvmc is optional in case if LLVM libraries present
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-llvmc")
-    if(Llvm_FOUND)
-	add_subdirectory(kumir2-llvmc)
-    else()
-	message(WARNING "LLVM developer libraries not found, building of LLVM support disabled")
-    endif(Llvm_FOUND)
-endif()
+if(Llvm_FOUND)
+    add_opt_subdirectory(kumir2-llvmc)
+else()
+    message(STATUS "LLVM developer libraries not found, building of LLVM support disabled")
+endif(Llvm_FOUND)
