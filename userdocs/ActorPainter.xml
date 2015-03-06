@@ -1144,7 +1144,7 @@ from painter import *
 				</funcprototype>
 			</funcsynopsis>
 			<para>
-				Устанавливает плотность заливки, равную параметру <parameter>значение</parameter>.
+				Устанавливает плотность заливки. Параметр <parameter>значение</parameter> должен принадлежать промежутку <code>[0; 8]</code>.
 			</para>
 		</section>
         <section id="шрифт">
@@ -1196,7 +1196,7 @@ from painter import *
                     </listitem>
                     <listitem>
                         <para>
-                            <parameter>гарнитура</parameter>
+                            <parameter>курсив</parameter>
                             -- признак использования курсивного начертания шрифта.
                         </para>
                     </listitem>
