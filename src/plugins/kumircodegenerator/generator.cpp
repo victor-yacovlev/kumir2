@@ -588,6 +588,12 @@ void Generator::addInputArgumentsMainAlgorhitm(int moduleId, int algorhitmId, co
         loc.name = var->name.toStdWString();
         loc.dimension = var->dimension;
         loc.vtype = valueType(var->baseType).toStdList();
+        loc.recordModuleAsciiName = var->baseType.actor ?
+                    std::string(var->baseType.actor->asciiModuleName().constData()) : std::string();
+        loc.recordModuleLocalizedName = var->baseType.actor ?
+                    var->baseType.actor->localizedModuleName(QLocale::Russian).toStdWString() : std::wstring();
+        loc.recordClassLocalizedName = var->baseType.name.toStdWString();
+        loc.recordClassAsciiName = std::string(var->baseType.asciiName.constData());
         loc.refvalue = Bytecode::VK_Plain;
         byteCode_->d.push_back(loc);
 

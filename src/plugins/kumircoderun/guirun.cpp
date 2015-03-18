@@ -340,6 +340,15 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
         format.push_back('c');
     else if (reference.baseType()==VT_string)
         format.push_back('s');
+    else if (reference.baseType()==VT_record) {
+        const String typeFullName =
+                reference.recordModuleLocalizedName()+
+                Kumir::Core::fromAscii("::")+
+                Kumir::Core::fromAscii(reference.recordClassAsciiName())+
+                Kumir::Core::fromAscii("::")+
+                reference.recordClassLocalizedName();
+        format.append(QString::fromStdWString(typeFullName));
+    }
 
     if (reference.dimension()==0) {
         AnyValue val;
@@ -443,16 +452,18 @@ bool GetMainArgumentFunctor::inputScalarArgument(
     if (runner_->mustStop())
         return false;
 
-    if      (format[0]=='i')
-        val = inputValues_[0].toInt();
-    else if (format[0]=='r')
-        val = inputValues_[0].toDouble();
-    else if (format[0]=='b')
-        val = inputValues_[0].toBool();
-    else if (format[0]=='c')
-        val = inputValues_[0].toChar().unicode();
-    else if (format[0]=='s')
-        val = inputValues_[0].toString().toStdWString();
+    val = Util::QVariantToValue(inputValues_.at(0), 0);
+
+//    if      (format[0]=='i')
+//        val = inputValues_[0].toInt();
+//    else if (format[0]=='r')
+//        val = inputValues_[0].toDouble();
+//    else if (format[0]=='b')
+//        val = inputValues_[0].toBool();
+//    else if (format[0]=='c')
+//        val = inputValues_[0].toChar().unicode();
+//    else if (format[0]=='s')
+//        val = inputValues_[0].toString().toStdWString();
     return true;
 }
 

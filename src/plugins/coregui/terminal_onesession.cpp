@@ -834,7 +834,7 @@ void OneSession::input(const QString &format)
                 msg += tr("boolean");
             else if (fmts[i].contains("::")) {
                 QStringList typeName = fmts[i].split("::", QString::KeepEmptyParts);
-                msg += typeName[1];
+                msg += typeName[2];
             }
 
         }
