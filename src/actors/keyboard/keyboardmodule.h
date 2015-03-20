@@ -41,7 +41,7 @@ public slots:
     void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void reset();
-    inline void terminateEvaluation() {}
+    void terminateEvaluation();
     void finalizeRun();
     void setAnimationEnabled(bool enabled);
     bool runKeyHit();

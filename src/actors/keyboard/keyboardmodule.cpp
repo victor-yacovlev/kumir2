@@ -88,6 +88,11 @@ KeyboardModule::KeyboardModule(ExtensionSystem::KPlugin * parent)
     }
 }
 
+void KeyboardModule::terminateEvaluation()
+{
+    buffer_.reset(KeyEvent());
+}
+
 void KeyboardModule::finalizeRun()
 {
     // Deregister event filter

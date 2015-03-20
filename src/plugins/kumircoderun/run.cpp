@@ -60,6 +60,14 @@ void Run::stop()
         emit lineChanged(-1, 0u, 0u);
         emit userTerminated();
     }
+
+    using namespace Shared;
+    using namespace ExtensionSystem;
+
+    QList<ActorInterface*> actors = PluginManager::instance()->findPlugins<ActorInterface>();
+    Q_FOREACH(ActorInterface * actor, actors) {
+        actor->terminateEvaluation();
+    }
 }
 
 void Run::runStepOver()
