@@ -38,6 +38,7 @@ public slots:
     void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void reset();
+    inline void terminateEvaluation() {}
     void setAnimationEnabled(bool enabled);
     void runTailUp();
     void runTailDown();

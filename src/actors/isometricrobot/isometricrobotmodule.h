@@ -31,6 +31,7 @@ public:
 public slots:
     // Reset actor state before program starts
     void reset();
+    inline void terminateEvaluation() {}
     // Set animation flag
     void setAnimationEnabled(bool enabled);
     // Actor methods

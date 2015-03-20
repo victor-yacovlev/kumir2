@@ -2452,7 +2452,8 @@ class ModuleBaseCppClass(CppClassBase):
         self.abstract_public_slots = [
             "void reset()",
             "void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)",
-            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
+            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)",
+            "void terminateEvaluation()"
         ]
         if module.gui:
             self.abstract_public_methods += [
@@ -2917,6 +2918,23 @@ class ModuleCppClass(CppClassBase):
 /* public slot */ void %s::reset()
 {
     // Resets module to initial state before program execution
+    // TODO implement me
+}
+        """ % self.class_name
+
+    # noinspection PyPep8Naming
+    def terminateEvaluationImplementation(self):
+        """
+        Creates terminateEvaluation implementation stub
+
+        :rtype:     str
+        :return:    implementation of void terminateEvaluation()
+        """
+        return """
+/* public slot */ void %s::terminateEvaluation()
+{
+    // Called on program interrupt to ask long-running module's methods
+    // to stop working
     // TODO implement me
 }
         """ % self.class_name

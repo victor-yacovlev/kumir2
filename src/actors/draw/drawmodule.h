@@ -161,6 +161,7 @@ class DrawModule
     Q_OBJECT
 public /* methods */:
     DrawModule(ExtensionSystem::KPlugin * parent);
+    inline void terminateEvaluation() {}
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;

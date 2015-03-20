@@ -170,6 +170,9 @@ public /*methods*/:
     /** Out-Argument and InOut-Argument values left from last evaluated method */
     inline virtual QVariantList algOptResults() const { return QVariantList(); }
 
+    /** Terminate long-running evaluation in case of program interrupt */
+    inline virtual void terminateEvaluation() { }
+
 
     /*=== Actor GUI specification === */
 
