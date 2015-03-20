@@ -171,7 +171,7 @@ public /*methods*/:
     inline virtual QVariantList algOptResults() const { return QVariantList(); }
 
     /** Terminate long-running evaluation in case of program interrupt */
-    inline virtual void terminateEvaluation() { }
+    inline virtual void terminateEvaluation() = 0;
 
 
     /*=== Actor GUI specification === */

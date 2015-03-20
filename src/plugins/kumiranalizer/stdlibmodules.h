@@ -14,6 +14,8 @@ public:
     inline QByteArray asciiModuleName() const { return QByteArray("Kumir Standard Library"); }
     inline QString localizedModuleName(const QLocale::Language) const {return QString::fromUtf8("Стандартные функции");}
 
+    inline void terminateEvaluation() {}
+
     inline FunctionList functionList() const {
         FunctionList result;
         Function func;
@@ -436,6 +438,9 @@ class Files
 {
     inline QByteArray asciiModuleName() const { return QByteArray("Files"); }
     inline QString localizedModuleName(const QLocale::Language) const {return QString::fromUtf8("Файлы");}
+
+    inline void terminateEvaluation() {}
+
     inline TypeList typeList() const {
         TypeList result;
         Field fileKey(QByteArray("key"), Int);
@@ -726,6 +731,7 @@ class Strings
 {
     inline QByteArray asciiModuleName() const { return QByteArray("String Utilities"); }
     inline QString localizedModuleName(const QLocale::Language) const {return QString::fromUtf8("Строки");}
+    inline void terminateEvaluation() {}
 
     inline FunctionList functionList() const {
         FunctionList result;

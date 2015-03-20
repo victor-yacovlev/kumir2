@@ -1814,6 +1814,21 @@ private:
 }
         """ % self.class_name
 
+     # noinspection PyPep8Naming
+    def terminateEvaluationCppImplementation(self):
+        """
+        Creates reset C++ implementation
+
+        :rtype:     str
+        :return:    implementation of void terminateEvaluation();
+        """
+        return """
+/* public */ void %s::terminateEvaluation()
+{
+    module_->terminateEvaluation();
+}
+        """ % self.class_name
+
     # noinspection PyPep8Naming
     def setAnimationEnabledCppImplementation(self):
         """
