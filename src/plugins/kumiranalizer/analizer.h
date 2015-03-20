@@ -64,6 +64,7 @@ public slots:
     Shared::Analizer::LineProp lineProp(int lineNo, const QString & text) const;
 
     QStringList algorithmsAvailabaleForModule(const AST::ModulePtr currentModule) const;
+    bool isModuleAlwaysEnabled(const AST::ModulePtr module) const;
     QStringList moduleNames() const;
 
 

@@ -153,6 +153,12 @@ QStringList Analizer::algorithmsAvailabaleForModule(const AST::ModulePtr current
     return result;
 }
 
+bool Analizer::isModuleAlwaysEnabled(const ModulePtr module) const
+{
+    return d->AlwaysAvailableModulesName.contains(module->header.name);
+}
+
+
 QStringList Analizer::moduleNames() const
 {
     QStringList result;

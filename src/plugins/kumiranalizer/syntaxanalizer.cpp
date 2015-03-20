@@ -4492,7 +4492,11 @@ bool SyntaxAnalizer::tryInputOperatorAlgorithm(
     AST::AlgorhitmExternalReference ref;
     for (int i=0; i<ast_->modules.size(); i++) {
         const AST::ModulePtr  mod = ast_->modules[i];
-        if (!mod->isEnabledFor(currentModule))
+        const bool moduleAvailable =
+                analizer_->isModuleAlwaysEnabled(mod)
+                ||
+                mod->isEnabledFor(currentModule);
+        if (!moduleAvailable)
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             const AST::AlgorithmPtr  alg = mod->header.operators[j];
@@ -4570,7 +4574,11 @@ bool SyntaxAnalizer::findConversionAlgorithm(const AST::Type & from
 {
     for (int i=0; i<ast_->modules.size(); i++) {
         mod = ast_->modules[i];
-        if (!mod->isEnabledFor(currentModule))
+        const bool moduleAvailable =
+                mod->isEnabledFor(currentModule)
+                ||
+                analizer_->isModuleAlwaysEnabled(mod);
+        if (!moduleAvailable)
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             alg = mod->header.operators[j];
@@ -4662,7 +4670,11 @@ AST::ExpressionPtr  SyntaxAnalizer::makeCustomBinaryOperation(const QString & op
         tailTypeName = lexer_->classNameByBaseType(rightExpression->baseType.kind);
     for (int i=0; i<ast_->modules.size(); i++) {
         AST::ModulePtr  mod = ast_->modules[i];
-        if (!mod->isEnabledFor(currentModule))
+        const bool moduleAvailabale =
+                mod->isEnabledFor(currentModule)
+                ||
+                analizer_->isModuleAlwaysEnabled(mod);
+        if (!moduleAvailabale)
             continue;
         for (int j=0; j<mod->header.operators.size(); j++) {
             AST::AlgorithmPtr  alg = mod->header.operators[j];
