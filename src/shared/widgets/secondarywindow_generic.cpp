@@ -177,7 +177,17 @@ void SecondaryWindowGenericImplementation::setupWidgetsAppearance()
 void SecondaryWindowGenericImplementation::setupWindow()
 {
     setAttribute(Qt::WA_Hover);
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    bool isUbuntu = false;
+#ifdef Q_OS_LINUX
+    const char * session = ::getenv("SESSION");
+    if (session && QString::fromLatin1(session).toLower() == "ubuntu") {
+        isUbuntu = true;
+    }
+#endif
+    Qt::WindowFlags flags = isUbuntu
+            ? Qt::Tool | Qt::FramelessWindowHint
+            : Qt::Window | Qt::FramelessWindowHint;
+    setWindowFlags(flags);
     setMouseTracking(true);
 }
 
