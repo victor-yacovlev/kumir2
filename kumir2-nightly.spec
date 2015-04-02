@@ -6,6 +6,7 @@
 # define hash 255daa697c2cd10763def72c12141c41b51502b8
 # define tag 2.1.0-beta7
 # define timestamp 1427898729
+%define name_suffix -nightly
 
 # Build kumir2-llvm or not
 %define with_llvm 1
@@ -23,14 +24,14 @@
 # required to build PDF documentation
 %define with_pdf_documentation 0
 
-Name:		kumir2-nightly
+Name:		kumir2%name_suffix
 Summary:	Kumir education system (Nightly *unstable* builds)
 License:	GPL2+
 BuildRequires:	python
 BuildRequires:	cmake >= 2.8
 BuildRequires:	gcc-c++ >= 4.6
 Group:	Productivity/Scientific/Other
-Version:	git%date
+Version:	%date
 Release:	1
 BuildRoot:	%{_tmppath}/%{name}-%{version}
 Vendor:		NIISI RAS
@@ -72,23 +73,23 @@ BuildRequires:	-post-build-checks -rpmlint-Factory
 %endif
 
 # meta-package requirements
-Requires:       kumir2-desktop-integration = %version
-Requires:	kumir2-libs = %version
-Requires:	kumir2-bc = %version
-Requires:	kumir2-run = %version
-Requires:	kumir2-xrun = %version
-Requires:	kumir2-ide = %version
-Requires:	kumir2-classic = %version
-Requires:	kumir2-highgrade = %version
-Requires:	kumir2-teacher = %version
+Requires:       %name-desktop-integration = %version
+Requires:	%name-libs = %version
+Requires:	%name-bc = %version
+Requires:	%name-run = %version
+Requires:	%name-xrun = %version
+Requires:	%name-ide = %version
+Requires:	%name-classic = %version
+Requires:	%name-highgrade = %version
+Requires:	%name-teacher = %version
 %if %with_python_ide
-Requires:	kumir2-python = %version
+Requires:	%name-python = %version
 %endif
 %if %with_llvm
-Requires:	kumir2-llvmc = %version
+Requires:	%name-llvmc = %version
 %endif
 %if %with_pdf_documentation
-Requires:       kumir2-doc = %version
+Requires:       %name-doc = %version
 %endif
 
 
