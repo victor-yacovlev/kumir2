@@ -29,3 +29,8 @@ scripts/*.pyo
 /src/app/#CMakeLists.txt#
 /share/kumir2/translations/qt_ru.ts
 __pycache__
+/userdocs/*.tex
+/userdocs/*.pdf
+/userdocs/*.aux
+/userdocs/*.out
+*.log
