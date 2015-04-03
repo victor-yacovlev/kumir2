@@ -202,15 +202,13 @@ rm -rf $RPM_BUILD_ROOT
 Summary:	Shared files used by various Kumir components
 %if %{defined fedora}
 Requires:	qt4 >= 4.7.0
+Requires:	qt4-x11 >= 4.7.0
 %endif
 %if %{defined suse_version}
 Requires:	libqt4 >= 4.7.0
+Requires:	libqt4-x11 >= 4.7.0
+Requires:	libQtWebKit4 >= 4.7.0
 %endif
-Requires:	libQtCore.so.4
-Requires:	libQtGui.so.4
-Requires:	libQtXml.so.4
-Requires:	libQtWebKit.so.4
-Requires:	libQtDeclarative.so.4
 %if %with_python_ide
 Requires:	python3 >= 3.2
 Requires:	libpython3.so
@@ -501,14 +499,13 @@ Pictomir creator into Kumir2 Course Manager XML files
 Summary:       Course editor tool
 %if %{defined fedora}
 Requires:       qt4 >= 4.7.0
+Requires:	qt4-x11 >= 4.7.0
 %endif
 %if %{defined suse_version}
 Requires:       libqt4 >= 4.7.0
+Requires:	libqt4-x11 >= 4.7.0
+Requires:	libQtWebKit4 >= 4.7.0
 %endif
-Requires:       libQtCore.so.4
-Requires:       libQtGui.so.4
-Requires:       libQtXml.so.4
-Requires:       libQtWebKit.so.4
 
 %description extra-courseeditor
 A tool for authoring Kumir Course Manager XML files
