@@ -465,7 +465,7 @@ but requires Qt and Kumir libraries
 
 %package run
 Summary:	Kumir2 language lightweight runtime
-Requires:	libstdc++.so.6
+Requires:	libstdc++ >= 4.6
 Obsoletes:	kumir2 < 2.0.90
 
 %description run
@@ -481,8 +481,8 @@ actors, but depends only on standard C++ library
 
 %package extra-pictomir2course
 Summary:        Pictomir to Kumir2's Course Manager conversion tool
-Requires:       libstdc++.so.6
-Requires:       libz.so.1
+Requires:       libstdc++ >= 4.6
+Requires:       zlib
 
 %description extra-pictomir2course
 A tool to convert Pictomir >= 0.15.0 "Games" created by
