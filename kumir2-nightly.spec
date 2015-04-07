@@ -292,10 +292,17 @@ Modern UI for Kumir with tabs and session support
 %_datadir/applications/kumir2-professional.desktop
 %_datadir/icons/hicolor/*/apps/kumir2.*
 
-%post ide -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
-%postun ide -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
+%check ide
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-professional.desktop || true
+%post teacher
+/bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
+%postun ide
+if [ $1 -eq 0 ] ; then
+  /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null
+  /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor/ &>/dev/null || :
+fi
+%posttrans ide
+/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %package classic
@@ -318,10 +325,17 @@ Classic Kumir UI like 1.x
 %_datadir/applications/kumir2-classic.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-classic.*
 
-%post classic -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
-%postun classic -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
+%check classic
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-classic.desktop || true
+%post classic
+/bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
+%postun classic
+if [ $1 -eq 0 ] ; then
+  /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null
+  /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor/ &>/dev/null || :
+fi
+%posttrans classic
+/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
 
 %package highgrade
 Summary:	Classic UI for Kumir + High grade features
@@ -344,10 +358,17 @@ enabled by default
 %_datadir/applications/kumir2-highgrade.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-highgrade.*
 
-%post highgrade -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
-%postun highgrade -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
+%check highgrade
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-highgrade.desktop || true
+%post highgrade
+/bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
+%postun highgrade
+if [ $1 -eq 0 ] ; then
+  /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null
+  /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor/ &>/dev/null || :
+fi
+%posttrans highgrade
+/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
 
 %package teacher
 Summary:	Teacher mode Kumir UI
@@ -369,10 +390,17 @@ Kumir UI with teacher features
 %_datadir/applications/kumir2-teacher.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-teacher.*
 
-%post teacher -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
-%postun teacher -p /sbin/ldconfig
-gtk-update-icon-cache --quiet --force "hicolor" || true
+%check teacher
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-teacher.desktop || true
+%post teacher
+/bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
+%postun teacher
+if [ $1 -eq 0 ] ; then
+  /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null
+  /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor/ &>/dev/null || :
+fi
+%posttrans teacher
+/usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor &>/dev/null || :
 
 %package desktop-integration
 Summary:        Kumir2 XDG desktop integration
@@ -398,7 +426,8 @@ Enables open Kumir files from file manager
 %_datadir/icons/hicolor/*/mimetypes/*
 %_datadir/mime/packages/kumir2-mimetypes.xml
 
-%post desktop-integration -p /sbin/ldconfig
+
+%post desktop-integration
 gtk-update-icon-cache --quiet --force "hicolor" || true
 xdg-menu install /usr/share/mime/packages/kumir2-mimetypes.xml || true
 
