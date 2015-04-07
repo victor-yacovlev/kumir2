@@ -292,9 +292,7 @@ Modern UI for Kumir with tabs and session support
 %_datadir/applications/kumir2-professional.desktop
 %_datadir/icons/hicolor/*/apps/kumir2.*
 
-%check ide
-desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-professional.desktop || true
-%post teacher
+%post ide
 /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
 %postun ide
 if [ $1 -eq 0 ] ; then
@@ -325,8 +323,6 @@ Classic Kumir UI like 1.x
 %_datadir/applications/kumir2-classic.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-classic.*
 
-%check classic
-desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-classic.desktop || true
 %post classic
 /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
 %postun classic
@@ -358,8 +354,7 @@ enabled by default
 %_datadir/applications/kumir2-highgrade.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-highgrade.*
 
-%check highgrade
-desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-highgrade.desktop || true
+
 %post highgrade
 /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
 %postun highgrade
@@ -390,8 +385,7 @@ Kumir UI with teacher features
 %_datadir/applications/kumir2-teacher.desktop
 %_datadir/icons/hicolor/*/apps/kumir2-teacher.*
 
-%check teacher
-desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/kumir2-teacher.desktop || true
+
 %post teacher
 /bin/touch --no-create %{_datadir}/icons/hicolor/ &>/dev/null || :
 %postun teacher
