@@ -3568,7 +3568,9 @@ void RobotModule::createGui()
     connect(m_pultWidget, SIGNAL(Colored()), this, SLOT(runIsColor()));
     connect(m_pultWidget, SIGNAL(Clean()), this, SLOT(runIsClear()));
     connect(m_pultWidget, SIGNAL(Color()), this, SLOT(runDoPaint()));
-
+    connect(m_pultWidget, SIGNAL(robReset()),this,SLOT(reset()));
+            
+            
     connect(m_pultWidget, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
     connect(this, SIGNAL(sendToPultLog(QVariant)), m_pultWidget, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
@@ -3656,6 +3658,7 @@ void RobotModule::reset()
     view->setScene(field);
     field->drawField(FIELD_SIZE_SMALL);
     view->setField(field);
+   
     
 }
 
