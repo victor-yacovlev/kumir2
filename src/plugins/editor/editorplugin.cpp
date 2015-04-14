@@ -77,6 +77,10 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
                     analizerPlugin->sourceFileHandler()->fromBytes(bytes);
             editor->setKumFile(data);
         }
+        else {
+            Shared::Analizer::SourceFileInterface::Data empty;
+            editor->setKumFile(empty);
+        }
     }
 
     editor->setNotModified();

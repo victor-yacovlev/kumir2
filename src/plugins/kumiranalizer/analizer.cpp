@@ -177,6 +177,7 @@ AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin_,
     lexer = new Lexer(q);
     pdAutomata = new PDAutomata(plugin_->myResourcesDir(), q);
     analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, qq->teacherMode_, q);
+    analizer->init(statements, ast);
     builtinModules.resize(16);
     ActorInterface * stdFunct = new StdLibModules::RTL;
     builtinModules[0] = stdFunct;
