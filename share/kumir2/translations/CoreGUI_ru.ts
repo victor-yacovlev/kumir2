@@ -1068,10 +1068,10 @@ Using Qt version %2</source>
         <translation>Исполнители</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="902"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="903"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="934"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="943"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="909"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="910"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="941"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="950"/>
         <source>No actions for this tab</source>
         <translation>Для этой вкладки нет действий</translation>
     </message>
@@ -1092,7 +1092,7 @@ Using Qt version %2</source>
         <translation type="obsolete">Пауза</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="909"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="916"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>
@@ -1247,7 +1247,6 @@ Using Qt version %2</source>
         <translation>Выбор каталога пользователя</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="44"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -1256,7 +1255,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Kumir stores your programs, data and settings in a folder called a workspace.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Choose a workspace folder to use for this session.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <translation type="obsolete">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -1264,6 +1263,15 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Кумир хранит Ваши программы, настройки и файлы данных в едином рабочем каталоге.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Выберете каталог, который будет использовать Кумир.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="47"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="60"/>
@@ -1282,6 +1290,21 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="53"/>
+        <source>&lt;p class=&apos;heading&apos;&gt;Choose working directory&lt;/p&gt;</source>
+        <translation>&lt;p class=&apos;heading&apos;&gt;Выберите рабочий каталог&lt;/p&gt; </translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="54"/>
+        <source>&lt;p class=&apos;main&apos;&gt;Working directory is a place to access files within your program using &lt;span class=&apos;code&apos;&gt;WORKING_DIRECTORY&lt;/span&gt; location.&lt;/p&gt;</source>
+        <translation>&lt;p class=&apos;main&apos;&gt;Рабочий каталог - это каталог, в котором выполняется поиск файлов для ввода и вывода. Из программы это значение можно получить значением &lt;span class=&apos;code&apos;&gt;РАБОЧИЙ_КАТАЛОГ&lt;/span&gt;&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="57"/>
+        <source>&lt;p class=&apos;main&apos;&gt;Kumir also uses this directory to store your personal settings.&lt;p&gt;</source>
+        <translation type="unfinished">&lt;p class=&apos;main&apos;&gt;Кроме того, в этом каталоге Кумир хранит Ваши персональные настройки.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="81"/>
         <source>Select directory for use as workspace</source>
         <translation>Выбор рабочего каталога</translation>
     </message>

@@ -156,8 +156,8 @@ public:
 
     void updateAllSettings();
 
-    void switchToDefaultWorkspace();
-    void switchToWorkspace(const QString & path);
+    void switchToDefaultWorkspace(bool workDirOnly);
+    void switchToWorkspace(const QString & path, bool workDirOnly);
 
     /** Stops all plugins in reverse-order of creation
      * @returns true if there is not module blocking exit, false elsewhere

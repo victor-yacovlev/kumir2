@@ -818,10 +818,17 @@ bool Plugin::showWorkspaceChooseDialog()
 {
     SwitchWorkspaceDialog * dialog = new
             SwitchWorkspaceDialog(ExtensionSystem::PluginManager::instance()->globalSettings());
+    dialog->setMessage(sessionsDisableFlag_
+                       ? SwitchWorkspaceDialog::MSG_ChangeWorkingDirectory
+                       : SwitchWorkspaceDialog::MSG_ChangeWorkspace);
+    dialog->setUseAlwaysHidden(sessionsDisableFlag_);
     if (dialog->exec() == QDialog::Accepted) {
-        ExtensionSystem::PluginManager::instance()->switchToWorkspace(
-                    dialog->currentWorkspace()
-        );
+        ExtensionSystem::PluginManager::instance()->
+                switchToWorkspace(
+                    dialog->currentWorkspace(),
+                    sessionsDisableFlag_
+                    )
+                ;
         return true;
     }
     else {
@@ -840,8 +847,8 @@ void Plugin::start()
         }
     }
     else {
-        if (!sessionsDisableFlag_) ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace();
-        else {
+        ExtensionSystem::PluginManager::instance()->switchToDefaultWorkspace(sessionsDisableFlag_);
+        if (sessionsDisableFlag_) {
             updateSettings(QStringList());
             restoreSession();
         }

@@ -42,6 +42,34 @@ void SwitchWorkspaceDialog::setCurrentWorkspace(const QString &path)
     }
 }
 
+void SwitchWorkspaceDialog::setMessage(SwitchWorkspaceDialog::Message message)
+{
+    const QString css =
+            "<style type='text/css'>"
+            ".main { font-size: 11pt; }"
+            ".heading { font-size: 12pt; font-weight: bold; text-align: left; }"
+            ".code { font-family: monospace; font-weight: bold;}"
+            "</style>";
+    const QString heading = tr("<p class='heading'>Choose working directory</p>");
+    QString text = tr("<p class='main'>Working directory is a place to access files within your program using <span class='code'>WORKING_DIRECTORY</span> location.</p>");
+    switch (message) {
+    case MSG_ChangeWorkspace:
+        text += tr("<p class='main'>Kumir also uses this directory to store your personal settings.<p>");
+        break;
+    case MSG_ChangeWorkingDirectory:
+        break;
+    }
+    const QString html =
+            css + heading + text;
+    ui->textBrowser->setHtml(html);
+}
+
+void SwitchWorkspaceDialog::setUseAlwaysHidden(bool v)
+{
+    ui->checkBox->setVisible(! v);
+}
+
+
 QString SwitchWorkspaceDialog::currentWorkspace() const
 {
     return QDir::cleanPath(QDir::fromNativeSeparators(ui->comboBox->currentText()));
