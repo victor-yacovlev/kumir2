@@ -85,6 +85,7 @@ void PluginManager::updateAllSettings()
     }
 }
 
+
 void PluginManager::switchToDefaultWorkspace(bool workDirOnly)
 {
     const QString workDir = pImpl_->mySettings->value(

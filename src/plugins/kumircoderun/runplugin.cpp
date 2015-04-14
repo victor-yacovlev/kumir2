@@ -102,9 +102,9 @@ bool KumirRunPlugin::loadProgram(const RunnableProgram &program)
     ok = pRun_->loadProgramFromBinaryBuffer(buffer, programFileName.toStdWString());
     if (!ok) {
         return ok;
-    }
-    const QString programDirName =
-            QFileInfo(programFileName).absoluteDir().absolutePath();
+    }    
+    const QString programDirName = program.sourceFileName.isEmpty()
+            ? "" : QFileInfo(programFileName).absoluteDir().absolutePath();
     pRun_->setProgramDirectory(programDirName);
     pRun_->programLoaded = ok;
     return ok;

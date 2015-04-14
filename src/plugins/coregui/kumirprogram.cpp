@@ -376,8 +376,14 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
 
         ok = runner()->loadProgram(program);
     }    
-//    const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
-//    QDir::setCurrent(newCwd);
+    if (program.sourceFileName.length() > 0) {
+        const QString newCwd = QFileInfo(sourceProgramPath).absoluteDir().absolutePath();
+        QDir::setCurrent(newCwd);
+    }
+    else {
+        const QString newCwd = PluginManager::instance()->workspacePath();
+        QDir::setCurrent(newCwd);
+    }
 
     if (runner()->hasBreakpointsSupport()) {
         using Editor::Breakpoint;

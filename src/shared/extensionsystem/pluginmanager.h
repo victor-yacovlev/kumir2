@@ -154,8 +154,10 @@ public:
     }
 
 
+
     void updateAllSettings();
 
+    QString workspacePath() const;
     void switchToDefaultWorkspace(bool workDirOnly);
     void switchToWorkspace(const QString & path, bool workDirOnly);
 

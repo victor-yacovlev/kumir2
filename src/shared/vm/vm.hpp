@@ -1766,7 +1766,7 @@ void KumirVM::do_filescall(uint16_t alg)
     case 0x0012: {
         String res;
         if (programDirectory_.length()==0)
-            res = Kumir::Files::CurrentWorkingDirectory();
+            res = Kumir::Core::fromAscii("./");
         else
             res = programDirectory_;
         valuesStack_.push(Variable(res));

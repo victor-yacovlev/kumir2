@@ -204,6 +204,11 @@ void PluginManagerImpl::changeWorkingDirectory(const QString &path, bool saveCha
     mySettings->setValue(PluginManager::CurrentWorkspaceKey, path);
 }
 
+QString PluginManager::workspacePath() const
+{
+    return pImpl_->mySettings->value(PluginManager::CurrentWorkspaceKey).toString();
+}
+
 QString PluginManagerImpl::reorderSpecsAndCreateStates(const QStringList &orderedList)
 {
     QList<PluginSpec> newSpecs;
