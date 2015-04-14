@@ -427,6 +427,28 @@ public:
         func.arguments << Argument("value", Int);
         result << func;
 
+        /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.returnTypeSpecification = RecordSpecification();
+        func.id = 0x0030;
+        func.asciiName = "ASSIGN INPUT";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("НАЗНАЧИТЬ ВВОД");
+        func.returnType = Void;
+        func.arguments << Argument("path", String);
+        result << func;
+
+        /* алг НАЗНАЧИТЬ ВЫВОД(лит имя файла) */
+        func.localizedNames.clear();
+        func.arguments.clear();
+        func.returnTypeSpecification = RecordSpecification();
+        func.id = 0x0031;
+        func.asciiName = "ASSIGN OUTPUT";
+        func.localizedNames[QLocale::Russian] = QString::fromUtf8("НАЗНАЧИТЬ ВЫВОД");
+        func.returnType = Void;
+        func.arguments << Argument("path", String);
+        result << func;
+
 
         return result;
     }
@@ -632,28 +654,6 @@ class Files
         func.asciiName = "rm";
         func.localizedNames[QLocale::Russian] = QString::fromUtf8("удалить_файл");
         func.returnType = Bool;
-        func.arguments << Argument("path", String);
-        result << func;
-
-        /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
-        func.localizedNames.clear();
-        func.arguments.clear();
-        func.returnTypeSpecification = RecordSpecification();
-        func.id = 0x000f;
-        func.asciiName = "ASSIGN INPUT";
-        func.localizedNames[QLocale::Russian] = QString::fromUtf8("НАЗНАЧИТЬ ВВОД");
-        func.returnType = Void;
-        func.arguments << Argument("path", String);
-        result << func;
-
-        /* алг НАЗНАЧИТЬ ВЫВОД(лит имя файла) */
-        func.localizedNames.clear();
-        func.arguments.clear();
-        func.returnTypeSpecification = RecordSpecification();
-        func.id = 0x0010;
-        func.asciiName = "ASSIGN OUTPUT";
-        func.localizedNames[QLocale::Russian] = QString::fromUtf8("НАЗНАЧИТЬ ВЫВОД");
-        func.returnType = Void;
         func.arguments << Argument("path", String);
         result << func;
 

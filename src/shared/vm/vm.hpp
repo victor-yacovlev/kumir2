@@ -1607,6 +1607,20 @@ void KumirVM::do_stdcall(uint16_t alg)
         evaluationResult_ = static_cast<uint8_t>(value);
         break;
     }
+    /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
+    case 0x0030: {
+        const String x = valuesStack_.pop().toString();
+        Kumir::Files::assignInStream(x);
+        error_ = Kumir::Core::getError();
+        break;
+    }
+    /* алг НАЗНАЧИТЬ ВЫВОД(лит имя файла) */
+    case 0x0031: {
+        const String x = valuesStack_.pop().toString();
+        Kumir::Files::assignOutStream(x);
+        error_ = Kumir::Core::getError();
+        break;
+    }
     default: {
         error_ = Kumir::Core::fromUtf8("Вызов неизвестного алгоримта, возможно из более новой версии Кумир");
     }
@@ -1741,21 +1755,7 @@ void KumirVM::do_filescall(uint16_t alg)
         const String x = valuesStack_.pop().toString();
         valuesStack_.push(Variable(Kumir::Files::unlink(x)));
         break;
-    }
-    /* алг НАЗНАЧИТЬ ВВОД(лит имя файла) */
-    case 0x000f: {
-        const String x = valuesStack_.pop().toString();
-        Kumir::Files::assignInStream(x);
-        error_ = Kumir::Core::getError();
-        break;
-    }
-    /* алг НАЗНАЧИТЬ ВЫВОД(лит имя файла) */
-    case 0x0010: {
-        const String x = valuesStack_.pop().toString();
-        Kumir::Files::assignOutStream(x);
-        error_ = Kumir::Core::getError();
-        break;
-    }
+    }    
     /* алг лит РАБОЧИЙ КАТАЛОГ */
     case 0x0011: {
         const String res = Kumir::Files::CurrentWorkingDirectory();
