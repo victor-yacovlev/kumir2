@@ -168,7 +168,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth - breakpointPaneWidth;
+            lockSymbolWidth ;
 
     // Force text cursor (managed primarily from keyboard) to temporary hide
     editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
@@ -426,7 +426,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth - breakpointPaneWidth;
+            lockSymbolWidth ;
 
     // Line number of highlighted (by mouseover) 'lock' symbol or -1 if none
     highlightedLockSymbolLineNumber_ = -1;
