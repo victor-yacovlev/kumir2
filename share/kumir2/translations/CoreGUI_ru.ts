@@ -1291,17 +1291,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="53"/>
         <source>&lt;p class=&apos;heading&apos;&gt;Choose working directory&lt;/p&gt;</source>
-        <translation>&lt;p class=&apos;heading&apos;&gt;Выберите рабочий каталог&lt;/p&gt; </translation>
+        <translation>&lt;p class=&apos;heading&apos;&gt;Рабочий каталог системы &quot;Кумир&quot;&lt;/p&gt; </translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="54"/>
         <source>&lt;p class=&apos;main&apos;&gt;Working directory is a place to access files within your program using &lt;span class=&apos;code&apos;&gt;WORKING_DIRECTORY&lt;/span&gt; location.&lt;/p&gt;</source>
-        <translation>&lt;p class=&apos;main&apos;&gt;Рабочий каталог - это каталог, в котором выполняется поиск файлов для ввода и вывода. Из программы это значение можно получить значением &lt;span class=&apos;code&apos;&gt;РАБОЧИЙ_КАТАЛОГ&lt;/span&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p class=&apos;main&apos;&gt;Рабочий каталог - это каталог, в котором выполняется поиск файлов для ввода и вывода, если программа не сохранена. Из программы это значение можно получить алгоритмом &lt;span class=&apos;code&apos;&gt;РАБОЧИЙ_КАТАЛОГ&lt;/span&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="57"/>
         <source>&lt;p class=&apos;main&apos;&gt;Kumir also uses this directory to store your personal settings.&lt;p&gt;</source>
-        <translation type="unfinished">&lt;p class=&apos;main&apos;&gt;Кроме того, в этом каталоге Кумир хранит Ваши персональные настройки.&lt;/p&gt;</translation>
+        <translation>&lt;p class=&apos;main&apos;&gt;Кроме того, в этом каталоге Кумир хранит Ваши персональные настройки.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="81"/>
