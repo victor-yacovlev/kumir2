@@ -1555,6 +1555,12 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::Redo)) {
             editor_->cursor()->redo();
         }
+        else if (e->key()==Qt::Key_F && e->modifiers().testFlag(Qt::ControlModifier)) {
+            editor_->find_->trigger();
+        }
+        else if (e->key()==Qt::Key_H && e->modifiers().testFlag(Qt::ControlModifier)) {
+            editor_->replace_->trigger();
+        }
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
             editor_->cursor()->toggleComment();
         }
