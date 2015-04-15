@@ -1060,7 +1060,7 @@ Using Qt version %2</source>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="570"/>
         <source>Show actor control</source>
-        <translation>Показать окно пульта</translation>
+        <translation>Показать пульт</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="578"/>
