@@ -1,0 +1,94 @@
+Source: kumir2-nightly
+Section: science
+Priority: optional
+Maintainer: Kumir Team <kumir@lpm.org.ru>
+Standards-Version: 3.9.5
+Homepage: http://www.niisi.ru/kumir/
+Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.7.0), libqtwebkit-dev (>= 2.0.0), libx11-dev, qt4-qmake, python, cmake (>= 2.8.0), libqca2-dev, libboost-dev (>= 1.49), llvm-dev, libz-dev, clang, g++ (>= 4.7.0)
+
+Package: kumir2-nightly-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}, libqtcore4 (>= 4.7.0), libqtgui4 (>= 4.7.0), libqt4-xml (>= 4.7.0), libqtwebkit4, libqt4-script (>= 4.7.0), libqt4-declarative (>= 4.7.0), libqca2
+Description: Shared files used by various Kumir components
+	Shared libraries and data files used by various Kumir components
+	
+Package: kumir2-nightly-ide
+Architecture: any
+Recommends: kumir2-nightly-desktop-integration
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version})
+Description: Modern UI for Kumir
+	Modern UI for Kumir with tabs and session support
+	
+Package: kumir2-nightly-classic
+Architecture: any
+Recommends: kumir2-nightly-desktop-integration
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version})
+Description: Classic UI for Kumir
+	Classic Kumir UI like 1.x
+	
+Package: kumir2-nightly-highgrade
+Architecture: any
+Recommends: kumir2-nightly-desktop-integration
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version})
+Description: Classic UI for Kumir + High grade features
+	Classic Kumir UI like 1.x with high grade packages 
+	enabled by default
+	
+Package: kumir2-nightly-teacher
+Architecture: any
+Recommends: kumir2-nightly-desktop-integration
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version})
+Description: Teacher mode Kumir UI
+	Kumir UI with teacher features
+	
+Package: kumir2-nightly-bc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version})
+Description: kumir2-nightly language compiler
+	Kumir source to bytecode compiler
+    
+Package: kumir2-nightly-extra-llvmc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-common (= ${binary:Version}), llvm, clang
+Description: kumir2-nightly/LLVM language compiler
+	Kumir source to LLVM bitcode and native executable compiler
+	
+Package: kumir2-nightly-run
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}
+Description: kumir2-nightly language lightweight runtime
+	Lightweight kumir2-nightly language runtime that do not support
+	actors, but depends only on standard C++ library
+	
+Package: kumir2-nightly-desktop-integration
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}, kumir2-nightly-run, kumir2-nightly-classic | kumir2-nightly-highgrade | kumir2-nightly-ide | kumir2-nightly-teacher
+Description: kumir2-nightly XDG desktop integration
+	Provides a way to open kumir-related files using GUI
+	file manager
+	
+Package: kumir2-nightly-extra-pictomir2course
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:depends}
+Description: PictoMir 'games' to kumir2-nightly Course Manager converter
+	A tool to convert Pictomir >= 0.15.0 'game' JSON-files
+	into kumir2-nightly .kurs.xml format
+	
+Package: kumir2-nightly
+Architecture: any
+Depends: kumir2-nightly-ide (= ${binary:Version}), kumir2-nightly-classic (= ${binary:Version}), kumir2-nightly-highgrade (= ${binary:Version}), kumir2-nightly-teacher (= ${binary:Version}), kumir2-nightly-desktop-integration (= ${binary:Version})
+Description: Kumir education system
+	Meta-package for full end-user kumir2-nightly installation
+	
+Package: kumir2-nightly-tools
+Architecture: any
+Depends: kumir2-nightly-run (= ${binary:Version}), kumir2-nightly-bc (= ${binary:Version})
+Description: Kumir console tools
+	Meta-package for console tools of kumir2-nightly installation
+	
+Package: kumir2-nightly-tools-extra
+Architecture: any
+Depends: kumir2-nightly-extra-llvmc (= ${binary:Version}), kumir2-nightly-extra-pictomir2course (= ${binary:Version})
+Description: Kumir optional console tools
+	Meta-package for optional extra kumir2-nightly console tools installation
+
