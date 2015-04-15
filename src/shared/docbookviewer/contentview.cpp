@@ -74,7 +74,7 @@ ContentView::ContentView(QWidget *parent)
 
 QSize ContentView::minimumSizeHint() const
 {
-    return QSize(80, 230);
+    return QSize(200, 230);
 }
 
 void ContentView::reset()
@@ -1566,7 +1566,7 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     for (quint8 i=0; i<level * 4; i++) {
         indent += "&nbsp;";
     }
-    result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
+    result += "<p align='left' margin='1'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
         foreach (ModelPtr child, data->children()) {
             ModelType childType = child->modelType();
