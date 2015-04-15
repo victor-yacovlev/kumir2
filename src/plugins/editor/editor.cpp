@@ -227,6 +227,9 @@ void EditorInstance::timerEvent(QTimerEvent *e)
                     Utils::shiftKeyPressed,
                     Utils::altKeyPressed
                     );
+        const bool hasSelection = cursor_->hasSelection() || cursor_->hasRectSelection();
+        cut_->setEnabled(hasSelection);
+        copy_->setEnabled(hasSelection);
     }
     else if (e->timerId()==autoScrollTimerId_) {
         e->accept();
