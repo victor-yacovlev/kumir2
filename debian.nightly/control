@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Kumir Team <kumir@lpm.org.ru>
 Standards-Version: 3.9.5
 Homepage: http://www.niisi.ru/kumir/
-Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.7.0), libqtwebkit-dev (>= 2.0.0), libx11-dev, qt4-qmake, python, cmake (>= 2.8.0), libqca2-dev, libboost-dev (>= 1.49), llvm-dev, libz-dev, clang, g++ (>= 4.7.0)
+Build-Depends: debhelper (>= 7.0.50~), libqt4-dev (>= 4.7.0), libqtwebkit-dev (>= 2.0.0), libx11-dev, qt4-qmake, python, cmake (>= 2.8.0), libqca2-dev, libboost-dev (>= 1.49), llvm-dev (>= 3.4), libz-dev, clang (>= 3.4), g++ (>= 4.7.0)
 
 Package: kumir2-nightly-common
 Architecture: any
