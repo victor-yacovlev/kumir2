@@ -919,7 +919,7 @@ void EditorInstance::createActions()
     redo_->setText(QObject::tr("Redo last undoed action"));
 //    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
     redo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-redo"));
-    redo_->setShortcut(QKeySequence::Redo);
+    redo_->setShortcut(QKeySequence("Ctrl+Shift+Z"));
     redo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
     QObject::connect(redo_, SIGNAL(triggered()), this, SLOT(redo()));
