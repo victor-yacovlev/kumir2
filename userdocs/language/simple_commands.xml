@@ -45,7 +45,22 @@ b[i,j]:=-b[j,i]
     </section>
     <section>
         <title>Контроль выполнения</title>
-        <para>В языке Кумир существует три команды контроля выполнения: <code language="кумир">утв</code>,
+		<para>
+			Команды контроля выполнения в языке КуМир делятся на две категории:
+			<orderedlist>
+				<listitem>
+					команды контроля выполнения с условиями,
+				</listitem>
+				<listitem>
+					команды управления выполнением (или команды-действия).
+				</listitem>
+			</orderedlist>
+		</para>
+		<section>
+		<title>
+			Команды с условиями
+		</title>
+		<para>В языке Кумир существует три команды контроля выполнения с условиями: <code language="кумир">утв</code>,
             <code language="кумир">дано</code>, <code language="кумир">надо</code>.
         </para>
         <para>
@@ -111,7 +126,27 @@ b[i,j]:=-b[j,i]
 ]]>
             </programlisting>
         </example>
-    </section>
+	</section>
+	<section>
+		<title>
+			Команды-действия
+		</title>
+		<para>
+			В КуМире существуют две команды управления выполнением программы <code role="кумир">пауза</code> и 
+			<code role="кумир">стоп</code>:
+			<itemizedlist>
+				<listitem><para>
+					Команда <code role="кумир">пауза</code> приостанавливает выполнение программы в той строке, в которой она была вызвана. 
+					Действие этой команды аналогично действию точки остановки.
+				</para></listitem>
+				<listitem><para>
+					Команда <code role="кумир">стоп</code> принудительно завершает работу программы. Действие этой команды аналогично действию 
+					пункта <guimenuitem>Остановить выполнение</guimenuitem> меню <guimenu>Выполнение</guimenu>.
+				</para></listitem>
+			</itemizedlist>
+		</para>
+	</section>
+	</section>
     <section>
         <title>Ввод и вывод</title>
         <section>
