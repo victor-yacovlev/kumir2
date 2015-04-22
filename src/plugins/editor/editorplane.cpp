@@ -162,7 +162,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth + breakpointPaneWidth;
+            lockSymbolWidth + breakpointPaneWidth + 8;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
@@ -420,7 +420,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth + breakpointPaneWidth;
+            lockSymbolWidth + breakpointPaneWidth + 8;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
