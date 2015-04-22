@@ -816,13 +816,27 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
 
     // Margin cell
     for (uint i=fromLine; i<toLine; i++) {
-        const TextLine & textLine = data_[i];
-        const QString & marginText = textLine.margin.errors.join("; ");
+        QString text;
+        bool red = false;
+        const TextLine::Margin & margin = marginAt(i);
+        if (margin.text.length() > 0) {
+            text = margin.text;
+            red = false;
+        }
+        else {
+            if (margin.errors.size() > 0) {
+                text = margin.errors.first();
+                red = true;
+            }
+        }
         static QTextCodec * codec = QTextCodec::codecForName("CP1251");
         result.append("\\intbl");
-        if (marginText.length()>0) {
-            result.append("{\\cf9 ");
-            result.append(codec->fromUnicode(marginText));
+        if (text.length()>0) {
+            result.append("{");
+            if (red) {
+                result.append("\\cf9 ");
+            }
+            result.append(codec->fromUnicode(text));
             result.append("}");
         }
         if (fromLine!=toLine && i<toLine-1) {
