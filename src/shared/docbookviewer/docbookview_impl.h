@@ -59,6 +59,7 @@ public slots:
     void showPrintDialog();
     void hideSidePanel();
     void showSidePanel();
+    void setInitialView();
     void setSize(const QSize & size);
 
     void switchToCompactMode(bool force=false);

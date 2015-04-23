@@ -117,6 +117,9 @@ public slots:
     void saveNativeExecutable();
 
 private slots:
+    void setFirstTimeWindowLayout();
+    void setFirstTimeWindowLayout_stage2();
+    void setFirstTimeWindowLayout_stage3();
     void loadRecentFile();
     void prepareRecentFilesMenu();
     void prepareRunMenu();
@@ -205,8 +208,12 @@ private:
     Widgets::SecondaryWindow * debuggerWindow_; // changes place on layout change
     class ToolbarContextMenu * menubarContextMenu_;
     QList<QMenu*> topLevelMenus_;
+
+    int afterShowTimerId2_;
+    int afterShowTimerId3_;
 };
 
 
 } // namespace CoreGUI
 #endif // COREGUI_MAINWINDOW_H
+

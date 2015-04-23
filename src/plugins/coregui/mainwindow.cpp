@@ -27,7 +27,9 @@ MainWindow::MainWindow(Plugin * p) :
     statusBar_(new StatusBar),
     tabWidget_(0),
     prevBottomSize_(DefaultConsoleHeight),
-    menubarContextMenu_(0)
+    menubarContextMenu_(0),
+    afterShowTimerId2_(0),
+    afterShowTimerId3_(0)
 {   
 
     debuggerWindow_ = 0;
@@ -759,8 +761,18 @@ void MainWindow::setFocusOnCentralWidget()
 
 void MainWindow::timerEvent(QTimerEvent *e)
 {
-    checkCounterValue();
     e->accept();
+    if (afterShowTimerId2_ == e->timerId()) {
+        killTimer(afterShowTimerId2_);
+        afterShowTimerId2_ = 0;
+        setFirstTimeWindowLayout_stage2();
+    }
+    if (afterShowTimerId3_ == e->timerId()) {
+        killTimer(afterShowTimerId3_);
+        afterShowTimerId3_ = 0;
+        setFirstTimeWindowLayout_stage3();
+    }
+    checkCounterValue();
 }
 
 
@@ -1535,7 +1547,6 @@ void MainWindow::disableTabs()
 
 void MainWindow::updateSettings(SettingsPtr settings, const QStringList & keys)
 {
-//    if (settings_) saveSettings();
     settings_ = settings;    
     loadSettings(keys);
     for (int i=0; i<tabWidget_->count(); i++) {
@@ -1565,49 +1576,123 @@ void MainWindow::loadSettings(const QStringList & keys)
         }
     }
     QRect r = settings_->value(Plugin::MainWindowGeometryKey,
-                               QRect(QPoint(-1, -1), QSize(940, 540))).toRect();
-    if (r.width()>0 &&
-            (keys.contains(Plugin::MainWindowGeometryKey) || keys.isEmpty())
-            ) {
-        resize(r.size());
-        QPoint ps;
-        if (r.topLeft() != QPoint(-1, -1)) {
-            ps = r.topLeft();
-        }
-        else {
-            const QSize screenSize = QApplication::desktop()->availableGeometry().size();
-            int x = screenSize.width() - r.width();
-            int y = screenSize.height() - r.height();
-            x /= 2;
-            y /= 2;
-            ps = QPoint(x, y);
-        }
-        move(ps);
-    }
-    if (keys.size() == 1 && "MainWindowLayout" == keys[0]) {
-        // do nothing on hot layout change
+                               QRect(QPoint(-1, -1), QSize(0, 0))).toRect();
+
+    if (r.width() * r.height() == 0) {
+        setFirstTimeWindowLayout();
     }
     else {
-        centralSide_->updateSettings(settings_, keys);
-        centralSide_->setVisible(true); // always visible even has null default settings
-        secondarySide_->updateSettings(settings_, keys);
-    }
-    if (keys.contains(Plugin::MainWindowSplitterStateKey+"0") || keys.isEmpty()) {
-        QList<int> sizes;
-        sizes << 0 << 0;
-        sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
-        sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
-        prevBottomSize_ = settings_->value("SavedBottomSize", DefaultConsoleHeight).toInt();
-        if (sizes[0] + sizes[1] > 0) {
+        // Restore saved layout
+        if (r.width()>0 &&
+                (keys.contains(Plugin::MainWindowGeometryKey) || keys.isEmpty())
+                ) {
+            resize(r.size());
+            QPoint ps;
+            if (r.topLeft() != QPoint(-1, -1)) {
+                ps = r.topLeft();
+            }
+            else {
+                const QSize screenSize = QApplication::desktop()->availableGeometry().size();
+                int x = screenSize.width() - r.width();
+                int y = screenSize.height() - r.height();
+                x /= 2;
+                y /= 2;
+                ps = QPoint(x, y);
+            }
+            move(ps);
+        }
+        if (keys.size() == 1 && "MainWindowLayout" == keys[0]) {
+            // do nothing on hot layout change
         }
         else {
-            sizes[1] = prevBottomSize_;
-            sizes[0] = height() - sizes[1];
+            centralSide_->updateSettings(settings_, keys);
+            centralSide_->setVisible(true); // always visible even has null default settings
+            secondarySide_->updateSettings(settings_, keys);
         }
-        ui->splitter->setSizes(sizes);
-        ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
-    }    
+        if (keys.contains(Plugin::MainWindowSplitterStateKey+"0") || keys.isEmpty()) {
+            QList<int> sizes;
+            sizes << 0 << 0;
+            sizes[0] = settings_->value(Plugin::MainWindowSplitterStateKey+"0", 0).toInt();
+            sizes[1] = settings_->value(Plugin::MainWindowSplitterStateKey+"1", 0).toInt();
+            prevBottomSize_ = settings_->value("SavedBottomSize", DefaultConsoleHeight).toInt();
+            if (sizes[0] + sizes[1] > 0) {
+            }
+            else {
+                sizes[1] = prevBottomSize_;
+                sizes[0] = height() - sizes[1];
+            }
+            ui->splitter->setSizes(sizes);
+            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+        }
+    }
     menubarContextMenu_->loadSettings();
+}
+
+void MainWindow::setFirstTimeWindowLayout()
+{
+    const QRect workspaceSize = QApplication::desktop()->availableGeometry();
+    bool maximizeWindow =
+            workspaceSize.width() <= 1280 || workspaceSize.height() <= 700;
+    if (maximizeWindow) {
+        showMaximized();
+    }
+    else {
+        resize(1280, 700);
+        const int x = (workspaceSize.width() - 1280) / 2;
+        const int y = (workspaceSize.height() - 700) / 2;
+        move(x, y);
+    }
+    afterShowTimerId2_ = startTimer(200);
+    // Then process setFirstTimeWindowLayout_stage2()
+}
+
+void MainWindow::setFirstTimeWindowLayout_stage2()
+{
+//    switchToRowFirstLayout();
+    afterShowTimerId3_ = startTimer(300);
+    // Then process setFirstTimeWindowLayout_stage3()
+}
+
+void MainWindow::setFirstTimeWindowLayout_stage3()
+{
+    setConsoleVisible(true);
+    m_plugin->showActorWindow("Robot");
+    showHelp();
+
+    const int AreaWidth =
+            width()
+            - layout()->contentsMargins().left()
+            - layout()->contentsMargins().right()
+            ;
+    const int AreaHeight =
+            height()
+            - layout()->contentsMargins().top()
+            - layout()->contentsMargins().bottom()
+            - menuBar()->height()
+            - statusBar()->height()
+            ;
+    static const int InitialBottomHeight = 120;
+    const int InitialTopHeight = AreaHeight - InitialBottomHeight - ui->splitter->handleWidth();
+    QList<int> terminalSplitterSizes;
+    terminalSplitterSizes.append(InitialTopHeight);
+    terminalSplitterSizes.append(InitialBottomHeight);
+    centralSide_->setSizes(terminalSplitterSizes);
+    const int editorWidth = (AreaWidth - ui->splitter->handleWidth()) / 2;
+    const int rightWidth = AreaWidth - editorWidth;
+    QList<int> horizontalSplitterSizes;
+    horizontalSplitterSizes.append(editorWidth);
+    horizontalSplitterSizes.append(rightWidth);
+    ui->splitter->setSizes(horizontalSplitterSizes);
+    static const int InitialRobotHeight = 220;
+    const int helpHeight =
+            secondarySide_->height() -
+            secondarySide_->handleWidth() -
+            InitialRobotHeight;
+    QList<int> sidePanelSplitterSizes;
+    sidePanelSplitterSizes.append(helpHeight);
+    sidePanelSplitterSizes.append(InitialRobotHeight);
+    secondarySide_->setSizes(sidePanelSplitterSizes);
+    m_plugin->helpViewer_->setInitialView();
 }
 
 void MainWindow::saveSettings()

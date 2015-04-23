@@ -104,6 +104,11 @@ void DocBookView::clearNavigationFilters()
     pImpl_->clearNavigationFilters();
 }
 
+void DocBookView::setInitialView()
+{
+    pImpl_->setInitialView();
+}
+
 QStringList DocBookView::booksList() const
 {
     return pImpl_->booksList();
