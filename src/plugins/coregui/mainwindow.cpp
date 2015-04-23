@@ -30,273 +30,128 @@ MainWindow::MainWindow(Plugin * p) :
     menubarContextMenu_(0)
 {   
 
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     debuggerWindow_ = 0;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
     ui->setupUi(this);    
     ui->menuEdit->setProperty("menuRole", "edit");
     ui->menuInsert->setProperty("menuRole", "insert");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    tabWidget_ = new TabWidget(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    helpAndCoursesPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    debuggerPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/DebuggerDockPlace");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    consolePlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ConsoleDockPlace");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    actorsPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ActorsDockPlace");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    centralSide_ = new Side(this, "MainWindow/CentralRow");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    secondarySide_ = new Side(this, "MainWindow/BottomRow");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
+    tabWidget_ = new TabWidget(this);    
+    helpAndCoursesPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/HelpDockPlace");    
+    debuggerPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/DebuggerDockPlace");    
+    consolePlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ConsoleDockPlace");    
+    actorsPlace_ = new Widgets::DockWindowPlace(this, "MainWindow/ActorsDockPlace");    
+    centralSide_ = new Side(this, "MainWindow/CentralRow");    
+    secondarySide_ = new Side(this, "MainWindow/BottomRow");    
     ui->splitter->setCollapsible(1, true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    connect(secondarySide_, SIGNAL(visiblityRequest()), this, SLOT(ensureSeconrarySideVisible()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(secondarySide_, SIGNAL(visiblityRequest()), this, SLOT(ensureSeconrarySideVisible()));    
+    connect(ui->actionShow_Console_Pane, SIGNAL(triggered(bool)), this, SLOT(setConsoleVisible(bool)));    
 
-    connect(ui->actionShow_Console_Pane, SIGNAL(triggered(bool)), this, SLOT(setConsoleVisible(bool)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
-//    centralContainer->setLayout(new QVBoxLayout);
-//    centralContainer->layout()->addWidget(centralSide_);
-//    centralContainer->layout()->setContentsMargins(0, 0, 0, 0);
-//#ifdef Q_OS_MAC
-//    centralContainer->layout()->setContentsMargins(0, 8, 0, 0);
-//#endif
-
-
-    setStatusBar(statusBar_);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    setStatusBar(statusBar_);    
     setMinimumHeight(380);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    tabsDisabledFlag_ = false;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
+    tabsDisabledFlag_ = false;    
     b_workspaceSwitching = false;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
 
-    const QString qtcreatorIconsPath = ExtensionSystem::PluginManager::instance()->sharePath()
-            + "/icons/from_qtcreator/";
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
-//    ui->actionNewProgram->setIcon(QIcon(qtcreatorIconsPath+"filenew.png"));
     ui->actionNewProgram->setIcon(Widgets::IconProvider::self()->iconForName("file-new"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionNewProgram->setObjectName("file-new");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//    ui->actionOpen->setIcon(QIcon(qtcreatorIconsPath+"fileopen.png"));
     ui->actionOpen->setIcon(Widgets::IconProvider::self()->iconForName("file-open"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionOpen->setObjectName("file-open");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//    ui->actionSave->setIcon(QIcon(qtcreatorIconsPath+"filesave.png"));
     ui->actionSave->setIcon(Widgets::IconProvider::self()->iconForName("file-save"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->actionSave->setObjectName("file-save");
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
 
     ui->menuFile->setWindowTitle(ui->menuFile->title());
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     ui->menuHelp->setWindowTitle(ui->menuHelp->title());
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(ui->actionNewProgram, SIGNAL(triggered()), this, SLOT(newProgram()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->actionNewText, SIGNAL(triggered()), this, SLOT(newText()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(fileOpen()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->actionClose, SIGNAL(triggered()), this, SLOT(closeCurrentTab()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     connect(ui->actionSwitch_workspace, SIGNAL(triggered()), this, SLOT(switchWorkspace()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
     connect(tabWidget_, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupActionsForTab()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupContentForTab()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setupStatusbarForTab()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(checkCounterValue()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(tabWidget_, SIGNAL(currentChanged(int)), this, SLOT(setTitleForTab(int)));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-    QObject * runnerObject =
-            ExtensionSystem::PluginManager::instance()->findKPlugin<Shared::RunInterface>();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    if (runnerObject) {
-//        connect(runnerObject, SIGNAL(updateStepsCounter(quint64)), this, SLOT(checkCounterValue()));
-    }
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(showPreferences()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     gr_fileActions = new QActionGroup(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     gr_fileActions->addAction(ui->actionNewProgram);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     gr_fileActions->addAction(ui->actionOpen);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     gr_fileActions->addAction(ui->actionSave);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(saveCurrentFile()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->actionSave_as, SIGNAL(triggered()), this, SLOT(saveCurrentFileAs()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     gr_otherActions = new QActionGroup(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     gr_otherActions->setExclusive(false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable = new QAction(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable->setText(tr("No actions for this tab"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable->setEnabled(false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     menuNA1_ = new QMenu(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     menuNA1_->addAction(a_notAvailable);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     a_notAvailable2 = new QAction(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable2->setText(tr("No actions for this tab"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable2->setEnabled(false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     menuNA2_ = new QMenu(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     menuNA2_->addAction(a_notAvailable2);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     a_notAvailable3 = new QAction(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable3->setText(tr("No actions for this tab"));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     a_notAvailable3->setEnabled(false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     menuNA3_ = new QMenu(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     menuNA3_->addAction(a_notAvailable3);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     menu_empty = new QMenu(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     menu_empty->addAction(a_notAvailable);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setCorner(Qt::BottomLeftCorner, Qt::BottomDockWidgetArea);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-//    statusBar()->setStyleSheet(
-//                "QStatusBar { "
-//                "   border-top: 1px solid darkgray;"
-//                "}"
-//                "QToolButton {"
-//                "   icon-size: 16px;"
-//                "   border: none;"
-//                "}"
-//                );
+    i_timerId = startTimer(250);   
 
-////    setMinimumSize(980, 480);
-//    statusBar()->addWidget(m_plugin->m_kumirStateLabel);
-//    statusBar()->addWidget(m_plugin->m_genericCounterLabel);
-//    m_plugin->m_kumirStateLabel->setFixedWidth(140);
-//    m_plugin->m_kumirStateLabel->setStyleSheet(StatusbarWidgetCSS);
-//    m_plugin->m_kumirStateLabel->setAlignment(Qt::AlignCenter);
-//    m_plugin->m_genericCounterLabel->setFixedWidth(260);
-//    m_plugin->m_genericCounterLabel->setStyleSheet(StatusbarWidgetCSS);
-//    m_plugin->m_genericCounterLabel->setAlignment(Qt::AlignCenter);
-//    m_message = new QLabel(this);
-//    m_message->setAlignment(Qt::AlignCenter);
-//    m_message->setStyleSheet(StatusbarWidgetCSS);
-//    statusBar()->addWidget(m_message, 1);
-
-    i_timerId = startTimer(250);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
-    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));   
     connect(ui->actionUsage, SIGNAL(triggered()), this, SLOT(showUserManual()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
     installEventFilter(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+
 #ifndef Q_OS_MAC
     installEventFilter(menuBar());
 #endif
 
     ui->actionRecent_files->setMenu(new QMenu());
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     connect(ui->menuFile, SIGNAL(aboutToShow()), this, SLOT(prepareRecentFilesMenu()));
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
-
-#ifdef Q_OS_MAC
-
-#endif
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     if (m_plugin->sessionsDisableFlag_) {
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         ui->actionRestore_previous_session->setEnabled(false);
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         ui->actionRestore_previous_session->setVisible(false);
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     }
     else {
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
         connect(ui->actionRestore_previous_session, SIGNAL(triggered()), this, SLOT(restoreSession()));
-        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     }
 
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     tabWidget_->setAcceptDrops(true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     tabWidget_->installEventFilter(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-
 
     using namespace Shared;
     using namespace ExtensionSystem;
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     PluginManager * manager = PluginManager::instance();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//    if (!analizer || analizer->languageName()!=QString::fromUtf8("Кумир")) {
-//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//        ui->menuInsert->deleteLater();
-//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//        ui->menuInsert = nullptr;
-//        // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-//    }
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    createSettingsDialog();
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    ui->menuFile->removeAction(ui->actionSave_all); // Not implemented yet
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
-    ui->menuFile->removeAction(ui->actionRestore_previous_session); // Not implemented yet
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 
+    createSettingsDialog();
+    ui->menuFile->removeAction(ui->actionSave_all); // Not implemented yet
+    ui->menuFile->removeAction(ui->actionRestore_previous_session); // Not implemented yet
 
     ui->actionMake_native_executable->setVisible(manager->isPluginLoaded("LLVMCodeGenerator"));
     connect(ui->actionMake_native_executable, SIGNAL(triggered()),
