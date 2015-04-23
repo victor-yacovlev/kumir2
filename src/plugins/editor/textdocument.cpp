@@ -791,7 +791,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     result.append("\\clNoWrap\\clftsWidth2\\clwWidth2000\\cellx10000\r\n");
 
     // Main program cell
-    for (uint i=fromLine; i<toLine; i++) {
+    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
         result.append("\\intbl");
         // Indent spaces
         if (this->indentAt(i) > 0) {
@@ -815,7 +815,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     result.append("\\cell\r\n");
 
     // Margin cell
-    for (uint i=fromLine; i<toLine; i++) {
+    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
         QString text;
         bool red = false;
         const TextLine::Margin & margin = marginAt(i);
