@@ -46,4 +46,26 @@
             </programlisting>
         </example>
     </section>
+	<section>
+        <title>пауза</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг <function>пауза</function></funcdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+			Приостанавливает выполнение программы. Действие этой команды аналогично действию точки остановки.
+        </para>
+    </section>
+	<section>
+        <title>стоп</title>
+        <funcsynopsis role="кумир">
+            <funcprototype>
+                <funcdef>алг <function>стоп</function></funcdef>
+            </funcprototype>
+        </funcsynopsis>
+        <para>
+			Принудительно завершает работу программы.
+        </para>
+    </section>
 </section>
