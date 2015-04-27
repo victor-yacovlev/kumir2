@@ -580,7 +580,7 @@ if(ioDir.isFile())
         qDebug()<<"Fields!!!!"<<task.fields;
         }
        qDebug()<<"MODULES:"<<course->Modules(curTaskIdx.internalId());
-  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId()),&task))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
+  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId()),&task))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет необходимых исполнителей"));
   if(course->getUserText(curTaskIdx.internalId())!="")
   {
       interface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));

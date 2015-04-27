@@ -4166,10 +4166,10 @@ void RobotModule::editEnv()
             return;
         }
         startField->setModeFlag(NEDIT_MODE);
-        view->repaint();
+       
         
         view->showButtons(true);
-         
+         view->repaint();
         reset();
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
@@ -4324,6 +4324,7 @@ void RobotModule::loadEnv()
         NewWindow->close();
         
         if(!field->isEditMode())editEnv();
+        view->update();
     };
     void RobotModule::newEnv()
     {
