@@ -78,6 +78,8 @@ public slots:
 
     QString wsName() const;
 
+    QString applicationVersionString() const;
+
     void showCoursesWindow(const QString & id);
     QStringList coursesList(bool fullPaths) const;
 

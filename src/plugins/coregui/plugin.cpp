@@ -1058,6 +1058,11 @@ QString Plugin::wsName() const
     return "";
 }
 
+QString Plugin::applicationVersionString() const
+{
+    return qApp->applicationVersion();
+}
+
 
 } // namespace CoreGUI
 
