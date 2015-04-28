@@ -4536,7 +4536,7 @@ void RobotModule::setWindowSize()
     {
         setScene(roboField);
         pressed=false;
-        inDock=false;
+        inDock=true;
         firstShow=true;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -4686,6 +4686,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         
        if(inDock)
        {
+           qDebug()<<"IN DOCK";
            scale(1/c_scale,1/c_scale);
            
            
