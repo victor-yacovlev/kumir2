@@ -102,6 +102,13 @@ void FindReplace::showFind()
     ui->btnMore->setChecked(false);
     updateLayout(false);
     ui->find->clear();
+    if (editor_->cursor()->hasSelection()) {
+        const QString selection = editor_->cursor()->selectedText();
+        if (!selection.contains("\n")) {
+            ui->find->setText(selection.trimmed());
+            ui->find->setSelection(0, ui->find->text().length());
+        }
+    }
     ui->find->setFocus();
     show();
 }
@@ -110,10 +117,19 @@ void FindReplace::showReplace()
 {
     ui->btnMore->setChecked(true);
     updateLayout(true);
-    if (ui->find->text().isEmpty())
+    if (ui->find->text().isEmpty()) {
+        if (editor_->cursor()->hasSelection()) {
+            const QString selection = editor_->cursor()->selectedText();
+            if (!selection.contains("\n")) {
+                ui->find->setText(selection.trimmed());
+                ui->find->setSelection(0, ui->find->text().length());
+            }
+        }
         ui->find->setFocus();
-    else
+    }
+    else {
         ui->replace->setFocus();
+    }
     show();
 }
 

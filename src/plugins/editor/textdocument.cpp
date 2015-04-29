@@ -807,7 +807,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
         for (uint j=0; j<chunks.size(); j++) {
             result.append(chunks[j].data);
         }
-        if (fromLine!=toLine && i<toLine-1) {
+        if (fromLine!=toLine && i<toLine) {
             result.append("\\par\r\n");
         }
     }
@@ -839,7 +839,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
             result.append(codec->fromUnicode(text));
             result.append("}");
         }
-        if (fromLine!=toLine && i<toLine-1) {
+        if (fromLine!=toLine && i<toLine) {
             result.append("\\par\r\n");
         }
     }
