@@ -263,7 +263,7 @@ GrasshopperPult::GrasshopperPult( QDir resdir,QWidget* parent, Qt::WindowFlags f
     connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
         connect(ClearLog,SIGNAL(clicked()),this,SLOT(resetKuznec()));
 
-        connect(toKumir,SIGNAL(clicked()),this,SLOT(logToKumir()));
+        connect(toKumir,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
         connect(recolorB,SIGNAL(clicked()),this,SLOT(ColorUnColor()));
 //	connect(CopyLog,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
     setMinimumSize(254,400);

@@ -1330,6 +1330,7 @@ namespace ActorRobot {
     
     void RoboField::reverseUpWall(int row, int col)
     {
+        
         if(!getFieldItem(row,col)->hasUpSep()){
             return;qDebug("!UpSep");
         }
@@ -3143,6 +3144,8 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+        
+        
         QColor gridColor;
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
         if(mode==NORMAL_MODE) {
@@ -3160,6 +3163,8 @@ namespace ActorRobot {
         {
             setka.at(i)->setPen(QPen(gridColor));
         }
+         StLine=QPen(gridColor,3);
+        
     
     }
     
