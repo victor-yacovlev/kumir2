@@ -77,6 +77,7 @@ set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
 add_subdirectory(userdocs)
+add_subdirectory(share/kumir2/courses)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
 file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/app_icons/linux ${CMAKE_SOURCE_DIR}/app_icons/linux/*)
