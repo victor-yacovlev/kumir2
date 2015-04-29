@@ -3,6 +3,7 @@
 
 #include <QtGlobal>
 #include <QObject>
+#include <QApplication>
 #include <extensionsystem/kplugin.h>
 #include <interfaces/coursesinterface.h>
 #include <widgets/declarativesettingspage.h>
@@ -43,8 +44,9 @@ public:
             mainWindow()->showNormal();
         }
     inline void activateCourseFromList(QString file) { loadCource(file); }
-     inline QStringList getListOfCourses() const { 
-         return mySettings()->value("Courses/LastFiles","").toString().split(";",QString::SkipEmptyParts); 
+     inline QStringList getListOfCourses() const {
+         QString defaultCur=qApp->property("sharePath").toString()+"/courses/practicum/practicum.kurs.xml;";
+         return mySettings()->value("Courses/LastFiles",defaultCur).toString().split(";",QString::SkipEmptyParts); 
      }
     void rebuildRescentMenu();
     bool isSafeToQuit();
