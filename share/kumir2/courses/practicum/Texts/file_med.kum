@@ -41,14 +41,14 @@
 нач|@hidden
 |@hidden
 |@hidden
-если среднее("file1.txt") = @проверка('file1.txt') то|@hidden
+если среднее("Texts/file1.txt") = @проверка("Texts/file1.txt") то|@hidden
 знач:=10|@hidden
 иначе|@hidden
 вывод "Ошибка:среднее арифметическое не верно!",нс|@hidden
 знач:=2|@hidden
 выход|@hidden
 все|@hidden
-если среднее("file2.txt") = @проверка("file2.txt") то|@hidden
+если среднее("Texts/file2.txt") = @проверка("Texts/file2.txt") то|@hidden
 знач:=10|@hidden
 иначе|@hidden
 вывод "Ошибка:среднее арифметическое наеденно не верно!",нс|@hidden
