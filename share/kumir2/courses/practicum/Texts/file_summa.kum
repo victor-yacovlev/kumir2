@@ -39,14 +39,14 @@
 нач|@hidden
 |@hidden
 |@hidden
-если сумма("file1.txt") = @проверка('file1.txt') то|@hidden
+если сумма("Texts/file1.txt") = @проверка('Texts/file1.txt') то|@hidden
 знач:=10|@hidden
 иначе|@hidden
 вывод "Ошибка:сумма наеденна не верно!",нс|@hidden
 знач:=2|@hidden
 выход|@hidden
 все|@hidden
-если сумма("file2.txt") = @проверка("file2.txt") то|@hidden
+если сумма("Texts/file2.txt") = @проверка("Texts/file2.txt") то|@hidden
 знач:=10|@hidden
 иначе|@hidden
 вывод "Ошибка: сумма наеденна не верно!",нс|@hidden
