@@ -4,6 +4,15 @@ import os
 import os.path
 import sys
 
+if 3 == sys.version_info.major:
+    from urllib.parse import unquote
+    def to_str(x):
+        return x.decode("utf-8")
+else:
+    from urllib import unquote
+    def to_str(x):
+        return unicode(x)
+
 
 def get_version_information(top_level_dir):
     assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
@@ -27,9 +36,7 @@ def get_version_information(top_level_dir):
         dir_name = os.path.basename(top_level_dir)
         match = re.match(r"kumir2-(.+)", dir_name)
         version_info = match.group(1)
-    return version_info
-
-
+    return to_str(version_info)
 
 
 def main():
@@ -40,9 +47,9 @@ def main():
     outfile = sys.stdout
     for arg in sys.argv:
         if arg.startswith("--prefix="):
-            prefix = arg[9:]
+            prefix = unquote(arg[9:])
         elif arg.startswith("--suffix="):
-            suffix = arg[9:]
+            suffix = unquote(arg[9:])
         elif arg.startswith("--out="):
             outfile = open(arg[6:], 'w')
         elif "--nl" == arg:
