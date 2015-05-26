@@ -2403,7 +2403,7 @@ void KumirVM::do_store(uint8_t s, uint16_t id)
             svalue = Kumir::Converter::sprintfInt(value.toInt(), 10, 0, 0);
         }
         else if (t==VT_real) {
-            svalue = Kumir::Converter::sprintfReal(value.toReal(), '.', false, 0 ,0, 0);
+            svalue = Kumir::Converter::sprintfReal(value.toReal(), '.', false, 0 ,-1, 0);
         }
         else if (t==VT_bool) {
             static const String YES = Kumir::Core::fromUtf8("да");
