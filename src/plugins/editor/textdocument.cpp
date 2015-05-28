@@ -134,6 +134,8 @@ TextLine::Margin & TextDocument::marginAt(uint index)
     }
     else {
         static TextLine::Margin dummy;
+        dummy.text.clear();
+        dummy.errors.clear();
         return dummy;
     }
 }
