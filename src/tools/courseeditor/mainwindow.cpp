@@ -86,7 +86,6 @@ cursFile="";
          //  QMessageBox::information( 0, "", trUtf8("Setup add "), 0,0,0);
            ui->ispSel->addItem("Robot");
            ui->ispSel->addItem(trUtf8("Водолей"));
-           ui->ispSel->addItem(trUtf8("Файл ввода"));
            ui->actionup->setIcon(QIcon(":/arrow_up.png"));
            ui->actionDown->setIcon(QIcon(":/arrow_down.png"));
            changed=false;
@@ -524,7 +523,7 @@ void MainWindowTask::startTask()
      }
 
      QString progFile=course->progFile(curTaskIdx.internalId());
-     csInterface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
+interface->setTesting(loadTestAlg(course->getTaskCheck(curTaskIdx)));
      task.isps=course->Modules(curTaskIdx.internalId());
        qDebug()<<"ISPS"<<task.isps;
        for(int i=0;i<task.isps.count();i++)
@@ -544,16 +543,14 @@ void MainWindowTask::startTask()
         qDebug()<<"Fields!!!!"<<task.fields;
         }
        qDebug()<<"MODULES:"<<course->Modules(curTaskIdx.internalId());
-        if(!csInterface->startNewTask(course->Modules(curTaskIdx.internalId())))
-            QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
+  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId())))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
   if(course->getUserText(curTaskIdx.internalId())!="")
   {
-      csInterface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));
+      interface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));
       ui->actionReset->setEnabled(true);
   }
    else
-      if(!progFile.isEmpty())
-          csInterface->setPreProgram(QVariant(curDir+'/'+progFile));
+      if(!progFile.isEmpty())interface->setPreProgram(QVariant(curDir+'/'+progFile));
 
 
 
@@ -580,7 +577,7 @@ if(!cursWorkFile.exists()){
     saveCourse();
       };
 course->setMark(curTaskIdx.internalId(),0);
-   csInterface->startProgram(QVariant("TODO LOAD SCRIPT"));
+   interface->startProgram(QVariant("TODO LOAD SCRIPT"));
  ui->treeView->setEnabled(false);
    ui->loadCurs->setEnabled(true);
  };
@@ -685,7 +682,7 @@ void MainWindowTask::markProgChange()
 
     qDebug()<<"Dummy call MainWindowTask::markProgChange()";
     return;
-    course->setUserText(curTaskIdx,csInterface->getText());
+    course->setUserText(curTaskIdx,interface->getText());
     if(progChange.indexOf(curTaskIdx.internalId())==-1)progChange.append(curTaskIdx.internalId());
     if(!cursWorkFile.exists())
     {
@@ -713,28 +710,8 @@ void MainWindowTask::Close()
     //saveBaseKurs();
     close();
 };
-void MainWindowTask::showEvent(QShowEvent * event)
-{
-  QStringList settlist=settings->value("SpliterPos").toString().split(" ");
-    QList<int>  sizes;
-    for(int i=0;i<settlist.count();i++ )
-    {
-        sizes.append(settlist.at(i).toInt());
-    }
-    ui->splitter->setSizes(sizes);
-};
-
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
-   
-    QString sizes="";
-    for(int i=0;i<ui->splitter->sizes().count();i++ )
-    {
-        sizes+=QString::number(ui->splitter->sizes().at(i))+" ";
-    }
-    
-    settings->setValue("SpliterPos",sizes);
-    qDebug()<<"CLOSE TASK WINDOW";
     if(!course)
     {close();
         return;
@@ -745,7 +722,7 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
         QMessageBox::StandardButton ans;
               ans = QMessageBox::question(this, trUtf8("Курсы"), trUtf8("Вы хотите сохранить работу?"),
                                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-              if (ans == QMessageBox::No)
+              if ((ans == QMessageBox::No))
 
               {
                   event->accept();
@@ -758,14 +735,14 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
 
               saveBaseKurs();
     }
-
-    
+         ;
+          qDebug()<<"CLOSE TASK WINDOW";
           close();
 
 };
 void MainWindowTask::returnTested()
 {
-   csInterface->setPreProgram(QVariant(course->getUserTestedText(curTaskIdx.internalId())));
+   interface->setPreProgram(QVariant(course->getUserTestedText(curTaskIdx.internalId())));
 };
 QString MainWindowTask::loadTestAlg(QString file_name)
 {
@@ -1083,7 +1060,6 @@ QString MainWindowTask::getFileTypes()
 {
     if(ui->ispList->currentItem()->text()=="Robot")return "(*.fil)";
     if(ui->ispList->currentItem()->text()==trUtf8("Водолей"))return "(*.vod)";
-    if(ui->ispList->currentItem()->text()==trUtf8("Файл ввода"))return "(*.txt)";
     return "(*.*)";
 }
 

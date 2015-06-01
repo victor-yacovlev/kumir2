@@ -1,14 +1,12 @@
 #ifndef COURSE_MODEL_H
 #define COURSE_MODEL_H
 #include <QAbstractItemModel>
-#include <QApplication>
 #include <QFile>
 #include <QDebug>
 #include <QStringList>
 #include <QFont>
 #include <QDomDocument>
 #include <QIcon>
-#include <QUrl>
 
 
 
