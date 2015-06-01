@@ -1880,7 +1880,8 @@ llvm::Value * LLVMGenerator::createConstant(llvm::IRBuilder<> & builder, const A
         arg = builder.CreateGlobalStringPtr(strval);
         func = kumirCreateString_;
     }
-    llvm::Value * tmp = CreateAlloca(builder, ty, CString(), allocaPlace);
+//    llvm::Value * tmp = CreateAlloca(builder, ty, CString(), allocaPlace);
+    llvm::Value * tmp = CreateAlloca(builder, ty, CString(), FunctionBegin);
 //    llvm::Value * tmp = builder.CreateAlloca(ty);
     result = builder.CreateCall2(func, tmp, arg);
     Q_ASSERT(result);
