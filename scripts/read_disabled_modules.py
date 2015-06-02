@@ -32,7 +32,7 @@ def find_suitable_list_file_name(version_name):
     name = base.format(version_name)
     if os.path.exists(name):
         return name
-    match = re.match(r"(.+)-(alpha|beta|rc)[0-9]+", version_name)
+    match = re.match(r"(.+)-(alpha|beta|rc|pt|test)[0-9]+", version_name)
     if match:
         version_base = match.group(1)
         name = base.format(version_base)

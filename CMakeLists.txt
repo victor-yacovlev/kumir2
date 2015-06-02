@@ -6,19 +6,12 @@ if(NOT DEFINED USE_QT)
     set(USE_QT 4)
 endif(NOT DEFINED USE_QT)
 
-#if(APPLE)
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
-#endif(APPLE)
-#set(QT_USE_QTMAIN 1)
-#find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtScript QtNetwork QtXml QtSvg QtWebKit QtDeclarative REQUIRED)
-#include (${QT_USE_FILE})
+
 include_directories(${CMAKE_SOURCE_DIR}/src/shared)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-#if(WIN32)
-#    include_directories(${CMAKE_SOURCE_DIR}/boost_include)
-#endif()
 
 
 

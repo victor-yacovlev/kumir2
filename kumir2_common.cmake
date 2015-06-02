@@ -1,7 +1,7 @@
 find_package(PythonInterp 2.7.0 REQUIRED)
 
 execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/read_disabled_modules.py"
+    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE DISABLED_SUBDIRS
 )
