@@ -9,11 +9,16 @@ if 3 == sys.version_info.major:
     from urllib.parse import unquote
 
     def to_str(x):
-        return x.decode("utf-8")
+        assert isinstance(x, str) or isinstance(x, bytes)
+        if isinstance(x, str):
+            return x
+        else:
+            return x.decode("utf-8")
 else:
     from urllib import unquote
 
     def to_str(x):
+        assert isinstance(x, str) or isinstance(x, unicode)
         return unicode(x)
 
 OUT_FILE = sys.stdout
@@ -29,10 +34,14 @@ def get_version_information(top_level_dir):
                 stderr=subprocess.PIPE
             ).strip()
         except subprocess.CalledProcessError:
-            version_info = subprocess.check_output(
+            version_info = to_str(subprocess.check_output(
                 "git rev-parse --abbrev-ref HEAD",
                 shell=True
-            ).strip()
+            ).strip())
+            version_info += "-" + to_str(subprocess.check_output(
+                "git --no-pager log -1 --pretty=format:%H",
+                shell=True
+            ).strip())
     else:
         dir_name = os.path.basename(top_level_dir)
         match = re.match(r"kumir2-(.+)", dir_name)
