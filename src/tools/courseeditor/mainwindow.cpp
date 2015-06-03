@@ -722,7 +722,7 @@ void MainWindowTask::closeEvent(QCloseEvent *event)
         QMessageBox::StandardButton ans;
               ans = QMessageBox::question(this, trUtf8("Курсы"), trUtf8("Вы хотите сохранить работу?"),
                                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-              if ((ans == QMessageBox::No))
+              if (ans == QMessageBox::No)
 
               {
                   event->accept();
