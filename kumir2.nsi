@@ -39,7 +39,7 @@ Section "Kumir" Kumir
     File /r lib\*
     SetOutPath "$INSTDIR\share"
     File /r share\*
-    SetOutPath "$INSTDIR\share"
+    SetOutPath "$INSTDIR\src"
     File /r src\*
 
     SetOutPath "$INSTDIR\llvm-mingw"
