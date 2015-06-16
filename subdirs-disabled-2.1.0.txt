@@ -1,7 +1,7 @@
 # Actors not ready for production use
 complexnumbers
 draw
-grasshopper
+# grasshopper
 isometricrobot
 turtle
 
