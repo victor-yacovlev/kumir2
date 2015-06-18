@@ -623,7 +623,7 @@ interface->startProgram(QVariant("TODO LOAD SCRIPT"),&task);
 {
     ui->splitter->setEnabled(false);
     ui->checkTask->setEnabled(false);
-    ui->loadCurs->setEnabled(false);  
+    ui->loadCurs->setEnabled(false);
 };
 
 void MainWindowTask::unlockControls()
@@ -679,11 +679,16 @@ void MainWindowTask::saveCourse()
 //    //curDir=fi.absolutePath ();
 //    qDebug()<<"curDir"<<curDir;
 //    QString fileName=dialog.selectedFiles().first();
+    QString open=curDir;
+    QFileInfo fi=QFileInfo(curDir);
+    if(!fi.isWritable())open=QDir::currentPath();
+    
+    
   QString fileName = QFileDialog::getSaveFileName(
                this,
                trUtf8("Сохранить изменения"),
                curDir,
-               tr("Work files(*.work.xml);;All files (*)")
+               trUtf8("Тетради(*.work.xml);;Все файлы (*)")
                );
     QString type=fileName.right(9);
     if(type!=".work.xml")fileName+=".work.xml";
