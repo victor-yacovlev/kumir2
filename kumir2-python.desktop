@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=kumir2-python %U
+Icon=kumir2-python
+Name=Kumir-Python
+Name[ru]=Кумир-Python
+Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;

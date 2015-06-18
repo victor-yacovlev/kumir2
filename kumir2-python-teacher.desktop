@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=kumir2-python-teacher %U
+Icon=kumir2-python-teacher
+Name=Kumir-Python Teacher Edition
+Name[ru]=Кумир-Python (режим учителя)
+Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;
+X-Kumir-MDI=true
