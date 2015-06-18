@@ -16,6 +16,7 @@ class WIDGETS_EXPORT Utf8TextBrowser : public QTextBrowser
 public:
     inline Utf8TextBrowser(QWidget* parent = 0) : QTextBrowser(parent) {}
     virtual QVariant loadResource(int type, const QUrl &name);
+    virtual void setSource(const QUrl & name);
 };
 
 } // namespace Widgets
