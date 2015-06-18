@@ -401,7 +401,7 @@ void MainWindowTask::loadCourse()
         //curDir=QDir::currentPath();
         qDebug()<<curDir;
 
-        cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        cursWorkFile.setFileName(QDir::tempPath()+"/default.work.xml");
         
         saveCourseFile();
     }else
