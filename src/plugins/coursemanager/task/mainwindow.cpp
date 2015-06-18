@@ -172,7 +172,7 @@ int tasks=course->loadCourse(fileName);
 course->setTeacher(isTeacher);
 if(tasks==-1)
 {
-//QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
+QMessageBox::information( 0, "", trUtf8("course->loadCourse : Ошибка открытия файла: ") + fileName, 0,0,0);
 return;
 };
 ui->treeView->setModel(course);
