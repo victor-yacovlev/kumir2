@@ -328,6 +328,7 @@ void MainWindowTask::loadCourse()
     QDir chD(dir);
     QDir resDir=interface->myResourcesDir();
     resDir.cdUp();
+    resDir.cd("courses");
     if(!chD.exists())dir=resDir.canonicalPath();
 //    QFileDialog dialog(this,trUtf8("Открыть файл"),dir, "(*.kurs.xml *.work.xml)");
 //     dialog.setAcceptMode(QFileDialog::AcceptOpen);
