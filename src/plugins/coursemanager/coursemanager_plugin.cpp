@@ -124,6 +124,7 @@ bool Plugin::setTextFromFile(QString fname)
     QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
     base.setScheme("Course");
     text.url=base;
+    text.title=MW->task.name;
     qDebug()<<base.isLocalFile()<<base.path ();
     gui->setProgramSource(text);
     return true;

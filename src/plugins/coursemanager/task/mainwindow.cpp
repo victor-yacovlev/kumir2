@@ -563,7 +563,7 @@ if(ioDir.isFile())
      };
      task.isps=course->Modules(curTaskIdx.internalId());
      task.name=course->getTitle(curTaskIdx.internalId());
-       qDebug()<<"ISPS"<<task.isps;
+       qDebug()<<"ISPS"<<task.isps<<"task.name"<<task.name;
        task.fields.clear();
        for(int i=0;i<task.isps.count();i++)
        {
