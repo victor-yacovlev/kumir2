@@ -1,7 +1,7 @@
 ﻿использовать Файлы|@protected
 алг|@protected
 нач|@protected
-вывод сумма("file1.txt")|@protected
+вывод сумма("file1.txt"),нс|@protected
 кон|@protected
 алг цел сумма(лит имя файла)|@protected
 дано |  Имя файла со случайными числами |@protected
