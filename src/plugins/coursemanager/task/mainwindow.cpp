@@ -690,7 +690,7 @@ void MainWindowTask::saveCourse()
   QString fileName = QFileDialog::getSaveFileName(
                this,
                trUtf8("Сохранить изменения"),
-               curDir,
+               open,
                trUtf8("Тетради(*.work.xml);;Все файлы (*)")
                );
     QString type=fileName.right(9);
