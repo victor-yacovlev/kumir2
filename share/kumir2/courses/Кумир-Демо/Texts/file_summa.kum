@@ -1,0 +1,61 @@
+﻿использовать Файлы|@protected
+алг|@protected
+нач|@protected
+вывод сумма("file1.txt")|@protected
+кон|@protected
+алг цел сумма(лит имя файла)|@protected
+дано |  Имя файла со случайными числами |@protected
+     |от -100 до 100|@protected
+надо |  Сумма чисел в файле|@protected
+|    | |@protected
+нач|@protected
+цел сумм=0|@protected
+
+
+знач:=сумм|@protected
+кон|@protected
+|@protected
+|@protected
+|@protected
+|@hidden
+|#%%|@hidden
+|@hidden
+|@hidden
+алг цел @проверка(лит имя файла)|@hidden
+нач|@hidden
+файл а|@hidden
+а:=открыть на чтение(имя файла)|@hidden
+знач:=0|@hidden
+цел число|@hidden
+нц пока не конец файла(а)|@hidden
+ввод а,число|@hidden
+знач:=знач+число|@hidden
+кц|@hidden
+вывод знач|@hidden
+закрыть(а)|@hidden
+кон|@hidden
+|@hidden
+алг цел @тестирование|@hidden
+нач|@hidden
+|@hidden
+|@hidden
+если сумма("Texts/file1.txt") = @проверка('Texts/file1.txt') то|@hidden
+знач:=10|@hidden
+иначе|@hidden
+вывод "Ошибка:сумма наеденна не верно!",нс|@hidden
+знач:=2|@hidden
+выход|@hidden
+все|@hidden
+если сумма("Texts/file2.txt") = @проверка("Texts/file2.txt") то|@hidden
+знач:=10|@hidden
+иначе|@hidden
+вывод "Ошибка: сумма наеденна не верно!",нс|@hidden
+знач:=2|@hidden
+выход|@hidden
+все|@hidden
+|@hidden
+если знач>8 то |@hidden
+вывод "Задание выполнено правильно!",нс|@hidden
+все |@hidden
+кон|@hidden
+|@hidden
