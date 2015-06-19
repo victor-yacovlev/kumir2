@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<KURS root="true" xml:id="0" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Практикум КуМир">
+<KURS root="true" xml:id="0" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="КуМир-Демо">
  <T root="true" xml:id="1" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Знакомство">
   <T root="false" xml:id="121" xmlns:xml="http://www.w3.org/XML/1998/namespace" xml:name="Задача 1">
    <DESC>Переведите робота в клетку - "Б".&lt;BR>Для удобства можете воспользоваться пультом робота и скопировать команды из него.</DESC>

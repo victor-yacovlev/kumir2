@@ -82,7 +82,7 @@ void SecondaryWindow::changeDockPlace(DockWindowPlace *dockPlace)
     dockPlace->registerWindowHere(this);
     windowContainer_->setPairedContainer(dock);
     QObject* old = dynamic_cast<QObject*>(dockContainer_);
-    old->deleteLater();
+//    old->deleteLater();
     dockContainer_ = dock;
 }
 
@@ -207,7 +207,7 @@ void SecondaryWindow::restoreState()
         const QSize prefSize = centralWidget_ ? centralWidget_->sizeHint() : QSize();
         QSize sz = settings_->value(settingsKey_ + WindowSize, prefSize).toSize();
         QPoint ps = settings_->value(settingsKey_ + WindowPos, QPoint(-1, -1)).toPoint();
-        if (ps == QPoint(-1, -1)) {
+        if (ps == QPoint(-1, -1) || ps.x() < -sz.width() || ps.y() < -16) {
             ps = QApplication::desktop()->availableGeometry(topLevelParent_).center();
             ps.rx() -= sz.width() / 2;
             ps.ry() -= sz.height() / 2;

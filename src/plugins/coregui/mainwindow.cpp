@@ -2281,6 +2281,8 @@ TabWidgetElement* MainWindow::loadFromCourseManager(
             editor->forceCompleteCompilation();
         }
         courseManagerTab->setCourseTitle(data.title);
+        const int tabIndex = tabWidget_->indexOf(courseManagerTab);
+        setTitleForTab(tabIndex);
 
     tabWidget_->setCurrentWidget(courseManagerTab);
     setupContentForTab();

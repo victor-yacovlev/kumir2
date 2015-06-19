@@ -1044,7 +1044,7 @@ public:
 
     inline static String realToString(real value)
     {
-        return sprintfReal(value, '.', false, 0, 0, 'l');
+        return sprintfReal(value, '.', false, 0, -1, 'l');
     }
     inline static String intToString(int value)
     {

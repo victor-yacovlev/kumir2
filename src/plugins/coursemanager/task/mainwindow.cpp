@@ -329,7 +329,9 @@ void MainWindowTask::loadCourse()
     QDir resDir=interface->myResourcesDir();
     resDir.cdUp();
     resDir.cd("courses");
-    if(!chD.exists())dir=resDir.canonicalPath();
+    if(0 == dir.length() || !chD.exists()) {
+        dir=resDir.canonicalPath();
+    }
 //    QFileDialog dialog(this,trUtf8("Открыть файл"),dir, "(*.kurs.xml *.work.xml)");
 //     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 //     if(!dialog.exec())return;
@@ -401,7 +403,7 @@ void MainWindowTask::loadCourse()
         //curDir=QDir::currentPath();
         qDebug()<<curDir;
 
-        cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        cursWorkFile.setFileName(QDir::tempPath()+"/default.work.xml");
         
         saveCourseFile();
     }else
