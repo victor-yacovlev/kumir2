@@ -1,15 +1,15 @@
 ﻿использовать Файлы|@protected
 алг|@protected
 нач|@protected
-вывод среднее("file1.txt")|@protected
+вывод среднее("file1.txt"),нс|@protected
 кон|@protected
-алг цел среднее(лит имя файла)|@protected
+алг вещ среднее(лит имя файла)|@protected
 дано |  Имя файла со случайными числами |@protected
      |от -100 до 100|@protected
 надо |  Среднее арифметическое чисел в файле|@protected
 |    | |@protected
 нач|@protected
-цел сред ар=0|@protected
+вещ сред ар=0|@protected
 
 
 знач:=сред ар|@protected
@@ -21,7 +21,7 @@
 |#%%|@hidden
 |@hidden
 |@hidden
-алг цел @проверка(лит имя файла)|@hidden
+алг вещ @проверка(лит имя файла)|@hidden
 нач|@hidden
 файл а|@hidden
 а:=открыть на чтение(имя файла)|@hidden
@@ -33,7 +33,7 @@
 знач:=знач+число|@hidden
 счет:=счет+1|@hidden
 кц|@hidden
-вывод div(знач,счет)|@hidden
+знач := знач/счет|@hidden
 закрыть(а)|@hidden
 кон|@hidden
 |@hidden
