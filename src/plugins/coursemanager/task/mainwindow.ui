@@ -67,8 +67,7 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QWidget" name="webView">
-      </widget>
+      <widget class="QWidget" name="webView" native="true"/>
      </widget>
     </item>
    </layout>
@@ -83,6 +82,7 @@
    <addaction name="loadCurs"/>
    <addaction name="do_task"/>
    <addaction name="checkTask"/>
+   <addaction name="actionNext"/>
    <addaction name="separator"/>
    <addaction name="actionup"/>
    <addaction name="actionDown"/>
@@ -226,15 +226,16 @@
     <string>Переместить вниз</string>
    </property>
   </action>
+  <action name="actionNext">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Следующее задание</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>QWebView</class>
-   <extends>QWidget</extends>
-   <header>QtWebKit/QWebView</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -137,7 +137,7 @@ public slots:
     void unlockControls();
     void updateLastFiles(const QString newFile );
 
-    
+    void nextTask();
 
 protected:
     void changeEvent(QEvent *e);

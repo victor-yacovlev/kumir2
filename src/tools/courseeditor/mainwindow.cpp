@@ -398,23 +398,13 @@ void MainWindowTask::showText(const QModelIndex & index )
     if(index==curTaskIdx)return;
 
     unLockEditFields();
-//    if(onTask)
-//    {
-//        QMessageBox::StandardButton ans;
-//        ans = QMessageBox::question(this, trUtf8("Задание"), trUtf8("Вы хотите сменить задание?"),
-//                                                                                                                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-//        if ((ans == QMessageBox::Cancel)||(ans == QMessageBox::No))
-//        {
-//            qDebug()<<"Cancel";
-//        if(curTaskIdx.internalId()>0)ui->treeView->setCurrentIndex(curTaskIdx);
-//            return;};
 
 //    }
 
     onTask=false;
     ui->checkTask->setEnabled(false);
     QString taskText=course->getTaskText(index);
- //ui->textBrowser->setText(taskText);
+
 
 
 

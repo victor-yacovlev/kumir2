@@ -99,6 +99,9 @@ private:
     void loadCourseData(const QString filename);
     void loadMarks(const QString fileName);
     void refreshIspsNEnv();
+    
+    
+    
     Ui::MainWindowTask *ui;
     QString curDir;
     courseModel* course;
