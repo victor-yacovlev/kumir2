@@ -3610,7 +3610,7 @@ void RobotModule::copyFromPult(QString log)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
-    m_pultWidget->clearLog();
+    m_pultWidget->Logger->ClearLog();
      m_mainWidget->setWindowTitle(trUtf8("Робот - ")+source->objectName());
     startField=field->Clone();
     field->dropWasEdit();
