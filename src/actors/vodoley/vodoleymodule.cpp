@@ -90,6 +90,7 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
     // The source should be ready-to-read QIODevice like QBuffer or QFile
     
     MainWindow->loadIoDevice(source);
+    MainWindow->pult->pltLogger()->ClearLog();
     MainWindow->reset();
 
 }
