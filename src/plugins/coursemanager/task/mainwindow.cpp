@@ -53,6 +53,7 @@ cursFile="";
            connect(ui->actionSaveK,SIGNAL(triggered()),this,SLOT(saveKurs()));
             connect(ui->actionSaveKas,SIGNAL(triggered()),this,SLOT(saveKursAs()));
            connect(ui->actionRemove,SIGNAL(triggered()),this,SLOT(deleteTask()));
+     connect(ui->actionNext,SIGNAL(triggered()),this,SLOT(nextTask()));
          //  newDialog=new newKursDialog();
           // connect(ui->actionNewK,SIGNAL(triggered()),this,SLOT(newKurs()));
          //  editDialog = new EditDialog(this);
@@ -71,6 +72,15 @@ isTeacher=false;
         setupWebView();
        //ui->textBrowser->setVisible(false);
  };
+void MainWindowTask::nextTask()
+{
+    if(ui->treeView->indexBelow(curTaskIdx).isValid())
+    {
+        ui->treeView->setCurrentIndex(ui->treeView->indexBelow(curTaskIdx));
+       // curTaskIdx=ui->treeView->currentIndex();
+        showText(ui->treeView->currentIndex());
+    } 
+}
 
 void MainWindowTask::setupWebView()
 {
@@ -598,11 +608,22 @@ if(ioDir.isFile())
  ui->do_task->setEnabled(false);
  ui->checkTask->setEnabled(true);
  onTask=true;
+     
+     QModelIndex nextT=ui->treeView->indexBelow(curTaskIdx);
+ if(nextT.isValid() && course->isTask(nextT.internalId()) && nextT.internalId()>0 && course->taskAvailable(nextT.internalId()))
+     ui->actionNext->setEnabled(true);
+     else
+      ui->actionNext->setEnabled(false);
  //ui->loadCurs->setEnabled(false);
  qDebug()<<"end load task";
  if(progChange.indexOf(curTaskIdx.internalId())==-1)progChange.append(curTaskIdx.internalId());
  };
- void MainWindowTask::checkTask()
+
+
+
+
+
+void MainWindowTask::checkTask()
  {
      qDebug()<<"CheckTASK";
      if(!onTask){qDebug()<<"!onTASK";return;};
@@ -627,13 +648,21 @@ interface->startProgram(QVariant("TODO LOAD SCRIPT"),&task);
     ui->splitter->setEnabled(false);
     ui->checkTask->setEnabled(false);
     ui->loadCurs->setEnabled(false);
+    ui->actionNext->setEnabled(false);
 };
 
 void MainWindowTask::unlockControls()
 {
     ui->splitter->setEnabled(true);
     ui->checkTask->setEnabled(true);
-    ui->loadCurs->setEnabled(true);  
+    ui->loadCurs->setEnabled(true);
+    
+    QModelIndex nextT=ui->treeView->indexBelow(curTaskIdx);
+    if(nextT.isValid() && course->isTask(nextT.internalId()) && nextT.internalId()>0 && course->taskAvailable(nextT.internalId()))
+    ui->actionNext->setEnabled(true);
+    else
+        ui->actionNext->setEnabled(false);
+
 };
 
 void  MainWindowTask::setMark(int mark)
@@ -690,7 +719,7 @@ void MainWindowTask::saveCourse()
   QString fileName = QFileDialog::getSaveFileName(
                this,
                trUtf8("Сохранить изменения"),
-               curDir,
+               open,
                trUtf8("Тетради(*.work.xml);;Все файлы (*)")
                );
     QString type=fileName.right(9);

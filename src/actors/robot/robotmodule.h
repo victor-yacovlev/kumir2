@@ -69,7 +69,7 @@ namespace ActorRobot {
 #define MAX_ROWS 128
     
     class EditLine;
-
+    class RobotModule;
 
     
     class SimpleRobot:
@@ -248,7 +248,7 @@ namespace ActorRobot {
     {
         Q_OBJECT
     public:
-        RoboField(QWidget *parent);
+        RoboField(QWidget *parent,RobotModule* actor);
         RoboField* Clone();
         ~RoboField();
         
@@ -419,6 +419,7 @@ namespace ActorRobot {
         QGraphicsProxyWidget *wAddRow,*wAddCol,*wRemCol,*wRemRow;
         QToolButton *btnAddRow,*btnAddCol,*btnRemCol,*btnRemRow;
         int mode;
+        RobotModule* Actor;
           
     };
   

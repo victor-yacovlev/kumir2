@@ -154,7 +154,7 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
             
                 return false;
             }
-            //TODO LOAD FIELDS;
+            
             QFile* field_data=new QFile(task->field(isps.at(i), field_no));
             qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
            if(! field_data->open(QIODevice::ReadOnly))return false;

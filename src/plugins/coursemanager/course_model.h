@@ -554,6 +554,7 @@ public:
              QDomNode el=nodeById(index.internalId(),root);
             return !el.nextSiblingElement("T").isNull();
          };
+    
         QModelIndex moveUp(QModelIndex &index)
          {
              if(!hasUpSib(index))return index;

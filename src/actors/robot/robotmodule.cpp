@@ -748,7 +748,7 @@ namespace ActorRobot {
         Items.clear();
     }
     
-    RoboField::RoboField(QWidget *parent)
+    RoboField::RoboField(QWidget *parent,RobotModule* actor)
     : QGraphicsScene(parent)
 	
     
@@ -772,7 +772,7 @@ namespace ActorRobot {
         this->setItemIndexMethod(NoIndex);
         robot=NULL;
         markMode=true;
-
+        Actor=actor;
         wasEdit=false;
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
@@ -3312,7 +3312,7 @@ namespace ActorRobot {
     
     RoboField* RoboField::Clone()
     {
-        RoboField* clone=new RoboField(0);
+        RoboField* clone=new RoboField(0,Actor);
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
@@ -3538,7 +3538,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 
 void RobotModule::createGui()
 {
-    field=new RoboField(0);
+    field=new RoboField(0,this);
     //field->editField();
     field->createField(7,7);
 
@@ -3610,6 +3610,7 @@ void RobotModule::copyFromPult(QString log)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
+    m_pultWidget->Logger->ClearLog();
      m_mainWidget->setWindowTitle(trUtf8("Робот - ")+source->objectName());
     startField=field->Clone();
     field->dropWasEdit();
