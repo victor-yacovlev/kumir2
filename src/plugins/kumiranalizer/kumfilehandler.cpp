@@ -54,8 +54,11 @@ SourceFileInterface::Data KumFileHandler::fromString(const QString &s) const
         }
         else if (line.endsWith("|@hidden")) {
             data.hasHiddenText = true;
-            if (!data.hiddenText.isEmpty() && data.visibleText.isEmpty())
-                data.hiddenText += "\n";
+            if (!data.hiddenText.isEmpty()) {
+                if (data.visibleText.isEmpty() || !data.hiddenText.endsWith("\n")) {
+                    data.hiddenText += "\n";
+                }
+            }
             data.hiddenText += line.left(line.length()-8);
             if (i<lines.count()-1 && lines[i+1].endsWith("|@hidden"))
                 data.hiddenText += "\n";
