@@ -143,6 +143,7 @@ protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
     void showEvent(QShowEvent * event);
+    void hideEvent(QHideEvent * event);
 private:
     void setupWebView();
     void setTaskViewHtml(const QString & data);

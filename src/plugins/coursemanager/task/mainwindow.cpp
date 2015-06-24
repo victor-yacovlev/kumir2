@@ -857,6 +857,13 @@ void MainWindowTask::showEvent(QShowEvent * event)
     ui->splitter->restoreGeometry(settlist);
 };
 
+void MainWindowTask::hideEvent(QHideEvent * event)
+{
+    settings->setValue("Window/SpliterPos",ui->splitter->saveGeometry());
+    settings->setValue("Window/SpliterState",ui->splitter->saveState());
+    settings->flush();
+};
+
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
     
