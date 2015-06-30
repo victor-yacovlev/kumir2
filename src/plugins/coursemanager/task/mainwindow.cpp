@@ -182,7 +182,7 @@ int tasks=course->loadCourse(fileName);
 course->setTeacher(isTeacher);
 if(tasks==-1)
 {
-QMessageBox::information( 0, "", trUtf8("course->loadCourse : Ошибка открытия файла: ") + fileName, 0,0,0);
+QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
 return;
 };
 ui->treeView->setModel(course);
@@ -247,7 +247,7 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
 QString fileN=fileEl.attribute("fileName");
 //qDebug()<<"KURS ZAGRUZILI";
 if(cursFile!=krsFile){
-    QMessageBox::information( 0, "", trUtf8("Не наеден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
+    QMessageBox::information( 0, "", trUtf8("Не найден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
     fileN=getFileName(krsFile);
     loadCourseData(fileN);
     if(cursFile!=fileN)return;
