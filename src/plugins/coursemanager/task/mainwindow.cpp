@@ -335,6 +335,7 @@ void MainWindowTask::loadCourse()
     editRoot->hide();
     ui->splitter->setEnabled(true);
     QString dir=settings->value("Directories/Kurs","").toString();
+    qDebug()<<"Dir "<<dir;
     QDir chD(dir);
     QDir resDir=interface->myResourcesDir();
     resDir.cdUp();
