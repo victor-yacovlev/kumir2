@@ -8,7 +8,7 @@
 Name "Кумир-2.x"
 InstallDir "$PROGRAMFILES\Kumir2x"
 RequestExecutionLevel admin
-SetShellVarContext all
+
 
 
 !insertmacro MUI_PAGE_LICENSE "LICENSE_RU.rtf"
@@ -28,6 +28,8 @@ Function RefreshShellIcons
 FunctionEnd
 
 Section "Kumir" Kumir
+
+    SetShellVarContext all
 
     RMDir /r /REBOOTOK "$INSTDIR\lib\kumir2\plugins" ; Prevent conflicting modules from previous intallation
 
