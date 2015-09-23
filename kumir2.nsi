@@ -8,6 +8,7 @@
 Name "Кумир-2.x"
 InstallDir "$PROGRAMFILES\Kumir2x"
 RequestExecutionLevel admin
+SetShellVarContext all
 
 
 !insertmacro MUI_PAGE_LICENSE "LICENSE_RU.rtf"
