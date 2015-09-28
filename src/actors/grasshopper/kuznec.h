@@ -194,7 +194,8 @@ public:
     void setFwdStep(int fwd)
     {
         Fstep=fwd;
-        //Bstep=backwd;
+       //Kpult->setStepSizes(Fstep,Bstep);
+         //Bstep=backwd;
     };
     void setBackStep(int bwd)
     {

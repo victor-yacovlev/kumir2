@@ -2368,7 +2368,7 @@ int delitel=sledi.count()+1;
 int step=maxColor/delitel;
 sledi.append(new KuznSled(start,fin*ZOOMMULTIP));
 scene->addItem(sledi.last());
-sledi.last()->moveBy(0,-1.2*ZOOMMULTIP);
+sledi.last()->moveBy(0,-1.1*ZOOMMULTIP);
 sledi.last()->setZValue(1);
 for(int i=0;i<sledi.count();i++)
 	{
@@ -2408,4 +2408,5 @@ void KumKuznec::resizeSlot(QSize * oldSize,QSize* newSize)
     QSize newSize_p=*newSize;
 
     resizeEvent(new QResizeEvent(newSize_p,size()));
+    FindKuznec();
 };
