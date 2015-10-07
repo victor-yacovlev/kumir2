@@ -21,12 +21,18 @@
 #include <QGraphicsScene>
 #include <QtSvg>
  #include <QGraphicsSvgItem>
+
 //#include "src/pult.h"
 //class QAction;
 //class QMenu;
 //class QTextEdit;
 class pultLogger;
 class GrasshopperPult;
+namespace ActorGrasshopper {
+    
+    
+    class GrasshopperModule;
+};
 #define DEFAULT_SIZEX 500
 #define DEFAULT_SIZEY 260
 #define BUTTON_SIZE 20
@@ -185,6 +191,8 @@ public:
  pultLogger* logger;
  int Fstep,Bstep,Finish;
  GrasshopperPult *Kpult;
+
+ ActorGrasshopper::GrasshopperModule * myModule;
  public slots:	
         void setSteps(int fwd,int backwd)
         {
@@ -336,6 +344,7 @@ public:
      void ColorUncolor();
      void addSled(int start,int fin);
      void AutoClose(){autoClose=true;};
+    
   signals:
         void sync();
 
@@ -492,6 +501,7 @@ bool borderEnable; //Ограничения поля Кузнечика
 QString fileName;
 bool advancedTask;//Наличие в задание чегонить крпме длины прыжка
 bool autoClose;
+ 
 
 };
 

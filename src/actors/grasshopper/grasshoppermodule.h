@@ -33,6 +33,8 @@ public /* methods */:
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
+    QVariantList templateParameters() const;
+    void jumpsChanged();
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);

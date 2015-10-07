@@ -43,6 +43,7 @@ GrasshopperModule::GrasshopperModule(ExtensionSystem::KPlugin * parent)
 void GrasshopperModule::createGui()
 {
     kuznec=new KumKuznec(myResourcesDir());
+    kuznec->myModule=this;
     connect(m_actionGrasshopperNewEnvironment,SIGNAL(triggered()) ,kuznec , SLOT(ClearPicture()));
     connect(m_actionGrasshopperLoadEnvironment,SIGNAL(triggered()) ,kuznec , SLOT(LoadFromFileActivated()));
     connect(m_actionGrasshopperSave,SIGNAL(triggered()) ,kuznec , SLOT(SaveToFileActivated()));
@@ -56,6 +57,14 @@ QString GrasshopperModule::initialize(const QStringList &configurationParameters
     return "";
 }
 
+QVariantList GrasshopperModule::templateParameters() const{
+    QVariantList jumps;
+    jumps.append(kuznec->Fstep);
+    jumps.append(kuznec->Bstep);
+    return jumps;
+    
+    };
+    
 /* public static */ QList<ExtensionSystem::CommandLineParameter> GrasshopperModule::acceptableCommandLineParameters()
 {
     // See "src/shared/extensionsystem/commandlineparameter.h" for constructor details
@@ -101,7 +110,10 @@ QString GrasshopperModule::initialize(const QStringList &configurationParameters
     // TODO implement me
     return kuznec->mainWindow();
 }
-
+void GrasshopperModule::jumpsChanged()
+    {
+       emit notifyOnTemplateParametersChanged();
+    };
 /* public */ QWidget* GrasshopperModule::pultWidget() const
 {
     if (!kuznec) return 0;

@@ -20,6 +20,7 @@
 #include <math.h>
 #include "dialog.h"
 #include "pult.h"
+#include "grasshoppermodule.h"
 //#include "kumfiledialog.h"
  #include <QGraphicsSimpleTextItem>
 class DrawTopFrame
@@ -349,11 +350,9 @@ Finish=1;
 	mPen->setPos(0,-0.25);
         mPen->setBrush(QBrush(QColor("blue")));
 scene->addItem(new QGraphicsLineItem(0,-ZOOMMULTIP*2,0,-ZOOMMULTIP*2+0.0005));
-//scene->addItem(new QGraphicsLineItem(-500,-7,500,-7));
-//scene->addItem(new QGraphicsLineItem(-2,-10,2,-10));
-//scene->addItem(new QGraphicsLineItem(-1,10,1,10));
-//scene->addItem(new QGraphicsLineItem(-0.5,20,0.5,20));
-//scene->addItem(new QGraphicsLineItem(-0.25,40,0.25,40));
+
+    
+
 
 fileName="";
 advancedTask=false;
@@ -1022,6 +1021,7 @@ ToDubl();
 //MV->setWindowTitle ( QString::fromUtf8("Кузнечик - нет файла"));
 //kuznHeader->setWMTitle( QString::fromUtf8("Кузнечик - нет файла"));
 fileName="";
+    myModule->jumpsChanged();
 }
 
 
@@ -2198,6 +2198,7 @@ void KumKuznec::LoadFromFileActivated()
 	QMessageBox::information( 0, "", trUtf8("Чтение записи: ") + VodFileN, 0,0,0);
         return;
 	};
+    myModule->jumpsChanged();
 };
 
 void KumKuznec::SaveToFileActivated()
