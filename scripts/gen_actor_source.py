@@ -1502,6 +1502,20 @@ private:
         """ % (self.class_name, self._module.name.get_kumir_value().replace("\\", "\\\\"))
 
     # noinspection PyPep8Naming
+    def templateParametersCppImplementation(self):
+        return """
+/* public */ QVariantList %s::templateParameters() const
+{
+    if (module_) {
+        return module_->templateParameters();
+    }
+    else {
+        return defaultTemplateParameters();
+    }
+}
+        """ % self.class_name
+
+    # noinspection PyPep8Naming
     def defaultTemplateParametersCppImplementation(self):
         body = "QVariantList result;\n"
         for value in self._module.default_template_parameters:
@@ -2812,6 +2826,16 @@ class ModuleBaseCppClass(CppClassBase):
 {
     %s * plugin = qobject_cast<%s*>(parent());
     return plugin->commandLineParameters_;
+}
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
+
+    # noinspection PyPep8Naming
+    def templateParametersCppImplementation(self):
+        return """
+/* public virtual */ QVariantList %s::templateParameters() const
+{
+    %s * plugin = qobject_cast<%s*>(parent());
+    return plugin->defaultTemplateParameters();
 }
         """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 

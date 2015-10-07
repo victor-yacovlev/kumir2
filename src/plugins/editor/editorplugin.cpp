@@ -227,6 +227,14 @@ void EditorPlugin::connectGlobalSignalsToEditor(EditorInstance *editor)
 
     connect(this, SIGNAL(updateInsertMenuRequest()),
             editor, SLOT(updateInsertMenu()), Qt::DirectConnection);
+
+    QList<ExtensionSystem::KPlugin*> actors = ExtensionSystem::PluginManager
+            ::instance()->loadedPlugins("Actor*");
+
+    Q_FOREACH(QObject* actor, actors) {
+        connect(actor, SIGNAL(notifyOnTemplateParametersChanged()),
+                editor, SLOT(forceCompleteCompilation()));
+    }
 }
 
 
