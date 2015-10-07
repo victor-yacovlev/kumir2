@@ -1,7 +1,7 @@
 {
-	"name": { "ascii": "Grasshopper %d %d", "ru_RU": "Кузнечик %d %d" },
+    "name": { "ascii": "Grasshopper", "ru_RU": "Кузнечик" },
     "templateDefaults": [3, 5],
-	"methods": [
+    "methods": [
         {
             "name": {"ascii": "go forward %1", "ru_RU": "вперед %1" },
             "async": true,

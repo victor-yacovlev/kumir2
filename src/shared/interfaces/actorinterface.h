@@ -101,6 +101,9 @@ public /*methods*/:
     /** List of custom-provided scalar types */
     inline virtual TypeList typeList() const { return TypeList(); }
 
+    /** Runtime values for function template parameters */
+    inline virtual QVariantList templateParameters() const { return defaultTemplateParameters(); }
+
     /** List of actor dependencies */
     inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
 

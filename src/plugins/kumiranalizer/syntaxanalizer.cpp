@@ -1657,7 +1657,7 @@ void SyntaxAnalizer::parseImport(int str)
             return;
     }
     else {
-        bool isTemplateName = false;
+//        bool isTemplateName = false;
         foreach (const LexemPtr lexem, st.data.mid(1)) {
             name += " " + lexem->data;
         }
@@ -1670,40 +1670,40 @@ void SyntaxAnalizer::parseImport(int str)
         }
         name = name.simplified();
         foreach (AST::ModulePtr module, ast_->modules) {
-            if (module->header.nameTemplate.length() == 0) {
+//            if (module->header.nameTemplate.length() == 0) {
                 // Regular module name
                 if (module->header.name == name && !module->header.name.startsWith("_")) {
                     moduleToImport = module;
                     break;
                 }
-            }
-            else {
-                QString namePattern = module->header.nameTemplate;
-                namePattern.replace("%d", "(\\d+)");
-                namePattern.replace("%s", "(\\w+)");
-                QRegExp moduleRx(namePattern);
-                if (-1 != moduleRx.indexIn(name)) {
-                    const QStringList caps = moduleRx.capturedTexts().mid(1);
-                    if (caps.size() == module->header.templateTypes.size()) {
-                        for (int k=0; k<caps.size(); k++) {
-                            QVariant param = QVariant(caps[k]);
-                            param.convert(module->header.templateTypes[k]);
-                            module->header.templateParameters[k] = param;
-                        }
-                        moduleToImport = module;
-                        break;
-                    }
-                }
-            }
+//            }
+//            else {
+//                QString namePattern = module->header.nameTemplate;
+//                namePattern.replace("%d", "(\\d+)");
+//                namePattern.replace("%s", "(\\w+)");
+//                QRegExp moduleRx(namePattern);
+//                if (-1 != moduleRx.indexIn(name)) {
+//                    const QStringList caps = moduleRx.capturedTexts().mid(1);
+//                    if (caps.size() == module->header.templateTypes.size()) {
+//                        for (int k=0; k<caps.size(); k++) {
+//                            QVariant param = QVariant(caps[k]);
+//                            param.convert(module->header.templateTypes[k]);
+//                            module->header.templateParameters[k] = param;
+//                        }
+//                        moduleToImport = module;
+//                        break;
+//                    }
+//                }
+//            }
         }
-        if (!isTemplateName) {
+//        if (!isTemplateName) {
             if (st.data.size()>2) {
                 for (int i=2; i<st.data.size(); i++) {
                     st.data[i]->error = _("Garbage afrer module name");
                 }
                 return;
             }
-        }
+//        }
     }
     if (moduleToImport) {
         st.data[1]->type = LxNameModule;
@@ -1725,52 +1725,52 @@ void SyntaxAnalizer::parseImport(int str)
     }
     else {
         // Check if valid but uncomplete name
-        bool incompleteName = false;
-        foreach (AST::ModulePtr module, ast_->modules) {
-            if (module->header.nameTemplate.length() > 0) {
-                if (name == module->header.name) {
-                    moduleToImport = module;
-                    incompleteName = true;
-                    break;
-                }
-            }
-        }        
-        if (incompleteName) {
-            // Try to use default template parameters
-            if (moduleToImport->impl.actor) {
-                const ActorInterface * actor = moduleToImport->impl.actor;
-                if (actor->defaultTemplateParameters().size() > 0) {
-                    incompleteName = false;
-                    moduleToImport->header.templateParameters = actor->defaultTemplateParameters();
-                }
-            }
-            if (incompleteName) {
-                for (int i=1; i<st.data.size(); i++) {
-                    st.data[i]->error = _("Incomplete module name");
-                }
-                return;
-            }
-            else {
-                moduleToImport->header.usedBy.append(st.mod.toWeakRef());
-                if (moduleToImport->impl.actor) {
-                    QList<Shared::ActorInterface*> deps =
-                            moduleToImport->impl.actor->usesList();
-                    Q_FOREACH (Shared::ActorInterface * actor, deps) {
-                        AST::ModulePtr actorMod = findModuleByActor(ast_, actor);
-                        actorMod->header.usedBy.append(st.mod.toWeakRef());
-                    }
-                }
-                for (int i=1; i<st.data.size(); i++) {
-                    st.data[i]->type = LxNameModule;
-                }
-            }
-        }
-        else {
+//        bool incompleteName = false;
+//        foreach (AST::ModulePtr module, ast_->modules) {
+//            if (module->header.nameTemplate.length() > 0) {
+//                if (name == module->header.name) {
+//                    moduleToImport = module;
+//                    incompleteName = true;
+//                    break;
+//                }
+//            }
+//        }
+//        if (incompleteName) {
+//            // Try to use default template parameters
+//            if (moduleToImport->impl.actor) {
+//                const ActorInterface * actor = moduleToImport->impl.actor;
+//                if (actor->defaultTemplateParameters().size() > 0) {
+//                    incompleteName = false;
+//                    moduleToImport->header.templateParameters = actor->defaultTemplateParameters();
+//                }
+//            }
+//            if (incompleteName) {
+//                for (int i=1; i<st.data.size(); i++) {
+//                    st.data[i]->error = _("Incomplete module name");
+//                }
+//                return;
+//            }
+//            else {
+//                moduleToImport->header.usedBy.append(st.mod.toWeakRef());
+//                if (moduleToImport->impl.actor) {
+//                    QList<Shared::ActorInterface*> deps =
+//                            moduleToImport->impl.actor->usesList();
+//                    Q_FOREACH (Shared::ActorInterface * actor, deps) {
+//                        AST::ModulePtr actorMod = findModuleByActor(ast_, actor);
+//                        actorMod->header.usedBy.append(st.mod.toWeakRef());
+//                    }
+//                }
+//                for (int i=1; i<st.data.size(); i++) {
+//                    st.data[i]->type = LxNameModule;
+//                }
+//            }
+//        }
+//        else {
             for (int i=1; i<st.data.size(); i++) {
                 st.data[i]->error = _("No such module");
             }
             return;
-        }
+//        }
     }
     const QStringList conflictNames = checkForConflictingNames(moduleToImport, st.mod);
     if (conflictNames.size() > 0) {
@@ -4448,28 +4448,46 @@ bool SyntaxAnalizer::findAlgorithmInModule(const QString &name,
     algorithm = AlgorithmPtr();
     templateParameters = QVariantList();
     const QList<AlgorithmPtr> & algList = allowPrivate
-            ? module->impl.algorhitms : module->header.algorhitms;
+            ? module->impl.algorhitms : module->header.algorhitms;    
     Q_FOREACH(AlgorithmPtr a, algList) {
         bool skip = !allowBroken && a->header.broken;
         if (skip) continue;
-
-        if (module->header.nameTemplate.length() > 0) {
-            // construct fully-qualified name and search by regexp
+        if (module->impl.actor && a->header.name.contains("%")) {
+            const QVariantList actorTemplateParameters =
+                    module->impl.actor->templateParameters();
+            QVariantList usedTemplateParameters;
             QString pattern = a->header.name;
-            QVariantList params;
-            for (int t=0; t<module->header.templateParameters.size(); t++) {
+            for (int t=0; t<actorTemplateParameters.size(); ++t) {
                 if (-1 != pattern.indexOf("%" + QString::number(t+1))) {
-                    pattern.replace("%" + QString::number(t+1), module->header.templateParameters[t].toString());
-                    params.append(module->header.templateParameters[t]);
+                    pattern.replace("%" + QString::number(t+1),
+                                    actorTemplateParameters[t].toString());
+                    usedTemplateParameters.push_back(actorTemplateParameters[t]);
                 }
             }
             pattern = pattern.simplified();
             if (name == pattern) {
-                templateParameters = params;
+                templateParameters = usedTemplateParameters;
                 algorithm = a;
                 return true;
             }
         }
+//        if (module->header.nameTemplate.length() > 0) {
+//            // construct fully-qualified name and search by regexp
+//            QString pattern = a->header.name;
+//            QVariantList params;
+//            for (int t=0; t<module->header.templateParameters.size(); t++) {
+//                if (-1 != pattern.indexOf("%" + QString::number(t+1))) {
+//                    pattern.replace("%" + QString::number(t+1), module->header.templateParameters[t].toString());
+//                    params.append(module->header.templateParameters[t]);
+//                }
+//            }
+//            pattern = pattern.simplified();
+//            if (name == pattern) {
+//                templateParameters = params;
+//                algorithm = a;
+//                return true;
+//            }
+//        }
         else {
             // check plaint name match
             if (name == a->header.name) {

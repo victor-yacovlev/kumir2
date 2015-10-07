@@ -384,32 +384,32 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->localizedModuleName(QLocale::Russian);
     mod->header.asciiName = actor->asciiModuleName();
-    if (-1 != mod->header.name.indexOf("%")) {
-        mod->header.nameTemplate = mod->header.name;
-        static const QRegExp rxTemplateParameter("%[sdfb]");
-        int p = 0;
-        Q_FOREVER {
-            p = rxTemplateParameter.indexIn(mod->header.nameTemplate, p);
-            if (-1 == p) break;
-            p += rxTemplateParameter.matchedLength();
-            const QString cap = rxTemplateParameter.cap();
-            QVariant::Type templateType;
-            const QChar ch = cap[1];
-            switch (ch.toLatin1()) {
-            case 'd': templateType = QVariant::Int; break;
-            case 'f': templateType = QVariant::Double; break;
-            case 'b': templateType = QVariant::Bool; break;
-            default:  templateType = QVariant::String;
-            }
-            mod->header.templateTypes.append(templateType);
-            mod->header.templateParameters.append(QVariant::Invalid);
-        }
+//    if (-1 != mod->header.name.indexOf("%")) {
+//        mod->header.nameTemplate = mod->header.name;
+//        static const QRegExp rxTemplateParameter("%[sdfb]");
+//        int p = 0;
+//        Q_FOREVER {
+//            p = rxTemplateParameter.indexIn(mod->header.nameTemplate, p);
+//            if (-1 == p) break;
+//            p += rxTemplateParameter.matchedLength();
+//            const QString cap = rxTemplateParameter.cap();
+//            QVariant::Type templateType;
+//            const QChar ch = cap[1];
+//            switch (ch.toLatin1()) {
+//            case 'd': templateType = QVariant::Int; break;
+//            case 'f': templateType = QVariant::Double; break;
+//            case 'b': templateType = QVariant::Bool; break;
+//            default:  templateType = QVariant::String;
+//            }
+//            mod->header.templateTypes.append(templateType);
+//            mod->header.templateParameters.append(QVariant::Invalid);
+//        }
 
-        mod->header.name = mod->header.name.left(mod->header.name.indexOf("%")).trimmed();
-    }
-    if (-1 != mod->header.asciiName.indexOf("%")) {
-        mod->header.asciiName = mod->header.asciiName.left(mod->header.asciiName.indexOf("%")).trimmed();
-    }
+//        mod->header.name = mod->header.name.left(mod->header.name.indexOf("%")).trimmed();
+//    }
+//    if (-1 != mod->header.asciiName.indexOf("%")) {
+//        mod->header.asciiName = mod->header.asciiName.left(mod->header.asciiName.indexOf("%")).trimmed();
+//    }
     mod->impl.actor = AST::ActorPtr(actor);
     ast->modules << ModulePtr(mod);
     const Shared::ActorInterface::TypeList typeList = actor->typeList();
