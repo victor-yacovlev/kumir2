@@ -19,7 +19,7 @@ You should change it corresponding to functionality.
 
 
 namespace ActorDraw {
-
+#define NET_RESERVE 15 
     
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
@@ -253,15 +253,15 @@ namespace ActorDraw {
         Netlines.clear();
         int lines=qRound(startx/stepX);
         startx=lines*stepX;
-        double fx1=startx-7*stepX,fx2,fy1,fy2; 
+        double fx1=startx-NET_RESERVE*stepX,fx2,fy1,fy2; 
 
        // return;
-        while (fx1 < endx+7*stepX)
+        while (fx1 < endx+NET_RESERVE*stepX)
 		{
 			fx1 = fx1 + stepX;
 			fx2 = fx1;
-			fy1 = starty-7*stepX;
-			fy2 = endy+7*stepX;
+			fy1 = starty-NET_RESERVE*stepX;
+			fy2 = endy+NET_RESERVE*stepX;
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
@@ -281,14 +281,14 @@ namespace ActorDraw {
        // Netlines.append(addLine(1, -1 , -1, 1 ));
         lines=starty/stepY;
         starty=lines*stepY;
-        fy1 = starty-7*stepY;
+        fy1 = starty-NET_RESERVE*stepY;
         
-		while (fy1 < endy+7*stepY)
+		while (fy1 < endy+NET_RESERVE*stepY)
 		{
 			fy1 = fy1 + stepY;
 			fy2 = fy1;
-			fx1 = startx-7*stepY;
-			fx2 = endx+7*stepY;
+			fx1 = startx-NET_RESERVE*stepY;
+			fx2 = endx+NET_RESERVE*stepY;
             
             Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
@@ -671,9 +671,20 @@ void DrawView::resizeEvent ( QResizeEvent * event )
             //if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
             //if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
             QPointF center = mapToScene(viewport()->rect().center());
-            centerOn(center+delta/2);
-             press_pos=event->pos();
-           // qDebug()<<"CenterOn"<<center+delta;
+            //QPointF center = sceneRect().center();
+             qDebug()<<"CenterOn"<<center;
+           // center.setX(center.x()+(mapToScene(press_pos).x()-mapToScene(event->pos()).x()));
+           // center.setY(center.y()+(mapToScene(press_pos).y()-mapToScene(event->pos()).y()));
+         //   scrollContentsBy(press_pos.x()-event->pos().x(), 10);
+            verticalScrollBar()->setValue(verticalScrollBar()->value()+(press_pos.y()-event->pos().y()));
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +(press_pos.x()-event->pos().x()));
+            // centerOn(center);
+          
+           qDebug()<<"CenterOn"<<center<<" realCenter"<<mapToScene(viewport()->rect().center());
+            qDebug()<<"SCENERECTCENTER"<<sceneRect().center().x();
+            qDebug()<<"DELTA"<<delta<<" xd"<<press_pos.x()-event->pos().x()<<" yd"<<mapToScene(press_pos).y()-mapToScene(event->pos()).y();
+            press_pos=event->pos();
+            qDebug()<<"Ppos"<<press_pos;
             update();
         }
     }; 
