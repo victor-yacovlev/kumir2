@@ -19,7 +19,7 @@ You should change it corresponding to functionality.
 
 
 namespace ActorDraw {
-#define NET_RESERVE 15 
+#define NET_RESERVE 15
     
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
@@ -109,7 +109,7 @@ namespace ActorDraw {
     }
     QRectF DrawScene::getRect()
     {
-        QRectF boundRect=QRectF(0,0.5,0.5,0.5);
+        QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
   
         for(int i=0;i<lines.count();i++)
         {
@@ -1095,18 +1095,27 @@ void DrawModule::drawNet()
         //CurView->fitInView(sceneInfoRect);
         qreal width2=sceneInfoRect.width();
         qreal size2=qMax(sceneInfoRect.height(),width2);
-        CurView->setZoom((CurView->zoom()*(size/size2))*0.9);
-        
-        QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
-        qDebug()<<newRect;
-        CurView->setSceneRect(newRect);
+        qreal oldZoom=CurView->zoom();
+        qreal newZoom=(CurView->zoom()*(size/size2))*0.37;
+         qDebug()<<"NZ"<<newZoom;
+        CurView->setZoom(newZoom);
+        qDebug()<<"PenScale"<<Pen()->scale()<<"ZoomMP"<<oldZoom/newZoom;
+        //QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
+        //qDebug()<<newRect;
+       // CurView->setSceneRect(newRect);
        // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
          drawNet();
-        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
-        
+        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,-(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
+        qDebug()<<"CenterOn1"<<center<<" realCenter1"<<CurView->mapToScene(CurView->viewport()->rect().center());
+
+        qDebug()<<"Center"<<(sceneInfoRect.right()+sceneInfoRect.left())/2<<(sceneInfoRect.top()+sceneInfoRect.bottom())/2;
+        drawNet();
+        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,-(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
+        qDebug()<<"CenterOn2"<<center<<" realCenter2"<<CurView->mapToScene(CurView->viewport()->rect().center());
                // CurView->centerOn(0,0);
-        scalePen(zoom()*.03);
+        scalePen(Pen()->scale()*(oldZoom/newZoom));
         navigator->updateSelf(NetStepX(),NetStepY());
+        CurView->update();
     };
     void DrawModule::CreatePen(void)
     {
