@@ -205,7 +205,8 @@ void Run::debuggerNoticeOnBreakpointHit(const String &filename, const quint32 li
 
 bool Run::appendTextToMargin(int l, const String & s)
 {
-    emit marginText(l, QString::fromStdWString(s));
+    const QString text = QString::fromStdWString(s);
+    emit marginText(l, text);
     return true;
 }
 

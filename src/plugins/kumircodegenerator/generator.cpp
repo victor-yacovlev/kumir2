@@ -1891,6 +1891,7 @@ void Generator::LOOP(int modId, int algId,
                     debugLevel_==GeneratorInterface::LinesAndVariables)
             {
                 result << clmarg;
+                result << swreg;
             }
         }
         else {
