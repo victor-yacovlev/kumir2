@@ -942,8 +942,11 @@ void DrawModule::showNavigator(bool state)
     penIsDrawing=false;
     mPen->setPos(0,0);
     CurScene->reset();
-    CurView->update();
+    QList<QRectF> rect;
+    rect.append(CurView->sceneRect());
+    CurView->updateScene(rect);
     CurView->show();
+   // CurView->setZoom(CurView->zoom());
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
