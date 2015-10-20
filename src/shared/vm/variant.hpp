@@ -124,7 +124,7 @@ public:
     }
     inline String toString() const {
         if (type_==VT_int) return Kumir::Converter::sprintfInt(ivalue_, 10, 0, 0);
-        else if (type_==VT_real) return Kumir::Converter::sprintfReal(rvalue_, '.', false, 0, 0, 0);
+        else if (type_==VT_real) return Kumir::Converter::sprintfReal(rvalue_, '.', false, 0, -1, 0);
         else if (type_==VT_bool) return bvalue_? Kumir::Core::fromUtf8("да") : Kumir::Core::fromUtf8("нет");
         else if (type_==VT_char) {
             String sval;

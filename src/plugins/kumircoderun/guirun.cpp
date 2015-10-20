@@ -475,7 +475,9 @@ void ReturnMainValueFunctor::operator()(const Variable & reference, Kumir::Strin
     emit requestOutput(QString::fromStdWString(reference.name())+" = ");
     if (reference.dimension()==0) {
         if (reference.hasValue()) {
-            repr = QString::fromStdWString(reference.value().toString());
+            const AnyValue & value = reference.value();
+            const std::wstring valueRepr = value.toString();
+            repr = QString::fromStdWString(valueRepr);
             if (reference.baseType()==Bytecode::VT_string)
                 repr = "\"" + repr + "\"";
             else if (reference.baseType()==Bytecode::VT_char)
