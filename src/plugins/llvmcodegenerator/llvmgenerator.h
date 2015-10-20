@@ -112,9 +112,17 @@ private:
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
     QScopedPointer<NameTranslator> nameTranslator_;
+#if LLVM_VERSION_MINOR < 7
     llvm::Module* stdlibModule_;
+#else
+    std::unique_ptr<llvm::Module> stdlibModule_;
+#endif
     QMap<AST::AlgorithmPtr, llvm::Function*> functMap_;
+#if LLVM_VERSION_MINOR < 7
     QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
+#else
+    std::unique_ptr<llvm::MemoryBuffer> stdlibContents_;
+#endif
     llvm::BasicBlock* currentBlock_;
     QStack<llvm::BasicBlock*> currentLoopEnd_;
     llvm::BasicBlock* currentFunctionExit_;
