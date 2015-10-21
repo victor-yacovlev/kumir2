@@ -948,6 +948,8 @@ void DrawModule::showNavigator(bool state)
     CurView->updateScene(rect);
     CurView->show();
     CurView->forceRedraw();
+    CurView->setZoom(CurView->zoom()*2);
+    CurView->setZoom(CurView->zoom()*0.5);
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
@@ -1122,6 +1124,7 @@ void DrawModule::drawNet()
         scalePen(Pen()->scale()*(oldZoom/newZoom));
         navigator->updateSelf(NetStepX(),NetStepY());
         CurView->update();
+        CurView->forceRedraw();
     };
     void DrawModule::CreatePen(void)
     {
