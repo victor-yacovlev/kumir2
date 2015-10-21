@@ -698,7 +698,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         
         c_scale=zoom;
     };
-    
+ 
     void DrawView::setNet()
     {
         if(DRAW->isAutoNet())
@@ -892,6 +892,7 @@ void DrawModule::showNavigator(bool state)
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+    CurView->forceRedraw();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
@@ -946,8 +947,7 @@ void DrawModule::showNavigator(bool state)
     rect.append(CurView->sceneRect());
     CurView->updateScene(rect);
     CurView->show();
-    CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value() +1);
-    CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value()-1);
+    CurView->forceRedraw();
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)

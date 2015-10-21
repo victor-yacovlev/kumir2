@@ -96,6 +96,11 @@ namespace ActorDraw {
         {return c_scale;};
         void setZoom(double zoom);
         void setNet();//RESIZE NET
+        void forceRedraw()
+        {
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+        }
     protected:
        // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
