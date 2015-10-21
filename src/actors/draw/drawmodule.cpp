@@ -946,7 +946,8 @@ void DrawModule::showNavigator(bool state)
     rect.append(CurView->sceneRect());
     CurView->updateScene(rect);
     CurView->show();
-    CurView->setZoom(CurView->zoom());
+    CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value() +1);
+    CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value()-1);
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
