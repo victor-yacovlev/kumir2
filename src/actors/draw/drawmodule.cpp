@@ -1000,7 +1000,9 @@ void DrawModule::showNavigator(bool state)
     {
         CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
     }
+    CurView->resetCachedContent();
     CurView->update();
+    
     mutex.unlock();
 }
 
