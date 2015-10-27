@@ -102,7 +102,8 @@ bool Term::isEmpty() const
 QSize Term::minimumSizeHint() const
 {
     QSize result = plane_->minimumSizeHint();
-    result.rwidth() = qMax(result.width(), 400);
+    result.rwidth() = 0;
+    result.rwidth() = qMax(result.width(), 100);
     if (sb_vertical->isVisible()) {
         result.rwidth() += sb_vertical->width();
         result.rheight() = qMax(result.rheight(), sb_vertical->minimumHeight());

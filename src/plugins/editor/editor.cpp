@@ -26,7 +26,7 @@ using namespace Shared;
 
 QSize EditorInstance::minimumSizeHint() const
 {
-    int minW = 400;
+    int minW = 100;
     int minH = 0;
     if (horizontalScrollBar_->isVisible()) {
         minH = horizontalScrollBar_->height();

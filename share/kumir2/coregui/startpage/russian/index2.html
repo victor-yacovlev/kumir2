@@ -5,12 +5,14 @@
     <meta name="refresh" content="onshow">
     <title>Начало работы</title>
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="ui.js"></script>
     <script type="text/javascript" src="tips.js"></script>
     <script type="text/javascript" src="actions.js"></script>    
 </head>
-<body onload="init()" onresize="resizeEventHandler()">
+<body>
     <div id="header">
-        <h1>Кумир <script type="text/javascript">document.write(gui.applicationVersionString());</script></h1>
+        <h1>Кумир <span id="version_part"></span></h1>
     </div>
     <div id="central_component">
         <div id="left_column" class="column">
@@ -37,5 +39,15 @@
         <!--<img src="bulb.png" style="position: relative; top: 1px; margin-right: 2mm;">
             <script type="text/javascript">document.write(tipOfTheDay());</script>-->
     </div>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $(window).scroll(setScrollState);
+            init();
+            showApplicationVersion();
+            setTimeout(function() {
+                init();
+            }, 1000);
+        });
+    </script>
 </body>
 </html>

@@ -121,9 +121,14 @@ QSize Side::minimumSizeHint() const
     else {
         h = (count() - 1) * handleWidth();
         for (int i=0; i<count(); i++) {
-            const QSize sz = widget(i)->minimumSizeHint();
+            const QWidget * wid = widget(i);
+            const QSize sz = wid->minimumSizeHint();
+            const char * widName = wid->metaObject()->className();
+            Q_UNUSED(widName);
             h += sz.height();
-            w = qMax(w, sz.width());
+            if (wid->isVisible()) {
+                w = qMax(w, sz.width());
+            }
         }
     }
     return QSize(w, h);
