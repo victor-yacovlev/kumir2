@@ -8,21 +8,26 @@ body {
 
 #header {
     background:-webkit-gradient(linear, 0 0%, 0% 100%, from(#99c9ff), to(#ffffff));
-    position: absolute;
+    position: fixed;
     left: 0;
     right: 0;
     height: 1cm;
-    padding-top: 1mm;    
-    padding-bottom: 1mm;
+    padding-top: 0;
+    padding-bottom: 0;
     padding-right: 5mm;
     padding-left: 5mm;
     color: #115bb2;
     margin: 0;
+    box-shadow: 0 0 10px rgba(0,0,0,0);
+    z-index: 10;
 }
 
 #header h1 {
     font-size: 14pt;    
     margin: 0;
+    overflow-x: hidden;
+    white-space: pre;
+    margin-top: 5pt;
 }
 
 #central_component {
