@@ -43,26 +43,26 @@ namespace ActorDraw {
              else zoomText->setPlainText(QString::number(Zoom/50)+":1");
             qDebug()<<"Zoom"<<Zoom;
             //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-            netStepXS->setMaximum(50*(1/Zoom));
-            netStepXS->setMinimum(10*(1/Zoom));
-            netStepYS->setMaximum(50*(1/Zoom));
-            netStepYS->setMinimum(10*(1/Zoom));
-            mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
-            mainLineY->setLine(mainLineX->line().x2(),
-                               mainLineX->line().y2(),
-                               mainLineX->line().x2()+netStepY*Zoom,
-                               mainLineX->line().y2());
-            netStepYS->move(mainLineY->line().x1()+netStepY*Zoom/2,mainLineX->line().y2()+10);
-            netStepXS->move(15,mainLineX->line().x2()+15+netStepX*Zoom/2);
+            netStepXS->setMaximum(100*(1/Zoom));
+            netStepXS->setMinimum(5*(1/Zoom));
+            netStepYS->setMaximum(100*(1/Zoom));
+            netStepYS->setMinimum(5*(1/Zoom));
+           // mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
+           // mainLineY->setLine(mainLineX->line().x2(),
+           //                    mainLineX->line().y2(),
+          //                     mainLineX->line().x2()+netStepY*Zoom,
+          //                     mainLineX->line().y2());
+           // netStepYS->move(mainLineY->line().x1()+netStepY*Zoom/2,mainLineX->line().y2()+10);
+           // netStepXS->move(15,mainLineX->line().x2()+15+netStepX*Zoom/2);
             netStepXS->setValue(netStepX);
             netStepYS->setValue(netStepY);
             
-            zoomLab->setPos(5,mainLineX->line().y2()+10);
-            zoomText->setPos(5,mainLineX->line().y2()+25);
-            zoomUp->move(zoomText->pos().x()+5,zoomText->pos().y()+25 );
-            zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
-            zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
-            zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+         //   zoomLab->setPos(5,mainLineX->line().y2()+10);
+          //  zoomText->setPos(5,mainLineX->line().y2()+25);
+          //  zoomUp->move(zoomText->pos().x()+5,zoomText->pos().y()+25 );
+          //  zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
+         //   zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
+         //   zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
             
             update();
         }

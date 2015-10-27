@@ -40,17 +40,19 @@ namespace ActorDraw {
         myScene->setBackgroundBrush (curBackground);
         netLab=myScene->addText(trUtf8("Сетка:"));
         zoomLab=myScene->addText(trUtf8("Масштаб:"));
-        mainLineX=myScene->addLine(5,netLab->pos().y()+10,5,25);
-        setSceneRect(0,0,120,190);
+      //  mainLineX=myScene->addLine(5,netLab->pos().y()+10,5,25);
+        // mainLineX->setVisible(false);
+        setSceneRect(0,0,110,170);
         netStepXS=new QDoubleSpinBox(this);
         netStepYS=new QDoubleSpinBox(this);
-        netStepXS->move(15,10);
-        netStepYS->move(5,mainLineX->line().y2()+15);
-        zoomText->setPos(0,netStepYS->pos ().y()+40);
-        mainLineY = myScene->addLine(mainLineX->line().x2(),
-                                     mainLineX->line().y2(),
-                                     mainLineX->line().x2()+10,
-                                     mainLineX->line().y2());
+        netStepXS->move(15,netLab->pos ().y()+25);
+      //  netStepYS->move(5,mainLineX->line().y2()+15);
+          zoomLab->setPos(0,netStepXS->pos ().y()+25);
+         zoomText->setPos(0,netStepXS->pos ().y()+40);
+       // mainLineY = myScene->addLine(mainLineX->line().x2(),
+                                   //  mainLineX->line().y2(),
+                                   //  mainLineX->line().x2()+10,
+                                   //  mainLineX->line().y2());
         //centerOn(70,70);
         netStepXS->setDecimals(4);
         netStepYS->setDecimals(4);
@@ -69,14 +71,17 @@ namespace ActorDraw {
          zoomNormal->setText("1:1");
          zoomDown->setText(" - ");
          
-         zoomUp->move(zoomText->pos().x(),zoomText->pos().y()+25 );
-         zoomNormal->move(zoomText->pos().x()+25,zoomText->pos().y()+25 );
-         zoomDown->move(zoomText->pos().x()+50,zoomText->pos().y()+25 );
+         zoomUp->move(zoomText->pos().x()+10,zoomText->pos().y()+35 );
+         zoomNormal->move(zoomText->pos().x()+zoomUp->height(),zoomText->pos().y()+35 );
+         zoomDown->move(zoomNormal->pos().x()+zoomNormal->height(),zoomText->pos().y()+35 );
          
          
          zoomFullDraw=new QToolButton(this);
          zoomFullDraw->setText(trUtf8("Весь чертеж"));
         zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
+         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+         
          
     };
     
@@ -95,6 +100,7 @@ namespace ActorDraw {
         if(oldValue!=value && value>netStepYS->minimum() )DRAW->drawNet();
         netStepYS->setSingleStep(value/10);
         netStepYS->setValue(value);
+        
 
     }
     void DrawNavigator::YvalueChange(double value)
@@ -107,6 +113,13 @@ namespace ActorDraw {
         netStepXS->setSingleStep(value/10);
         
     }
+    
+    
+    
+    
+    
+    
+    
     QRectF DrawScene::getRect()
     {
         QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
@@ -704,24 +717,41 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         if(DRAW->isAutoNet())
         {
             double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-            if(pixel_per_cell>70)
+            qreal stepX=DRAW->NetStepX();
+            qreal stepY=DRAW->NetStepY();
+            
+            
+            if(stepX>5)stepX=(int)(stepX-0.5);
+            if(stepY>5)stepY=(int)(stepY-0.5);
+            
+            if(pixel_per_cell>100)
             {
-                DRAW->setNetStepX(DRAW->NetStepX()*0.5);
-                DRAW->setNetStepY(DRAW->NetStepY()*0.5);
+                stepX=DRAW->NetStepX()*0.5;
+                stepY=DRAW->NetStepY()*0.5;
+                if(stepX>5)stepX=(int)(stepX-0.5);
+                if(stepY>5)stepY=(int)(stepY-0.5);
+                DRAW->setNetStepX(stepX);
+                DRAW->setNetStepY(stepY);
                 
                // DRAW->scalePen(0.5);
                 
             }
             if(pixel_per_cell<20)
             {
-                DRAW->setNetStepX(DRAW->NetStepX()*2);
-                DRAW->setNetStepY(DRAW->NetStepY()*2);
+                stepX=DRAW->NetStepX()*2;
+                 stepY=DRAW->NetStepX()*2;
+                //if(stepX>5)stepX=(int)(stepX-0.5);
+                //if(stepY>5)stepY=(int)(stepY-0.5);
+                DRAW->setNetStepX(stepX);
+                DRAW->setNetStepY(stepY);
                 DRAW->drawNet();
                 //DRAW->scalePen(1.2);
-                update();
+               
             }
-
+            DRAW->setNetStepX(stepX);
+            DRAW->setNetStepY(stepY);
             qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStepX()<<"PPC"<<pixel_per_cell;
+             update();
         } 
     };
     
@@ -781,7 +811,8 @@ void DrawModule::createGui()
 
     navigator->setDraw(this);
     navigator->setParent(CurView);
-    navigator->setFixedSize(QSize(130,200));
+    navigator->setFixedSize(QSize(120,170));
+    
     navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
     navigator->hide();
 
@@ -1049,13 +1080,15 @@ void DrawModule::drawNet()
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
        // qDebug()<<"StartDeb"<<start_d<<end_d;
         // QPointF end=CurView->mapToScene(CurView->viewport()->rect().bottomRight().x(),CurView->viewport()->rect().bottomRight().y());
-        QPointF start=CurView->sceneRect().topLeft();
-        QPointF end=CurView->sceneRect().bottomRight();
-           CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY()); 
+
         CurView->setSceneRect(QRectF(QPointF(start_d.x()-(CurView->geometry().width()/2)*(1/zoom()),start_d.y()-(CurView->geometry().height()/2)*(1/zoom())),
                                      QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
+        QPointF start=CurView->sceneRect().topLeft();
+        QPointF end=CurView->sceneRect().bottomRight();
+        CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY());
         mutex.unlock();
         navigator->reDraw(zoom(),netStepY,NetStepX());
+        CurView->update();
        
     };
 
@@ -1077,10 +1110,10 @@ void DrawModule::drawNet()
     void DrawModule::zoomNorm()
     {
        
-       // mPen->scale(zoom()/50,zoom()/50);
+   
         CurView->setZoom(50);
         CurView->setNet();
-        scalePen(1.5);
+        mPen->setScale(0.05);
         setNetStepX(1);
         setNetStepY(1);
        
@@ -1099,6 +1132,8 @@ void DrawModule::drawNet()
         qreal heigth=end_d.y()-start_d.y();
         qreal size=qMax(width,heigth);
         QRectF sceneInfoRect=CurScene->getRect();
+   
+        sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
         qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
         //CurView->fitInView(sceneInfoRect);
         qreal width2=sceneInfoRect.width();
@@ -1106,21 +1141,43 @@ void DrawModule::drawNet()
         qreal oldZoom=CurView->zoom();
         qreal newZoom=(CurView->zoom()*(size/size2))*0.37;
          qDebug()<<"NZ"<<newZoom;
-        CurView->setZoom(newZoom);
+        CurView->setZoom(newZoom/8);
         qDebug()<<"PenScale"<<Pen()->scale()<<"ZoomMP"<<oldZoom/newZoom;
         //QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
         //qDebug()<<newRect;
        // CurView->setSceneRect(newRect);
        // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
-         drawNet();
-        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,-(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
-        qDebug()<<"CenterOn1"<<center<<" realCenter1"<<CurView->mapToScene(CurView->viewport()->rect().center());
+        // drawNet();
 
-        qDebug()<<"Center"<<(sceneInfoRect.right()+sceneInfoRect.left())/2<<(sceneInfoRect.top()+sceneInfoRect.bottom())/2;
-        drawNet();
-        CurView->centerOn((sceneInfoRect.right()+sceneInfoRect.left())/2,-(sceneInfoRect.top()+sceneInfoRect.bottom())/2);
-        qDebug()<<"CenterOn2"<<center<<" realCenter2"<<CurView->mapToScene(CurView->viewport()->rect().center());
                // CurView->centerOn(0,0);
+        start_d=CurView->sceneRect().topLeft();
+        end_d=CurView->sceneRect().bottomRight();
+        QRectF viewRect(start_d,end_d);
+       
+        //while((QVector2D(sceneInfoRect.center())-QVector2D(viewRect.center())).length() > qAbs(sceneInfoRect.right()-sceneInfoRect.left())/4  )
+      //  {
+         
+            QPointF cnt=sceneInfoRect.center();
+            
+            qDebug()<<"realCenter2 correction"<<viewRect.center();
+            qDebug()<<"Need Center"<<sceneInfoRect.center();
+            qDebug()<<"Dist"<<(QVector2D(sceneInfoRect.center())-QVector2D(viewRect.center())).length();
+            QVector2D offScene(QVector2D(CurView->mapFromScene(sceneInfoRect.center()))-QVector2D(CurView->mapFromScene(viewRect.center())));
+            qDebug()<<"CurCenter"<<CurView->sceneRect().center()<<"Y off scene offset"<<offScene.toPoint().y()<<"Scbar"<<CurView->verticalScrollBar()->value();
+           // CurView->verticalScrollBar()->setValue(CurView->verticalScrollBar()->value()+offScene.toPoint().y());
+          // CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value());
+        CurView->centerOn(sceneInfoRect.center());
+        CurView->setZoom(newZoom);
+        
+            drawNet();
+            CurView->update();
+            CurView->forceRedraw();
+        start_d=CurView->sceneRect().topLeft();
+        end_d=CurView->sceneRect().bottomRight();
+            viewRect=QRectF(start_d,end_d);
+         
+
+      // }
         scalePen(Pen()->scale()*(oldZoom/newZoom));
         navigator->updateSelf(NetStepX(),NetStepY());
         CurView->update();
