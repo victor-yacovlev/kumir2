@@ -942,7 +942,8 @@ public:
         }
         if (expform) {
             stream << std::scientific;
-            stream.precision(2);
+//            stream.precision(2);
+            stream.precision(0>decimals ? 6 : decimals);
         }
         else {
             stream << std::fixed;
