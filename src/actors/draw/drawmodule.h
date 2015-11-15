@@ -43,9 +43,10 @@ namespace ActorDraw {
              else zoomText->setPlainText(QString::number(Zoom/50)+":1");
             qDebug()<<"Zoom"<<Zoom;
             //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-            netStepXS->setMaximum(100*(1/Zoom));
+            
+            netStepXS->setMaximum(300*(1/Zoom));
             netStepXS->setMinimum(5*(1/Zoom));
-            netStepYS->setMaximum(100*(1/Zoom));
+            netStepYS->setMaximum(300*(1/Zoom));
             netStepYS->setMinimum(5*(1/Zoom));
            // mainLineX->setLine(5,netLab->pos().y()+30,5,5+netStepX*Zoom+netLab->pos().y()+30);
            // mainLineY->setLine(mainLineX->line().x2(),
@@ -72,7 +73,7 @@ namespace ActorDraw {
     public slots:
         void XvalueChange(double value);
         void YvalueChange(double value);
-    
+        void autoNet(int state);
     private:
         double Zoom;
         QGraphicsScene* myScene;
@@ -82,6 +83,8 @@ namespace ActorDraw {
         QDoubleSpinBox* netStepYS;
         DrawModule* DRAW;
         QToolButton *zoomUp,*zoomDown,*zoomNormal,*zoomFullDraw;
+        QCheckBox * isAutonet;
+        QLabel * isAnLabel;
 
         
     };
@@ -90,12 +93,18 @@ namespace ActorDraw {
     : public QGraphicsView
     {
     public:
-        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;};
+        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
+            net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
         void setDraw(DrawModule* draw){DRAW=draw;};
         double zoom()const
         {return c_scale;};
         void setZoom(double zoom);
         void setNet();//RESIZE NET
+        bool isNet() const
+        {
+            return net;
+            
+        }
         void forceRedraw()
         {
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
@@ -112,8 +121,11 @@ namespace ActorDraw {
         DrawModule* DRAW;
         double c_scale;
         bool pressed;
+        bool net;
         QPoint press_pos;
         bool firstResize;
+        double lastStep;
+        QLabel* smallNetLabel;
  
     };    
     class DrawScene
@@ -121,7 +133,7 @@ namespace ActorDraw {
     {
     public:
         DrawScene ( QObject * parent = 0 ){};
-        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY); 
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net);
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color)
         {
@@ -142,6 +154,8 @@ namespace ActorDraw {
             texts.clear();
             
         }
+        void DestroyNet();
+        void drawOnlyAxis(double startx ,double endx,double starty,double endy);
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
@@ -156,6 +170,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> linesDubl;
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
+        
         
        
     
@@ -173,6 +188,10 @@ public /* methods */:
     bool isAutoNet() const
     {
         return autoNet;
+    }
+    void setAutoNet(bool state)
+    {
+        autoNet=state;
     }
     double NetStepX() const
     {
