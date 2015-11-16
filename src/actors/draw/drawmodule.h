@@ -225,6 +225,10 @@ public /* methods */:
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
+    DrawView * getCurView()
+    {
+        return CurView;
+    }
     static ExtensionSystem::SettingsPtr DrawSettings();
     QColor axisColor()
     {

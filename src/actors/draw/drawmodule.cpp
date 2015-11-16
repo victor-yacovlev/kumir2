@@ -44,7 +44,9 @@ namespace ActorDraw {
       //  mainLineX=myScene->addLine(5,netLab->pos().y()+10,5,25);
         // mainLineX->setVisible(false);
         setSceneRect(0,0,110,170);
-        netStepXS=new QDoubleSpinBox(this);
+        
+         netStepXS=new QDoubleSpinBox(this);
+         netStepXS->setLocale(QLocale(QLocale::C));
         netStepYS=new QDoubleSpinBox(this);
          isAutonet=new QCheckBox(this);
          isAnLabel=new QLabel(this);
@@ -125,6 +127,8 @@ namespace ActorDraw {
     void DrawNavigator::autoNet(int state)
     {
         DRAW->setAutoNet(isAutonet->isChecked());
+        DRAW->getCurView()->setNet();
+        DRAW->drawNet();
     }
 
     
@@ -755,6 +759,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         if(DRAW->isAutoNet())
         {
             net=true;
+             smallNetLabel->hide();
             double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
             qreal stepX=DRAW->NetStepX();
             qreal stepY=DRAW->NetStepY();
@@ -804,12 +809,16 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                // lastStep=DRAW->NetStepX();
             }else
             {
-                if(pixel_per_cell>15 && !net )
+                if(pixel_per_cell>15 && !net && pixel_per_cell<150)
                 {
                  net=true;
                     smallNetLabel->hide();
                     DRAW->setNetStepX(lastStep);
                     DRAW->setNetStepY(lastStep);
+                }
+                if(pixel_per_cell>150)
+                {
+                   net=false; 
                 }
                   
             }
@@ -1216,7 +1225,7 @@ void DrawModule::drawNet()
         qreal width2=sceneInfoRect.width();
         qreal size2=qMax(sceneInfoRect.height(),width2);
         qreal oldZoom=CurView->zoom();
-        qreal newZoom=(CurView->zoom()*(size/size2))*0.47;
+        qreal newZoom=(CurView->zoom()*(size/size2))*0.3;
          qDebug()<<"NZ"<<newZoom;
         CurView->setZoom(newZoom/2);
         CurView->setSceneRect(sceneInfoRect);
@@ -1246,7 +1255,7 @@ void DrawModule::drawNet()
           // CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value());
         CurView->centerOn(sceneInfoRect.center());
         CurView->setZoom(newZoom);
-        
+        CurView->setNet();
            drawNet();
         CurView->centerOn(sceneInfoRect.center());
             CurView->update();
