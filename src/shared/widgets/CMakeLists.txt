@@ -28,6 +28,7 @@ set(SOURCES
     cyrillicmenu.cpp
     secondarywindow.cpp
     pultlogger.cpp
+    draw_turtle_field.cpp
     dockwindowplace.cpp
     dockwindowplace_impl.cpp
     dockwindowplace_container.cpp
@@ -46,6 +47,7 @@ set(MOC_HEADERS
     pultlogger.h
     cyrillicmenu.h
     secondarywindow.h
+    draw_turtle_field.h
     dockwindowplace.h
     dockwindowplace_container.h
     dockwindowplace_impl.h
