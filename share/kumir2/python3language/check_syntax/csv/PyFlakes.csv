@@ -1,0 +1,13 @@
+﻿;redefinition of %r from line %r;переопределение %r из строки %r;перевизначення %r з рядку %r;
+;syntax error in doctest;синтаксическая ошибка в doctest;синтаксична помилка у doctest;
+F401;'%r imported but unused;модуль '%r импортирован, но не используется;модуль '%r імпортований, але не використовується;
+F402;import %r from line %r shadowed by loop variable;импортированый модуль %r перекривается переменной цикла;імпортований модуль %r перекривається змінною циклу;
+F403;"‘from module import *’ used; unable to detect undefined names";"использован ‘from module import *’ ; невозможно обнаружить неопределённые имена";"використано ‘from module import *’ ; неможливо виявити невизначені імена";
+F404;future import(s) name after other statements;импорт из __future__ должен быть в начале программы;імпорт із __future__ повинен бути на початку програми;
+F811;redefinition of unused %r from line %r;переопределение неопределенного %r из строки %r;перевизначення невизначеного %r з рядку %r;
+F812;list comprehension redefines %r from line %r;переменная %r из строки %r переопределена в цикле генератора;змінна %r з рядку %r перевизначена у циклі генератора;
+F821;undefined name %r;имя %r неопределено;ім'я %r невизначено;
+F822;undefined name %r in __all__;имя %r неопределено в списке __all__;ім'я %r невизначено у списку __all__;
+F823;local variable %r (defined in enclosing scope on line %r) referenced before assignment;локальная переменная используется до присвоения;локальна змінна використовується перед присвоєнням;
+F831;duplicate argument %r in function definition;в объявлении функции дублируется аргумент %r;в оголошенні функції дублюється аргумент %r;
+F841;local variable %r is assigned to but never used;локальная переменная инициализирована, но не используется;локальна змінна ініціалізована, але не використовується;
