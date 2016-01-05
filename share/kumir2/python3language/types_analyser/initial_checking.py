@@ -13,7 +13,7 @@ import meta.asttools as at
 import types_analyser.astpp
 ###
 
-from types_analyser.analysis_node_visitor import AnalysisNodeVisitor
+from types_analyser.analysis_node_visitor import AnalysisNodeVisitor, process_undefined_types, shrink_table
 from types_analyser.math_expr_visitor import MathExprVisitor
 from types_analyser.node_analysis import fill_initial, Module, parsing_file
 from types_analyser.import_module_visitor import ImportModuleVisitor
@@ -78,11 +78,14 @@ def main(fname):
         binop_visitor = MathExprVisitor()
         binop_visitor.visit(tree)
 
+        parsing_file(fname)
+
         # for val in visitor.module_names:
         #     debug(sys.path(val))
             # try:
             #     debug(inspect.getsourcefile(val))
             # except:
             #     debug('sf')
-        parsing_file(fname)
-        [debug(var.name) for var in vars_table]
+        process_undefined_types()
+        shrink_table()
+        # [debug(var.name) for var in vars_table]

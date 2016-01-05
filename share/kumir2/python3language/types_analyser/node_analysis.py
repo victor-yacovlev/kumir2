@@ -62,9 +62,41 @@ class Type:
         self.marker = marker
         self.candidates = candidates  # if we can't clearly define the type now
 
+    def assign(self, other):
+        class IncompatibleTypesException(Exception):
+            def __init__(self, objects):
+                self._type_names = [type(obj) for obj in objects]
+
+            def __str__(self):
+                mess = 'Incompatible types! ' + self._type_names
+                if len(self._type_names) > 1:
+                    return mess + ', but ' + self._type_names[1] + ' required.'
+                return mess
+
+        if not isinstance(other, type(self)):
+            raise IncompatibleTypesException(other, self)
+        for attrib in dir(other):
+            try:
+                setattr(self, attrib, getattr(other, attrib))
+            except AttributeError:
+                pass  # can't assign value to @property
+
+    def __eq__(self, other):
+        return self.full_name == other.full_name
+
+    def __hash__(self):
+        return hash(self.full_name)
+
+    def __dir__(self):
+        return list(filter(lambda x: not re.match('__\S*__', x), super().__dir__()))
+
     @property
     def simple_name(self):
         return self.full_name.split('.')[-1]
+
+    @property
+    def is_undefined(self):
+        return self.full_name == Type.default_name and self.type_id != 0
 
     def update_name(self, fname):
         self.full_name = fname + '.' + self.full_name
@@ -195,9 +227,9 @@ def fill_initial():
         f_reader = csv.DictReader(open(build_path(1)), delimiter=';')
         for info_num, type_info in enumerate(f_reader):
             if info_num == num:
-                [methods.append(Method(key, formals=[(None, value.split(':')[1])], return_type=[(value.split(':')[0])])) for key, value in zip(type_info.keys(), type_info.values())]
+                [methods.append(Method(key, formals=[Variable(None, value.split(':')[1], add_to_table=False)], return_type=[(value.split(':')[0])])) for key, value in zip(type_info.keys(), type_info.values())]
 
         f_reader = csv.DictReader(open(build_path(0)), delimiter=';')
         for info_num, type_info in enumerate(f_reader):
-            methods.append([Method(key, return_type=(value)) for key, value in zip(type_info.keys(), type_info.values())])
+            methods.extend([Method(key, return_type=(value)) for key, value in zip(type_info.keys(), type_info.values())])
         types_table.append(Type(full_name=name, methods=methods))

@@ -26,9 +26,3 @@ from math import sqrt
 
 def long_expression(a, b, c):
     return ((a + b) * (a - b) + a * b) ** c == c
-
-t_list = [1,2,3,4]
-for a in t_list:
-    if isinstance(a, int) and a == 4:
-        a = 5
-print(t_list)

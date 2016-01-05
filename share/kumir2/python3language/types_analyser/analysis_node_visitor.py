@@ -5,6 +5,7 @@ __author__ = 'velkerr'
 import inspect
 import csv
 from ast import *
+from copy import deepcopy
 
 from types_analyser.exceptions import *
 from types_analyser.node_analysis import types_table, \
@@ -70,6 +71,17 @@ def _parse(string):
     return parse_final(string.split('|'))
 
 
+def process_undefined_types():
+    pass
+    # todo: define set of *candidates*
+
+
+def shrink_table():
+    for num, marked_type in enumerate(types_table):
+        marked_type.assign([final_type for final_type in types_table if final_type.full_name == marked_type.full_name][0])
+    # todo: set() with links changing
+
+
 class AnalysisNodeVisitor(NodeVisitor):
     _collections = ('list', 'tuple', 'set', 'frozenset')
 
@@ -92,7 +104,7 @@ class AnalysisNodeVisitor(NodeVisitor):
                 parents.append(base_type)
         for body_element in node.body:
             if isinstance(body_element, FunctionDef):  # searching methods
-                methods.append(AnalysisNodeVisitor._analyse_FunctionDef(body_element))
+                methods.extend(AnalysisNodeVisitor._analyse_FunctionDef(body_element))
             elif isinstance(body_element, ClassDef):  # searching nested classes
                 AnalysisNodeVisitor._analyse_ClassDef(body_element)
             elif isinstance(body_element, AugAssign) or isinstance(body_element, Assign):
@@ -160,6 +172,8 @@ class AnalysisNodeVisitor(NodeVisitor):
         result_func = AnalysisNodeVisitor._analyse_FunctionDef(node)
         # find methods, used by variables
         funcs_for_arguments = list(filter(lambda el: el is not None, [analyse_operator(curr_node) for curr_node in walk(node) if type(curr_node) in (BinOp, UnaryOp)]))
+        # stub type fo func return
+        types_table.append(Type(marker=node.name))
         # stubs for arguments
         for argum in node.args.args:
             current_type = Type(marker=argum.arg)  # default type stub
@@ -170,7 +184,7 @@ class AnalysisNodeVisitor(NodeVisitor):
                     if isinstance(formal, str) and formal == current_argument_var.name:
                         func.formals[num] = current_argument_var
         # add methods to stub types
-        for stub in filter(lambda t: t.full_name == Type.default_name and t.type_id != 0, types_table):
+        for stub in filter(lambda t: t.is_undefined, types_table):
             stub.methods.extend(filter(lambda func: stub.marker in [formal.name for formal in func.formals], funcs_for_arguments))
         return result_func
 
