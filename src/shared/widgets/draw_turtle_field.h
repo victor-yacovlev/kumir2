@@ -12,7 +12,7 @@
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-
+#include <QDoubleSpinBox>
 
 class DrawNavigator : public QGraphicsView
 {

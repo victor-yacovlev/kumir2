@@ -55,7 +55,7 @@ namespace ActorDraw {
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event ); 
     private:
-      //  DrawModule* DRAW;
+       DrawModule* DRAW;
         double c_scale;
         bool pressed;
         bool net;
