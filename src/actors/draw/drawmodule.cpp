@@ -12,6 +12,7 @@ You should change it corresponding to functionality.
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 #include "extensionsystem/pluginmanager.h"
+#include "widgets/draw_turtle_field.h"
 
 // Qt includes
 #include <QtCore>
