@@ -22,7 +22,7 @@ include(../../kumir2_library.cmake)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(SOURCES
+set(SOURCES 
     actionproxy.cpp
     groupbox.cpp
     cyrillicmenu.cpp
