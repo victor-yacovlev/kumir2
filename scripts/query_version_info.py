@@ -23,24 +23,57 @@ else:
 
 OUT_FILE = sys.stdout
 
+if "nt" == os.name:
+    GIT_PATH_SEARCH = [
+        r"C:\Git\bin",
+        r"C:\Program Files\Git\bin",
+        r"C:\Program Files (x86)\Git\bin"
+    ]
+else:
+    GIT_PATH_SEARCH = [
+        "/usr/bin",
+        "/usr/local/bin"
+    ]
+
+
+def _add_path_env(value):
+    if "nt" == os.name:
+        value = '"' + value + '"'
+        sep = ";"
+    else:
+        sep = ":"
+    os.environ['PATH'] = os.getenv('PATH') + sep + value
+
+
+for path_variant in GIT_PATH_SEARCH:
+    candidate = path_variant + os.path.sep + "git"
+    if "nt" == os.name:
+        candidate += ".exe"
+    if os.path.exists(candidate):
+        _add_path_env(path_variant)
+        sys.stderr.write("Using git: " + candidate + "\n")
+        break
+    sys.stderr.write("Git executable not found!\n")
+    sys.exit(1)
+
 
 def get_version_information(top_level_dir):
     assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
     if os.path.exists(top_level_dir + os.path.sep + ".git"):
         try:
             version_info = subprocess.check_output(
-                "git describe --abbrev=0 --tags --exact-match",
-                shell=True,
-                stderr=subprocess.PIPE
+                    "git describe --abbrev=0 --tags --exact-match",
+                    shell=True,
+                    stderr=subprocess.PIPE
             ).strip()
         except subprocess.CalledProcessError:
             version_info = to_str(subprocess.check_output(
-                "git rev-parse --abbrev-ref HEAD",
-                shell=True
+                    "git rev-parse --abbrev-ref HEAD",
+                    shell=True
             ).strip())
             version_info += "-" + to_str(subprocess.check_output(
-                "git --no-pager log -1 --pretty=format:%H",
-                shell=True
+                    "git --no-pager log -1 --pretty=format:%H",
+                    shell=True
             ).strip())
     else:
         dir_name = os.path.basename(top_level_dir)
@@ -53,9 +86,9 @@ def get_timestamp(top_level_dir):
     assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
     if os.path.exists(top_level_dir + os.path.sep + ".git"):
         return to_str(subprocess.check_output(
-            "git --no-pager log -1 --pretty=format:%ct",
-            shell=True,
-            stderr=subprocess.PIPE
+                "git --no-pager log -1 --pretty=format:%ct",
+                shell=True,
+                stderr=subprocess.PIPE
         )).strip()
     else:
         return "{}".format(int(time.time()))
