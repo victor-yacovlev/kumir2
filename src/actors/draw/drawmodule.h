@@ -19,7 +19,7 @@ You should change it corresponding to functionality.
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-
+class DrawNavigator;
 namespace ActorDraw {
 
     class DrawModule;
