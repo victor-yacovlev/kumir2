@@ -7,12 +7,13 @@ You should change it corresponding to functionality.
 */
 
 // Self include
+#include "widgets/draw_turtle_field.h"
 #include "drawmodule.h"
 
 // Kumir includes
 #include "extensionsystem/kplugin.h"
 #include "extensionsystem/pluginmanager.h"
-#include "widgets/draw_turtle_field.h"
+
 
 // Qt includes
 #include <QtCore>
@@ -21,7 +22,7 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 #define NET_RESERVE 15
-    
+   
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
