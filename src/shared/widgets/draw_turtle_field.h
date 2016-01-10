@@ -18,7 +18,7 @@ class DrawNavigator : public QGraphicsView
 {
     Q_OBJECT
 public:
-    DrawNavigator( QWidget * parent = 0 );
+    DrawNavigator( QWidget * parent  );
     void setZoom(double zoom)
     {
         Zoom=zoom;
