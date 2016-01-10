@@ -8,11 +8,21 @@
 
 #ifndef Kumir2_draw_turtle_field_h
 #define Kumir2_draw_turtle_field_h
-
+#include <QWidget>
 // Qt includes
 #include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
+#endif
 #include <QDoubleSpinBox>
+
+#ifdef WIDGETS_LIBRARY
+#define WIDGETS_EXPORT Q_DECL_EXPORT
+#else
+#define WIDGETS_EXPORT Q_DECL_IMPORT
+#endif
 
 class DrawNavigator : public QGraphicsView
 {

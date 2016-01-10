@@ -8,11 +8,7 @@
 #include <QWidget>
 #include "draw_turtle_field.h"
 
-#ifdef WIDGETS_LIBRARY
-#define WIDGETS_EXPORT Q_DECL_EXPORT
-#else
-#define WIDGETS_EXPORT Q_DECL_IMPORT
-#endif
+
 
 DrawNavigator::DrawNavigator( QWidget * parent ){
     myScene=new QGraphicsScene(this);
