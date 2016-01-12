@@ -51,7 +51,6 @@ for path_variant in GIT_PATH_SEARCH:
         candidate += ".exe"
     if os.path.exists(candidate):
         _add_path_env(path_variant)
-        sys.stderr.write("Using git: " + candidate + "\n")
         break
     sys.stderr.write("Git executable not found!\n")
     sys.exit(1)
