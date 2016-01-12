@@ -1,5 +1,3 @@
-include(${CMAKE_SOURCE_DIR}/kumir2_common.cmake)
-
 # -- linux
 if(NOT APPLE AND NOT MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${LIB_BASENAME}/kumir2'")
@@ -21,59 +19,51 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
     add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
     add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
 else()
-    find_package(PythonInterp 2.7.0 REQUIRED)
+    set(GIT_HASH unknown)
+    set(GIT_TIMESTAMP 0)
+    set(GIT_BRANCH unknown)
+    set(GIT_TAG unknown)
 
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE VERSION_DEFINITIONS
-    )
-    add_definitions(${VERSION_DEFINITIONS})
-#    set(GIT_HASH unknown)
-#    set(GIT_TIMESTAMP 0)
-#    set(GIT_BRANCH unknown)
-#    set(GIT_TAG unknown)
+    find_program(GIT git)
 
-#    find_program(GIT git)
+    if(GIT)
+        execute_process(
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%H
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_HASH
+        )
+        execute_process(
+            COMMAND ${GIT} describe --abbrev=0 --tags
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_TAG
+            RESULT_VARIABLE GIT_TAG_ERROR
+            ERROR_VARIABLE NULL
+        )
+        if(NOT "${GIT_TAG_ERROR}" EQUAL "0")
+            set(GIT_TAG unknown)
+        endif()
+        execute_process(
+            COMMAND ${GIT} --no-pager log -1 --pretty=format:%ct
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_TIMESTAMP
+        )
+        execute_process(
+            COMMAND ${GIT} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+        )
+        string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
+        string(STRIP "${GIT_HASH}" GIT_HASH)
+        set(GIT_TAG "unknown") #        string(STRIP "${GIT_TAG}" GIT_TAG)
+        string(STRIP "${GIT_TIMESTAMP}" GIT_TIMESTAMP)
+    else()
+        message(WARNING "git not found and no version info provided")
+    endif()
 
-#    if(GIT)
-#        execute_process(
-#            COMMAND ${GIT} --no-pager log -1 --pretty=format:%H
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#            OUTPUT_VARIABLE GIT_HASH
-#        )
-#        execute_process(
-#            COMMAND ${GIT} describe --abbrev=0 --tags --exact-match
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#            OUTPUT_VARIABLE GIT_TAG
-#            RESULT_VARIABLE GIT_TAG_ERROR
-#            ERROR_VARIABLE NULL
-#        )
-#        if(NOT "${GIT_TAG_ERROR}" EQUAL "0")
-#            set(GIT_TAG unknown)
-#        endif()
-#        execute_process(
-#            COMMAND ${GIT} --no-pager log -1 --pretty=format:%ct
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#            OUTPUT_VARIABLE GIT_TIMESTAMP
-#        )
-#        execute_process(
-#            COMMAND ${GIT} rev-parse --abbrev-ref HEAD
-#            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-#            OUTPUT_VARIABLE GIT_BRANCH
-#        )
-#        string(STRIP "${GIT_BRANCH}" GIT_BRANCH)
-#        string(STRIP "${GIT_HASH}" GIT_HASH)
-#        set(GIT_TAG "unknown") #        string(STRIP "${GIT_TAG}" GIT_TAG)
-#        string(STRIP "${GIT_TIMESTAMP}" GIT_TIMESTAMP)
-#    else()
-#        message(WARNING "git not found and no version info provided")
-#    endif()
-
-#    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
-#    add_definitions(-DGIT_TIMESTAMP=\"${GIT_TIMESTAMP}\")
-#    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
-#    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
+    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
+    add_definitions(-DGIT_TIMESTAMP=\"${GIT_TIMESTAMP}\")
+    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
+    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
 endif()
 
 if(MSVC_IDE)
@@ -87,33 +77,53 @@ endif (MSVC_IDE)
 
 if(NOT APPLE)
     # Various GUI configurations
-    add_opt_subdirectory(kumir2-classic)
-    add_opt_subdirectory(kumir2-highgrade)
-    add_opt_subdirectory(kumir2-ide)
-    add_opt_subdirectory(kumir2-teacher)
-
-    if(PYTHONLIBS_FOUND)
-        add_opt_subdirectory(kumir2-python)
-        add_opt_subdirectory(kumir2-python-teacher)
-    else()
-        message(STATUS "No Python 3.x libs found, building of Python language support disabled")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-classic")
+	add_subdirectory(kumir2-classic)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-highgrade")
+	add_subdirectory(kumir2-highgrade)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-ide")
+	add_subdirectory(kumir2-ide)
+    endif()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-teacher")
+	add_subdirectory(kumir2-teacher)
     endif()
 
-    add_opt_subdirectory(kumir2-pascal)
+    # Check if Python present in this git branch and Python3 libraries found
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-python")
+        if(PYTHONLIBS_FOUND)
+            add_subdirectory(kumir2-python)
+            add_subdirectory(kumir2-python-teacher)
+        else()
+            message(WARNING "No Python 3.x libs found, building of Python language support disabled")
+        endif()
+    endif() # kumir2-python exists
+
+    # Check if Pascal present in this git branch
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-pascal")
+        add_subdirectory(kumir2-pascal)
+    endif() # kumir2-pascal exists
 endif(NOT APPLE)
 
 if(APPLE)
     # Apple platform has exact one GUI configuration
-    add_opt_subdirectory(kumir2-macx)
+    add_subdirectory(kumir2-macx)
 endif(APPLE)
 
-add_opt_subdirectory(kumir2-bc)
-add_opt_subdirectory(kumir2-xrun)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-bc")
+    add_subdirectory(kumir2-bc)
+endif()
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-xrun")
+    add_subdirectory(kumir2-xrun)
+endif()
 
 # kumir2-llvmc is optional in case if LLVM libraries present
-if(Llvm_FOUND)
-    add_opt_subdirectory(kumir2-llvmc)
-else()
-    message(STATUS "LLVM developer libraries not found, building of LLVM support disabled")
-endif(Llvm_FOUND)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-llvmc")
+    if(Llvm_FOUND)
+	add_subdirectory(kumir2-llvmc)
+    else()
+	message(WARNING "LLVM developer libraries not found, building of LLVM support disabled")
+    endif(Llvm_FOUND)
+endif()
