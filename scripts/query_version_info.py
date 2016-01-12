@@ -104,7 +104,16 @@ def find_suitable_list_file_name(version_name):
         return name
     match = re.match(r"(.+)-(alpha|beta|rc|pt|test)[0-9]+", version_name)
     if match:
+        # some release version
         version_base = match.group(1)
+    else:
+        # branch version
+        match = re.match(r"(.+)-(.+)", version_name)
+        if match:
+            version_base = match.group(1)
+        else:
+            version_base = None
+    if version_base:
         name = base.format(version_base)
         if os.path.exists(name):
             return name
