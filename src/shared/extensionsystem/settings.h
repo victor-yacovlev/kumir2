@@ -31,6 +31,7 @@ public:
     QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;
     void setValue(const QString & key, const QVariant & value_);
     QString locationDirectory() const;
+    QString settingsFilePath() const;
     void flush();
 
     ~Settings();

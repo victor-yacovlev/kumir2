@@ -86,6 +86,14 @@ QString Settings::locationDirectory() const
     return fileInfo.absoluteDir().absolutePath();
 }
 
+QString Settings::settingsFilePath() const
+{
+    mutex_->lock();
+    const QString result = settingsFile_;
+    mutex_->unlock();
+    return result;
+}
+
 QString Settings::defaultSettingsScope()
 {
 #ifdef Q_OS_MAC

@@ -49,7 +49,7 @@ Logger::Logger(const QString & filePath, LogLevel logLevel)
 #ifdef NDEBUG
     bool process = Debug == logLevel_;
 #else
-    bool process = true;
+    bool process = isDebugOnLinux();
 #endif
     if (process) {
         writeLog("STARTED", "");
@@ -61,7 +61,7 @@ Logger::~Logger()
 #ifdef NDEBUG
     bool process = Debug == logLevel_;
 #else
-    bool process = true;
+    bool process = isDebugOnLinux();
 #endif
     if (process) {
         writeLog("EXITING", "");
@@ -71,6 +71,39 @@ Logger::~Logger()
         delete loggerFile_;
         loggerFile_ = 0;
     }
+}
+
+static bool isUbuntu() {
+#ifndef Q_OS_LINUX
+    return false;
+#endif
+    QFile osRelease("/etc/os-release");
+    if (osRelease.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QByteArray content = osRelease.readAll();
+        osRelease.close();
+        return content.contains("ID=ubuntu");
+    }
+    return false;
+}
+
+static bool isInstalledInPosixSystem() {
+#ifndef Q_OS_UNIX
+    return false;
+#endif
+    const QString appDir = QCoreApplication::applicationDirPath();
+    return appDir.startsWith("/usr/") || appDir.startsWith("/opt/");
+}
+
+bool Logger::isDebugOnLinux()
+{
+#ifndef Q_OS_UNIX
+    return true;
+#endif
+    // Check once
+    static const bool ubuntu = isUbuntu();
+    static const bool usrRoot = isInstalledInPosixSystem();
+    static const bool ubuntuPackage = ubuntu && usrRoot;
+    return ! ubuntuPackage;
 }
 
 void Logger::writeLog(const char *type, const QString &message)
@@ -96,7 +129,7 @@ void Logger::debug(const QString &message)
 #ifdef NDEBUG
     bool process = Debug == logLevel_;
 #else
-    bool process = true;
+    bool process = isDebugOnLinux();
 #endif
     if (process) {
         writeLog("DEBUG", message);
@@ -108,7 +141,7 @@ void Logger::warning(const QString &message)
 #ifdef NDEBUG
     bool process = Debug == logLevel_;
 #else
-    bool process = true;
+    bool process = isDebugOnLinux();
 #endif
     if (process) {
         writeLog("WARNING", message);

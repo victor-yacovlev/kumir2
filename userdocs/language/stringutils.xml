@@ -19,7 +19,7 @@
                     <function>верний регистр</function>
                 </funcdef>
                 <paramdef>лит
-                    <parameter>s</parameter>
+                    <parameter>строка</parameter>
                 </paramdef>
             </funcprototype>
         </funcsynopsis>
@@ -39,7 +39,7 @@
                     <function>нижний регистр</function>
                 </funcdef>
                 <paramdef>лит
-                    <parameter>s</parameter>
+                    <parameter>строка</parameter>
                 </paramdef>
             </funcprototype>
         </funcsynopsis>
@@ -100,7 +100,9 @@
                 <funcdef>алг цел
                     <function>позиция после</function>
                 </funcdef>
-                <paramdef>цел <parameter>начало</parameter></paramdef>
+                <paramdef>цел 
+					<parameter>начало</parameter>
+				</paramdef>
                 <paramdef>лит
                     <parameter>строка</parameter>
                 </paramdef>
@@ -118,6 +120,9 @@
                 <funcdef>алг цел
                     <function>поз после</function>
                 </funcdef>
+				<paramdef>цел 
+					<parameter>начало</parameter>
+				</paramdef>
                 <paramdef>лит
                     <parameter>строка</parameter>
                 </paramdef>

@@ -101,6 +101,9 @@ public /*methods*/:
     /** List of custom-provided scalar types */
     inline virtual TypeList typeList() const { return TypeList(); }
 
+    /** Runtime values for function template parameters */
+    inline virtual QVariantList templateParameters() const { return defaultTemplateParameters(); }
+
     /** List of actor dependencies */
     inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
 
@@ -169,6 +172,9 @@ public /*methods*/:
 
     /** Out-Argument and InOut-Argument values left from last evaluated method */
     inline virtual QVariantList algOptResults() const { return QVariantList(); }
+
+    /** Terminate long-running evaluation in case of program interrupt */
+    virtual void terminateEvaluation() = 0;
 
 
     /*=== Actor GUI specification === */

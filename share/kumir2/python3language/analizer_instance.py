@@ -58,7 +58,11 @@ def set_source_dir_name(path):
 def _make_syntax_checks(text):
     global ERRORS
     global USE_PEP8
+<<<<<<< HEAD
     checkers = [pylint_wrapper, pyflakes_wrapper, types_analyser_wrapper]
+=======
+    checkers = [pylint_wrapper, pyflakes_wrapper]
+>>>>>>> master
     if USE_PEP8:
         checkers += [pep8_wrapper]
     for checker in checkers:
@@ -74,7 +78,10 @@ def set_use_pep8(use):
     global USE_PEP8
     USE_PEP8 = use
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 def set_source_text(text):
     """
     Set the source text and require complete analisis
@@ -222,8 +229,13 @@ def get_line_property(line_no, line_text):
 
 
 def __run_test(test_name):
+<<<<<<< HEAD
     base = os.path.dirname(os.path.abspath(__file__)) + "/"
     # base = ""
+=======
+    # base = os.path.dirname(os.path.abspath(__file__)) + "/"
+    base = ""
+>>>>>>> master
     source_file = open(base + test_name, 'r')
     set_source_text(source_file.read())
     source_file.close()
@@ -267,8 +279,13 @@ if __name__ == "__main__":
         "MyTests/reference_before_assignment.py",
         "MyTests/structure_syntax_check.py",
         "MyTests/arguments_count_mismatch.py",
+<<<<<<< HEAD
         "MyTests/arguments_types_mismatch.py"
         # "MyTests/legacy_syntax.py",
+=======
+        "MyTests/arguments_types_mismatch.py",
+        "MyTests/legacy_syntax.py",
+>>>>>>> master
         # "MyTests/sa.py",
         # "MyTests/st_an.py",
     ]

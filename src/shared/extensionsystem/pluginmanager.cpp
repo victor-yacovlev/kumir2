@@ -85,17 +85,18 @@ void PluginManager::updateAllSettings()
     }
 }
 
-void PluginManager::switchToDefaultWorkspace()
+
+void PluginManager::switchToDefaultWorkspace(bool workDirOnly)
 {
     const QString workDir = pImpl_->mySettings->value(
                 CurrentWorkspaceKey,
                 QString(QDir::homePath()+"/Kumir/")).toString();
-    pImpl_->changeWorkingDirectory(workDir, false);
+    pImpl_->changeWorkingDirectory(workDir, false, workDirOnly);
 }
 
-void PluginManager::switchToWorkspace(const QString &path)
+void PluginManager::switchToWorkspace(const QString &path, bool workDirOnly)
 {
-    pImpl_->changeWorkingDirectory(path, true);
+    pImpl_->changeWorkingDirectory(path, true, workDirOnly);
 }
 
 
@@ -240,7 +241,7 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     spec.gui = plugin->isGuiRequired();
     pImpl_->specs.push_back(spec);
     Settings * sett = new Settings(moduleName);
-    sett->changeWorkingDirectory(pImpl_->workspacePath);
+    sett->changeWorkingDirectory(pImpl_->settingsWorkspacePath);
     pImpl_->settings.push_back(SettingsPtr(sett));
     plugin->updateSettings(QStringList());
     CommandLine runtimeParameters;

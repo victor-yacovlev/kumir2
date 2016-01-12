@@ -96,6 +96,7 @@ protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
     void finishAutoCompletion(const QString & suggession);
+    void ensureMarginNotTooLarge();
 
 
 private:

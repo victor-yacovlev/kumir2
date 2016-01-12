@@ -31,7 +31,7 @@ QString Plugin::initialize(const QStringList &, const ExtensionSystem::CommandLi
 Shared::Browser::InstanceInterface * Plugin::createBrowser(const QUrl &url, const QMap<QString, QObject *> manageableObjects, bool enableKeyboardNavigation)
 {
     Component * c = new Component(this);
-    c->setMinimumSize(400, 200);
+    c->setMinimumSize(100, 100);
     c->setAcceptDrops(false);
     c->page()->settings()->setAttribute(QWebSettings::SpatialNavigationEnabled, enableKeyboardNavigation);
     QMap<QString,QObject*> objs = manageableObjects;

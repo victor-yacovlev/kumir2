@@ -73,9 +73,11 @@ public:
     void switchButt();
 
 	void CenterButton();
+    void clearLog();
 
 signals:
 	void goUp();
+    void robReset();
 	void goDown();
 	void goLeft();
 	void goRight();

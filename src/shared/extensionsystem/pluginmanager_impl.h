@@ -26,7 +26,7 @@ struct PluginManagerImpl {
     GlobalState globalState;
 
     SettingsPtr mySettings;
-    QString workspacePath;
+    QString settingsWorkspacePath;
 
 
     QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
@@ -36,7 +36,7 @@ struct PluginManagerImpl {
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
     void createSettingsDialog();
     QString loadPlugins();
-    void changeWorkingDirectory(const QString &path, bool saveChanges);
+    void changeWorkingDirectory(const QString &path, bool saveChanges, bool workDirOnly);
     bool extractRuntimeParametersForPlugin(const KPlugin * plugin, CommandLine & parameters);
 
     std::list<QString> namedProgramArguments;

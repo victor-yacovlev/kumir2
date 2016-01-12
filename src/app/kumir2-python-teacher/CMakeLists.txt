@@ -43,4 +43,10 @@ set_property(TARGET kumir2-python-teacher APPEND PROPERTY COMPILE_DEFINITIONS SP
 if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-python-teacher PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)
+<<<<<<< HEAD:src/app/kumir2-python-teacher/CMakeLists.txt
 install(TARGETS kumir2-python-teacher DESTINATION ${EXEC_DIR})
+=======
+install(TARGETS kumir2-classic DESTINATION ${EXEC_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/kumir2-classic.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-classic.desktop DESTINATION share/applications)
+>>>>>>> master:src/app/kumir2-classic/CMakeLists.txt

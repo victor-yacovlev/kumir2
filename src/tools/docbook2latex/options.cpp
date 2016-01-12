@@ -11,6 +11,7 @@ string options::input_file_name = string();
 string options::output_file_name = string();
 
 string options::profile = "a4";
+string options::configuration = "classic";
 
 bool options::show_help_and_exit = true;
 int options::exit_code = 127;
@@ -119,6 +120,10 @@ bool options::parse_named_parameter(const std::string & prefix,
     }
     else if ("profile" == key || "p" == key) {
         profile = value;
+        return true;
+    }
+    else if ("configuration" == key || "c" == key) {
+        configuration = value;
         return true;
     }
     else {

@@ -291,7 +291,7 @@
 	<section id="Команды управления Роботом из программы">
 		<title>Команды управления Роботом из программы
 		</title>
-		<section>
+		<section id="Общие сведения">
 			<title>Общие сведения
 			</title>
 			<para>
@@ -828,8 +828,8 @@ robot.do_paint()
 			</para>
 			<para>
 				При инсталляции системы Кумир в качестве имени ФСО записывается имя файла со стандартной обстановкой, который входит в 
-				поставку Кумира (<code>10&times;15.fil</code>). Стандартной обстановкой является <emphasis role="italic">пустая</emphasis> обстановка 
-				размера <code>10&times;15</code> с Роботом в левом верхнем углу. Максимально допустимый размер обстановки 
+				поставку Кумира (<code>7&times;7.fil</code>). Стандартной обстановкой является <emphasis role="italic">пустая</emphasis> обстановка 
+				размера <code>7&times;7</code> с Роботом в левом верхнем углу. Максимально допустимый размер обстановки 
 				составляет <code>128&times;255</code>. Слово «пустая» означает:
 			</para>
 			<itemizedlist>
@@ -1055,12 +1055,12 @@ robot.do_paint()
 						<itemizedlist>
 							<listitem>
 								<para>
-									зелёная лампочка-индикатор "Связь установлена",
+									зелёная лампочка-индикатор <guibutton>Связь установлена</guibutton>,
 								</para>
 							</listitem>
 							<listitem>
 								<para>
-									красная лампочка-индикатор "Нет связи";
+									красная лампочка-индикатор <guibutton>Нет связи</guibutton>;
 								</para>
 							</listitem>
 						</itemizedlist>
@@ -1078,12 +1078,12 @@ robot.do_paint()
 						<itemizedlist>
 							<listitem>
 								<para>
-									«Сброс табло» -- кнопка очистки, находится справа от табло,
+									<guibutton>Сброс табло</guibutton> и <guibutton>Скопировать в буфер</guibutton> -- кнопки очистки и копирования, находящиеся справа от табло,
 								</para>
 							</listitem>
 							<listitem>
 								<para>
-									«Прокрутка табло» -- две кнопки сверху и снизу;
+									<guibutton>Прокрутка табло</guibutton> -- две кнопки сверху и снизу;
 								</para>
 							</listitem>
 						</itemizedlist>
@@ -1109,17 +1109,17 @@ robot.do_paint()
 					</listitem>
 					<listitem>
 						<para>
-							кнопка «закрасить» (в центре);
+							кнопка <guibutton>закрасить</guibutton> (в центре);
 						</para>
 					</listitem>
 					<listitem>
 						<para>
-							кнопки «температура» и «радиация» (в левом верхнем и левом нижнем углах);
+							кнопки <guibutton>температура</guibutton> и <guibutton>радиация</guibutton> (в левом верхнем и левом нижнем углах);
 						</para>
 					</listitem>
 					<listitem>
 						<para>
-							две кнопки-префикса «Стена/Закрашено» и «Свободно/Чисто» (в правом верхнем и левом нижнем углах);
+							две кнопки-префикса <guibutton>Стена/Закрашено</guibutton> и <guibutton>Свободно/Чисто</guibutton> (в правом верхнем и левом нижнем углах);
 						</para>
 					</listitem>
 				</itemizedlist>
@@ -1129,27 +1129,27 @@ robot.do_paint()
 				соответствующую кнопку.
 			</para>
 			<para>
-				Чтобы передать команду проверки нужно последовательно нажать две кнопки: сначала -- префикс («Стена/Закрашено» 
-				и «Свободно/Чисто»), а потом — основную (закрасить или одну из стрелок).
+				Чтобы передать команду проверки нужно последовательно нажать две кнопки: сначала -- префикс (<guibutton>Стена/Закрашено</guibutton> 
+				и <guibutton>Свободно/Чисто</guibutton>), а потом — основную (закрасить или одну из стрелок).
 			</para>
 			<para><emphasis role="italic">Примеры:</emphasis></para>
 				<orderedlist>
 					<listitem>
 						<para>
-							Чтобы передать Роботу команду проверки «слева свободно?» нужно сначала нажать кнопку-префикс «Свободно/Чисто», 
-							а затем кнопку «влево».
+							Чтобы передать Роботу команду проверки <guibutton>слева свободно?</guibutton> нужно сначала нажать кнопку-префикс <guibutton>Свободно/Чисто</guibutton>, 
+							а затем кнопку <guibutton>влево</guibutton>.
 						</para>
 					</listitem>
 					<listitem>
 						<para>
-							Чтобы передать Роботу команду проверки «клетка закрашена?» нужно сначала нажать кнопку-префикс 
-							«Стена/Закрашено», а затем кнопку «закрасить».
+							Чтобы передать Роботу команду проверки <guibutton>клетка закрашена?</guibutton> нужно сначала нажать кнопку-префикс 
+							<guibutton>Стена/Закрашено</guibutton>, а затем кнопку <guibutton>закрасить</guibutton>.
 						</para>
 					</listitem>
 				</orderedlist>
 			<para>
 				После того, как нажата кнопка-префикс, она меняет цвет. Если после кнопки-префикса нажата кнопка, отличная от стрелок и 
-				кнопки «закрасить», то исходная кнопка-префикс просто будет забыта.
+				кнопки <guibutton>закрасить</guibutton>, то исходная кнопка-префикс просто будет забыта.
 			</para>
 		</section>
 		<section id="Использование табло">
@@ -1161,7 +1161,7 @@ robot.do_paint()
 				выдается «Нет связи».
 			</para>
 			<para>
-				Вывод на табло при первом включении Пульта в сеансе работы системы Кумир или после нажатия кнопки «Сброс табло» 
+				Вывод на табло при первом включении Пульта в сеансе работы системы Кумир или после нажатия кнопки <guibutton>Сброс табло</guibutton> 
 				начинается с верхней строки. Когда табло заполнилось, начинается прокрутка и вывод идет в последнюю строку табло. 
 				Выше и ниже табло есть две кнопки для прокрутки его содержимого на одну строку вверх/вниз.
 			</para>
@@ -1174,11 +1174,12 @@ robot.do_paint()
 			<title>Общие сведения
 			</title>
 			<para>
-				К Роботу относится меню «Робот» главного окна системы «Кумир» (полностью), а также две команды из меню «Окна». 
-				Для действий «Показать поле Робота» и «Пульт Робота» есть инструментальные кнопки на панели кнопок.
+				К Роботу относится меню <guimenu>Робот</guimenu> главного окна системы «Кумир» (полностью), а также две команды из меню 
+				<guimenu>Окна</guimenu>. Для действий <guimenuitem>Показать поле Робота</guimenuitem> и <guimenuitem>Пульт Робота</guimenuitem> 
+				есть инструментальные кнопки на панели кнопок.
 			</para>
 			<para>
-				Ниже отдельно описана каждая из команд меню «Робот».
+				Ниже отдельно описана каждая из команд меню <guimenu>Робот</guimenu>.
 			</para>
 		</section>
 		<section id="Команды меню «Робот»">
@@ -1238,6 +1239,222 @@ robot.do_paint()
 					</para>
 				</listitem>
 			</itemizedlist>
+		</section>
+	</section>
+	<section configuration="teacher" id="Алгоритмы контроля обстановки исполнителя «Робот»">
+		<title> Алгоритмы контроля обстановки исполнителя «Робот»
+		</title>
+			<para>
+				Алгоритмы, описанные ниже могут быть вызваны только из "скрытой" части программы. Они служат для получении
+				различных данных о текущей обстановке исполнителя <emphasis role="bold">Робот</emphasis>.
+			</para>
+		<section id="@@размер поля">
+			<title>@@размер поля
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>@@размер поля</function>
+					</funcdef>
+					<paramdef>рез цел
+						<parameter>строк</parameter>
+					</paramdef>
+					<paramdef>рез цел
+						<parameter>столбцов</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				После выполнения данного алгоритма в переменные <parameter>строк</parameter> и <parameter>столбцов</parameter> будут 
+				записаны соответствующие размеры обстановки.
+			</para>
+		</section>
+		<section id="@@закрашена">
+			<title>@@закрашена
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@закрашена</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает <code role="кумир">да</code> если клетка, расположенная в строке <parameter>строка</parameter> 
+				и столбце <parameter>столбец</parameter> закрашена.
+			</para>
+		</section>
+		<section id="@@метка">
+			<title>@@метка
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@метка</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает <code role="кумир">да</code> если клетка, расположенная в строке <parameter>строка</parameter> 
+				и столбце <parameter>столбец</parameter> отмечена точкой.
+			</para>
+		</section>
+		<section id="@@робот">
+			<title>@@робот
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<function>@@робот</function>
+					</funcdef>
+					<paramdef>рез цел
+						<parameter>строка</parameter>
+					</paramdef>
+					<paramdef>рез цел
+						<parameter>столбец</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				После выполнения данного алгоритма в переменные <parameter>строка</parameter> 
+				и <parameter>столбец</parameter> будет записано текущее положение Робота.
+			</para>
+		</section>
+		<section id="@@верхняя буква">
+			<title>@@верхняя буква
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@верхняя буква</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает верхний символ из клетки <parameter>строка </parameter>/ <parameter>столбец</parameter>. 
+				Если верхнего символа в клетке нет -- возвращает пробел.
+			</para>
+		</section>
+		<section id="@@нижняя буква">
+			<title>@@нижняя буква
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@нижняя буква</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает нижний символ из клетки <parameter>строка </parameter>/ <parameter>столбец</parameter>. 
+				Если нижнего символа в клетке нет -- возвращает пробел.
+			</para>
+		</section>
+		<section id="@@температура">
+			<title>@@температура
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@температура</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает значение температуры в клетке <parameter>строка </parameter>/ <parameter>столбец</parameter>.
+			</para>
+		</section>
+		<section id="@@радиация">
+			<title>@@радиация
+			</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo>
+					<package>Подготовка программ в учительском режиме</package>
+				</funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг
+						<type>лог</type>
+						<function>@@радиация</function>
+					</funcdef>
+					<paramdef>цел
+						<parameter>строка
+						</parameter>
+					</paramdef>
+					<paramdef>цел
+						<parameter>столбец
+						</parameter>
+					</paramdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>
+				Возвращает уровень радиации в клетке <parameter>строка </parameter>/ <parameter>столбец</parameter>.
+			</para>
 		</section>
 	</section>
 </article>

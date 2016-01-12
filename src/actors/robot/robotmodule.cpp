@@ -748,7 +748,7 @@ namespace ActorRobot {
         Items.clear();
     }
     
-    RoboField::RoboField(QWidget *parent)
+    RoboField::RoboField(QWidget *parent,RobotModule* actor)
     : QGraphicsScene(parent)
 	
     
@@ -772,7 +772,7 @@ namespace ActorRobot {
         this->setItemIndexMethod(NoIndex);
         robot=NULL;
         markMode=true;
-
+        Actor=actor;
         wasEdit=false;
         showWall=new QGraphicsLineItem(0,0,0,0);
         this->addItem(showWall);
@@ -1330,6 +1330,7 @@ namespace ActorRobot {
     
     void RoboField::reverseUpWall(int row, int col)
     {
+        
         if(!getFieldItem(row,col)->hasUpSep()){
             return;qDebug("!UpSep");
         }
@@ -3143,6 +3144,8 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+        
+        
         QColor gridColor;
         qDebug()<<"Normal color blue"<<NormalColor.blue ();
         if(mode==NORMAL_MODE) {
@@ -3160,6 +3163,8 @@ namespace ActorRobot {
         {
             setka.at(i)->setPen(QPen(gridColor));
         }
+         StLine=QPen(gridColor,3);
+        
     
     }
     
@@ -3307,7 +3312,7 @@ namespace ActorRobot {
     
     RoboField* RoboField::Clone()
     {
-        RoboField* clone=new RoboField(0);
+        RoboField* clone=new RoboField(0,Actor);
         clone->setFieldItems(Items);
         clone->robo_x=robo_x;
         clone->robo_y=robo_y;
@@ -3533,9 +3538,9 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
 
 void RobotModule::createGui()
 {
-    field=new RoboField(0);
+    field=new RoboField(0,this);
     //field->editField();
-    field->createField(10,15);
+    field->createField(7,7);
 
     field->setRoboPos(0,0);
       field->createRobot();
@@ -3568,7 +3573,9 @@ void RobotModule::createGui()
     connect(m_pultWidget, SIGNAL(Colored()), this, SLOT(runIsColor()));
     connect(m_pultWidget, SIGNAL(Clean()), this, SLOT(runIsClear()));
     connect(m_pultWidget, SIGNAL(Color()), this, SLOT(runDoPaint()));
-
+    connect(m_pultWidget, SIGNAL(robReset()),this,SLOT(reset()));
+            
+            
     connect(m_pultWidget, SIGNAL(copyTextToKumir(QString)), this, SLOT(copyFromPult(QString)));
     connect(this, SIGNAL(sendToPultLog(QVariant)), m_pultWidget, SLOT(addToResultLog(QVariant)));
     startField=field->Clone();
@@ -3603,6 +3610,7 @@ void RobotModule::copyFromPult(QString log)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
+    m_pultWidget->Logger->ClearLog();
      m_mainWidget->setWindowTitle(trUtf8("Робот - ")+source->objectName());
     startField=field->Clone();
     field->dropWasEdit();
@@ -3656,6 +3664,7 @@ void RobotModule::reset()
     view->setScene(field);
     field->drawField(FIELD_SIZE_SMALL);
     view->setField(field);
+   
     
 }
 
@@ -3692,7 +3701,14 @@ void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QS
     field->setColorFromSett();
     CurCellSize=settings->value("Robot/CellSize", FIELD_SIZE_SMALL).toInt();
     view->reloadSett(settings);
-   
+    if(RobotModule::robotSettings()->value("Robot/SFF").isValid())
+    {
+        if(LoadFromFile(RobotModule::robotSettings()->value("Robot/SFF").toString())!=0){
+            createEmptyField(7,7);
+            
+        }
+        setWindowSize();
+    }
     createRescentMenu();
 }
 
@@ -3742,9 +3758,9 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
             if(LoadFromFile(runtimeParameters.value("field").toString())!=0)return "Error loading:"+runtimeParameters.value("field").toString();
             return "";
         }
-        if(sett->value("Robot/SFF").isValid())
+        if(RobotModule::robotSettings()->value("Robot/SFF").isValid())
         {
-            if(LoadFromFile(sett->value("Robot/SFF").toString())!=0){
+            if(LoadFromFile(RobotModule::robotSettings()->value("Robot/SFF").toString())!=0){
                 createEmptyField(7,7);
 
             }
@@ -4112,6 +4128,7 @@ QChar RobotModule::runDownChar(const int row, const int col)
     
  int RobotModule::LoadFromFile(QString p_FileName)
     {
+        qDebug() <<"LoadField "<<p_FileName;
         if(field->loadFromFile(p_FileName)!=0)return 1;
         startField=field->Clone();
         field->dropWasEdit();
@@ -4138,7 +4155,7 @@ QChar RobotModule::runDownChar(const int row, const int col)
         //delete btnFind;
         //CreatebtnFind();
         
-        RobotModule::robotSettings()->setValue("Robot/StartField/File",p_FileName);
+        RobotModule::robotSettings()->setValue("Robot/SFF",p_FileName);
         field->drawField(FIELD_SIZE_SMALL);
        // if(CurrentRobotMode==ANALYZE_MODE)SetRobotMode(SEE_MODE);
         qDebug() << "File " << p_FileName ;
@@ -4155,10 +4172,10 @@ void RobotModule::editEnv()
             return;
         }
         startField->setModeFlag(NEDIT_MODE);
-        view->repaint();
+       
         
         view->showButtons(true);
-         
+         view->repaint();
         reset();
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
@@ -4313,6 +4330,7 @@ void RobotModule::loadEnv()
         NewWindow->close();
         
         if(!field->isEditMode())editEnv();
+        view->update();
     };
     void RobotModule::newEnv()
     {
@@ -4524,7 +4542,7 @@ void RobotModule::setWindowSize()
     {
         setScene(roboField);
         pressed=false;
-        inDock=false;
+        inDock=true;
         firstShow=true;
         this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -4674,6 +4692,7 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
         
        if(inDock)
        {
+           qDebug()<<"IN DOCK";
            scale(1/c_scale,1/c_scale);
            
            

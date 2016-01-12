@@ -22,6 +22,7 @@ class WIDGETS_EXPORT CyrillicMenu:
 public:
     CyrillicMenu(QWidget * parent);
     CyrillicMenu(const QString & title, QWidget * parent);
+    void updateUbuntuShortcutTexts();
 protected:
     void paintEvent(QPaintEvent *event);
 private:

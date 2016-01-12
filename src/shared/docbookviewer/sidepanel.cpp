@@ -15,7 +15,7 @@ SidePanel::SidePanel(QWidget *parent) :
 {
     ui->setupUi(this);
     static const QList<QPushButton*> buttons = QList<QPushButton*>()
-            << ui->contents << ui->algorithms << ui->examples << ui->tables;
+            << ui->contents << ui->algorithms << ui->examples /* << ui->tables*/;
 
     static const QList<QTreeWidget*> treeWidgets = QList<QTreeWidget*>()
             << ui->contentsNavigator << ui->algorithmsNavigator
@@ -77,7 +77,7 @@ void SidePanel::hadleButtonPressed()
 {
     QObject * who = sender();
     static const QList<QPushButton*> buttons = QList<QPushButton*>()
-            << ui->contents << ui->algorithms << ui->examples << ui->tables;
+            << ui->contents << ui->algorithms << ui->examples/* << ui->tables*/;
 
     for (int index = 0; index < buttons.size() ; index ++) {
         if (who == buttons[index]) {
@@ -98,8 +98,8 @@ void SidePanel::saveState(ExtensionSystem::SettingsPtr settings, const QString &
         shown = "Algorithms";
     else if (ui->examples->isChecked())
         shown = "Examples";
-    else if (ui->tables->isChecked())
-        shown = "Tables";
+//    else if (ui->tables->isChecked())
+//        shown = "Tables";
     settings->setValue(prefix + "/ShowMode", shown);
 }
 
@@ -110,28 +110,28 @@ void SidePanel::restoreState(ExtensionSystem::SettingsPtr settings, const QStrin
         ui->contents->setChecked(true);
         ui->algorithms->setChecked(false);
         ui->examples->setChecked(false);
-        ui->tables->setChecked(false);
+//        ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(0);
     }
     else if (shown == "algorithms") {
         ui->contents->setChecked(false);
         ui->algorithms->setChecked(true);
         ui->examples->setChecked(false);
-        ui->tables->setChecked(false);
+//        ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(1);
     }
     else if (shown == "examples") {
         ui->contents->setChecked(false);
         ui->algorithms->setChecked(false);
         ui->examples->setChecked(true);
-        ui->tables->setChecked(false);
+//        ui->tables->setChecked(false);
         ui->stackedWidget->setCurrentIndex(2);
     }
     else if (shown == "tables") {
         ui->contents->setChecked(false);
         ui->algorithms->setChecked(false);
         ui->examples->setChecked(false);
-        ui->tables->setChecked(true);
+//        ui->tables->setChecked(true);
         ui->stackedWidget->setCurrentIndex(3);
     }
 }
@@ -162,7 +162,7 @@ void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
                 ui->contents->setChecked(true);
                 ui->algorithms->setChecked(false);
                 ui->examples->setChecked(false);
-                ui->tables->setChecked(false);
+//                ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(0);
                 if (searchText.length() > 0) {
                     ui->searchContents->setText(searchText);
@@ -172,7 +172,7 @@ void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
                 ui->contents->setChecked(false);
                 ui->algorithms->setChecked(false);
                 ui->examples->setChecked(true);
-                ui->tables->setChecked(false);
+//                ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(2);
                 if (searchText.length() > 0) {
                     ui->searchExamples->setText(searchText);
@@ -182,7 +182,7 @@ void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
                 ui->contents->setChecked(false);
                 ui->algorithms->setChecked(false);
                 ui->examples->setChecked(false);
-                ui->tables->setChecked(true);
+//                ui->tables->setChecked(true);
                 ui->stackedWidget->setCurrentIndex(3);
                 if (searchText.length() > 0) {
                     ui->searchTables->setText(searchText);
@@ -192,7 +192,7 @@ void SidePanel::selectItem(ModelPtr itemModel, const QString & searchText)
                 ui->contents->setChecked(false);
                 ui->algorithms->setChecked(true);
                 ui->examples->setChecked(false);
-                ui->tables->setChecked(false);
+//                ui->tables->setChecked(false);
                 ui->stackedWidget->setCurrentIndex(1);
                 if (searchText.length() > 0) {
                     ui->searchAlgorithms->setText(searchText);

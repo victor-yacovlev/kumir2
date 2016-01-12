@@ -10,4 +10,5 @@
     <xi:include href="simple_commands.xml"/>
     <xi:include href="compound_commands.xml"/>
     <xi:include href="standard_library-classic.xml"/>
+	<xi:include href="short_man.xml"/>
 </book>

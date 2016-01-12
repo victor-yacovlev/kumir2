@@ -26,7 +26,7 @@ using namespace Shared;
 
 QSize EditorInstance::minimumSizeHint() const
 {
-    int minW = 400;
+    int minW = 100;
     int minH = 0;
     if (horizontalScrollBar_->isVisible()) {
         minH = horizontalScrollBar_->height();
@@ -227,6 +227,9 @@ void EditorInstance::timerEvent(QTimerEvent *e)
                     Utils::shiftKeyPressed,
                     Utils::altKeyPressed
                     );
+        const bool hasSelection = cursor_->hasSelection() || cursor_->hasRectSelection();
+        cut_->setEnabled(hasSelection);
+        copy_->setEnabled(hasSelection);
     }
     else if (e->timerId()==autoScrollTimerId_) {
         e->accept();
@@ -410,6 +413,10 @@ void EditorInstance::updateInsertMenu()
         connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
     }
     editMacros_->setEnabled(userMacros_.size() > 0);
+    Widgets::CyrillicMenu * insMenu = qobject_cast<Widgets::CyrillicMenu*>(insertMenu_);
+    if (insMenu) {
+        insMenu->updateUbuntuShortcutTexts();
+    }
 }
 
 bool EditorInstance::tryEscKeyAction(const QString &text)
@@ -597,6 +604,10 @@ EditorInstance::EditorInstance(
     plane_->addContextMenuAction(cut_);
     plane_->addContextMenuAction(copy_);
     plane_->addContextMenuAction(paste_);
+
+    if (plugin_->teacherMode_) {
+        plane_->addContextMenuAction(toggleLock_);
+    }
 
     cursor_->setTeacherMode(plugin_->teacherMode_);
     toggleLock_->setVisible(plugin_->teacherMode_);
@@ -908,7 +919,7 @@ void EditorInstance::createActions()
     redo_->setText(QObject::tr("Redo last undoed action"));
 //    redo_->setIcon(QIcon(qtcreatorIconsPath+"redo.png"));
     redo_->setIcon(Widgets::IconProvider::self()->iconForName("edit-redo"));
-    redo_->setShortcut(QKeySequence::Redo);
+    redo_->setShortcut(QKeySequence("Ctrl+Shift+Z"));
     redo_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cursor_, SIGNAL(redoAvailable(bool)), redo_, SLOT(setEnabled(bool)));
     QObject::connect(redo_, SIGNAL(triggered()), this, SLOT(redo()));

@@ -77,6 +77,10 @@ EditorInstance::InstanceInterface * EditorPlugin::newDocument(
                     analizerPlugin->sourceFileHandler()->fromBytes(bytes);
             editor->setKumFile(data);
         }
+        else {
+            Shared::Analizer::SourceFileInterface::Data empty;
+            editor->setKumFile(empty);
+        }
     }
 
     editor->setNotModified();
@@ -223,6 +227,14 @@ void EditorPlugin::connectGlobalSignalsToEditor(EditorInstance *editor)
 
     connect(this, SIGNAL(updateInsertMenuRequest()),
             editor, SLOT(updateInsertMenu()), Qt::DirectConnection);
+
+    QList<ExtensionSystem::KPlugin*> actors = ExtensionSystem::PluginManager
+            ::instance()->loadedPlugins("Actor*");
+
+    Q_FOREACH(QObject* actor, actors) {
+        connect(actor, SIGNAL(notifyOnTemplateParametersChanged()),
+                editor, SLOT(forceCompleteCompilation()));
+    }
 }
 
 

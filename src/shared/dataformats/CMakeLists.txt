@@ -34,7 +34,7 @@ if(QCA_LIBRARY AND QCA_INCLUDE_DIR)
     include_directories(${QCA_INCLUDE_DIR})
     set(EXTRA_LIBS ${QCA_LIBRARY})
 else()
-    message(WARNING "QCA library not found! Signing and verifying programs will disabled!")
+    message(STATUS "QCA library not found! Signing and verifying programs will disabled!")
 endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

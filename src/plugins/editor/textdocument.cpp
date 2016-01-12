@@ -134,6 +134,8 @@ TextLine::Margin & TextDocument::marginAt(uint index)
     }
     else {
         static TextLine::Margin dummy;
+        dummy.text.clear();
+        dummy.errors.clear();
         return dummy;
     }
 }
@@ -791,7 +793,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     result.append("\\clNoWrap\\clftsWidth2\\clwWidth2000\\cellx10000\r\n");
 
     // Main program cell
-    for (uint i=fromLine; i<toLine; i++) {
+    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
         result.append("\\intbl");
         // Indent spaces
         if (this->indentAt(i) > 0) {
@@ -807,7 +809,7 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
         for (uint j=0; j<chunks.size(); j++) {
             result.append(chunks[j].data);
         }
-        if (fromLine!=toLine && i<toLine-1) {
+        if (fromLine!=toLine && i<toLine) {
             result.append("\\par\r\n");
         }
     }
@@ -815,17 +817,31 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     result.append("\\cell\r\n");
 
     // Margin cell
-    for (uint i=fromLine; i<toLine; i++) {
-        const TextLine & textLine = data_[i];
-        const QString & marginText = textLine.margin.errors.join("; ");
+    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
+        QString text;
+        bool red = false;
+        const TextLine::Margin & margin = marginAt(i);
+        if (margin.text.length() > 0) {
+            text = margin.text;
+            red = false;
+        }
+        else {
+            if (margin.errors.size() > 0) {
+                text = margin.errors.first();
+                red = true;
+            }
+        }
         static QTextCodec * codec = QTextCodec::codecForName("CP1251");
         result.append("\\intbl");
-        if (marginText.length()>0) {
-            result.append("{\\cf9 ");
-            result.append(codec->fromUnicode(marginText));
+        if (text.length()>0) {
+            result.append("{");
+            if (red) {
+                result.append("\\cf9 ");
+            }
+            result.append(codec->fromUnicode(text));
             result.append("}");
         }
-        if (fromLine!=toLine && i<toLine-1) {
+        if (fromLine!=toLine && i<toLine) {
             result.append("\\par\r\n");
         }
     }

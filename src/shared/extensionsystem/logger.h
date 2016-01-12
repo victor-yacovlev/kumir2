@@ -34,6 +34,7 @@ public:
 
     ~Logger();
 private:
+    static bool isDebugOnLinux();
     void writeLog(const char * type, const QString &message);
 
     Logger(const QString & filePath, LogLevel logLevel);

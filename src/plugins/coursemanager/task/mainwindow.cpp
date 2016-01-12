@@ -53,6 +53,7 @@ cursFile="";
            connect(ui->actionSaveK,SIGNAL(triggered()),this,SLOT(saveKurs()));
             connect(ui->actionSaveKas,SIGNAL(triggered()),this,SLOT(saveKursAs()));
            connect(ui->actionRemove,SIGNAL(triggered()),this,SLOT(deleteTask()));
+     connect(ui->actionNext,SIGNAL(triggered()),this,SLOT(nextTask()));
          //  newDialog=new newKursDialog();
           // connect(ui->actionNewK,SIGNAL(triggered()),this,SLOT(newKurs()));
          //  editDialog = new EditDialog(this);
@@ -71,6 +72,15 @@ isTeacher=false;
         setupWebView();
        //ui->textBrowser->setVisible(false);
  };
+void MainWindowTask::nextTask()
+{
+    if(ui->treeView->indexBelow(curTaskIdx).isValid())
+    {
+        ui->treeView->setCurrentIndex(ui->treeView->indexBelow(curTaskIdx));
+       // curTaskIdx=ui->treeView->currentIndex();
+        showText(ui->treeView->currentIndex());
+    } 
+}
 
 void MainWindowTask::setupWebView()
 {
@@ -172,7 +182,7 @@ int tasks=course->loadCourse(fileName);
 course->setTeacher(isTeacher);
 if(tasks==-1)
 {
-//QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
+QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
 return;
 };
 ui->treeView->setModel(course);
@@ -237,7 +247,7 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
 QString fileN=fileEl.attribute("fileName");
 //qDebug()<<"KURS ZAGRUZILI";
 if(cursFile!=krsFile){
-    QMessageBox::information( 0, "", trUtf8("Не наеден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
+    QMessageBox::information( 0, "", trUtf8("Не найден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
     fileN=getFileName(krsFile);
     loadCourseData(fileN);
     if(cursFile!=fileN)return;
@@ -325,10 +335,14 @@ void MainWindowTask::loadCourse()
     editRoot->hide();
     ui->splitter->setEnabled(true);
     QString dir=settings->value("Directories/Kurs","").toString();
+    qDebug()<<"Dir "<<dir;
     QDir chD(dir);
     QDir resDir=interface->myResourcesDir();
     resDir.cdUp();
-    if(!chD.exists())dir=resDir.canonicalPath();
+    resDir.cd("courses");
+    if(0 == dir.length() || !chD.exists()) {
+        dir=resDir.canonicalPath();
+    }
 //    QFileDialog dialog(this,trUtf8("Открыть файл"),dir, "(*.kurs.xml *.work.xml)");
 //     dialog.setAcceptMode(QFileDialog::AcceptOpen);
 //     if(!dialog.exec())return;
@@ -400,7 +414,7 @@ void MainWindowTask::loadCourse()
         //curDir=QDir::currentPath();
         qDebug()<<curDir;
 
-        cursWorkFile.setFileName(QDir::currentPath()+"/default.work.xml");
+        cursWorkFile.setFileName(QDir::tempPath()+"/default.work.xml");
         
         saveCourseFile();
     }else
@@ -562,7 +576,7 @@ if(ioDir.isFile())
      };
      task.isps=course->Modules(curTaskIdx.internalId());
      task.name=course->getTitle(curTaskIdx.internalId());
-       qDebug()<<"ISPS"<<task.isps;
+       qDebug()<<"ISPS"<<task.isps<<"task.name"<<task.name;
        task.fields.clear();
        for(int i=0;i<task.isps.count();i++)
        {
@@ -580,7 +594,7 @@ if(ioDir.isFile())
         qDebug()<<"Fields!!!!"<<task.fields;
         }
        qDebug()<<"MODULES:"<<course->Modules(curTaskIdx.internalId());
-  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId()),&task))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет неоходимых исполнителей"));
+  if(!interface->startNewTask(course->Modules(curTaskIdx.internalId()),&task))QMessageBox::about(NULL, trUtf8("Невозможно выполнить задание"),trUtf8("Нет необходимых исполнителей"));
   if(course->getUserText(curTaskIdx.internalId())!="")
   {
       interface->setPreProgram(QVariant(course->getUserText(curTaskIdx.internalId())));
@@ -595,11 +609,22 @@ if(ioDir.isFile())
  ui->do_task->setEnabled(false);
  ui->checkTask->setEnabled(true);
  onTask=true;
+     
+     QModelIndex nextT=ui->treeView->indexBelow(curTaskIdx);
+ if(nextT.isValid() && course->isTask(nextT.internalId()) && nextT.internalId()>0 && course->taskAvailable(nextT.internalId()))
+     ui->actionNext->setEnabled(true);
+     else
+      ui->actionNext->setEnabled(false);
  //ui->loadCurs->setEnabled(false);
  qDebug()<<"end load task";
  if(progChange.indexOf(curTaskIdx.internalId())==-1)progChange.append(curTaskIdx.internalId());
  };
- void MainWindowTask::checkTask()
+
+
+
+
+
+void MainWindowTask::checkTask()
  {
      qDebug()<<"CheckTASK";
      if(!onTask){qDebug()<<"!onTASK";return;};
@@ -623,14 +648,22 @@ interface->startProgram(QVariant("TODO LOAD SCRIPT"),&task);
 {
     ui->splitter->setEnabled(false);
     ui->checkTask->setEnabled(false);
-    ui->loadCurs->setEnabled(false);  
+    ui->loadCurs->setEnabled(false);
+    ui->actionNext->setEnabled(false);
 };
 
 void MainWindowTask::unlockControls()
 {
     ui->splitter->setEnabled(true);
     ui->checkTask->setEnabled(true);
-    ui->loadCurs->setEnabled(true);  
+    ui->loadCurs->setEnabled(true);
+    
+    QModelIndex nextT=ui->treeView->indexBelow(curTaskIdx);
+    if(nextT.isValid() && course->isTask(nextT.internalId()) && nextT.internalId()>0 && course->taskAvailable(nextT.internalId()))
+    ui->actionNext->setEnabled(true);
+    else
+        ui->actionNext->setEnabled(false);
+
 };
 
 void  MainWindowTask::setMark(int mark)
@@ -679,11 +712,16 @@ void MainWindowTask::saveCourse()
 //    //curDir=fi.absolutePath ();
 //    qDebug()<<"curDir"<<curDir;
 //    QString fileName=dialog.selectedFiles().first();
+    QString open=curDir;
+    QFileInfo fi=QFileInfo(curDir);
+    if(!fi.isWritable())open=QDir::currentPath();
+    
+    
   QString fileName = QFileDialog::getSaveFileName(
                this,
                trUtf8("Сохранить изменения"),
-               curDir,
-               tr("Work files(*.work.xml);;All files (*)")
+               open,
+               trUtf8("Тетради(*.work.xml);;Все файлы (*)")
                );
     QString type=fileName.right(9);
     if(type!=".work.xml")fileName+=".work.xml";
@@ -818,6 +856,13 @@ void MainWindowTask::showEvent(QShowEvent * event)
     QByteArray settlist=settings->value("Window/SpliterPos").toByteArray();
     qDebug()<<settlist;
     ui->splitter->restoreGeometry(settlist);
+};
+
+void MainWindowTask::hideEvent(QHideEvent * event)
+{
+    settings->setValue("Window/SpliterPos",ui->splitter->saveGeometry());
+    settings->setValue("Window/SpliterState",ui->splitter->saveState());
+    settings->flush();
 };
 
 void MainWindowTask::closeEvent(QCloseEvent *event)

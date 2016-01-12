@@ -2,6 +2,8 @@
 #include "terminal.h"
 #include "terminal_onesession.h"
 
+#include <QTimerEvent>
+#include <QScrollBar>
 #include <algorithm>
 
 namespace Terminal {
@@ -16,6 +18,9 @@ Plane::Plane(Term *parent)
     , mousePressSession_(nullptr)
     , actionCopyToClipboard_(new QAction(this))
     , actionPasteFromClipboard_(new QAction(this))
+    , autoScrollStateX_(0)
+    , autoScrollStateY_(0)
+    , autoScrollTimerId_(-1)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
@@ -26,6 +31,13 @@ Plane::Plane(Term *parent)
     actionPasteFromClipboard_->setText(tr("Paste from clipboard"));
     connect(actionPasteFromClipboard_, SIGNAL(triggered()),
             this, SLOT(pasteFromClipboard()));
+
+    connect(this, SIGNAL(requestAutoScrollX(char)),
+            this, SLOT(handleAutoscrollXChange(char)));
+    connect(this, SIGNAL(requestAutoScrollY(char)),
+            this, SLOT(handleAutoscrollYChange(char)));
+
+    autoScrollTimerId_ = startTimer(100);
 
 }
 
@@ -142,10 +154,16 @@ QRect Plane::sessionRect(const OneSession *session) const
 
 void Plane::mousePressEvent(QMouseEvent *e)
 {
+    emit requestAutoScrollX(0);
+    emit requestAutoScrollY(0);
     setFocus();
     e->accept();
     mousePressSession_ = sessionByPos(e->pos());
     mousePressPosition_ = e->pos();
+    const QPoint scrollOffset = QPoint(terminal_->sb_horizontal->value(),
+                                 terminal_->sb_vertical->value());
+    mousePressPosition_ += scrollOffset;
+
     if (e->button()!=Qt::RightButton) {
         for (int i=0; i<terminal_->sessions_.size(); i++) {
             terminal_->sessions_.at(i)->clearSelection();
@@ -157,31 +175,55 @@ void Plane::mousePressEvent(QMouseEvent *e)
 void Plane::mouseMoveEvent(QMouseEvent *e)
 {
     e->accept();
+    const QPoint scrollOffset = QPoint(terminal_->sb_horizontal->value(),
+                                 terminal_->sb_vertical->value());
+    QPoint pos = e->pos() + scrollOffset;
+
+    if (e->pos().y() < 0) {
+        emit requestAutoScrollY(-1);
+    }
+    else if (e->pos().y() > height()) {
+        emit requestAutoScrollY(+1);
+    }
+    else {
+        emit requestAutoScrollY( 0);
+    }
+
+    if (e->pos().x() < 0) {
+        emit requestAutoScrollX(-1);
+    }
+    else if (e->pos().x() > width()) {
+        emit requestAutoScrollX(+1);
+    }
+    else {
+        emit requestAutoScrollX( 0);
+    }
+
     if (e->button()!=Qt::RightButton) {
         for (int i=0; i<terminal_->sessions_.size(); i++) {
             terminal_->sessions_.at(i)->clearSelection();
         }
     }
     QPoint from, to;
-    if (e->pos().y() > mousePressPosition_.y()) {
+    if (pos.y() > mousePressPosition_.y()) {
         from = mousePressPosition_;
-        to = e->pos();
+        to = pos;
     }
-    else if (e->pos().y() < mousePressPosition_.y()) {
-        from = e->pos();
+    else if (pos.y() < mousePressPosition_.y()) {
+        from = pos;
         to = mousePressPosition_;
     }
-    else if (/* y equal and */ e->pos().x() < mousePressPosition_.x()) {
-        from = e->pos();
+    else if (/* y equal and */ pos.x() < mousePressPosition_.x()) {
+        from = pos;
         to = mousePressPosition_;
     }
     else {
         from = mousePressPosition_;
-        to = e->pos();
+        to = pos;
     }
     for (size_t i=0; i<terminal_->sessions_.size(); i++) {
         OneSession * session = terminal_->sessions_.at(i);
-        const QRect rect = sessionRect(session);
+        const QRect rect = sessionRect(session).translated(scrollOffset);
         const QPoint sessionOffset = rect.topLeft();
         session->clearSelection();
         if ( (from.y() <= rect.bottom()) && (to.y() >= rect.top()) ) {
@@ -202,6 +244,8 @@ void Plane::mouseMoveEvent(QMouseEvent *e)
 
 void Plane::mouseReleaseEvent(QMouseEvent *e)
 {
+    emit requestAutoScrollX(0);
+    emit requestAutoScrollY(0);
     e->accept();
 }
 
@@ -240,6 +284,35 @@ void Plane::contextMenuEvent(QContextMenuEvent * event)
         if (canPasteFromClipboard)
             menu->addAction(actionPasteFromClipboard_);
         menu->exec(mapToGlobal(event->pos()));
+    }
+}
+
+void Plane::timerEvent(QTimerEvent *e)
+{
+    e->accept();
+    if (e->timerId() == autoScrollTimerId_) {
+        QScrollBar * h = terminal_->sb_horizontal;
+        QScrollBar * v = terminal_->sb_vertical;
+        if (-1 == autoScrollStateY_) {
+            if (v->value() > 0) {
+                v->setValue(v->value() - v->singleStep());
+            }
+        }
+        else if (1 == autoScrollStateY_) {
+            if (v->value() < v->maximum()) {
+                v->setValue(v->value() + v->singleStep());
+            }
+        }
+        if (-1 == autoScrollStateX_) {
+            if (h->value() > 0) {
+                h->setValue(h->value() - h->singleStep());
+            }
+        }
+        else if (1 == autoScrollStateX_) {
+            if (h->value() < h->maximum()) {
+                h->setValue(h->value() + h->singleStep());
+            }
+        }
     }
 }
 
@@ -301,6 +374,16 @@ void Plane::pasteFromClipboard()
     inputPosition_ += text.length();
     emit inputTextChanged(inputText_);
     emit inputCursorPositionChanged(inputPosition_);
+}
+
+void Plane::handleAutoscrollXChange(char directionSign)
+{
+    autoScrollStateX_ = directionSign;
+}
+
+void Plane::handleAutoscrollYChange(char directionSign)
+{
+    autoScrollStateY_ = directionSign;
 }
 
 void Plane::updateScrollBars()

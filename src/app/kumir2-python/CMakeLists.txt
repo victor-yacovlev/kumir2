@@ -42,4 +42,10 @@ set_property(TARGET kumir2-python APPEND PROPERTY COMPILE_DEFINITIONS SPLASHSCRE
 if (XCODE OR MSVC_IDE)
     set_target_properties (kumir2-python PROPERTIES PREFIX "../")
 endif(XCODE OR MSVC_IDE)
+<<<<<<< HEAD:src/app/kumir2-python/CMakeLists.txt
 install(TARGETS kumir2-python DESTINATION ${EXEC_DIR})
+=======
+install(TARGETS kumir2-ide DESTINATION ${EXEC_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/kumir2-professional.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
+install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-professional.desktop DESTINATION share/applications)
+>>>>>>> master:src/app/kumir2-ide/CMakeLists.txt

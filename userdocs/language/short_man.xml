@@ -1,0 +1,313 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<chapter targetdoc="short_manual">
+	<title>Короткий справочник</title>
+	<section id="Общий вид алгоритма">
+		<title> Общий вид алгоритма
+		</title>
+		<para>
+		<example>
+					<programlisting role="кумир">
+					<![CDATA[
+алг имя (аргументы, результаты)
+  дано условия применимости алгоритма
+  надо цель выполнения алгоритма
+нач
+  тело алгоритма
+кон
+					]]>
+					</programlisting>
+				</example>
+		</para>
+	</section>
+	<section id="Команды алгоритмического языка">
+		<title>Команды алгоритмического языка
+		</title>
+		<section id="Циклы">
+		<title>Циклы</title>
+		<orderedlist>
+			<listitem>
+			<para>Безусловный цикл</para>
+			<example>
+			<title>Безусловный цикл</title>
+				<programlisting role="кумир">
+					<![CDATA[
+нц число повторений раз
+  тело цикла (последовательность команд)
+кц
+					]]>
+				</programlisting>
+			</example>
+			</listitem>
+			<listitem>
+			<para>Цикл с предусловием</para>
+			<example>
+			<title>Цикл с предусловием</title>
+				<programlisting role="кумир">
+					<![CDATA[
+нц пока условие
+  тело цикла (последовательность команд)
+кц
+					]]>
+				</programlisting>
+			</example>
+			</listitem>
+			<listitem>
+			<para>Безусловный цикл с границами</para>
+			<example>
+			<title>Безусловный цикл с границами</title>
+				<programlisting role="кумир">
+					<![CDATA[
+нц для i от i1 до i2
+  тело цикла (последовательность команд)
+кц
+					]]>
+				</programlisting>
+			</example>
+			</listitem>
+		</orderedlist>
+		</section>
+		<section id="Ветвления">
+			<title>Ветвления</title>
+		<orderedlist>
+		<listitem>
+		<para>Неполное ветвление
+		</para>
+		<example>
+			<title>Неполное ветвление</title>
+				<programlisting role="кумир">
+					<![CDATA[
+если условие
+  то серия 1
+все
+					]]>
+				</programlisting>
+			</example>
+			</listitem>
+			<listitem>
+			<para>Полное ветвление</para>
+			<example>
+				<title>Полное ветвление</title>
+				<programlisting role="кумир">
+					<![CDATA[
+если условие
+  то серия 1
+  иначе серия 2
+все
+					]]>
+				</programlisting>
+			</example>
+			</listitem>
+			<listitem>
+			<para>Неполное ветвление с несколькими условиями</para>
+			<example>
+				<title>Неполное ветвление с несколькими условиями</title>
+				<programlisting role="кумир">
+					<![CDATA[
+выбор условие
+  при условие 1: серия 1
+  при условие 2: серия 2
+  . . .
+  при условие n: серия n
+все
+					]]>
+				</programlisting>
+				</example>
+			</listitem>
+			<listitem>
+			<para>Полное ветвление с несколькими условиями</para>
+			<example>
+			<title>Полное ветвление с несколькими условиями</title>
+				<programlisting role="кумир">
+					<![CDATA[
+выбор условие
+  при условие 1: серия 1
+  при условие 2: серия 2
+  . . .
+  при условие n: серия n
+  иначе серия n+1
+все
+					]]>
+				</programlisting>
+				</example>
+			</listitem>
+		</orderedlist>
+		</section>
+		<section id="Другие команды">
+			<title>Другие команды</title>
+		<itemizedlist>
+			<listitem>
+				<code role="кумир">утв условие</code>,
+			</listitem>
+			<listitem>
+				<code role="кумир">ввод имена величин</code>,
+			</listitem>
+			<listitem>
+				<code role="кумир">вывод тексты, имена величин, выражения</code>,
+			</listitem>
+			<listitem>
+				<code role="кумир">нс |переход на новую строку</code>,
+			</listitem>
+			<listitem>
+				<code role="кумир">имя алгоритма (аргументы, имена переменных_результатов) |вызов алгоритма</code>,
+			</listitem>
+			<listitem>
+				<code role="кумир">имя величины := выражение |присвоение</code>.
+			</listitem>
+		</itemizedlist>
+		</section>
+	</section>
+	<section id="Типы величин">
+		<title>Типы величин</title>
+		<section id="Обычные">
+			<title>Обычные</title>
+			<itemizedlist>
+				<listitem>
+					целые <code role="кумир">цел</code>
+				</listitem>
+				<listitem>
+					вещественные <code role="кумир">вещ</code>
+				</listitem>
+				<listitem>
+					логические <code role="кумир">лог</code>
+				</listitem>
+				<listitem>
+					символьные <code role="кумир">сим</code>
+				</listitem>
+				<listitem>
+					литерные <code role="кумир">лит</code>
+				</listitem>
+			</itemizedlist>
+		</section>
+		<section id="Табличные">
+			<title>Табличные</title>
+			<itemizedlist>
+				<listitem>
+					целые <code role="кумир">цел таб</code>
+				</listitem>
+				<listitem>
+					вещественные <code role="кумир">вещ таб</code>
+				</listitem>
+				<listitem>
+					логические <code role="кумир">лог таб</code>
+				</listitem>
+				<listitem>
+					символьные <code role="кумир">сим таб</code>
+				</listitem>
+				<listitem>
+					литерные <code role="кумир">лит таб</code>
+				</listitem>
+			</itemizedlist>
+		</section>
+		<section id="Пример описания">
+			<title>Пример описания</title>
+			<example>
+				<title>Пример описания</title>
+					<programlisting role="кумир">
+					<![CDATA[
+цел i, j
+лит t
+вещ таб а[1:50]
+					]]>
+					</programlisting>
+			</example>
+		</section>
+	</section>
+	<section id="Виды величин">
+		<title>Виды величин</title>
+		<itemizedlist>
+			<listitem>
+				аргументы (<code role="кумир">арг</code>) -- описываются в заголовке алгоритма,
+			</listitem>
+			<listitem>
+				результаты (<code role="кумир">рез</code>) -- описываются в заголовке алгоритма,
+			</listitem>
+			<listitem>
+				значения функций (<code role="кумир">знач</code>) -- описываются указанием типа перед именем алгоритма -- 
+				функции,
+			</listitem>
+			<listitem>
+				локальные -- описываются в теле алгоритма, между <code role="кумир">нач</code> и <code role="кумир">кон</code>,
+			</listitem>
+			<listitem>
+				общие -- описываются после строки <code role="кумир">исп</code> исполнителя, до первой строки <code role="кумир">алг</code>.
+			</listitem>
+		</itemizedlist>
+	</section>
+	<section id="Арифметические операции">
+		<title>Арифметические операции</title>
+		<itemizedlist>
+			<listitem>
+				сложение (<code role="кумир">x + y</code>),
+			</listitem>
+			<listitem>
+				вычитание (<code role="кумир">x - y</code>),
+			</listitem>
+			<listitem>
+				умножение (<code role="кумир">x * y</code>),
+			</listitem>
+			<listitem>
+				деление (<code role="кумир">x / y</code>),
+			</listitem>
+			<listitem>
+				возведение в степень (<code role="кумир">x ** y</code>).
+			</listitem>
+		</itemizedlist>
+	</section>
+	<section id="Операции сравнения чисел">
+		<title>Операции сравнения чисел</title>
+		<itemizedlist>
+			<listitem>
+				равно (<code role="кумир">x = y</code>),
+			</listitem>
+			<listitem>
+				не равно (<code role="кумир">x &#60;&#62; y</code>),
+			</listitem>
+			<listitem>
+				меньше (<code role="кумир">x &#60; y</code>),
+			</listitem>
+			<listitem>
+				больше (<code role="кумир">x &#62; y</code>),
+			</listitem>
+			<listitem>
+				меньше или равно (<code role="кумир">x &#60;= y</code>),
+			</listitem>
+			<listitem>
+				больше или равно (<code role="кумир">x &#62;= y</code>).
+			</listitem>
+		</itemizedlist>
+	</section>
+	<section id="Логические операции">
+		<title>Логические операции</title>
+		<itemizedlist>
+			<listitem>
+				конъюнкция (<code role="кумир">а и б</code>),
+			</listitem>
+			<listitem>
+				дизъюнкция (<code role="кумир">а или б</code>),
+			</listitem>
+			<listitem>
+				отрицание (<code role="кумир">завтра не будет дождь, завтра будет не дождь</code>).
+			</listitem>
+		</itemizedlist>
+	</section>
+	<section id="Операции для работы со строками">	
+		<title>Операции для работы со строками</title>
+		<itemizedlist>
+			<listitem>
+				слияние (<code role="кумир">а + б</code>),
+			</listitem>
+			<listitem>
+				вырезка (<code role="кумир">а[3:5]</code>),
+			</listitem>
+			<listitem>
+				получение символа (<code role="кумир">а[3]</code>),
+			</listitem>
+			<listitem>
+				равно (<code role="кумир">а = б</code>),
+			</listitem>
+			<listitem>
+				не равно (<code role="кумир">а &#60;&#62; б</code>).
+			</listitem>
+		</itemizedlist>
+	</section>
+</chapter>

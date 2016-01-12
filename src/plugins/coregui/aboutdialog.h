@@ -2,6 +2,7 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
+#include <QShowEvent>
 #include <QTextBrowser>
 
 namespace CoreGUI {
@@ -20,12 +21,16 @@ public:
 
 private slots:
     void copySystemInformationToClipboard();
+    void initializeEnvironmentData();
 
 private:
+    void showEvent(QShowEvent *event);
+
     void addQtVersion();
     void addOsVersion();
     void addExecuablePath();
     void addLoadedModules();
+    void addSettingsFilesPaths();
     Ui::AboutDialog *ui;
 };
 

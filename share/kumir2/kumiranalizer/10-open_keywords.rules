@@ -1,0 +1,7 @@
+﻿[10] УСЛОВИЕ -> если : { setExtraOpenKeywordError("если"); suggest("то\n\nвсе", 1); }
+[10] ТО -> то : { setExtraOpenKeywordError("то"); setCorrespondingIfBroken(); suggest("\nвсе",1); }
+[10] ИНАЧЕ_ВСЕ -> иначе : { setExtraOpenKeywordError("иначе"); suggest("\nвсе",1); }
+[10] ВЫБОР -> выбор : { setExtraOpenKeywordError("выбор"); suggest("при \nвсе",1); }
+[10] ЦИКЛ -> нц : { setExtraOpenKeywordError("нц"); suggest("\nкц",1); }
+[10] ИСПОЛНИТЕЛЬ* -> исп : { setExtraOpenKeywordError("исп"); suggest("\n\n\nкон_исп\n",3); }
+[10] ТЕЛО_АЛГОРИТМА -> нач ФРАГМЕНТ_АЛГОРИТМА* end: {setExtraOpenKeywordError("нач"); suggest("\nкон\n",2); } {}

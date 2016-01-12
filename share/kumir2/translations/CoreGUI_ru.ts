@@ -112,12 +112,12 @@ p, li { white-space: pre-wrap; }
         <translation>Значение</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="70"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="61"/>
         <source>Copied to clipboard</source>
         <translation>Скопировано в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="71"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="62"/>
         <source>&lt;b&gt;The following text has been copied to clipboard:&lt;/b&gt;
 
 %1</source>
@@ -126,24 +126,29 @@ p, li { white-space: pre-wrap; }
 %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="80"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="91"/>
         <source>Qt Version</source>
         <translation>Версия Qt</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="87"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="98"/>
         <source>Operating System</source>
         <translation>Система</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="132"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="143"/>
         <source>Execuable Path</source>
         <translation>Выполняемый файл</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="145"/>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="156"/>
         <source>Loaded Modules</source>
         <translation>Модули системы</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/aboutdialog.cpp" line="170"/>
+        <source>Settings Files</source>
+        <translation>Файлы настроек</translation>
     </message>
 </context>
 <context>
@@ -387,17 +392,17 @@ Right click to navigate target</source>
         <translation type="obsolete">Нераспознанная ошибка</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="481"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="488"/>
         <source>Evaluation error</source>
         <translation>Ошибка выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="490"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="497"/>
         <source>Evaluation finished</source>
         <translation>Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="472"/>
+        <location filename="../../../src/plugins/coregui/kumirprogram.cpp" line="479"/>
         <source>Evaluation terminated</source>
         <translation>Выполнение прервано</translation>
     </message>
@@ -656,7 +661,7 @@ Right click to navigate target</source>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="177"/>
         <source>Switch workspace...</source>
-        <translation>Выбрать каталог пользователя...</translation>
+        <translation>Выбрать рабочий каталог...</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/mainwindow.ui" line="182"/>
@@ -1055,18 +1060,18 @@ Using Qt version %2</source>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="570"/>
         <source>Show actor control</source>
-        <translation>Показать окно пульта</translation>
+        <translation>Показать пульт</translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/plugin.cpp" line="578"/>
         <source>Actor&apos;s References</source>
-        <translation>Руководства исполнителей</translation>
+        <translation>Исполнители</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="902"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="903"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="934"/>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="943"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="909"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="910"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="941"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="950"/>
         <source>No actions for this tab</source>
         <translation>Для этой вкладки нет действий</translation>
     </message>
@@ -1087,7 +1092,7 @@ Using Qt version %2</source>
         <translation type="obsolete">Пауза</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/plugin.cpp" line="909"/>
+        <location filename="../../../src/plugins/coregui/plugin.cpp" line="916"/>
         <source>Start</source>
         <translation>Начало</translation>
     </message>
@@ -1242,7 +1247,6 @@ Using Qt version %2</source>
         <translation>Выбор каталога пользователя</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="44"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -1251,7 +1255,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Kumir stores your programs, data and settings in a folder called a workspace.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Choose a workspace folder to use for this session.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <translation type="obsolete">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -1259,6 +1263,15 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Кумир хранит Ваши программы, настройки и файлы данных в едином рабочем каталоге.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Выберете каталог, который будет использовать Кумир.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="47"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Droid Sans&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.ui" line="60"/>
@@ -1277,6 +1290,21 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="53"/>
+        <source>&lt;p class=&apos;heading&apos;&gt;Choose working directory&lt;/p&gt;</source>
+        <translation>&lt;p class=&apos;heading&apos;&gt;Рабочий каталог системы &quot;Кумир&quot;&lt;/p&gt; </translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="54"/>
+        <source>&lt;p class=&apos;main&apos;&gt;Working directory is a place to access files within your program using &lt;span class=&apos;code&apos;&gt;WORKING_DIRECTORY&lt;/span&gt; location.&lt;/p&gt;</source>
+        <translation type="unfinished">&lt;p class=&apos;main&apos;&gt;Рабочий каталог - это каталог, в котором выполняется поиск файлов для ввода и вывода, если программа не сохранена. Из программы это значение можно получить алгоритмом &lt;span class=&apos;code&apos;&gt;РАБОЧИЙ&amp;nbsp;КАТАЛОГ&lt;/span&gt;&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="57"/>
+        <source>&lt;p class=&apos;main&apos;&gt;Kumir also uses this directory to store your personal settings.&lt;p&gt;</source>
+        <translation>&lt;p class=&apos;main&apos;&gt;Кроме того, в этом каталоге Кумир хранит Ваши персональные настройки.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../src/plugins/coregui/switchworkspacedialog.cpp" line="81"/>
         <source>Select directory for use as workspace</source>
         <translation>Выбор рабочего каталога</translation>
     </message>
@@ -1318,7 +1346,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>CoreGUI::TabWidgetElement</name>
     <message>
-        <location filename="../../../src/plugins/coregui/tabwidgetelement.cpp" line="242"/>
+        <location filename="../../../src/plugins/coregui/tabwidgetelement.cpp" line="230"/>
         <source>%1 (Course)</source>
         <translation>%1 (Практикум)</translation>
     </message>
@@ -1359,57 +1387,57 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::OneSession</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="724"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="750"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process started</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Начало выполнения</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="734"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="760"/>
         <source>&gt;&gt; %1:%2:%3 - %4 - Process finished</source>
         <translation>&gt;&gt; %1:%2:%3 - %4 - Выполнение завершено</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="790"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="816"/>
         <source>INPUT raw data to console stream</source>
         <translation>Ввод данных в файл &quot;консоль&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="793"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="819"/>
         <source>INPUT </source>
         <translation>ВВОД </translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="800"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="826"/>
         <source>string</source>
         <translation>лит</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="802"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="828"/>
         <source>integer</source>
         <translation>цел</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="804"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="830"/>
         <source>real</source>
         <translation>вещ</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="806"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="832"/>
         <source>charect</source>
         <translation>сим</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="808"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="834"/>
         <source>boolean</source>
         <translation>лог</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="971"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="997"/>
         <source>INPUT ERROR: Not a &apos;%1&apos; value</source>
         <translation>ОШИБКА ВВОДА: Это не значение &quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="980"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1006"/>
         <source>INPUT ERROR: Extra input</source>
         <translation>ОШИБКА ВВОДА: Введено лишнее</translation>
     </message>
@@ -1418,7 +1446,7 @@ p, li { white-space: pre-wrap; }
         <translation type="obsolete">Это не значение типа %1</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1024"/>
+        <location filename="../../../src/plugins/coregui/terminal_onesession.cpp" line="1050"/>
         <source>RUNTIME ERROR: %1</source>
         <translation>ОШИБКА ВЫПОЛНЕНИЯ: %1</translation>
     </message>
@@ -1426,12 +1454,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Terminal::Plane</name>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="22"/>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="27"/>
         <source>Copy to clipboard</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="26"/>
+        <location filename="../../../src/plugins/coregui/terminal_plane.cpp" line="31"/>
         <source>Paste from clipboard</source>
         <translation>Вставить</translation>
     </message>

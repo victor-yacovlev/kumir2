@@ -33,6 +33,7 @@ public:
     static QMap<QString,ModelPtr> &
     updateListOfAlgorithms(ModelPtr root, QMap<QString,ModelPtr> &result);
     Document createNamedSet(const QString &name, const QList<Document> documents) const;
+    void setConfigurationName(const QString & configurationName);
 
 
 
@@ -81,6 +82,7 @@ private /*fields*/:
 
     ModelPtr root_;
     QString buffer_;
+    QString configurationName_;
 
 };
 

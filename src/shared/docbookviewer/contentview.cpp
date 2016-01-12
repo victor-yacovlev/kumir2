@@ -3,6 +3,7 @@
 #include "mathmlrenderer.h"
 
 #include "extensionsystem/pluginmanager.h"
+#include "interfaces/editorinterface.h"
 #include "widgets/iconprovider.h"
 
 #include <QUrl>
@@ -73,7 +74,7 @@ ContentView::ContentView(QWidget *parent)
 
 QSize ContentView::minimumSizeHint() const
 {
-    return QSize(80, 230);
+    return QSize(200, 230);
 }
 
 void ContentView::reset()
@@ -154,7 +155,7 @@ QString ContentView::wrapHTML(const QString &body) const
 {
     const QPalette pal = palette();
     const QColor fg = pal.brush(QPalette::Text).color();
-    const QColor bg = pal.brush(QPalette::Background).color();
+    const QColor bg = pal.brush(QPalette::Base).color();
     return QString() +
             "<html><head>"
             "<style type=\"text/css\">"
@@ -184,7 +185,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-size: " + GuiElementsFontSize + ";"
             "}"
             ".code {"
-            "   font-family: " + CodeFontFamily + ";"
+            "   font-family: " + codeFontFamily() + ";"
             "   font-size: " + CodeFontSize + ";"
             "}"
             "th {"
@@ -200,6 +201,7 @@ QString ContentView::wrapHTML(const QString &body) const
             "   font-family: " + GuiElementsFontFamily + ";"
             "   background-color: lightgray;"
             "   color: black;"
+            "   min-width: 1em;"
             "}"
             "</style></head>"
             "<body>\n" + body +"\n</body></html>";
@@ -1564,7 +1566,7 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
     for (quint8 i=0; i<level * 4; i++) {
         indent += "&nbsp;";
     }
-    result += "<p align='left' margin='5'><a href=\"" + href + "\">" + indent + title + "</p>";
+    result += "<p align='left' margin='1'><a href=\"" + href + "\">" + indent + title + "</p>";
     if (!isPlainPage(data)) {
         foreach (ModelPtr child, data->children()) {
             ModelType childType = child->modelType();
@@ -1578,16 +1580,16 @@ QString ContentView::renderTOCElement(ModelPtr data, quint8 level, bool enumerat
 
 void ContentView::handleInternalLink(const QUrl &url)
 {
-    if (url.toEncoded().startsWith("model_ptr:")) {
-        const QByteArray path = url.toEncoded().mid(10);
+    if (url.path().startsWith("model_ptr:")) {
+        const QByteArray path = url.path().toLatin1().mid(10);
         QByteArray data = QByteArray::fromHex(path);
         QDataStream ds(&data, QIODevice::ReadOnly);
         quintptr ptr = 0u;
         ds >> ptr;
         emit itemRequest(findModelByRawPtr(ptr));
     }
-    else if (url.toEncoded().startsWith("to_clipboard:")) {
-        const QByteArray b64 = url.toEncoded().mid(13);
+    else if (url.path().startsWith("to_clipboard:")) {
+        const QByteArray b64 = url.path().toLatin1().mid(13);
         const QByteArray u8 = QByteArray::fromBase64(b64);
         const QString text = QString::fromUtf8(u8).trimmed();
         QClipboard * clipboard = QApplication::clipboard();
@@ -1749,6 +1751,36 @@ void ContentView::contextMenuEvent(QContextMenuEvent *e)
 {
     contextMenu_->exec(e->globalPos());
     e->accept();
+}
+
+QString ContentView::codeFontSize() const
+{
+    using Shared::EditorInterface;
+    using ExtensionSystem::PluginManager;
+
+    EditorInterface * editor =
+            PluginManager::instance()->findPlugin<EditorInterface>();
+    if (editor) {
+        return QString::fromLatin1("%1pt").arg(editor->defaultEditorFont().pointSize());
+    }
+    else {
+        return CodeFontSize;
+    }
+}
+
+QString ContentView::codeFontFamily() const
+{
+    using Shared::EditorInterface;
+    using ExtensionSystem::PluginManager;
+
+    EditorInterface * editor =
+            PluginManager::instance()->findPlugin<EditorInterface>();
+    if (editor) {
+        return editor->defaultEditorFont().family();
+    }
+    else {
+        return CodeFontFamily;
+    }
 }
 
 void ContentView::clearLastAnchorUrl()

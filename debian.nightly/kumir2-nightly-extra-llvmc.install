@@ -1,0 +1,4 @@
+usr/bin/kumir2-llvmc
+usr/lib/kumir2/plugins/LLVMCodeGenerator.pluginspec
+usr/lib/kumir2/plugins/libLLVMCodeGenerator.so
+usr/share/kumir2/llvmcodegenerator/stdlib.bc

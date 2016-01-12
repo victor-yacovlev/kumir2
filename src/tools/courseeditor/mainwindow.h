@@ -33,16 +33,12 @@ class MainWindowTask : public QMainWindow {
 public:
     MainWindowTask(QWidget *parent = 0);
     ~MainWindowTask();
-    void setInterface(CSInterface * csInterface){this->csInterface=csInterface;};
+    void setInterface(CSInterface * csInterface){interface=csInterface;};
     void setCS(QString cs){CS=cs;};
-
     KumZadanie task;
     void setup();
      QString getFileName(QString fileName);
-    QFileInfo baseCourceFile()
-    {
-        return baseKursFile;
-    }
+
 public slots:
     void aboutToQuit ();
     void loadCourse();
@@ -88,7 +84,7 @@ public slots:
 protected:
     void changeEvent(QEvent *e);
     void closeEvent(QCloseEvent *event);
-    void showEvent(QShowEvent * event);
+
 private:
     bool checkInList(int id,QModelIndexList list);//Поиск id среди списка индексов
     void enableMkSect(bool flag);
@@ -103,14 +99,16 @@ private:
     void loadCourseData(const QString filename);
     void loadMarks(const QString fileName);
     void refreshIspsNEnv();
+    
+    
+    
     Ui::MainWindowTask *ui;
     QString curDir;
     courseModel* course;
     QModelIndex curTaskIdx;
-    CSInterface * csInterface;
+    CSInterface * interface;
     QString CS;
     bool onTask;
-    QMenu * practMenu;
     courseChanges changes;
     QString cursFile;
     QList<int> progChange;

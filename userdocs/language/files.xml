@@ -75,10 +75,10 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг <function>закрыть</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>Закрывает ранее открытый для чтения или записи текстовый файл <parameter>ключ</parameter>.</para>
+        <para>Закрывает ранее открытый для чтения или записи текстовый файл <parameter>имя файла</parameter>.</para>
         <para>После закрытия файл становится доступным для повторного открытия.</para>
         <para>Все файлы должны быть закрыты до окончания работы программы, иначе возникнет ошибка выполнения при
             завершении выполнения программы.
@@ -92,10 +92,10 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг <function>начать чтение</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>Сбрасывает указатель чтения файла <parameter>ключ</parameter> на его начало.</para>
+        <para>Сбрасывает указатель чтения файла <parameter>имя файла</parameter> на его начало.</para>
     </section>
     <section>
         <title>конец файла</title>
@@ -105,7 +105,7 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг лог<function>конец файла</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>Возвращает <code role="кумир">да</code>, если указатель находится в самом конце файла и
@@ -120,11 +120,11 @@
             </funcsynopsisinfo>
             <funcprototype>
                 <funcdef>алг лог <function>есть данные</function></funcdef>
-                <paramdef>файл <parameter>ключ</parameter></paramdef>
+                <paramdef>файл <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
         <para>Возвращает <code role="кумир">да</code>, если после текущей позиции чтения в файле
-            <parameter>ключ</parameter> есть хотя бы один видимый символ.
+            <parameter>имя файла</parameter> есть хотя бы один видимый символ.
         </para>
         <para>
             Если алгоритм <function>есть данные</function> возвращает значение
@@ -337,6 +337,32 @@
         <para>
             Возвращает полное (абсолютное) имя текущего рабочего каталога.
         </para>
+	<orderedlist>
+	  <listitem>
+	  <para>
+            При запуске Кумир-программы из консоли, рабочим каталогом является тот, который был
+            выбран в консоли до запуска.
+			</para>
+	  </listitem>
+	  <listitem>
+	  <para>
+            При запуске Кумир-программы из среды Кумир, рабочий каталог определяется следующим образом:
+		</para>
+            <itemizedlist>
+                <listitem>
+				<para>
+                    Если программа сохранена в файл, то рабочий каталог -- это каталог, в котором сохранена программа.
+				</para>
+                </listitem>
+                <listitem>
+				<para>
+                    Если программа не сохранена, то рабочий каталог -- это каталог, установленный соответствующим пунктом
+                    меню <guimenu>Программа</guimenu> главного окна.
+				</para>
+                </listitem>
+            </itemizedlist>
+	  </listitem>
+	</orderedlist>
     </section>
     <section>
         <title>КАТАЛОГ ПРОГРАММЫ</title>
@@ -351,6 +377,9 @@
         <para>
             Возвращает полное (абсолютное) имя каталога, в котором находится выполняемая Кумир-программа.
         </para>
+        <para>
+            Если программа не сохранена в файл, то возвращается значение <code>"./"</code>.
+        </para>
     </section>
     <section>
         <title>НАЗНАЧИТЬ ВВОД</title>
@@ -363,17 +392,25 @@
                 <paramdef>лит <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>
-            Если <parameter>имя файла</parameter> не пустое и файл доступен для чтения, то устанавливает его в качестве источника
-            данных, используемых оператором <code role="кумир">ввод</code> без явного указания файловой переменной.
-        </para>
-        <para>
-            Если <parameter>имя файла</parameter>-- пустая строка, то восстанавливает исходное поведение (ввод с клавиатуры)
-            оператора <code role="кумир">ввод</code>.
-        </para>
-        <para>
-            Если указанный файл не существует или не доступен для чтения, то возникает ошибка выполнения.
-        </para>
+		<itemizedlist>
+			<listitem>
+				<para>
+				Если <parameter>имя файла</parameter> не пустое и файл доступен для чтения, то устанавливает его в качестве источника
+				данных, используемых оператором <code role="кумир">ввод</code> без явного указания файловой переменной.
+				</para>
+			</listitem>
+			<listitem>
+			<para>
+				Если <parameter>имя файла</parameter>-- пустая строка, то восстанавливает исходное поведение (ввод с клавиатуры)
+				оператора <code role="кумир">ввод</code>.
+				</para>
+			</listitem>
+			<listitem>
+			<para>
+				Если указанный файл не существует или не доступен для чтения, то возникает ошибка выполнения.
+				</para>
+			</listitem>
+		</itemizedlist>
     </section>
     <section>
         <title>НАЗНАЧИТЬ ВЫВОД</title>
@@ -386,17 +423,25 @@
                 <paramdef>лит <parameter>имя файла</parameter></paramdef>
             </funcprototype>
         </funcsynopsis>
-        <para>
-            Если <parameter>имя файла</parameter> не пустое и файл доступен для записи, то устанавливает его в качестве приемника
-            текста, используемого оператором <code role="кумир">вывод</code> без явного указания файловой переменной.
-        </para>
-        <para>
-            Если <parameter>имя файла</parameter>-- пустая строка, то восстанавливает исходное поведение (вывод на экран)
-            оператора <code role="кумир">вывод</code>.
-        </para>
-        <para>
-            Если указанный файл не существует или не доступен для записи, то возникает ошибка выполнения.
-        </para>
+		<itemizedlist>
+			<listitem>
+			<para>
+				Если <parameter>имя файла</parameter> не пустое и файл доступен для записи, то устанавливает его в качестве приемника
+				текста, используемого оператором <code role="кумир">вывод</code> без явного указания файловой переменной.
+				</para>
+			</listitem>
+			<listitem>
+			<para>
+				Если <parameter>имя файла</parameter>-- пустая строка, то восстанавливает исходное поведение (вывод на экран)
+				оператора <code role="кумир">вывод</code>.
+				</para>
+			</listitem>
+			<listitem>
+			<para>
+				Если указанный файл не существует или не доступен для записи, то возникает ошибка выполнения.
+				</para>
+			</listitem>
+		</itemizedlist>
     </section>
     <section>
         <title>консоль</title>

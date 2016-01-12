@@ -1266,15 +1266,15 @@ class CppClassBase:
         if publics or public_virtuals:
             publics = ["public /* methods */:"] + publics + public_virtuals
         if public_slots or public_virtual_slots:
-            public_slots = ["public slots:"] + public_slots + public_virtual_slots
+            public_slots = ["public Q_SLOTS:"] + public_slots + public_virtual_slots
         if protecteds:
             protecteds = ["protected /* methods */:"] + protecteds
         if privates:
             privates = ["private /* methods */:"] + privates
         if private_slots:
-            private_slots = ["private slots:"] + private_slots
+            private_slots = ["private Q_SLOTS:"] + private_slots
         if self.signals:
-            signals = string.join(["signals:"] + map(lambda x: _add_indent(x + ";"), self.signals), '\n')
+            signals = string.join(["Q_SIGNALS:"] + map(lambda x: _add_indent(x + ";"), self.signals), '\n')
         else:
             signals = ""
         if self.fields:
@@ -1372,7 +1372,7 @@ class PluginCppClass(CppClassBase):
             "QVariantList optResults_",
             "ExtensionSystem::CommandLine commandLineParameters_"
         ]
-        self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)"]
+        self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)", "void notifyOnTemplateParametersChanged()"]
         self.class_declaration_prefix = """
     friend class %s;
     friend class %s;
@@ -1500,6 +1500,20 @@ private:
     return QString::fromUtf8("%s");
 }
         """ % (self.class_name, self._module.name.get_kumir_value().replace("\\", "\\\\"))
+
+    # noinspection PyPep8Naming
+    def templateParametersCppImplementation(self):
+        return """
+/* public */ QVariantList %s::templateParameters() const
+{
+    if (module_) {
+        return module_->templateParameters();
+    }
+    else {
+        return defaultTemplateParameters();
+    }
+}
+        """ % self.class_name
 
     # noinspection PyPep8Naming
     def defaultTemplateParametersCppImplementation(self):
@@ -1814,6 +1828,21 @@ private:
 }
         """ % self.class_name
 
+     # noinspection PyPep8Naming
+    def terminateEvaluationCppImplementation(self):
+        """
+        Creates reset C++ implementation
+
+        :rtype:     str
+        :return:    implementation of void terminateEvaluation();
+        """
+        return """
+/* public */ void %s::terminateEvaluation()
+{
+    module_->terminateEvaluation();
+}
+        """ % self.class_name
+
     # noinspection PyPep8Naming
     def setAnimationEnabledCppImplementation(self):
         """
@@ -1848,7 +1877,7 @@ private:
             switch_body += "case 0x%04x: {\n" % method_index
             switch_body += "    /* %s */\n" % method.name.get_ascii_value()
             if method.async:
-                switch_body += "    emit asyncRun(index, args);\n"
+                switch_body += "    Q_EMIT asyncRun(index, args);\n"
                 switch_body += "    return ES_Async;\n"
             else:
                 args = []
@@ -1998,7 +2027,7 @@ private:
             errorText_ = "Unknown method index for async evaluation";
         }
     }
-    emit sync();
+    Q_EMIT sync();
 }
         """ % (self.class_name, _add_indent(_add_indent(switch_body)))
 
@@ -2079,6 +2108,8 @@ private:
             body += "asyncRunThread_ = new %s(this, module_);\n" % self._module.get_run_thread_cpp_class_name()
             body += "QObject::connect(asyncRunThread_, SIGNAL(finished()),\n"
             body += "                 this, SIGNAL(sync()));\n"
+            body += "QObject::connect(module_, SIGNAL(notifyOnTemplateParametersChanged()),\n"
+            body += "                 this, SIGNAL(notifyOnTemplateParametersChanged()));\n"
         return """
 /* protected */ QString %s::initialize(const QStringList &a, const ExtensionSystem::CommandLine &b)
 {
@@ -2249,7 +2280,7 @@ private:
     static const QStringList usesNames = QStringList()
         << %s ;
     QList<Shared::ActorInterface*> result;
-    foreach (const QString & name, usesNames) {
+    Q_FOREACH (const QString & name, usesNames) {
         ExtensionSystem::KPlugin * plugin = myDependency(name);
         Shared::ActorInterface * actor =
                 qobject_cast<Shared::ActorInterface*>(plugin);
@@ -2449,10 +2480,12 @@ class ModuleBaseCppClass(CppClassBase):
         self._module = module
         self.class_name = module.get_base_cpp_class_name()
         self.class_declaration_prefix = "    Q_OBJECT"
+        self.signals = ["void notifyOnTemplateParametersChanged()"]
         self.abstract_public_slots = [
             "void reset()",
             "void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)",
-            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)"
+            "void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)",
+            "void terminateEvaluation()"
         ]
         if module.gui:
             self.abstract_public_methods += [
@@ -2797,6 +2830,16 @@ class ModuleBaseCppClass(CppClassBase):
         """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
 
     # noinspection PyPep8Naming
+    def templateParametersCppImplementation(self):
+        return """
+/* public virtual */ QVariantList %s::templateParameters() const
+{
+    %s * plugin = qobject_cast<%s*>(parent());
+    return plugin->defaultTemplateParameters();
+}
+        """ % (self.class_name, self._module.get_plugin_cpp_class_name(), self._module.get_plugin_cpp_class_name())
+
+    # noinspection PyPep8Naming
     def initializeCppImplementation(self):
         """
         Pass initialization to module itself
@@ -2917,6 +2960,23 @@ class ModuleCppClass(CppClassBase):
 /* public slot */ void %s::reset()
 {
     // Resets module to initial state before program execution
+    // TODO implement me
+}
+        """ % self.class_name
+
+    # noinspection PyPep8Naming
+    def terminateEvaluationImplementation(self):
+        """
+        Creates terminateEvaluation implementation stub
+
+        :rtype:     str
+        :return:    implementation of void terminateEvaluation()
+        """
+        return """
+/* public slot */ void %s::terminateEvaluation()
+{
+    // Called on program interrupt to ask long-running module's methods
+    // to stop working
     // TODO implement me
 }
         """ % self.class_name

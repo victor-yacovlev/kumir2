@@ -1,0 +1,32 @@
+# Components disabled for Python
+
+# 1. Kumir language modules
+kumiranalizer
+kumircodegenerator
+kumircoderun
+kumircompilertool
+llvmcodegenerator
+
+# 2. Kumir-related apps
+kumir2-bc
+kumir2-classic
+kumir2-highgrade
+kumir2-ide
+kumir2-llvmc
+kumir2-macx
+kumir2-teacher
+kumir2-xrun
+as
+open
+run
+
+# 3. Actors not ready to support Python
+complexnumbers
+draw
+grasshopper
+isometricrobot
+pictomir2course
+keyboard
+turtle
+vodoley
+
