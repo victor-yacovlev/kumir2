@@ -24,7 +24,7 @@
 #define WIDGETS_EXPORT Q_DECL_IMPORT
 #endif
 
-class DrawNavigator : public QGraphicsView
+class WIDGETS_EXPORT DrawNavigator : public QGraphicsView
 {
     Q_OBJECT
 public:
