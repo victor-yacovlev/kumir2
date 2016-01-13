@@ -7,6 +7,7 @@ DebuggerView::DebuggerView(Shared::RunInterface * runner, QWidget *parent)
     , runner_(runner)
     , debuggerEnabled_(false)
 {
+    setAnimated(false);
     setHeaderHidden(true);
 }
 
