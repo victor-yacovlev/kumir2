@@ -107,7 +107,7 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
 	connect(askFree,SIGNAL(clicked()),this,SLOT(SwSvobodno()));
 	connect(buttCenter,SIGNAL(clicked()),this,SLOT(CenterButton()));
 
-	connect(ClearLog,SIGNAL(clicked()),Logger,SLOT(ClearLog()));
+	connect(ClearLog,SIGNAL(clicked()),this,SLOT(clearLog()));
 
 	connect(ToKumir,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
 
@@ -198,4 +198,8 @@ void RoboPult::CenterButton()
   if(askFree->isChecked () ){emit Clean(); askFree->setChecked(false);switchButt();return;};
   emit Color();
   };
-
+void RoboPult::clearLog()
+{
+    Logger->ClearLog();
+    emit robReset();
+}

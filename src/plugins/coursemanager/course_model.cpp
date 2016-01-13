@@ -11,7 +11,7 @@ int courseModel::loadCourse(QString file)
      courseFileName=file;
     qDebug()<<"Load Course";
     QFile f(courseFileName);
-    if  (!f.open(QIODevice::ReadWrite))
+    if  (!f.open(QIODevice::ReadOnly))
     {
         qDebug()<<"cant open"<<courseFileName;
     return -1;

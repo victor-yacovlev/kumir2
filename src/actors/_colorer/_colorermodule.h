@@ -34,6 +34,7 @@ public slots:
     void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
     void reset();
+    inline void terminateEvaluation() {}
     Color runOperatorINPUT(const QString& x, bool& ok);
     QString runOperatorOUTPUT(const Color& x);
     bool runOperatorEQUAL(const Color& x, const Color& y);

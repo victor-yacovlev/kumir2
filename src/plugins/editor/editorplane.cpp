@@ -77,6 +77,7 @@ void EditorPlane::updateSettings(const QStringList & keys)
         setFont(editor_->plugin_->defaultEditorFont());
         marginHintBox_->setFont(editor_->plugin_->defaultEditorFont());
     }
+    ensureMarginNotTooLarge();
 }
 
 void EditorPlane::addContextMenuAction(QAction *a)
@@ -161,13 +162,13 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth + breakpointPaneWidth;
+            lockSymbolWidth + breakpointPaneWidth/* + 8*/;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth - breakpointPaneWidth;
+            lockSymbolWidth ;
 
     // Force text cursor (managed primarily from keyboard) to temporary hide
     editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
@@ -419,13 +420,13 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     // Left border of editable area
     const uint editableAreaLeftBorder =
             charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth + breakpointPaneWidth;
+            lockSymbolWidth + breakpointPaneWidth/* + 8*/;
 
     // Right border of editable area
     const uint editableAreaRightBorder =
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
-            lockSymbolWidth - breakpointPaneWidth;
+            lockSymbolWidth ;
 
     // Line number of highlighted (by mouseover) 'lock' symbol or -1 if none
     highlightedLockSymbolLineNumber_ = -1;
@@ -1554,6 +1555,12 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         else if (e->matches(QKeySequence::Redo)) {
             editor_->cursor()->redo();
         }
+        else if (e->key()==Qt::Key_F && e->modifiers().testFlag(Qt::ControlModifier)) {
+            editor_->find_->trigger();
+        }
+        else if (e->key()==Qt::Key_H && e->modifiers().testFlag(Qt::ControlModifier)) {
+            editor_->replace_->trigger();
+        }
         else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
             editor_->cursor()->toggleComment();
         }
@@ -1726,6 +1733,24 @@ void EditorPlane::finishAutoCompletion(const QString &suggestion)
     }
     editor_->cursor()->evaluateCommand(KeyCommand(text));
     emit message(QString());
+}
+
+void EditorPlane::ensureMarginNotTooLarge()
+{
+    ExtensionSystem::SettingsPtr sett = editor_->mySettings();
+
+    if (sett && isVisible()) {
+        int widthInChars = qMin(1000, sett->value(MarginWidthKey, int(MarginWidthDefault)).toInt());
+        int cw = charWidth();
+        int marginWidthInPixels = cw * widthInChars;
+        int minEditableAreaSize = textLeftPosition() + cw;
+        int maxMarginWidthInPixels = width() - minEditableAreaSize;
+        if (marginWidthInPixels >= maxMarginWidthInPixels) {
+            int newMarginSizeInChars = maxMarginWidthInPixels / charWidth();
+            sett->setValue(MarginWidthKey, newMarginSizeInChars);
+            update();
+        }
+    }
 }
 
 void EditorPlane::selectAll()
@@ -1990,6 +2015,7 @@ void EditorPlane::dragEnterEvent(QDragEnterEvent *e)
 void EditorPlane::resizeEvent(QResizeEvent *e)
 {
     QWidget::resizeEvent(e);
+    ensureMarginNotTooLarge();
     updateScrollBars();
 }
 

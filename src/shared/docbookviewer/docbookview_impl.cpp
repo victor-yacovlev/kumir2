@@ -175,6 +175,15 @@ void DocBookViewImpl::showSidePanel()
     enoughtSizeContainer_->layout()->setContentsMargins(0, 0, 0, 0);
 }
 
+void DocBookViewImpl::setInitialView()
+{
+    showSidePanel();
+    QList<int> sizes;
+    sizes.append(240);
+    sizes.append(splitter_->width() - splitter_->handleWidth() - 240);
+    splitter_->setSizes(sizes);
+}
+
 QSize DocBookViewImpl::minimumSizeHint() const
 {
 //    int minW = qMax(sidePanel_->minimumSizeHint().width(),

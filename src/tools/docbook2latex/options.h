@@ -15,6 +15,7 @@ public:
     static std::string output_file_name;
 
     static std::string profile;
+    static std::string configuration;
 
     static bool show_help_and_exit;
     static int exit_code;

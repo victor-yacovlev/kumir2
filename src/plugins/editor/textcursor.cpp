@@ -1427,6 +1427,63 @@ bool TextCursor::modifiesProtectedLiines() const
     return false;
 }
 
+void TextCursor::changeSelectionToExcludeProtectedLines()
+{
+    qDebug() << "Change selection";
+    // 1. Move selection left to the first non-protected position
+    int firstSelectedLine = 0;
+    for (int lineNo=0; lineNo < editor_->document()->linesCount(); ++lineNo) {
+        TextLine & line = editor_->document()->at(lineNo);
+        QList<bool> & selectionMask = line.selected;
+        if (selectionMask.contains(true) || line.lineEndSelected) {
+            firstSelectedLine = lineNo;
+            break;
+        }
+    }
+    for (int lineNo=firstSelectedLine; lineNo < editor_->document()->linesCount(); ++lineNo) {
+        TextLine & line = editor_->document()->at(lineNo);
+        QList<bool> & selectionMask = line.selected;
+        if (line.protecteed) {
+            for (int column = 0; column < selectionMask.size(); ++column) {
+                selectionMask[column] = false;
+            }
+            line.lineEndSelected = false;
+        }
+        else {
+            firstSelectedLine = lineNo;
+            break;
+        }
+    }
+    // 2. Find new selection right bound
+    int selectionLastRow = -1;
+    int selectionLastColumn = -1;
+    for (int lineNo=firstSelectedLine; lineNo < editor_->document()->linesCount(); ++lineNo) {
+        TextLine & line = editor_->document()->at(lineNo);
+        QList<bool> & selectionMask = line.selected;
+        if (!line.protecteed && !line.hidden && (selectionMask.contains(true) || line.lineEndSelected)) {
+            selectionLastRow = lineNo;
+            selectionLastColumn = qMax(0, selectionMask.lastIndexOf(true));
+        }
+        else {
+            break;
+        }
+    }
+    // 3. Set tail not selected
+    if (selectionLastColumn != -1 && selectionLastRow !=-1) {
+        editor_->document()->at(selectionLastRow).lineEndSelected = false;
+        for (int lineNo=selectionLastRow+1; lineNo < editor_->document()->linesCount(); ++lineNo) {
+            TextLine & line = editor_->document()->at(lineNo);
+            QList<bool> & selectionMask = line.selected;
+            for (int column = 0; column < selectionMask.size(); ++column) {
+                selectionMask[column] = false;
+            }
+            line.lineEndSelected = false;
+        }
+        row_ = selectionLastRow;
+        column_ = selectionLastColumn + editor_->document()->indentAt(row_);
+    }
+}
+
 void TextCursor::insertText(const QString &text)
 {
     keptColumn_ = -1;
@@ -1676,7 +1733,7 @@ void TextCursor::removeCurrentChar()
     // TODO Undo-redo stack!
     if (!enabledFlag_)
         return;
-    if (modifiesProtectedLiines())
+    if (modifiesProtectedLiines() && !hasSelection())
         return;
     if (hasSelection()) {
         removeSelectedText();
@@ -1732,8 +1789,10 @@ void TextCursor::removeSelectedText()
     if (!hasSelection())
         return;
 
-    if (modifiesProtectedLiines())
+    if (modifiesProtectedLiines()) {
+        changeSelectionToExcludeProtectedLines();
         return;
+    }
 
     bool hardIndents = editor_->analizer() &&
             Shared::AnalizerInterface::HardIndents==editor_->analizer()->plugin()->indentsBehaviour();

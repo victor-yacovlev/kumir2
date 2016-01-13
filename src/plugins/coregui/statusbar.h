@@ -34,6 +34,7 @@ public slots:
 private:
     int fontHeight() const;
     void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
     void paintModeItem(QPainter &p, int x);
     void paintCounterItem(QPainter &p, int x);
     void paintMessageItem(QPainter &p, int x);

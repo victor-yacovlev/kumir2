@@ -10,6 +10,7 @@ InstallDir "$PROGRAMFILES\Kumir2x"
 RequestExecutionLevel admin
 
 
+
 !insertmacro MUI_PAGE_LICENSE "LICENSE_RU.rtf"
 
 !insertmacro MUI_PAGE_DIRECTORY
@@ -28,63 +29,67 @@ FunctionEnd
 
 Section "Kumir" Kumir
 
-	RMDir /r /REBOOTOK "$INSTDIR\lib\kumir2\plugins" ; Prevent conflicting modules from previous intallation
+    SetShellVarContext all
 
-	SetOutPath "$INSTDIR"
-	File LICENSE_RU.rtf
-	File vcredist_x86.exe
-	SetOutPath "$INSTDIR\bin"
-	File /r bin\*
-	SetOutPath "$INSTDIR\lib"
-	File /r lib\*
-	SetOutPath "$INSTDIR\share"
-	File /r share\*
+    RMDir /r /REBOOTOK "$INSTDIR\lib\kumir2\plugins" ; Prevent conflicting modules from previous intallation
 
-        SetOutPath "$INSTDIR\llvm-mingw"
-        File /nonfatal /r llvm-mingw\*
+    SetOutPath "$INSTDIR"
+    File LICENSE_RU.rtf
+    File vcredist_x86.exe
+    SetOutPath "$INSTDIR\bin"
+    File /r bin\*
+    SetOutPath "$INSTDIR\lib"
+    File /r lib\*
+    SetOutPath "$INSTDIR\share"
+    File /r share\*
+    SetOutPath "$INSTDIR\src"
+    File /r src\*
 
-        SetOutPath "$INSTDIR\python"
-        File /nonfatal /r python\*
+    SetOutPath "$INSTDIR\llvm-mingw"
+    File /nonfatal /r llvm-mingw\*
+
+    SetOutPath "$INSTDIR\python"
+    File /nonfatal /r python\*
 
 
-	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
-	Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
-	
-        WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
-        WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
-        WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
-        WriteRegStr HKCR "ru.niisi.kumir2.program\shell\Создать выполняемый файл\command" "" 'wscript.exe "$INSTDIR\bin\kumir2-llvmc-w.vbs" "%L"'
-        WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
-        WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
-        WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"        
-        WriteRegStr HKCR "ru.niisi.kumir2.bytecode\shell\open\command" "" '"$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
-        WriteRegStr HKCR "ru.niisi.kumir2.bytecode\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kod.ico"
-        
-        Call RefreshShellIcons
+    ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
+    Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
+    
+    WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
+    WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
+    WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
+    WriteRegStr HKCR "ru.niisi.kumir2.program\shell\Создать выполняемый файл\command" "" 'wscript.exe "$INSTDIR\bin\kumir2-llvmc-w.vbs" "%L"'
+    WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
+    WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
+    WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"    
+    WriteRegStr HKCR "ru.niisi.kumir2.bytecode\shell\open\command" "" '"$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
+    WriteRegStr HKCR "ru.niisi.kumir2.bytecode\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kod.ico"
+    
+    Call RefreshShellIcons
 
-	CreateDirectory "$SMPROGRAMS\Кумир2"
-	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
-	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
-	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
-	CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+    CreateDirectory "$SMPROGRAMS\Кумир2"
+    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
 
-	; Uninstaller registration
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
+    ; Uninstaller registration
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
 
-	WriteUninstaller $INSTDIR\uninstall.exe
-	
+    WriteUninstaller $INSTDIR\uninstall.exe
+    
 SectionEnd
 
 Section "Uninstall"
-	Delete /REBOOTOK "$INSTDIR\uninstall.exe"
-	RMDir /r /REBOOTOK "$INSTDIR"
-	RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
+    Delete /REBOOTOK "$INSTDIR\uninstall.exe"
+    RMDir /r /REBOOTOK "$INSTDIR"
+    RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
 
-        DeleteRegKey HKCR ".kum"
-        DeleteRegKey HKCR "ru.niisi.kumir2.program"
-        DeleteRegKey HKCR ".kod"
-        DeleteRegKey HKCR "ru.niisi.kumir2.bytecode"
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2"
+    DeleteRegKey HKCR ".kum"
+    DeleteRegKey HKCR "ru.niisi.kumir2.program"
+    DeleteRegKey HKCR ".kod"
+    DeleteRegKey HKCR "ru.niisi.kumir2.bytecode"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2"
 
 SectionEnd

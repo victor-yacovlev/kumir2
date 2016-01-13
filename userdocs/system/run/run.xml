@@ -32,7 +32,7 @@
                 <listitem>
                     <para>алгоритм<code language="kumir">@тестирование</code>,
                         которые может находится в скрытой части программы, -- при активации действия
-                        <guimenuitem>Выполнение&rarr;Запустить тестирование</guimenuitem>
+                        <guimenuitem>Выполнение &rarr; Запустить тестирование</guimenuitem>
                         или выполнения
                         проверки задания из Практикума.
                     </para>
@@ -89,26 +89,26 @@
                     <para>команда присваивания;</para>
                 </listitem>
                 <listitem>
-                    <para>команда<code language="kumir">ввод</code>;
+                    <para>команда<code role="кумир">ввод</code>;
                     </para>
                 </listitem>
                 <listitem>
-                    <para>заголовок цикла<code language="kumir">для</code>;
+                    <para>заголовок цикла<code role="кумир">для</code>;
                     </para>
                 </listitem>
                 <listitem>
-                    <para>заголовок цикла<code language="kumir">раз</code>;
+                    <para>заголовок цикла<code role="кумир">раз</code>;
                     </para>
                 </listitem>
                 <listitem>
-                    <para>команды контроля выполнения:<code language="kumir">утв</code>,
-                        <code language="kumir">дано</code>,<code language="kumir">надо</code>;
+                    <para>команды контроля выполнения:<code role="кумир">утв</code>,
+                        <code role="кумир">дано</code>,<code role="кумир">надо</code>;
                     </para>
                 </listitem>
                 <listitem>
-                    <para>конструкции проверки условий:<code language="kumir">пока</code>,
-                        <code language="kumir">если</code>,<code language="kumir">выбор..при:</code>,
-                        <code language="kumir">кц при</code>.
+                    <para>конструкции проверки условий:<code role="кумир">пока</code>,
+                        <code role="кумир">если</code>,<code role="кумир">выбор..при:</code>,
+                        <code role="кумир">кц при</code>.
                     </para>
                 </listitem>
             </itemizedlist>

@@ -62,6 +62,7 @@ public:
 
     bool isFreeCursorMovement() const;
     bool modifiesProtectedLiines() const;
+    void changeSelectionToExcludeProtectedLines();
 
     static void normalizePlainText(QString & s);
 

@@ -52,6 +52,11 @@ Document DocBookFactory::createNamedSet(const QString &name, const QList<Documen
     return Document(QUrl(), namedSetRoot);
 }
 
+void DocBookFactory::setConfigurationName(const QString &configurationName)
+{
+    configurationName_ = configurationName;
+}
+
 ModelPtr DocBookFactory::parseDocument(
         const QMap<ModelType,QString> & roles,
         QIODevice *stream,
@@ -122,17 +127,23 @@ void DocBookFactory::filterByConfiguration(ModelPtr root) const
     if (!root)
         return;
 
-    static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
-    QString confName =
-            applicationLanucher.startsWith(qApp->applicationDirPath())
-            ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
-            : applicationLanucher;
-#ifdef Q_OS_WIN32
-    if (confName.endsWith(".exe")) {
-        confName.remove(confName.length()-4, 4);
+    QString confName;
+    if (configurationName_.isEmpty()) {
+        static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
+        confName =
+                applicationLanucher.startsWith(qApp->applicationDirPath())
+                ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
+                : applicationLanucher;
+    #ifdef Q_OS_WIN32
+        if (confName.endsWith(".exe")) {
+            confName.remove(confName.length()-4, 4);
+        }
+    #endif
+        confName.remove("kumir2-");
     }
-#endif
-    confName.remove("kumir2-");
+    else {
+        confName = configurationName_;
+    }
     QList<ModelPtr> newList;
     for (ModelIterator it = root->children_.begin();
          it!=root->children_.end();
@@ -337,6 +348,7 @@ bool DocBookFactory::startElement(
             QFile file(fileName);
             if (file.open(QIODevice::ReadOnly)) {
                 DocBookFactory* innerFactory = new DocBookFactory();
+                innerFactory->configurationName_ = configurationName_;
                 QString localError;
                 ModelPtr include =
                         innerFactory->parseDocument(roles_, &file, hrefUrl, &localError);

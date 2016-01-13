@@ -92,6 +92,7 @@ void Plugin::setPreProgram(QVariant param)
       QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
       base.setScheme("Course");
       text.url=base;
+      text.title=MW->task.name;
       qDebug()<<base.isLocalFile()<<base.path ();
    gui->setProgramSource(text);
      
@@ -123,6 +124,7 @@ bool Plugin::setTextFromFile(QString fname)
     QUrl base=QUrl(MW->baseCourseFile());//path to kurs.xml file
     base.setScheme("Course");
     text.url=base;
+    text.title=MW->task.name;
     qDebug()<<base.isLocalFile()<<base.path ();
     gui->setProgramSource(text);
     return true;
@@ -152,7 +154,7 @@ bool  Plugin::startNewTask(QStringList isps,KumZadanie* task)
             
                 return false;
             }
-            //TODO LOAD FIELDS;
+            
             QFile* field_data=new QFile(task->field(isps.at(i), field_no));
             qDebug()<<"Set field"<<task->field(isps.at(i), field_no);
            if(! field_data->open(QIODevice::ReadOnly))return false;

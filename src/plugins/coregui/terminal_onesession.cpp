@@ -187,9 +187,12 @@ void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
 
         // 2. Header
         visibleHeader_ = headerText();
+        LineProp old = headerProp_;
         headerProp_.clear();
         for (size_t i=0; i<visibleHeader_.length(); i++) {
             headerProp_.push_back(CS_Output);
+            if (i < old.size())
+                headerProp_[i] = old[i];
         }
         headerRect_ = QRect(BodyPadding,
                             0,
@@ -198,9 +201,12 @@ void OneSession::relayout(uint realWidth, size_t fromLine, bool headerAndFooter)
 
         // 3. Footer
         visibleFooter_ = footerText();
+        old = footerProp_;
         footerProp_.clear();
         for (size_t i=0; i<visibleFooter_.length(); i++) {
             footerProp_.push_back(CS_Output);
+            if (i < old.size())
+                footerProp_[i] = old[i];
         }
         footerRect_ = footerText().isEmpty()
                 ? QRect(BodyPadding,
@@ -289,6 +295,7 @@ uint OneSession::drawUtilityText(
             p.setBrush(selectionBackroundBrush);
             p.drawRect(xx, topLeft.y(), cw, height);
             p.setPen(selectedTextColor);
+            qDebug() << "UT has selection";
         }
         else {
             p.setPen(QColor(Qt::darkGray));
@@ -398,6 +405,7 @@ uint OneSession::drawMainText(QPainter &p, const QPoint & topLeft, const QRect &
                 p.setPen(Qt::NoPen);
                 p.setBrush(selectionBackroundBrush);
                 p.drawRect(xx, yy-atom.height(), atom.width(), atom.height());
+                qDebug() << "MT has selection";
             }
             if (spec & SelectionMask)
                 p.setPen(selectedTextColor);
@@ -583,6 +591,7 @@ void OneSession::selectAll()
         }
         selectedLineEnds_[l] = true;
     }
+    relayout(parent_->width() - 2 * SessionMargin, 0, true);
     emit updateRequest();
 }
 
@@ -834,7 +843,7 @@ void OneSession::input(const QString &format)
                 msg += tr("boolean");
             else if (fmts[i].contains("::")) {
                 QStringList typeName = fmts[i].split("::", QString::KeepEmptyParts);
-                msg += typeName[1];
+                msg += typeName[2];
             }
 
         }

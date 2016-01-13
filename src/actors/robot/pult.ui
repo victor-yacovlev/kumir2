@@ -595,6 +595,9 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Сбросить</string>
+   </property>
    <property name="text">
     <string>...</string>
    </property>
@@ -636,6 +639,9 @@
      <width>31</width>
      <height>41</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Скопировать</string>
    </property>
    <property name="text">
     <string>...</string>

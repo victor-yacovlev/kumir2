@@ -16,7 +16,7 @@
         <para>
             В отличии от большинства текстовых редакторов, редактор программ "Кумир" позволяет
 			перемещать курсор в произвольную, в том числе не существующую, строку текста, а редактор
-            текстовых файлов (доступно только в конфигурациях
+            текстовых файлов (доступен только в конфигурациях
             <emphasis role="bold">Профессиональная</emphasis>
             и
             <emphasis role="bold">Для учителей</emphasis>) -- в произвольную ячейку текста.
@@ -38,8 +38,7 @@
             <keycombo>
                 <keysym>Alt</keysym>
             </keycombo>
-            приводит к
-            вводу символа в другой раскладке.
+			приводит ко вводу символа в другой раскладке.
         </para>
         <para>
             При редактировании текста программы на языке Кумир, часто используемые комбинации символов могут быть
@@ -161,37 +160,87 @@
     </section>
     <section>
         <title>Поиск и замена</title>
-        <para>
-            В области поиска вводится искомый текст, который, если будет найден, становится выделенным.
-            <mediaobject>
-                <imageobject>
-                    <imagedata format="PNG" fileref="images/edit-find.png"/>
-                </imageobject>
-                <imageobject>
-                    <imagedata format="PDF" fileref="images/edit-find.pdf"/>
-                </imageobject>
-                <caption>Область поиска</caption>
-            </mediaobject>
-        </para>
-        <para>Если найдено несколько вхождений искомой строки, между ними можно перемещаться, нажимая кнопки перехода к
-        предыдущему или следующему вхождению текста.</para>
-        <para>
-            Активация пункта меню <guimenuitem>Редактирование&rarr;Замена</guimenuitem> или нажатие кнопки
-            <guibutton>Дополнительные параметры</guibutton> отображает расширенный вариант области поиска.
-            <mediaobject>
-                <imageobject>
-                    <imagedata format="PNG" fileref="images/edit-replace.png"/>
-                </imageobject>
-                <imageobject>
-                    <imagedata format="PDF" fileref="images/edit-replace.pdf"/>
-                </imageobject>
-                <caption>Область поиска -- расширенный вариант</caption>
-            </mediaobject>
-        </para>
-        <para>
-            Здесь можно указать возможность поиска не только простого текста, но и шаблона, используя символ
-            <code>?</code> в качестве подстановки на место любого символа, или символ <code>*</code> в качестве
-            подстановки произвольного количества любых символов.
-        </para>
+		<para>
+			Активация пунктов меню <guimenuitem>Редактирование&rarr;Найти</guimenuitem> или 
+			<guimenuitem>Редактирование&rarr;Заменить</guimenuitem> открывает <guimenuitem>область поиска и замены</guimenuitem>.
+			Существует 2 варианта этой области:
+			<itemizedlist>
+				<listitem><para><emphasis role="bold">обычный</emphasis> -- содержит только поиск,</para></listitem>
+				<listitem><para><emphasis role="bold">расширенный</emphasis> -- содержит поиск по шаблону и замену.</para></listitem>
+			</itemizedlist>
+		</para>
+		<section>
+			<title>Обычный вариант</title>
+			<para>
+				Активация пункта меню <guimenuitem>Редактирование&rarr;Найти</guimenuitem> открывает обычный вариант области.
+				Зжесь можно ввести искомый текст, все вхождения которого в тексте файла, станут выделенными.
+				<mediaobject>
+					<imageobject>
+						<imagedata format="PNG" fileref="images/edit-find.png"/>
+					</imageobject>
+					<imageobject>
+						<imagedata format="PDF" fileref="images/edit-find.pdf"/>
+					</imageobject>
+					<caption>Область поиска</caption>
+				</mediaobject>
+			</para>
+			<para>
+				Если найдено несколько вхождений искомой строки, между ними можно перемещаться, нажимая кнопки перехода к
+				предыдущему или следующему вхождению текста.
+			</para>
+		</section>
+		<section>
+			<title>Расширенный вариант</title>
+			<para>
+				Активация пункта меню <guimenuitem>Редактирование&rarr;Замена</guimenuitem> или нажатие кнопки
+				<guibutton>Отображение дополнительных параметров</guibutton> отображает расширенный вариант области поиска.
+				<mediaobject>
+					<imageobject>
+						<imagedata format="PNG" fileref="images/edit-replace.png"/>
+					</imageobject>
+					<imageobject>
+						<imagedata format="PDF" fileref="images/edit-replace.pdf"/>
+					</imageobject>
+					<caption>Область поиска -- расширенный вариант</caption>
+				</mediaobject>
+			</para>
+			<para>
+				В поле <guimenuitem>Режим поиска</guimenuitem> можно указать возможность поиска не только простого текста, но и шаблона.
+				Для написания шаблонов можно использовать 2 специальных символа:
+				<itemizedlist>
+					<listitem>
+						<para><code>?</code> соответствует одному любому символу, </para>
+					</listitem>
+					<listitem>
+						<para><code>*</code> соответствует произвольному количеству любых символов. </para>
+					</listitem>
+				</itemizedlist>
+			</para>
+		</section>
     </section>
+	<section>
+		<title>
+			Копирование текста в RichText-редакторы
+		</title>
+		<para>
+			При копировании текста в RichText-редактор (например, таковыми являются Microsoft Word, LibreOffice Writer и др.) 
+			в целевой файл переносится не только код программы, но и отладочная информация. При этом в документе создаётся таблица, 
+			содержащая 1 строку и 2 столбца. В левый столбец переносится код программы, а в правый -- содержимое поля отладки 
+			(сообщения об ошибках, а также текущие значения переменных, которые выводятся на этапе выполнения программы).
+		</para>
+		<para>
+			Формат текста при копировании не теряется. Единственное изменение формата проявляется если текст копируемой программы 
+			содержит синтаксическую ошибку. В этом случае, при открытии целевого документа в Microsoft Word или LibreOffice Writer, 
+			фрагмент кода с ошибкой будет иметь красный цвет (в то время, как в других редакторах, а также в самом редакторе КуМира 
+			синтаксические ошибки выделяются лишь подчёркиванием).
+		</para>
+		<para configuration="teacher">
+			Подсветка защищённых и скрытых частей программы в целевом документе не отображается.
+		</para>
+        <para>
+            В том случае, если необходимо скопировать только текст программы <emphasis>без форматирования и текста на полях</emphasis>,
+            то вставка текста в RickText-редактор выполняется командой <guimenuitem>Специальная вставка</guimenuitem> целевого
+            редактора, где в предложенном диалоге специальной вставки нужно выбрать "Простой текст".
+        </para>
+	</section>
 </chapter>

@@ -176,28 +176,37 @@ bool PluginManagerImpl::extractRuntimeParametersForPlugin(const KPlugin *plugin,
     return success;
 }
 
-void PluginManagerImpl::changeWorkingDirectory(const QString &path, bool saveChanges)
+void PluginManagerImpl::changeWorkingDirectory(const QString &path, bool saveChanges, bool workDirOnly)
 {
-    workspacePath = path;
-    for (int i=0; i<objects.size(); i++) {
-        KPlugin * p = objects[i];
-        SettingsPtr s = settings[i];
-        if (s) {
-            if (saveChanges) p->saveSession();
-            s->changeWorkingDirectory(path);
+    if (!workDirOnly) {
+        settingsWorkspacePath = path;
+        for (int i=0; i<objects.size(); i++) {
+            KPlugin * p = objects[i];
+            SettingsPtr s = settings[i];
+            if (s) {
+                if (saveChanges) p->saveSession();
+                s->changeWorkingDirectory(path);
+            }
         }
     }
     QDir::root().mkpath(path);
     QDir::setCurrent(path);
-    QDir::current().mkdir(".settings");
-    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, path+"/.settings");
-    for (int i=0; i<objects.size(); i++) {
-        KPlugin * p = objects[i];
-        p->changeCurrentDirectory(path);
-        p->updateSettings(QStringList());
-        p->restoreSession();
+    if (!workDirOnly) {
+        QDir::current().mkdir(".settings");
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, path+"/.settings");
+        for (int i=0; i<objects.size(); i++) {
+            KPlugin * p = objects[i];
+            p->changeCurrentDirectory(path);
+            p->updateSettings(QStringList());
+            p->restoreSession();
+        }
     }
     mySettings->setValue(PluginManager::CurrentWorkspaceKey, path);
+}
+
+QString PluginManager::workspacePath() const
+{
+    return pImpl_->mySettings->value(PluginManager::CurrentWorkspaceKey).toString();
 }
 
 QString PluginManagerImpl::reorderSpecsAndCreateStates(const QStringList &orderedList)

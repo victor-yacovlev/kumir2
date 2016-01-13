@@ -226,7 +226,10 @@ QString TabWidgetElement::title() const
     if (editorInstance_) {
         const Shared::Analizer::SourceFileInterface::Data data = editorInstance_->documentContents();
         const QUrl url = data.sourceUrl;
-        if (url.isValid()) {
+        if (isCourseManagerTab()) {
+            return tr("%1 (Course)").arg(courseTitle_).trimmed();
+        }
+        else if (url.isValid()) {
             const QString fullPath = editorInstance_->documentContents().sourceUrl.toLocalFile();
             const QString shortPath = QFileInfo(fullPath).fileName();
             QString title;
@@ -237,9 +240,6 @@ QString TabWidgetElement::title() const
                 title = shortPath;
             }
             return title;
-        }
-        else if (isCourseManagerTab()) {
-            return tr("%1 (Course)").arg(courseTitle_).trimmed();
         }
         else {
             QString title;

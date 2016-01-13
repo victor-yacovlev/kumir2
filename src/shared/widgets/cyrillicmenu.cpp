@@ -1,5 +1,9 @@
 #include "cyrillicmenu.h"
 
+#ifdef Q_OS_UNIX
+#include <stdlib.h>
+#endif
+
 namespace Widgets {
 
 CyrillicMenu::CyrillicMenu(QWidget *parent): QMenu(parent) {}
@@ -51,6 +55,49 @@ void CyrillicMenu::paintEvent(QPaintEvent *event)
     frame.midLineWidth = 0;
     style()->drawPrimitive(QStyle::PE_FrameMenu, &frame, &p, this);
     event->accept();
+}
+
+/**
+ * @brief CyrillicMenu::updateUbuntuShortcutTexts
+ * Ubuntu's desktop environment uses global application menu, so
+ * customized QMenu event handlers are completely ignored.
+ *
+ * Solution: add shortcut text as visible action name text for each entry
+ */
+void CyrillicMenu::updateUbuntuShortcutTexts()
+{
+    bool isUbuntuSession = false;
+#ifdef Q_WS_X11
+    const char * sessionName = ::getenv("SESSION");
+    isUbuntuSession =
+            sessionName && "ubuntu" == QString::fromLatin1(sessionName).toLower();
+#endif
+    if (!isUbuntuSession) {
+        return;
+    }
+    static const char * FixedPropName = "UbuntuFixed";
+    for (int i=0; i<actions().count(); ++i) {
+        QAction * const action = actions().at(i);
+        if (!action->isSeparator()) {
+            bool ubuntuFixed = action->property(FixedPropName).toBool();
+            if (!ubuntuFixed) {
+                QString shortcutText;
+                if (action->property("fakeShortcut").toString().length() > 0) {
+                    shortcutText = action->property("fakeShortcut").toString();
+                }
+                else {
+                    shortcutText = shortcutToText(action->shortcut());
+                }
+                if (shortcutText.length() > 0) {
+                    action->setText(QString("%1\t(%2)")
+                                    .arg(action->text())
+                                    .arg(shortcutText)
+                                    );
+                }
+                action->setProperty(FixedPropName, true);
+            }
+        }
+    }
 }
 
 QString CyrillicMenu::shortcutToText(const QKeySequence &shortcut)

@@ -58,5 +58,8 @@ int main(int argc, char * argv[])
         return options::exit_code;
     }
 
+    DocBookViewer::DocBookFactory::self()->setConfigurationName(
+                QString::fromStdString(options::configuration)
+                );
     return process_file(options::input_file_name, options::output_file_name);
 }

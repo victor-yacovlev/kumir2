@@ -22,9 +22,12 @@ class SwitchWorkspaceDialog
     Q_OBJECT
 
 public:
+    enum Message { MSG_ChangeWorkspace, MSG_ChangeWorkingDirectory };
     explicit SwitchWorkspaceDialog(ExtensionSystem::SettingsPtr settings);
     ~SwitchWorkspaceDialog();
     void setCurrentWorkspace(const QString &path);
+    void setMessage(Message message);
+    void setUseAlwaysHidden(bool v);
     QString currentWorkspace() const;
 private slots:
     void handleBrowseClicked();

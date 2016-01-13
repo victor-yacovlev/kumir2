@@ -21,12 +21,15 @@ public:
     QSize minimumSizeHint() const;
     inline void setInputMode(bool v) {
         inputMode_ = v; inputText_ = ""; inputPosition_ = 0;
-    }
-
+    }        
 signals:
     void inputTextChanged(const QString & txt);
     void inputCursorPositionChanged(quint16 pos);
     void inputFinishRequest();
+    void requestAutoScrollX(char directionSign);
+    void requestAutoScrollY(char directionSign);
+
+
 
 public slots:
     void updateScrollBars();
@@ -42,6 +45,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e);
 
     void contextMenuEvent(QContextMenuEvent *);
+    void timerEvent(QTimerEvent *e);
 
     QPoint offset() const;
 
@@ -50,9 +54,13 @@ private slots:
     void copyToClipboard();
     void pasteFromClipboard();
 
+    void handleAutoscrollXChange(char directionSign);
+    void handleAutoscrollYChange(char directionSign);
+
 private:
     OneSession* sessionByPos(const QPoint & pos) const;
     QRect sessionRect(const OneSession * session) const;
+
     Term * terminal_;
     bool inputMode_;
     quint16 inputPosition_;
@@ -61,6 +69,10 @@ private:
     QPoint mousePressPosition_;
     QAction * actionCopyToClipboard_;
     QAction * actionPasteFromClipboard_;
+
+    char autoScrollStateX_;
+    char autoScrollStateY_;
+    int autoScrollTimerId_;
 };
 
 } // namespace Terminal

@@ -13,7 +13,7 @@
    height="414.375"
    id="svg4792"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="kumir-ide-startpage.svg"
    inkscape:export-filename="/home/victor/Projects/NIISI/kumir/kumir2-master/userdocs/system/kumir-classic-mainwindow.png"
    inkscape:export-xdpi="69.519997"
@@ -127,15 +127,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.92995686"
-     inkscape:cx="532.04585"
-     inkscape:cy="55.062266"
+     inkscape:cx="475.8021"
+     inkscape:cy="216.38602"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4348"
      showgrid="false"
-     inkscape:window-width="1680"
-     inkscape:window-height="990"
-     inkscape:window-x="-4"
-     inkscape:window-y="-3"
+     inkscape:window-width="1146"
+     inkscape:window-height="585"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -227,7 +227,7 @@
          id="tspan3895"
          x="149.78177"
          y="522.68811"
-         style="font-size:16px">Редактирование</tspan></text>
+         style="font-size:12.5px">Редактирование</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B"
@@ -242,7 +242,7 @@
          id="tspan3895-8"
          x="269.31152"
          y="522.67139"
-         style="font-size:16px">Ошибок нет</tspan></text>
+         style="font-size:12.5px">Ошибок нет</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:OpenGost Type A"
@@ -257,7 +257,7 @@
          id="tspan3920"
          x="544.78174"
          y="522.68811"
-         style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B">Стр:1, Кол: 1</tspan></text>
+         style="font-size:12.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B">Стр:1, Кол: 1</tspan></text>
     <g
        id="g3981"
        transform="translate(58.353195,272.74614)"
@@ -272,7 +272,7 @@
          x="601.92047"
          style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type A;-inkscape-font-specification:OpenGost Type A"
          xml:space="preserve"><tspan
-           style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B"
+           style="font-size:12.5px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B"
            y="248.53026"
            x="601.92047"
            id="tspan3920-4"
@@ -339,7 +339,7 @@
          id="tspan4974"
          x="295.11761"
          y="133.98988"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B">Начало работы - Кумир</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;text-anchor:start;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B;font-size:12.5px">Начало работы - Кумир</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 50.756443,204.43299 645.999997,0"
@@ -377,7 +377,7 @@
          id="tspan5522"
          x="52.857143"
          y="156.93361"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B">Программа Редактирование Вставка Выполнение Окна Практикум Робот Рисователь Инфо</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B;font-size:12.5px">Программа Редактирование Вставка Выполнение Окна Практикум Робот Рисователь Инфо</tspan></text>
     <g
        id="g6437"
        transform="translate(-2.0203051,75.192898)"
@@ -448,7 +448,8 @@
            y="187.15712"
            x="227.04942"
            id="tspan6878-3"
-           sodipodi:role="line">Начало работы</tspan></text>
+           sodipodi:role="line"
+           style="font-size:12.5px">Начало работы</tspan></text>
     </g>
     <g
        id="g4944-9-2"
@@ -489,7 +490,7 @@
              id="tspan3403"
              x="96.466995"
              y="255.0764"
-             style="font-size:22px">Программы</tspan></text>
+             style="font-size:16.25px">Программы</tspan></text>
         <rect
            style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
            id="rect4223"
@@ -510,26 +511,26 @@
              id="tspan4245"
              x="139.76759"
              y="284.78256"
-             style="text-align:center;text-anchor:middle">Новая программа</tspan><tspan
+             style="text-align:center;text-anchor:middle;font-size:12.5px">Новая программа</tspan><tspan
              sodipodi:role="line"
              x="139.76759"
              y="304.78256"
              id="tspan4247"
-             style="text-align:center;text-anchor:middle">Загрузить программу...</tspan><tspan
+             style="text-align:center;text-anchor:middle;font-size:12.5px">Загрузить программу...</tspan><tspan
              sodipodi:role="line"
              x="139.76759"
              y="324.78256"
-             style="text-align:center;text-anchor:middle"
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
              id="tspan4314">программа_1.kum</tspan><tspan
              sodipodi:role="line"
              x="139.76759"
              y="344.78256"
-             style="text-align:center;text-anchor:middle"
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
              id="tspan4316">программа_2.kum</tspan><tspan
              sodipodi:role="line"
              x="139.76759"
              y="364.78256"
-             style="text-align:center;text-anchor:middle"
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
              id="tspan4318">программа_3.kum</tspan></text>
       </g>
       <g
@@ -546,7 +547,7 @@
              id="tspan3407"
              x="279.90659"
              y="259.07639"
-             style="font-size:22px">Практикумы</tspan></text>
+             style="font-size:16.25px">Практикумы</tspan></text>
         <rect
            style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
            id="rect4223-1"
@@ -558,27 +559,37 @@
            rx="22.627417" />
         <text
            xml:space="preserve"
-           style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B"
-           x="328.20105"
-           y="285.95303"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'OpenGost Type B';-inkscape-font-specification:'OpenGost Type B';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+           x="327.12573"
+           y="292.40494"
            id="text4243-6"
            sodipodi:linespacing="125%"><tspan
              sodipodi:role="line"
-             x="328.20105"
-             y="285.95303"
+             x="327.12573"
+             y="292.40494"
              id="tspan4247-2"
-             style="text-align:center;text-anchor:middle">Показать окно практикумов</tspan><tspan
+             style="font-size:12.125px;text-align:center;text-anchor:middle">Показать окно практикумов</tspan><tspan
              sodipodi:role="line"
-             x="328.20105"
-             y="305.95303"
-             style="text-align:center;text-anchor:middle"
+             x="327.12573"
+             y="308.02994"
+             style="font-size:12.125px;text-align:center;text-anchor:middle"
              id="tspan4322">Практикум 1</tspan><tspan
              sodipodi:role="line"
-             x="328.20105"
-             y="325.95303"
-             style="text-align:center;text-anchor:middle"
+             x="327.12573"
+             y="323.65494"
+             style="font-size:12.125px;text-align:center;text-anchor:middle"
              id="tspan4324">Практикум 2</tspan></text>
-      </g>
+        <flowRoot
+           xml:space="preserve"
+           id="flowRoot3428"
+           style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
+             id="flowRegion3430"><rect
+               id="rect3432"
+               width="190.33141"
+               height="56.99189"
+               x="226.89224"
+               y="156.29851" /></flowRegion><flowPara
+             id="flowPara3434"></flowPara></flowRoot>      </g>
       <g
          id="g4338">
         <text
@@ -592,7 +603,7 @@
              id="tspan3411"
              x="488.15955"
              y="259.07639"
-             style="font-size:22px">Документация</tspan></text>
+             style="font-size:16.25px">Документация</tspan></text>
         <rect
            style="fill:none;stroke:#000000;stroke-width:1.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
            id="rect4223-2"
@@ -604,7 +615,7 @@
            rx="22.627417" />
         <text
            xml:space="preserve"
-           style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:OpenGost Type B;-inkscape-font-specification:OpenGost Type B"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:'OpenGost Type B';-inkscape-font-specification:'OpenGost Type B';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
            x="544.14471"
            y="288.23413"
            id="text4243-66"
@@ -613,27 +624,27 @@
              x="544.14471"
              y="288.23413"
              id="tspan4247-6"
-             style="text-align:center;text-anchor:middle">Показать окно справки</tspan><tspan
+             style="text-align:center;text-anchor:middle;font-size:12.5px">Показать окно справки</tspan><tspan
              sodipodi:role="line"
              x="544.14471"
              y="308.23413"
-             style="text-align:center;text-anchor:middle"
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
              id="tspan4328">Язык Кумир</tspan><tspan
              sodipodi:role="line"
              x="544.14471"
              y="328.23413"
-             style="text-align:center;text-anchor:middle"
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
              id="tspan4330">Руководство пользователя</tspan><tspan
              sodipodi:role="line"
              x="544.14471"
              y="348.23413"
-             style="text-align:center;text-anchor:middle"
-             id="tspan4334">Исполнитель &quot;Робот&quot;</tspan><tspan
+             style="text-align:center;text-anchor:middle;font-size:12.5px"
+             id="tspan4334">Исполнители</tspan><tspan
              sodipodi:role="line"
              x="544.14471"
              y="368.23413"
              style="text-align:center;text-anchor:middle"
-             id="tspan4397">Исполнитель &quot;Рисователь&quot;</tspan></text>
+             id="tspan4397" /></text>
       </g>
     </g>
   </g>

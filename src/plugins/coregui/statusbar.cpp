@@ -71,6 +71,7 @@ QSize StatusBar::minimumSizeHint() const
 //#ifndef Q_WS_X11
     h += 8;
 //#endif
+    w = 100;
     return QSize(w, h);
 }
 
@@ -255,8 +256,14 @@ void StatusBar::paintItemRect(QPainter &p, const QSize &sz, int x)
 //    p.restore();
 }
 
+static const int HideToolbarThereshold = 400;
+
 void StatusBar::paintEvent(QPaintEvent *event)
 {
+    static const int HideKeyboardStatusThereshold = 520;
+    static const int HideLineNumberThereshold = 460;
+    static const int HideModeThereshold = 200;
+
     using Shared::PluginInterface;
     QPainter p(this);
     QStyle * st = style();
@@ -268,19 +275,24 @@ void StatusBar::paintEvent(QPaintEvent *event)
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
     int x = 0;
-    for (int i=0; i<toolButtons_.size(); i++) {
-        x += toolButtons_[i]->width();
-    }
-    if (toolButtons_.size() > 0) {
-        x += ItemPadding;
+    if (width() >= HideToolbarThereshold) {
+        for (int i=0; i<toolButtons_.size(); i++) {
+            x += toolButtons_[i]->width();
+        }
+        if (toolButtons_.size() > 0) {
+            x += ItemPadding;
+        }
     }
 #ifdef Q_OS_MAC
     x += 20;
 #endif
-    paintModeItem(p, x);
-    x += modeItemSize().width();
+    if (width() >= HideModeThereshold) {
+        paintModeItem(p, x);
+        x += modeItemSize().width();
+    }
     paintCounterItem(p, x);
     x += counterItemSize().width();
+
     if (state_ == PluginInterface::GS_Unlocked) {
         const QSize remaining =
                 cursorPositionItemSize() + keyboardLayoutItemSize();
@@ -289,10 +301,19 @@ void StatusBar::paintEvent(QPaintEvent *event)
             paintMessageItem(p, x);
             x += message.width();
         }
-        x = width() - cursorPositionItemSize().width() - keyboardLayoutItemSize().width();
-        paintCursorItem(p, x);
-        x += cursorPositionItemSize().width();
-        paintKeyboardItem(p, x);
+        if (width() < HideKeyboardStatusThereshold) {
+            x = width() - cursorPositionItemSize().width();
+        }
+        else {
+            x = width() - cursorPositionItemSize().width() - keyboardLayoutItemSize().width();
+        }
+        if (width() >= HideLineNumberThereshold) {
+            paintCursorItem(p, x);
+        }
+        if (width() >= HideKeyboardStatusThereshold) {
+            x += cursorPositionItemSize().width();
+            paintKeyboardItem(p, x);
+        }
     }
     else {
         paintMessageItem(p, x);
@@ -300,14 +321,32 @@ void StatusBar::paintEvent(QPaintEvent *event)
         const QSize remaining =
                 cursorPositionItemSize() + keyboardLayoutItemSize();
         if (x <= width() - remaining.width()) {
-            x = width() - cursorPositionItemSize().width() - keyboardLayoutItemSize().width();
-            paintCursorItem(p, x);
-            x += cursorPositionItemSize().width();
-            paintKeyboardItem(p, x);
+            if (width() < HideKeyboardStatusThereshold) {
+                x = width() - cursorPositionItemSize().width();
+            }
+            else {
+                x = width() - cursorPositionItemSize().width() - keyboardLayoutItemSize().width();
+            }
+            if (width() >= HideLineNumberThereshold) {
+                paintCursorItem(p, x);
+            }
+            if (width() >= HideKeyboardStatusThereshold) {
+                x += cursorPositionItemSize().width();
+                paintKeyboardItem(p, x);
+            }
         }
     }
     p.end();
     event->accept();
+}
+
+void StatusBar::resizeEvent(QResizeEvent *event)
+{
+    Q_FOREACH(QToolButton *b, toolButtons_) {
+        b->setVisible(width() >= HideToolbarThereshold);
+    }
+
+    QStatusBar::resizeEvent(event);
 }
 
 void StatusBar::paintModeItem(QPainter &p, int x)
@@ -384,7 +423,7 @@ void StatusBar::paintCounterItem(QPainter &p, int x)
             text = tr("%1 steps done", "5, 6, 15, 16, etc").arg(stepsDone_);
     }
     const QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
-                         counterItemSize() - QSize(2*ItemPadding, 0));
+                         counterItemSize()/* - QSize(2*ItemPadding, 0)*/);
     QTextOption opt;
     opt.setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     p.drawText(textRect, text, opt);
