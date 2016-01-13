@@ -1,4 +1,4 @@
-project(Actor_Colorer)
+project(ActorVodoley)
 cmake_minimum_required(VERSION 2.8.3)
 
 if(NOT DEFINED USE_QT)
@@ -20,100 +20,113 @@ endif()
 
 find_package(PythonInterp 2.6 REQUIRED)
 include(../../kumir2_plugin.cmake)
-
 set(SOURCES
-    _colorermodule.cpp
+    vodoleymodule.cpp
+    vodoley.cpp
+    pult.cpp
+    dialog.cpp
 )
 
 set(MOC_HEADERS
-    _colorermodule.h
+    vodoleymodule.h
+    vodoley.h
+    pult.h
+    dialog.h
 )
 
+set(FORMS
+    dialog.ui
+    pult.ui
+    )
+
+       
 add_custom_command(
     OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.h
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.h
+        ${CMAKE_CURRENT_BINARY_DIR}/ActorVodoley.pluginspec
     COMMAND ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
             --update
-            ${CMAKE_CURRENT_SOURCE_DIR}/_colorer.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/vodoley.json
     DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/_colorer.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/vodoley.json
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 
 add_custom_target(
-    Actor_ColorerPluginSpec
+    ActorVodoleyPluginSpec
     ALL
     ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec ${PLUGIN_OUTPUT_PATH}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec
+        ${CMAKE_CURRENT_BINARY_DIR}/ActorVodoley.pluginspec ${PLUGIN_OUTPUT_PATH}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ActorVodoley.pluginspec
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.moc.cpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
         ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
-        -o${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
+        -o${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.moc.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.h
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/vodoleymodulebase.h
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.moc.cpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
-        -I${CMAKE_SOURCE_DIR}/src/shared
         ${MOC_PARAMS}
-        -o${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
+        -I${CMAKE_SOURCE_DIR}/src/shared
+        -o${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.moc.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.h
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/vodoleyplugin.h
 )
 
 set(SOURCES_GENERATED
-    _colorermodulebase.cpp
-    _colorerplugin.cpp
+    vodoleymodulebase.cpp
+    vodoleyplugin.cpp
 )
 
 set(MOC_SOURCES_GENERATED
-    _colorermodulebase.moc.cpp
-    _colorerplugin.moc.cpp
+    vodoleymodulebase.moc.cpp
+    vodoleyplugin.moc.cpp
 )
 
 if(${USE_QT} GREATER 4)
     qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt5_wrap_ui(UI_SOURCES ${FORMS})
 else()
     qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+    qt4_wrap_ui(UI_SOURCES ${FORMS})
 endif()
 
 install(
-    FILES ${PLUGIN_OUTPUT_PATH}/Actor_Colorer.pluginspec
+    FILES ${PLUGIN_OUTPUT_PATH}/ActorVodoley.pluginspec
     DESTINATION ${PLUGINS_DIR}
 )
 
-handleTranslation(Actor_Colorer)
+handleTranslation(ActorVodoley)
 
 add_library(
-    Actor_Colorer
+    ActorVodoley
     SHARED
-    ${MOC_SOURCES} ${SOURCES}
+    ${MOC_SOURCES} ${SOURCES} ${UI_SOURCES}
     ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
 )
 
 target_link_libraries(
-    Actor_Colorer
+    ActorVodoley
     ${QT_LIBRARIES}
     ExtensionSystem
     Widgets
     ${STDCXX_LIB} ${STDMATH_LIB}
 )
 
-copyResources(actors/_colorer)
+copyResources(actors/vodoley)
 
 install(
-    TARGETS Actor_Colorer
+    TARGETS ActorVodoley
     DESTINATION ${PLUGINS_DIR}
 )

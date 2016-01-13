@@ -1,4 +1,4 @@
-project(Actor_Colorer)
+project(ActorDraw)
 cmake_minimum_required(VERSION 2.8.3)
 
 if(NOT DEFINED USE_QT)
@@ -22,65 +22,65 @@ find_package(PythonInterp 2.6 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
-    _colorermodule.cpp
+    drawmodule.cpp
 )
 
 set(MOC_HEADERS
-    _colorermodule.h
+    drawmodule.h
 )
 
 add_custom_command(
     OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
-        ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec
+        ${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.h
+        ${CMAKE_CURRENT_BINARY_DIR}/drawplugin.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/drawplugin.h
+        ${CMAKE_CURRENT_BINARY_DIR}/ActorDraw.pluginspec
     COMMAND ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
             --update
-            ${CMAKE_CURRENT_SOURCE_DIR}/_colorer.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/draw.json
     DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/_colorer.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/draw.json
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
 )
 
 add_custom_target(
-    Actor_ColorerPluginSpec
+    ActorDrawPluginSpec
     ALL
     ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec ${PLUGIN_OUTPUT_PATH}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Actor_Colorer.pluginspec
+        ${CMAKE_CURRENT_BINARY_DIR}/ActorDraw.pluginspec ${PLUGIN_OUTPUT_PATH}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ActorDraw.pluginspec
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.moc.cpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
-        ${MOC_PARAMS}
         -I${CMAKE_SOURCE_DIR}/src/shared
-        -o${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_colorermodulebase.h
+        ${MOC_PARAMS}
+        -o${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.moc.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.h
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/drawmodulebase.h
 )
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.moc.cpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/drawplugin.moc.cpp
     COMMAND ${QT_MOC_EXECUTABLE}
-        -I${CMAKE_SOURCE_DIR}/src/shared
         ${MOC_PARAMS}
-        -o${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/_colorerplugin.h
+        -I${CMAKE_SOURCE_DIR}/src/shared
+        -o${CMAKE_CURRENT_BINARY_DIR}/drawplugin.moc.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/drawplugin.h
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/drawplugin.h
 )
 
 set(SOURCES_GENERATED
-    _colorermodulebase.cpp
-    _colorerplugin.cpp
+    drawmodulebase.cpp
+    drawplugin.cpp
 )
 
 set(MOC_SOURCES_GENERATED
-    _colorermodulebase.moc.cpp
-    _colorerplugin.moc.cpp
+    drawmodulebase.moc.cpp
+    drawplugin.moc.cpp
 )
 
 if(${USE_QT} GREATER 4)
@@ -90,30 +90,32 @@ else()
 endif()
 
 install(
-    FILES ${PLUGIN_OUTPUT_PATH}/Actor_Colorer.pluginspec
+    FILES ${PLUGIN_OUTPUT_PATH}/ActorDraw.pluginspec
     DESTINATION ${PLUGINS_DIR}
 )
 
-handleTranslation(Actor_Colorer)
+handleTranslation(ActorDraw)
 
 add_library(
-    Actor_Colorer
+    ActorDraw
     SHARED
     ${MOC_SOURCES} ${SOURCES}
     ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
 )
 
+add_dependencies(ActorDraw Actor_Colorer)
+
 target_link_libraries(
-    Actor_Colorer
+    ActorDraw
     ${QT_LIBRARIES}
     ExtensionSystem
     Widgets
     ${STDCXX_LIB} ${STDMATH_LIB}
 )
 
-copyResources(actors/_colorer)
+copyResources(actors/draw)
 
 install(
-    TARGETS Actor_Colorer
+    TARGETS ActorDraw
     DESTINATION ${PLUGINS_DIR}
 )
