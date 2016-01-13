@@ -88,7 +88,7 @@ class Type:
         return hash(self.full_name)
 
     def __dir__(self):
-        return list(filter(lambda x: not re.match('__\S*__', x), super().__dir__()))
+        return list(filter(lambda x: not re.match('__\S+__', x), super().__dir__()))
 
     @property
     def simple_name(self):
