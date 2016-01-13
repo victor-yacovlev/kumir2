@@ -16,6 +16,7 @@ try:
 except ImportError:
     debug = print
 
+
 def _find_element(elem_name, collection):
     low_el_name = elem_name.lower()
     types = [current for current in collection if current.simple_name.lower() == elem_name]
@@ -72,14 +73,20 @@ def _parse(string):
 
 
 def process_undefined_types():
+    # for tp_ in [tp for tp in types_table if tp.simple_name == 'int' or tp.marker][0:2]:
+    #     for meth in tp_.methods:
+    #         debug(meth.formals[0])
     pass
     # todo: define set of *candidates*
 
 
 def shrink_table():
-    for num, marked_type in enumerate(types_table):
-        marked_type.assign([final_type for final_type in types_table if final_type.full_name == marked_type.full_name][0])
-    # todo: set() with links changing
+    global types_table
+    for marked_type in types_table:
+        type_repetitions = [final_type for final_type in types_table if final_type.full_name == marked_type.full_name]
+        if len(type_repetitions) > 1:
+            marked_type.assign(type_repetitions[0])
+    types_table = list(set(types_table))
 
 
 class AnalysisNodeVisitor(NodeVisitor):
