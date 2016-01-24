@@ -72,7 +72,7 @@ Section "Kumir" Kumir
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
-
+    CreateShortCut "$SMPROGRAMS\Кумир2\Удалить Кумир.lnk" "$INSTDIR\uninstall.exe"
     ; Uninstaller registration
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
