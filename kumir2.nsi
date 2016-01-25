@@ -17,6 +17,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "Russian"
+!insertmacro MUI_UNPAGE_CONFIRM
 
 !define SHCNE_ASSOCCHANGED 0x08000000
 !define SHCNF_IDLIST 0
