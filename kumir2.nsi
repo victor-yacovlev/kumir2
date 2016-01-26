@@ -17,7 +17,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "Russian"
-!insertmacro MUI_UNPAGE_COMPONENTS
+
 
 !define SHCNE_ASSOCCHANGED 0x08000000
 !define SHCNF_IDLIST 0
@@ -81,7 +81,15 @@ Section "Kumir" Kumir
     WriteUninstaller $INSTDIR\uninstall.exe
     
 SectionEnd
-
+function un.onInit
+	SetShellVarContext all
+ 
+	#Verify the uninstaller - last chance to back out
+	MessageBox MB_OKCANCEL "Permanantly remove ${APPNAME}?" IDOK next
+		Abort
+	next:
+	!insertmacro VerifyUserIsAdmin
+functionEnd
 Section "Uninstall"
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
