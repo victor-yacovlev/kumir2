@@ -822,6 +822,10 @@ void DrawModule::createGui()
     QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
+    Color Black;
+    Black.r=0;Black.g=0;Black.b=0;
+    
+    penColor=Black;
 }
 
 QString DrawModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
@@ -960,6 +964,10 @@ void DrawModule::showNavigator(bool state)
     penIsDrawing=false;
     mPen->setPos(0,0);
     CurScene->reset();
+    Color Black;
+    Black.r=0;Black.g=0;Black.b=0;
+    
+    penColor=Black;
     QList<QRectF> rect;
     rect.append(CurView->sceneRect());
     CurView->updateScene(rect);
@@ -981,7 +989,7 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг опустить перо */
     // TODO implement me
-    mPen->setBrush(QBrush(QColor("black")));
+     mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     penIsDrawing=true;
 }
 
@@ -992,7 +1000,7 @@ void DrawModule::showNavigator(bool state)
 
     mutex.lock();
 
-    mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
+    mPen->setBrush(QBrush(QColor("white")));
 
     penIsDrawing=false;
     mutex.unlock();
@@ -1005,6 +1013,7 @@ void DrawModule::showNavigator(bool state)
     // TODO implement me
     Q_UNUSED(color)  // Remove this line on implementation;
     penColor=color;
+    mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
             << QColor(color.r, color.g, color.b, color.a).name()

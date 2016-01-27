@@ -81,6 +81,7 @@ Section "Kumir" Kumir
     WriteUninstaller $INSTDIR\uninstall.exe
     
 SectionEnd
+
 function un.onInit
 	SetShellVarContext all
  
@@ -90,7 +91,9 @@ function un.onInit
 	next:
 	!insertmacro VerifyUserIsAdmin
 functionEnd
-Section "Uninstall"
+
+Section "uninstall"
+!insertmacro MUI_UNPAGE_CONFIRM
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
     RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
