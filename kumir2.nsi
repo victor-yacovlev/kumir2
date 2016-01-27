@@ -93,7 +93,7 @@ function un.onInit
 functionEnd
 
 Section "uninstall"
-!insertmacro MUI_UNPAGE_CONFIRM
+
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
     RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
