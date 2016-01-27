@@ -1131,23 +1131,25 @@ void DrawModule::drawNet()
         qreal width=end_d.x()-start_d.x();
         qreal heigth=end_d.y()-start_d.y();
         qreal size=qMax(width,heigth);
-        QRectF sceneInfoRect=CurScene->getRect();
+        QRectF sceneInfoRect=CurScene->getRect();//Get user lines bounding rect from scene
    
         sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
-        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"Center in KumCoord"<<sceneInfoRect.center();
         //CurView->fitInView(sceneInfoRect);
         
        // CurView->setSceneRect(sceneInfoRect);
         CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
                                      QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
         
-        
+        QPointF cnt=sceneInfoRect.center();
+        cnt.setY(-cnt.y());
         qreal width2=sceneInfoRect.width();
         qreal size2=qMax(sceneInfoRect.height(),width2);
         qreal oldZoom=CurView->zoom();
         qreal newZoom=(CurView->zoom()*(size/size2))*0.3;
          qDebug()<<"NZ"<<newZoom;
         CurView->setZoom(newZoom/2);
+               sceneInfoRect.moveCenter(cnt);//convert to scene coord
         CurView->setSceneRect(sceneInfoRect);
         qDebug()<<"PenScale"<<Pen()->scale()<<"ZoomMP"<<oldZoom/newZoom;
         //QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
@@ -1164,7 +1166,7 @@ void DrawModule::drawNet()
         //while((QVector2D(sceneInfoRect.center())-QVector2D(viewRect.center())).length() > qAbs(sceneInfoRect.right()-sceneInfoRect.left())/4  )
       //  {
          
-            QPointF cnt=sceneInfoRect.center();
+             cnt=sceneInfoRect.center();
             
             qDebug()<<"realCenter2 correction"<<viewRect.center();
             qDebug()<<"Need Center"<<sceneInfoRect.center();
@@ -1173,6 +1175,8 @@ void DrawModule::drawNet()
             qDebug()<<"CurCenter"<<CurView->sceneRect().center()<<"Y off scene offset"<<offScene.toPoint().y()<<"Scbar"<<CurView->verticalScrollBar()->value();
            // CurView->verticalScrollBar()->setValue(CurView->verticalScrollBar()->value()+offScene.toPoint().y());
           // CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value());
+        
+ 
         CurView->centerOn(sceneInfoRect.center());
         CurView->setZoom(newZoom);
         CurView->setNet();
