@@ -89,7 +89,7 @@ function un.onInit
 	MessageBox MB_OKCANCEL "Permanantly remove ${APPNAME}?" IDOK next
 		Abort
 	next:
-	!insertmacro VerifyUserIsAdmin
+	
 functionEnd
 
 Section "uninstall"
