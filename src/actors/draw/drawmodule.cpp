@@ -823,7 +823,7 @@ void DrawModule::createGui()
 
     CurScene->setBackgroundBrush (curBackground);
     Color Black;
-    Black.r=0;Black.g=0;Black.b=0;
+       Black.r=0;Black.g=0;Black.b=0;Black.a=255;
     
     penColor=Black;
 }
@@ -965,7 +965,7 @@ void DrawModule::showNavigator(bool state)
     mPen->setPos(0,0);
     CurScene->reset();
     Color Black;
-    Black.r=0;Black.g=0;Black.b=0;
+    Black.r=0;Black.g=0;Black.b=0;Black.a=255;
     
     penColor=Black;
     QList<QRectF> rect;
@@ -1017,7 +1017,7 @@ void DrawModule::showNavigator(bool state)
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
             << QColor(color.r, color.g, color.b, color.a).name()
-            << "\" } )";
+            << "\" } )"<<color.a;
 }
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
