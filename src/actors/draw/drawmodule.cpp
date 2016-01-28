@@ -22,7 +22,8 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 #define NET_RESERVE 15
-   
+#define KUM_MULTI 50
+    
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
@@ -139,24 +140,17 @@ namespace ActorDraw {
     qreal DrawScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
     {
         QFont font ( "Courier", 12);
-        font.setPointSizeF(2000.0);
+        font.setPointSizeF(KUM_MULTI);
         QFontMetricsF fontMetric(font);
-        qreal bs=fontMetric.boundingRect("OOOXX").width()/3;
-        qreal inc=0.999;
-        if((widthChar*100)>bs)inc=1.001;
+        qreal bs=fontMetric.boundingRect(Text).width();
+        qreal ch=bs/Text.length();
+        qreal psizeF=widthChar/bs;
+       
         
-        while(!((bs+(bs*0.003)>widthChar*1000)&&(bs-(bs*0.003)<widthChar*1000)))
-        {
-            qreal psizeF=font.pointSizeF();
-            if(psizeF<0.001)
-            {
-                break;
-                qDebug("ERROR SET FONT SIZE");
-            }
-          font.setPointSizeF(psizeF*inc);
-            fontMetric=QFontMetricsF(font);
-            bs=fontMetric.boundingRect("OOOXX").width()/5;
-        }
+   
+        //  font.setPointSizeF(psizeF*inc);
+          bs=fontMetric.boundingRect("OOOXX").width()/5;
+        
        
         fontMetric=QFontMetricsF(font);
         qDebug()<<"Char Size:"<<fontMetric.boundingRect("OOOXX").width()/5000;
@@ -164,10 +158,10 @@ namespace ActorDraw {
         
         texts.append(addSimpleText(Text,font));
 //        texts.last()->scale(0.001,0.001);
-        texts.last()->setScale(0.001);
-        texts.last()->setPos(from.x(), from.y()-fontMetric.boundingRect("OOOXX").height()/1000);
+        texts.last()->setScale(psizeF);
+        texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
         texts.last()->setPen(QPen(color));
-        return widthChar*Text.length();
+        return widthChar;
     };
     void DrawScene::DestroyNet()
     {
@@ -1053,13 +1047,11 @@ void DrawModule::showNavigator(bool state)
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
 {
     /* алг надпись(вещ width, лит text) */
-    // TODO implement me
+   
     
     qreal offset=CurScene->drawText(text, width, mPen->pos(),QColor(penColor.r, penColor.g, penColor.b, penColor.a));
     mPen->moveBy(offset, 0);
-    Q_UNUSED(width)  // Remove this line on implementation;
-    Q_UNUSED(text)  // Remove this line on implementation;
-    
+     qDebug()<<"TExt ofset"<<offset;  
 }
     
     
