@@ -29,7 +29,7 @@ namespace ActorDraw {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
         ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorDraw")[0];
         return pluginManager->settingsByObject(plugin);
-    }
+    }//Get  settings
     
     static const qreal MAX_ZOOM = 1000000;
     
@@ -39,7 +39,7 @@ namespace ActorDraw {
     
     
     
-    QRectF DrawScene::getRect()
+    QRectF DrawScene::getRect() //User lines bounding rect
     {
         QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
   
@@ -113,6 +113,7 @@ namespace ActorDraw {
         
         return(boundRect);
     };
+    
     bool DrawScene::isUserLine(QGraphicsItem* obj)
     {
         for(int i=0;i<lines.count();i++)
@@ -121,6 +122,7 @@ namespace ActorDraw {
         }
         return false;
     };
+    
     bool DrawScene::isLineAt(const QPointF &pos,qreal radius)
     {
         QGraphicsEllipseItem * testCirc=addEllipse(QRectF(pos.x()-radius,pos.y()-radius,radius*2,radius*2));
@@ -137,6 +139,7 @@ namespace ActorDraw {
         return false;
         
     };
+    
     qreal DrawScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
     {
         QFont font ( "Courier", 12);
@@ -258,11 +261,11 @@ namespace ActorDraw {
             
 		}
     }
+    
 int   DrawScene::loadFromFile(const QString& p_FileName)
     {
         QFileInfo fi(p_FileName);
-        QString name = fi.fileName();                // name = "archive.tar.gz"
-        
+        QString name = fi.fileName();                        
         QString Title = QString::fromUtf8("Чертежник - ") + name;
         double CurX,CurY;
       //  MV->setWindowTitle ( Title);
@@ -573,7 +576,7 @@ int DrawScene::saveToFile(const QString& p_FileName)
             l_File.write(ccc);
         }
         
-        //777777777777777777777777777
+       
         
         l_File.write("stroke\n");
         l_File.write("grestore\n");
@@ -920,20 +923,14 @@ void DrawModule::showNavigator(bool state)
 
 /* public */ QWidget* DrawModule::mainWidget() const
 {
-    // Returns module main view widget, or nullptr if there is no any views
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
+
     return  CurView;
-    //return nullptr;
+
 }
 
 /* public */ QWidget* DrawModule::pultWidget() const
 {
-    // Returns module control view widget, or nullptr if there is no control view
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
+ //No pult for Draw module.
     return nullptr;
 }
 
@@ -947,7 +944,7 @@ void DrawModule::showNavigator(bool state)
     CurScene->setBackgroundBrush (curBackground);
     netColor=QColor(settings->value("LineColor","gray").toString());
     drawNet();
-    Q_UNUSED(keys);  // Remove this line on implementation
+    Q_UNUSED(keys);
 }
 
 /* public slot */ void DrawModule::reset()
@@ -1004,8 +1001,7 @@ void DrawModule::showNavigator(bool state)
 /* public slot */ void DrawModule::runSetPenColor(const Color& color)
 {
     /* алг установить цвет(цвет color) */
-    // TODO implement me
-    Q_UNUSED(color)  // Remove this line on implementation;
+   
     penColor=color;
     mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     qDebug()
@@ -1126,38 +1122,31 @@ void DrawModule::drawNet()
         QRectF sceneInfoRect=CurScene->getRect();//Get user lines bounding rect from scene
    
         sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
-        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"Center in KumCoord"<<sceneInfoRect.center();
-        //CurView->fitInView(sceneInfoRect);
-        
-       // CurView->setSceneRect(sceneInfoRect);
-        CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
-                                     QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
+ 
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"MaxSize"<<qMax(sceneInfoRect.height(),sceneInfoRect.width());
+ 
+      //  CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
+       //                              QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
         
         QPointF cnt=sceneInfoRect.center();
         cnt.setY(-cnt.y());
         qreal width2=sceneInfoRect.width();
-        qreal size2=qMax(sceneInfoRect.height(),width2);
+        qreal size2=qMax(sceneInfoRect.height(),sceneInfoRect.width());
         qreal oldZoom=CurView->zoom();
-        qreal newZoom=(CurView->zoom()*(size/size2))*0.3;
+        qreal newZoom=(CurView->zoom()*(size/size2))*0.43;//Some magic
          qDebug()<<"NZ"<<newZoom;
         CurView->setZoom(newZoom/2);
                sceneInfoRect.moveCenter(cnt);//convert to scene coord
         CurView->setSceneRect(sceneInfoRect);
         qDebug()<<"PenScale"<<Pen()->scale()<<"ZoomMP"<<oldZoom/newZoom;
-        //QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
-        //qDebug()<<newRect;
-       // CurView->setSceneRect(newRect);
-       // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
-        // drawNet();
+     
 
                // CurView->centerOn(0,0);
         start_d=CurView->sceneRect().topLeft();
         end_d=CurView->sceneRect().bottomRight();
         QRectF viewRect(start_d,end_d);
        
-        //while((QVector2D(sceneInfoRect.center())-QVector2D(viewRect.center())).length() > qAbs(sceneInfoRect.right()-sceneInfoRect.left())/4  )
-      //  {
-         
+     
              cnt=sceneInfoRect.center();
             
             qDebug()<<"realCenter2 correction"<<viewRect.center();
