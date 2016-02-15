@@ -55,6 +55,9 @@ public slots:
     int runSizeA();
     int runSizeB();
     int runSizeC();
+    int runInA();
+    int runInB();
+    int runInC();
     bool runTaskComplited();
     void openRecent();
     void updateLastFiles(const QString newFile );

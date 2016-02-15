@@ -31,9 +31,24 @@
 			"name": {"ascii": "size B", "ru_RU": "размер B"},
 			"async": false,
 			"returnType": "int"
+		}, 
+		{
+			"name": {"ascii": "size C", "ru_RU": "размер C"},
+			"async": false,
+			"returnType": "int"
+		},
+        {
+			"name": {"ascii": "in A", "ru_RU": "в сосуде A"},
+			"async": false,
+			"returnType": "int"
+		},
+          {
+			"name": {"ascii": "in B", "ru_RU": "в сосуде B"},
+			"async": false,
+			"returnType": "int"
 		},
                 {
-			"name": {"ascii": "size C", "ru_RU": "размер C"},
+			"name": {"ascii": "in C", "ru_RU": "в сосуде C"},
 			"async": false,
 			"returnType": "int"
 		}
