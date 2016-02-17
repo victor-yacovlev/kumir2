@@ -1,4 +1,10 @@
 project(pictomir2course)
+
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/3rdparty/boost-1.54.0)
+    find_package(Boost 1.54 REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 cmake_minimum_required(VERSION 2.8.3)
 
 if(MSVC)
