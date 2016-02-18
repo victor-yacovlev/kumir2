@@ -912,6 +912,7 @@ void DrawModule::showNavigator(bool state)
     Q_UNUSED(current);  // Remove this line on implementation
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
+    CurView->repaint();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
