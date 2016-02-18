@@ -33,7 +33,11 @@ Shared::Browser::InstanceInterface * Plugin::createBrowser(const QUrl &url, cons
     Component * c = new Component(this);
     c->setMinimumSize(100, 100);
     c->setAcceptDrops(false);
+#if QT_VERSION >= 0x050400
+        // TODO implement me!
+#else
     c->page()->settings()->setAttribute(QWebSettings::SpatialNavigationEnabled, enableKeyboardNavigation);
+#endif
     QMap<QString,QObject*> objs = manageableObjects;
     objs["directory"] = localDirectoryContents_;
     objs["application"] = qApp;
