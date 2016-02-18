@@ -910,9 +910,11 @@ void DrawModule::showNavigator(bool state)
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+  
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
+    CurView->viewport()->update();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
