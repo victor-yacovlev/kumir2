@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+﻿<?xml version='1.0' encoding='UTF-8'?>
 <chapter targetdoc="session">
     <title>Сеанс работы &quot;Кумир&quot;. Состояния системы</title>
 	<section id="Kumir_sessions">
@@ -185,7 +185,7 @@
         <para>
             Переход в состояние &quot;Пауза&quot; возможен двумя способами:
             <orderedlist>
-                <listitem><para>Завершением выполения одного шага во время пошагового выполнения</para></listitem>
+                <listitem><para>Завершением выполнения одного шага во время пошагового выполнения</para></listitem>
                 <listitem><para>Выполнением оператора <code language="kumir">пауза</code>.</para></listitem>
             </orderedlist>
             Состояние &quot;Пауза&quot; предназначено для исследования внутреннего состояния выполняемой программы.

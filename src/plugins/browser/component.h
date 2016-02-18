@@ -4,7 +4,11 @@
 #include <QtCore>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
+#if QT_VERSION >= 0x050400
+#include <QtWebEngineWidgets>
+#else
 #include <QtWebKitWidgets>
+#endif
 #else
 #include <QtGui>
 #include <QtWebKit>
@@ -20,7 +24,12 @@ namespace Ui {
 }
 
 class Component
-        : public QWebView
+        : public
+        #if QT_VERSION >= 0x050400
+        QWebEngineView
+        #else
+        QWebView
+        #endif
         , public Shared::Browser::InstanceInterface
 {
     Q_OBJECT

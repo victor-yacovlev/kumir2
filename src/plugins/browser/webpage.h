@@ -3,14 +3,25 @@
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000
+
+#if QT_VERSION >= 0x050400
+#include <QtWebEngineWidgets>
+#else
 #include <QtWebKitWidgets>
+#endif
 #else
 #include <QtWebKit>
 #endif
 
 namespace Browser {
 
-class WebPage : public QWebPage
+class WebPage :
+        public
+        #if QT_VERSION >= 0x050400
+        QWebEnginePage
+        #else
+        QWebPage
+        #endif
 {
     Q_OBJECT
 public:

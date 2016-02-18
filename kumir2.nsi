@@ -81,16 +81,19 @@ Section "Kumir" Kumir
     WriteUninstaller $INSTDIR\uninstall.exe
     
 SectionEnd
+
 function un.onInit
 	SetShellVarContext all
  
 	#Verify the uninstaller - last chance to back out
-	MessageBox MB_OKCANCEL "Permanantly remove ${APPNAME}?" IDOK next
+	MessageBox MB_OKCANCEL "Удалить Кумир 2.1?" IDOK next
 		Abort
 	next:
-	!insertmacro VerifyUserIsAdmin
+	
 functionEnd
-Section "Uninstall"
+
+Section "uninstall"
+
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
     RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"

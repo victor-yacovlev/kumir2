@@ -708,7 +708,7 @@ public:
     }
 
     static int parseInt(String word, char base, ParseError & error) {
-        error = NoError;
+        error = NoError;        
         if (word.length()==0) {
             error = EmptyWord;
             return 0;
@@ -764,6 +764,10 @@ public:
         }
         if (negative)
             result *= -1;
+        if (NoError == error && !Math::isCorrectIntegerConstant(word)) {
+            error = Overflow;
+            return 0;
+        }
         return result;
     }
 

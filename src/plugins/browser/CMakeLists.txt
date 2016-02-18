@@ -1,5 +1,5 @@
 project(Browser)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.9)
 
 if(NOT DEFINED USE_QT)
     set(USE_QT 4)
@@ -7,9 +7,9 @@ endif(NOT DEFINED USE_QT)
 
 if(${USE_QT} GREATER 4)
     # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets WebKitWidgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5WebKitWidgets_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5WebKitWidgets_LIBRARIES})
+    find_package(Qt5 5.5.0 COMPONENTS Core Widgets WebEngineWidgets REQUIRED)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5WebEngineWidgets_INCLUDE_DIRS} BEFORE)
+    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5WebEngineWidgets_LIBRARIES})
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)

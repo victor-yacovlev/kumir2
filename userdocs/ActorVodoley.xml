@@ -205,6 +205,37 @@
 			</funcsynopsis>
 			<para>Возвращает объём колбы C.</para>
 		</section>
+		<section>
+			<title>в сосуде А</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде А</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде А.</para>
+		</section>
+		<section>
+			<title>в сосуде B</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде B</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде B.</para>
+		</section>
+		<section>
+			<title>в сосуде C</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде C</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде C.</para>
+		</section>
+		
 		<section configuration="teacher">
 			<title>@решено</title>
 			<funcsynopsis role="кумир">

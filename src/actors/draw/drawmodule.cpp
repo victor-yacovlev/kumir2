@@ -22,13 +22,14 @@ You should change it corresponding to functionality.
 
 namespace ActorDraw {
 #define NET_RESERVE 15
-   
+#define KUM_MULTI 50
+    
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
         ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorDraw")[0];
         return pluginManager->settingsByObject(plugin);
-    }
+    }//Get  settings
     
     static const qreal MAX_ZOOM = 1000000;
     
@@ -38,7 +39,7 @@ namespace ActorDraw {
     
     
     
-    QRectF DrawScene::getRect()
+    QRectF DrawScene::getRect() //User lines bounding rect
     {
         QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
   
@@ -112,6 +113,7 @@ namespace ActorDraw {
         
         return(boundRect);
     };
+    
     bool DrawScene::isUserLine(QGraphicsItem* obj)
     {
         for(int i=0;i<lines.count();i++)
@@ -120,6 +122,7 @@ namespace ActorDraw {
         }
         return false;
     };
+    
     bool DrawScene::isLineAt(const QPointF &pos,qreal radius)
     {
         QGraphicsEllipseItem * testCirc=addEllipse(QRectF(pos.x()-radius,pos.y()-radius,radius*2,radius*2));
@@ -136,27 +139,21 @@ namespace ActorDraw {
         return false;
         
     };
+    
     qreal DrawScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
     {
         QFont font ( "Courier", 12);
-        font.setPointSizeF(2000.0);
+        font.setPointSizeF(KUM_MULTI);
         QFontMetricsF fontMetric(font);
-        qreal bs=fontMetric.boundingRect("OOOXX").width()/3;
-        qreal inc=0.999;
-        if((widthChar*100)>bs)inc=1.001;
+        qreal bs=fontMetric.boundingRect(Text).width();
+        qreal ch=bs/Text.length();
+        qreal psizeF=widthChar/bs;
+       
         
-        while(!((bs+(bs*0.003)>widthChar*1000)&&(bs-(bs*0.003)<widthChar*1000)))
-        {
-            qreal psizeF=font.pointSizeF();
-            if(psizeF<0.001)
-            {
-                break;
-                qDebug("ERROR SET FONT SIZE");
-            }
-          font.setPointSizeF(psizeF*inc);
-            fontMetric=QFontMetricsF(font);
-            bs=fontMetric.boundingRect("OOOXX").width()/5;
-        }
+   
+        //  font.setPointSizeF(psizeF*inc);
+          bs=fontMetric.boundingRect("OOOXX").width()/5;
+        
        
         fontMetric=QFontMetricsF(font);
         qDebug()<<"Char Size:"<<fontMetric.boundingRect("OOOXX").width()/5000;
@@ -164,10 +161,10 @@ namespace ActorDraw {
         
         texts.append(addSimpleText(Text,font));
 //        texts.last()->scale(0.001,0.001);
-        texts.last()->setScale(0.001);
-        texts.last()->setPos(from.x(), from.y()-fontMetric.boundingRect("OOOXX").height()/1000);
+        texts.last()->setScale(psizeF);
+        texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
         texts.last()->setPen(QPen(color));
-        return widthChar*Text.length();
+        return widthChar;
     };
     void DrawScene::DestroyNet()
     {
@@ -264,11 +261,11 @@ namespace ActorDraw {
             
 		}
     }
+    
 int   DrawScene::loadFromFile(const QString& p_FileName)
     {
         QFileInfo fi(p_FileName);
-        QString name = fi.fileName();                // name = "archive.tar.gz"
-        
+        QString name = fi.fileName();                        
         QString Title = QString::fromUtf8("Чертежник - ") + name;
         double CurX,CurY;
       //  MV->setWindowTitle ( Title);
@@ -579,7 +576,7 @@ int DrawScene::saveToFile(const QString& p_FileName)
             l_File.write(ccc);
         }
         
-        //777777777777777777777777777
+       
         
         l_File.write("stroke\n");
         l_File.write("grestore\n");
@@ -822,6 +819,10 @@ void DrawModule::createGui()
     QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
+    Color Black;
+       Black.r=0;Black.g=0;Black.b=0;Black.a=255;
+    
+    penColor=Black;
 }
 
 QString DrawModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
@@ -909,7 +910,11 @@ void DrawModule::showNavigator(bool state)
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+  
     CurView->forceRedraw();
+    CurScene->update(CurScene->sceneRect());
+    CurView->repaint();
+    CurView->viewport()->update();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
@@ -922,20 +927,14 @@ void DrawModule::showNavigator(bool state)
 
 /* public */ QWidget* DrawModule::mainWidget() const
 {
-    // Returns module main view widget, or nullptr if there is no any views
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
+
     return  CurView;
-    //return nullptr;
+
 }
 
 /* public */ QWidget* DrawModule::pultWidget() const
 {
-    // Returns module control view widget, or nullptr if there is no control view
-    // NOTE: the method is const and might be called at any time,
-    //       so DO NOT create widget here, just return!
-    // TODO implement me
+ //No pult for Draw module.
     return nullptr;
 }
 
@@ -949,7 +948,7 @@ void DrawModule::showNavigator(bool state)
     CurScene->setBackgroundBrush (curBackground);
     netColor=QColor(settings->value("LineColor","gray").toString());
     drawNet();
-    Q_UNUSED(keys);  // Remove this line on implementation
+    Q_UNUSED(keys);
 }
 
 /* public slot */ void DrawModule::reset()
@@ -960,6 +959,10 @@ void DrawModule::showNavigator(bool state)
     penIsDrawing=false;
     mPen->setPos(0,0);
     CurScene->reset();
+    Color Black;
+    Black.r=0;Black.g=0;Black.b=0;Black.a=255;
+    
+    penColor=Black;
     QList<QRectF> rect;
     rect.append(CurView->sceneRect());
     CurView->updateScene(rect);
@@ -981,7 +984,7 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг опустить перо */
     // TODO implement me
-    mPen->setBrush(QBrush(QColor("black")));
+     mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     penIsDrawing=true;
 }
 
@@ -992,7 +995,7 @@ void DrawModule::showNavigator(bool state)
 
     mutex.lock();
 
-    mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
+    mPen->setBrush(QBrush(QColor("white")));
 
     penIsDrawing=false;
     mutex.unlock();
@@ -1002,13 +1005,13 @@ void DrawModule::showNavigator(bool state)
 /* public slot */ void DrawModule::runSetPenColor(const Color& color)
 {
     /* алг установить цвет(цвет color) */
-    // TODO implement me
-    Q_UNUSED(color)  // Remove this line on implementation;
+   
     penColor=color;
+    mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     qDebug()
             << "DrawModule::runSetPenColor( { cssValue = \""
             << QColor(color.r, color.g, color.b, color.a).name()
-            << "\" } )";
+            << "\" } )"<<color.a;
 }
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
@@ -1044,13 +1047,11 @@ void DrawModule::showNavigator(bool state)
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
 {
     /* алг надпись(вещ width, лит text) */
-    // TODO implement me
+   
     
     qreal offset=CurScene->drawText(text, width, mPen->pos(),QColor(penColor.r, penColor.g, penColor.b, penColor.a));
     mPen->moveBy(offset, 0);
-    Q_UNUSED(width)  // Remove this line on implementation;
-    Q_UNUSED(text)  // Remove this line on implementation;
-    
+     qDebug()<<"TExt ofset"<<offset;  
 }
     
     
@@ -1122,40 +1123,35 @@ void DrawModule::drawNet()
         qreal width=end_d.x()-start_d.x();
         qreal heigth=end_d.y()-start_d.y();
         qreal size=qMax(width,heigth);
-        QRectF sceneInfoRect=CurScene->getRect();
+        QRectF sceneInfoRect=CurScene->getRect();//Get user lines bounding rect from scene
    
         sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
-        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom();
-        //CurView->fitInView(sceneInfoRect);
+ 
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"MaxSize"<<qMax(sceneInfoRect.height(),sceneInfoRect.width());
+ 
+      //  CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
+       //                              QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
         
-       // CurView->setSceneRect(sceneInfoRect);
-        CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
-                                     QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
-        
-        
+        QPointF cnt=sceneInfoRect.center();
+        cnt.setY(-cnt.y());
         qreal width2=sceneInfoRect.width();
-        qreal size2=qMax(sceneInfoRect.height(),width2);
+        qreal size2=qMax(sceneInfoRect.height(),sceneInfoRect.width());
         qreal oldZoom=CurView->zoom();
-        qreal newZoom=(CurView->zoom()*(size/size2))*0.3;
+        qreal newZoom=(CurView->zoom()*(size/size2))*0.43;//Some magic
          qDebug()<<"NZ"<<newZoom;
         CurView->setZoom(newZoom/2);
+               sceneInfoRect.moveCenter(cnt);//convert to scene coord
         CurView->setSceneRect(sceneInfoRect);
         qDebug()<<"PenScale"<<Pen()->scale()<<"ZoomMP"<<oldZoom/newZoom;
-        //QRectF newRect(2*sceneInfoRect.left(),2*sceneInfoRect.top(),2*sceneInfoRect.right(),2*sceneInfoRect.bottom());
-        //qDebug()<<newRect;
-       // CurView->setSceneRect(newRect);
-       // CurView->setZoom((CurView->zoom()*(width/width2))*0.8);
-        // drawNet();
+     
 
                // CurView->centerOn(0,0);
         start_d=CurView->sceneRect().topLeft();
         end_d=CurView->sceneRect().bottomRight();
         QRectF viewRect(start_d,end_d);
        
-        //while((QVector2D(sceneInfoRect.center())-QVector2D(viewRect.center())).length() > qAbs(sceneInfoRect.right()-sceneInfoRect.left())/4  )
-      //  {
-         
-            QPointF cnt=sceneInfoRect.center();
+     
+             cnt=sceneInfoRect.center();
             
             qDebug()<<"realCenter2 correction"<<viewRect.center();
             qDebug()<<"Need Center"<<sceneInfoRect.center();
@@ -1164,6 +1160,8 @@ void DrawModule::drawNet()
             qDebug()<<"CurCenter"<<CurView->sceneRect().center()<<"Y off scene offset"<<offScene.toPoint().y()<<"Scbar"<<CurView->verticalScrollBar()->value();
            // CurView->verticalScrollBar()->setValue(CurView->verticalScrollBar()->value()+offScene.toPoint().y());
           // CurView->horizontalScrollBar()->setValue(CurView->horizontalScrollBar()->value());
+        
+ 
         CurView->centerOn(sceneInfoRect.center());
         CurView->setZoom(newZoom);
         CurView->setNet();

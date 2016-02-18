@@ -4,7 +4,12 @@
 namespace Browser {
 
 WebPage::WebPage()
-    : QWebPage()
+    :
+      #if QT_VERSION >= 0x050400
+      QWebEnginePage()
+      #else
+      QWebPage()
+      #endif
 {
     component_ = 0;
 }

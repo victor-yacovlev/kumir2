@@ -50,8 +50,12 @@ namespace ActorDraw {
         }
         void forceRedraw()
         {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +5);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-5);
+            
+            verticalScrollBar()->setValue(horizontalScrollBar()->value() +5);
+            verticalScrollBar()->setValue(horizontalScrollBar()->value()-5);
+           
         }
     protected:
        // void scrollContentsBy ( int dx, int dy );
