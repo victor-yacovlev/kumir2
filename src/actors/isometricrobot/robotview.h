@@ -59,6 +59,7 @@ protected:
     void updateCell(int x, int y, bool painted);
     QGraphicsItem* createHorizontalWall(int x, int y, qreal zOrder);
     QGraphicsItem* createVerticalWall(int x, int y, qreal zOrder);
+    QGraphicsItem* createFlagItem(int x, int y, qreal zOrder);
     void createField();
     void createRobot(int x, int y, RobotItem::Direction direction);
 
@@ -141,6 +142,7 @@ public slots:
     bool isPainted();
     bool isPainted(int x, int y) const;
     bool isPointed(int x, int y) const;
+    bool isFlagged(int x, int y) const;
     int sizeX() const;
     int sizeY() const;
     int positionX() const;
