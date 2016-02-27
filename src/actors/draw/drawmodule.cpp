@@ -1048,7 +1048,11 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг надпись(вещ width, лит text) */
    
-    
+    if (width<=0)
+    {
+        setError(trUtf8("Отрицательная или нулевая ширина надписи!"));
+        return;
+    }
     qreal offset=CurScene->drawText(text, width, mPen->pos(),QColor(penColor.r, penColor.g, penColor.b, penColor.a));
     mPen->moveBy(offset, 0);
      qDebug()<<"TExt ofset"<<offset;  
