@@ -130,6 +130,12 @@ bool IsometricRobotModule::runIsCellPainted()
     return robotView_->isPainted();
 }
 
+bool IsometricRobotModule::runIsFlagged(int x, int y)
+{
+    setError("");
+    return robotView_->isFlagged(x - 1, y - 1);
+}
+
 
 bool IsometricRobotModule::runIsCellClean()
 {
