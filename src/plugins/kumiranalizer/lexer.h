@@ -1,6 +1,12 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "dataformats/lexem.h"
+#include "interfaces/lexemtype.h"
+#include "statement.h"
+#include "interfaces/error.h"
+#include "dataformats/ast_variabletype.h"
+
 #include "interfaces/lineprop.h"
 #include "statement.h"
 #include "interfaces/error.h"
@@ -35,8 +41,35 @@ public slots:
                              ) const;
     void splitIntoLexems(const QString & text, QList<LexemPtr> & lexems,
                          const QStringList & extraTypeNames);
-private:
-    struct LexerPrivate * d;
+private /*methods*/:
+    void splitLineIntoLexems(const QString &text
+                             , QList<LexemPtr> & lexems
+                             , const QStringList & extraTypeNames
+                             ) const;
+
+    void groupLexemsByStatements(const QList<LexemPtr> & lexems
+                                 , QList<TextStatementPtr> & statements
+                                 ) const;
+
+    static void InitNormalizator(const QString &fileName);
+
+private /*fields*/:
+    static QStringList _KeyWords;
+    static QStringList _Operators;
+    static QStringList _TypeNames;
+    static QStringList _ConstNames;
+    static QStringList _Compounds;
+
+    static QHash<QString,Shared::LexemType> _KwdMap;
+    static QHash<QString,AST::VariableBaseType> _BaseTypes;
+    static QHash<QString,AST::VariableBaseType> _BaseTypes0;
+    static QHash<QString,bool> _BoolConstantValues;
+    static QSet<QString> _ArrayTypes;
+    static QString _RetvalKeyword;
+    static QRegExp _RxCompound;
+    static QRegExp _RxKeyWords;
+    static QRegExp _RxConst;
+    static QRegExp _RxTypes;
 
 };
 

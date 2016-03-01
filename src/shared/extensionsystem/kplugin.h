@@ -53,7 +53,7 @@ public:
 
     virtual ~KPlugin();
 
-protected:
+
     inline virtual void saveSession() const { }
     inline virtual void restoreSession() { }
     inline virtual void changeCurrentDirectory(const QString & path) { Q_UNUSED(path); }

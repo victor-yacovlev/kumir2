@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include "lexer_p.h"
 #include "interfaces/lexemtype.h"
 #include "errormessages/errormessages.h"
 
@@ -11,13 +10,10 @@ namespace KumirAnalizer {
 Lexer::Lexer(QObject *parent) :
     QObject(parent)
 {
-    d = new LexerPrivate;
-    d->q = this;
 }
 
 Lexer::~Lexer()
 {
-    delete d;
 }
 
 int Lexer::splitIntoStatements(const QStringList &lines
@@ -30,9 +26,9 @@ int Lexer::splitIntoStatements(const QStringList &lines
     for (int i=0; i<lines.size(); i++) {
         const QString line = lines[i];
         QList<LexemPtr> lexems;
-        d->splitLineIntoLexems(line, lexems, extraTypeNames);
+        splitLineIntoLexems(line, lexems, extraTypeNames);
         QList<TextStatementPtr> sts;
-        d->groupLexemsByStatements(lexems, sts);        
+        groupLexemsByStatements(lexems, sts);
         for (int j=0; j<sts.size(); j++) {
             for (int k=0; k<sts[j]->data.size(); k++) {
                 sts[j]->data[k]->lineNo = baseLineNo==-1? -1 : baseLineNo + i;
@@ -45,7 +41,7 @@ int Lexer::splitIntoStatements(const QStringList &lines
 
 void Lexer::splitIntoLexems(const QString &text, QList<LexemPtr> &lexems, const QStringList & extraTypeNames)
 {
-    d->splitLineIntoLexems(text, lexems, extraTypeNames);
+    splitLineIntoLexems(text, lexems, extraTypeNames);
 }
 
 QStringList allVariants(const QString & value) {
@@ -73,9 +69,9 @@ void addToMap(QHash<QString,LexemType> & map,
 QString Lexer::classNameByBaseType(const AST::VariableBaseType &type) const
 {
     QString result;
-    for (int i=0; i<d->baseTypes0.keys().size(); i++) {
-        if (d->baseTypes0[d->baseTypes0.keys()[i]]==type) {
-            result = d->baseTypes0.keys()[i];
+    for (int i=0; i<_BaseTypes0.keys().size(); i++) {
+        if (_BaseTypes0[_BaseTypes0.keys()[i]]==type) {
+            result = _BaseTypes0.keys()[i];
             break;
         }
     }
@@ -86,10 +82,10 @@ void Lexer::setLanguage(const QDir & resourcesRoot, const QLocale::Language &lan
 {
     const QString langName = QLocale::languageToString(language);
     const QString fileName = resourcesRoot.absoluteFilePath(langName.toLower()+".keywords");
-    LexerPrivate::initNormalizator(fileName);
+    Lexer::InitNormalizator(fileName);
 }
 
-void LexerPrivate::initNormalizator(const QString &fileName)
+void Lexer::InitNormalizator(const QString &fileName)
 {
     QFile kwdFile(fileName);
     if (kwdFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -105,340 +101,340 @@ void LexerPrivate::initNormalizator(const QString &fileName)
                 const QString context = pair.at(0).simplified();
                 const QString value = pair.at(1).simplified();
                 if (context=="begin module") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriModule);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriModule);
                 }
                 else if (context=="end module") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriEndModule);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriEndModule);
                 }
                 else if (context=="pause running") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriPause);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriPause);
                 }
                 else if (context=="terminate running") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriHalt);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriHalt);
                 }
                 else if (context=="include text") {
 //                    keyWords << value;
 //                    addToMap(kwdMap, value, KS_INCLUDE);
                 }
                 else if (context=="use module") {
-                    keyWords << value;
+                    _KeyWords << value;
 //                    useKwd = new QString(value);
-                    addToMap(kwdMap, value, LxPriImport);
+                    addToMap(_KwdMap, value, LxPriImport);
                 }
                 else if (context=="function return value") {
-                    retvalKeyword = value;
+                    _RetvalKeyword = value;
                 }
                 else if (context=="algorhitm header") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriAlgHeader);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriAlgHeader);
                 }
                 else if (context=="begin algorhitm implementation") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriAlgBegin);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriAlgBegin);
                 }
                 else if (context=="end algorhitm implementation") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriAlgEnd);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriAlgEnd);
                 }
                 else if (context=="algorhitm pre-condition") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriPre);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriPre);
                 }
                 else if (context=="algorhitm post-condition") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriPost);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriPost);
                 }
                 else if (context=="assertion") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriAssert);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriAssert);
                 }
                 else if (context=="begin loop") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriLoop);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriLoop);
                 }
                 else if (context=="end loop") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriEndLoop);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriEndLoop);
                 }
                 else if (context=="conditional end loop") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriEndLoop);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriEndLoop);
                 }
                 else if (context=="'for' loop type") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecFor);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecFor);
                 }
                 else if (context=="'while' loop type") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecWhile);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecWhile);
                 }
                 else if (context=="'times' loop type") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecTimes);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecTimes);
                 }
                 else if (context=="for loop 'from'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecFrom);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecFrom);
                 }
                 else if (context=="for loop 'to'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecTo);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecTo);
                 }
                 else if (context=="for loop 'step'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecStep);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecStep);
                 }
                 else if (context=="loop break and algorhitm return") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriExit);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriExit);
                 }
                 else if (context=="if") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriIf);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriIf);
                 }
                 else if (context=="then") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriThen);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriThen);
                 }
                 else if (context=="else") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriElse);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriElse);
                 }
                 else if (context=="end of 'if' or 'switch' statement") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriFi);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriFi);
                 }
                 else if (context=="switch") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriSwitch);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriSwitch);
                 }
                 else if (context=="case") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriCase);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriCase);
                 }
                 else if (context=="terminal input") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriInput);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriInput);
                 }
                 else if (context=="terminal output") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxPriOutput);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriOutput);
                 }
                 else if (context=="new line symbol") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecNewline);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecNewline);
                 }
                 else if (context=="string length") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecCurrentStringLength);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecCurrentStringLength);
                 }
                 else if (context=="logical 'not'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecNot);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecNot);
                 }
                 else if (context=="logical 'and'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecAnd);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecAnd);
                 }
                 else if (context=="logical 'or'") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecOr);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecOr);
                 }
                 else if (context=="'write only' parameter modifier") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecOut);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecOut);
                 }
                 else if (context=="'read only' parameter modifier") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecIn);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecIn);
                 }
                 else if (context=="'read and write' parameter modifier") {
-                    keyWords << value;
-                    addToMap(kwdMap, value, LxSecInout);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxSecInout);
                 }
                 else if (context=="'true' constant value") {
-                    constNames << value;
-                    boolConstantValues.insert(value, true);
-                    addToMap(kwdMap, value, LxConstBoolTrue);
+                    _ConstNames << value;
+                    _BoolConstantValues.insert(value, true);
+                    addToMap(_KwdMap, value, LxConstBoolTrue);
                 }
                 else if (context=="'false' constant value") {
-                    constNames << value;
-                    boolConstantValues.insert(value, false);
-                    addToMap(kwdMap, value, LxConstBoolFalse);
+                    _ConstNames << value;
+                    _BoolConstantValues.insert(value, false);
+                    addToMap(_KwdMap, value, LxConstBoolFalse);
                 }
                 else if (context=="integer type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeInteger);
-                    baseTypes0.insert(value, AST::TypeInteger);
-                    addToMap(kwdMap, value, LxNameClass);
+                    _TypeNames << value;
+                    _BaseTypes.insert(value, AST::TypeInteger);
+                    _BaseTypes0.insert(value, AST::TypeInteger);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeReal);
-                    baseTypes0.insert(value, AST::TypeReal);
-                    addToMap(kwdMap, value, LxNameClass);
+                    _TypeNames << value;
+                    _BaseTypes.insert(value, AST::TypeReal);
+                    _BaseTypes0.insert(value, AST::TypeReal);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="character type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeCharect);
-                    baseTypes0.insert(value, AST::TypeCharect);
-                    addToMap(kwdMap, value, LxNameClass);
+                    _TypeNames << value;
+                    _BaseTypes.insert(value, AST::TypeCharect);
+                    _BaseTypes0.insert(value, AST::TypeCharect);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="string type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeString);
-                    baseTypes0.insert(value, AST::TypeString);
-                    addToMap(kwdMap, value, LxNameClass);
+                    _TypeNames << value;
+                    _BaseTypes.insert(value, AST::TypeString);
+                    _BaseTypes0.insert(value, AST::TypeString);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean type name") {
-                    typeNames << value;
-                    baseTypes.insert(value, AST::TypeBoolean);
-                    baseTypes0.insert(value, AST::TypeBoolean);
-                    addToMap(kwdMap, value, LxNameClass);
+                    _TypeNames << value;
+                    _BaseTypes.insert(value, AST::TypeBoolean);
+                    _BaseTypes0.insert(value, AST::TypeBoolean);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="integer array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        baseTypes.insert(variant, AST::TypeInteger);
-                        arrayTypes.insert(variant);
+                        _BaseTypes.insert(variant, AST::TypeInteger);
+                        _ArrayTypes.insert(variant);
                     }
                     variants = value.split("|");
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
+                        _TypeNames << variant;
                     }
-                    addToMap(kwdMap, value, LxNameClass);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="floating point array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        baseTypes.insert(variant, AST::TypeReal);
-                        arrayTypes.insert(variant);
+                        _BaseTypes.insert(variant, AST::TypeReal);
+                        _ArrayTypes.insert(variant);
                     }
                     variants = value.split("|");
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
+                        _TypeNames << variant;
                     }
-                    addToMap(kwdMap, value, LxNameClass);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="character array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        baseTypes.insert(variant, AST::TypeCharect);
-                        arrayTypes.insert(variant);
+                        _BaseTypes.insert(variant, AST::TypeCharect);
+                        _ArrayTypes.insert(variant);
                     }
                     variants = value.split("|");
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
+                        _TypeNames << variant;
                     }
-                    addToMap(kwdMap, value, LxNameClass);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="string array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        baseTypes.insert(variant, AST::TypeString);
-                        arrayTypes.insert(variant);
+                        _BaseTypes.insert(variant, AST::TypeString);
+                        _ArrayTypes.insert(variant);
                     }
                     variants = value.split("|");
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
+                        _TypeNames << variant;
                     }
-                    addToMap(kwdMap, value, LxNameClass);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
                 else if (context=="boolean array type name") {
                     QStringList variants = allVariants(value);
                     foreach (const QString & variant, variants) {
-                        baseTypes.insert(variant, AST::TypeBoolean);
-                        arrayTypes.insert(variant);
+                        _BaseTypes.insert(variant, AST::TypeBoolean);
+                        _ArrayTypes.insert(variant);
                     }
                     variants = value.split("|");
                     foreach (const QString & variant, variants) {
-                        typeNames << variant;
+                        _TypeNames << variant;
                     }
-                    addToMap(kwdMap, value, LxNameClass);
+                    addToMap(_KwdMap, value, LxNameClass);
                 }
 
             }
         }
     }
 
-    operators << "\\+";
-    kwdMap["+"] = LxOperPlus;
+    _Operators << "\\+";
+    _KwdMap["+"] = LxOperPlus;
 
-    operators << "-";
-    kwdMap["-"] = LxOperMinus;
+    _Operators << "-";
+    _KwdMap["-"] = LxOperMinus;
 
-    operators << "\\*\\*";
-    kwdMap["**"] = LxOperPower;
+    _Operators << "\\*\\*";
+    _KwdMap["**"] = LxOperPower;
 
-    operators << "\\(";
-    kwdMap["("] = LxOperLeftBr;
+    _Operators << "\\(";
+    _KwdMap["("] = LxOperLeftBr;
 
-    operators << "\\)";
-    kwdMap[")"] = LxOperRightBr;
+    _Operators << "\\)";
+    _KwdMap[")"] = LxOperRightBr;
 
-    operators << "\\[";
-    kwdMap["["] = LxOperLeftSqBr;
+    _Operators << "\\[";
+    _KwdMap["["] = LxOperLeftSqBr;
 
-    operators << "\\]";
-    kwdMap["]"] = LxOperRightSqBr;
+    _Operators << "\\]";
+    _KwdMap["]"] = LxOperRightSqBr;
 
-    operators << "\\{";
-    kwdMap["{"] = LxOperLeftBrace;
+    _Operators << "\\{";
+    _KwdMap["{"] = LxOperLeftBrace;
 
-    operators << "\\}";
-    kwdMap["}"] = LxOperRightBrace;
+    _Operators << "\\}";
+    _KwdMap["}"] = LxOperRightBrace;
 
-    operators << ",";
-    kwdMap[","] = LxOperComa;
+    _Operators << ",";
+    _KwdMap[","] = LxOperComa;
 
-    operators << ":";
-    kwdMap[":"] = LxOperColon;
+    _Operators << ":";
+    _KwdMap[":"] = LxOperColon;
 
-    operators << "\\*";
-    kwdMap["*"] = LxOperAsterisk;
+    _Operators << "\\*";
+    _KwdMap["*"] = LxOperAsterisk;
 
-    operators << ">=";
-    kwdMap[">="] = LxOperGreaterOrEqual;
+    _Operators << ">=";
+    _KwdMap[">="] = LxOperGreaterOrEqual;
 
-    operators << QString::fromUtf8("≥");
-    kwdMap[QString::fromUtf8("≥")] = LxOperGreaterOrEqual;
+    _Operators << QString::fromUtf8("≥");
+    _KwdMap[QString::fromUtf8("≥")] = LxOperGreaterOrEqual;
 
-    operators << "<=";
-    kwdMap["<="] = LxOperLessOrEqual;
+    _Operators << "<=";
+    _KwdMap["<="] = LxOperLessOrEqual;
 
-    operators << QString::fromUtf8("≤");
-    kwdMap[QString::fromUtf8("≤")] = LxOperLessOrEqual;
+    _Operators << QString::fromUtf8("≤");
+    _KwdMap[QString::fromUtf8("≤")] = LxOperLessOrEqual;
 
-    operators << "<>";
-    kwdMap["<>"] = LxOperNotEqual;
+    _Operators << "<>";
+    _KwdMap["<>"] = LxOperNotEqual;
 
-    operators << QString::fromUtf8("≠");
-    kwdMap[QString::fromUtf8("≠")] = LxOperNotEqual;
+    _Operators << QString::fromUtf8("≠");
+    _KwdMap[QString::fromUtf8("≠")] = LxOperNotEqual;
 
-    operators << "=";
-    kwdMap["="] = LxOperEqual;
+    _Operators << "=";
+    _KwdMap["="] = LxOperEqual;
 
-    operators << "<";
-    kwdMap["<"] = LxOperLess;
+    _Operators << "<";
+    _KwdMap["<"] = LxOperLess;
 
-    operators << ">";
-    kwdMap[">"] = LxOperGreater;
+    _Operators << ">";
+    _KwdMap[">"] = LxOperGreater;
 
-    operators << "/";
-    kwdMap["/"] = LxOperSlash;
+    _Operators << "/";
+    _KwdMap["/"] = LxOperSlash;
 
-    operators << ";";
-    kwdMap[";"] = LxOperSemicolon;
+    _Operators << ";";
+    _KwdMap[";"] = LxOperSemicolon;
 
-    operators << "#";
+    _Operators << "#";
 
 
-    operators << ":=";
-    kwdMap[":="] = LxPriAssign;
+    _Operators << ":=";
+    _KwdMap[":="] = LxPriAssign;
 
 //    operators << "\\~";
 //    kwdMap["~"] = QString(QChar(KS_TILDA));
@@ -449,41 +445,41 @@ void LexerPrivate::initNormalizator(const QString &fileName)
 //    operators << "%";
 //    kwdMap["%"] = QString(QChar(KS_PERCENT));
 
-    operators << "\"";
-    operators << "'";
+    _Operators << "\"";
+    _Operators << "'";
 //    operators << QString::fromUtf8("”");
-    operators << "\\|";
+    _Operators << "\\|";
 
-    compounds += keyWords;
-    compounds += typeNames;
-    compounds += constNames;
+    _Compounds += _KeyWords;
+    _Compounds += _TypeNames;
+    _Compounds += _ConstNames;
 
 //    keyWords << tr("value");
-    for (int i=0; i<compounds.size(); i++) {
-        compounds[i] = "\\b("+compounds[i]+")\\b";
+    for (int i=0; i<_Compounds.size(); i++) {
+        _Compounds[i] = "\\b("+_Compounds[i]+")\\b";
     }
 
 //    QString operatorsPattern = operators.join("|");
 
-    QString compoundsPattern = compounds.join("|");
+    QString compoundsPattern = _Compounds.join("|");
 
-    QString keywordsPattern = "\\b"+keyWords.join("|")+"\\b";
+    QString keywordsPattern = "\\b"+_KeyWords.join("|")+"\\b";
     keywordsPattern.replace("|","\\b|\\b");
 
-    QString typesPattern = "\\b"+typeNames.join("|")+"\\b";
+    QString typesPattern = "\\b"+_TypeNames.join("|")+"\\b";
     typesPattern.replace("|","\\b|\\b");
 
-    QString constsPattern = "\\b"+constNames.join("|")+"\\b";
+    QString constsPattern = "\\b"+_ConstNames.join("|")+"\\b";
     constsPattern.replace("|","\\b|\\b");
 
-    rxCompound = QRegExp(operators.join("|")+ "|"+
+    _RxCompound = QRegExp(_Operators.join("|")+ "|"+
                              compoundsPattern);
-    rxTypes =  QRegExp(typesPattern);
-    rxConst = QRegExp(constsPattern);
-    rxKeyWords = QRegExp(keywordsPattern);
+    _RxTypes =  QRegExp(typesPattern);
+    _RxConst = QRegExp(constsPattern);
+    _RxKeyWords = QRegExp(keywordsPattern);
 
-    rxKeyWords.setMinimal(false);
-    rxCompound.setMinimal(false);
+    _RxKeyWords.setMinimal(false);
+    _RxCompound.setMinimal(false);
 }
 
 bool isDecimalIntegerConstant(const QString &s) {
@@ -517,8 +513,8 @@ bool isDecimalRealConstant(const QString &s) {
     return result && s!=".";
 }
 
-static const QString expFormSymbols = QString::fromUtf8("eEеЕ01234567890");
-static const QString hexFormSymbols = QString::fromLatin1("0123456789ABCDEFabcdef");
+static const QString ExpFormSymbols = QString::fromUtf8("eEеЕ01234567890");
+static const QString HexFormSymbols = QString::fromLatin1("0123456789ABCDEFabcdef");
 
 bool isExpRealConstant(const QString &s) {
     bool result = s.length()>0 && (s[0].isDigit() || s[0]=='.');
@@ -533,7 +529,7 @@ bool isExpRealConstant(const QString &s) {
                 break;
             }
         }
-        else if (!expFormSymbols.contains(s[i])) {
+        else if (!ExpFormSymbols.contains(s[i])) {
             result = false;
             break;
         }
@@ -544,7 +540,7 @@ bool isExpRealConstant(const QString &s) {
 bool isHexIntegerConstant(const QString &s)  {
     bool result = s.length()>1 && s[0]=='$';
     for (int i=1; i<s.length(); i++) {
-        result = result && hexFormSymbols.contains(s[i]);
+        result = result && HexFormSymbols.contains(s[i]);
         if (!result)
             break;
     }
@@ -672,13 +668,13 @@ void searchUserTypeNames(QList<LexemPtr> & lexems, const QStringList & names) {
     }
 }
 
-void LexerPrivate::splitLineIntoLexems(const QString &text
+void Lexer::splitLineIntoLexems(const QString &text
                                        , QList<LexemPtr> &lexems
                                        , const QStringList & extraTypeNames
                                        ) const
 {
     lexems.clear();
-    Q_ASSERT(rxCompound.isValid());
+    Q_ASSERT(_RxCompound.isValid());
     bool inLit = false;
     QChar litSimb;
     int cur = 0;
@@ -687,7 +683,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
         return;
     }
     forever {
-        cur = rxCompound.indexIn(text, qMax(0,prev));
+        cur = _RxCompound.indexIn(text, qMax(0,prev));
         if (cur!=-1) {
             if ( (cur-prev>1&&prev==-1) || (cur-prev>0&&prev>=0) ) {
                 if (inLit) {
@@ -702,7 +698,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     lexems << lx;
                 }
             }
-            QString symb = rxCompound.cap(0);
+            QString symb = _RxCompound.cap(0);
             if (inLit) {
                 if ( (symb=="\"" || symb=="'") && symb[0]==litSimb) {
                     inLit = false;
@@ -742,13 +738,13 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
                     simplifiedSymb.remove(' ');
                     simplifiedSymb.remove('_');
                     LexemPtr lx = LexemPtr(new Lexem);
-                    lx->type = kwdMap[simplifiedSymb];
+                    lx->type = _KwdMap[simplifiedSymb];
                     lx->data = symb;
                     lx->linePos = cur;
                     lexems << lx;
                 }
             }
-            prev = cur + rxCompound.matchedLength();
+            prev = cur + _RxCompound.matchedLength();
         } // end if cur!=-1
         else {
             if (inLit) {
@@ -826,7 +822,7 @@ void LexerPrivate::splitLineIntoLexems(const QString &text
 void popFirstStatement(QList<LexemPtr> & lexems, TextStatement & result );
 void popFirstStatementByKeyword(QList<LexemPtr> & lexems, TextStatement & result );
 
-void LexerPrivate::groupLexemsByStatements(
+void Lexer::groupLexemsByStatements(
     const QList<LexemPtr> &lexems
     , QList<TextStatementPtr> &statements
     ) const
@@ -1293,28 +1289,28 @@ void popVarDeclStatement(QList<LexemPtr> &lexems, TextStatement &result)
 }
 
 
-QStringList LexerPrivate::keyWords = QStringList();
-QStringList LexerPrivate::operators = QStringList();
-QStringList LexerPrivate::typeNames = QStringList();
-QStringList LexerPrivate::constNames = QStringList();
-QStringList LexerPrivate::compounds = QStringList();
-QHash<QString,LexemType> LexerPrivate::kwdMap = QHash<QString, LexemType>();
-QRegExp LexerPrivate::rxCompound = QRegExp();
-QRegExp LexerPrivate::rxKeyWords = QRegExp();
-QRegExp LexerPrivate::rxConst = QRegExp();
-QRegExp LexerPrivate::rxTypes = QRegExp();
-QHash<QString,AST::VariableBaseType> LexerPrivate::baseTypes = QHash<QString, AST::VariableBaseType>();
-QHash<QString,AST::VariableBaseType> LexerPrivate::baseTypes0 = QHash<QString, AST::VariableBaseType>();
-QHash<QString,bool> LexerPrivate::boolConstantValues = QHash<QString,bool>();
-QSet<QString> LexerPrivate::arrayTypes = QSet<QString>();
-QString LexerPrivate::retvalKeyword = QString();
+QStringList Lexer::_KeyWords = QStringList();
+QStringList Lexer::_Operators = QStringList();
+QStringList Lexer::_TypeNames = QStringList();
+QStringList Lexer::_ConstNames = QStringList();
+QStringList Lexer::_Compounds = QStringList();
+QHash<QString,LexemType> Lexer::_KwdMap = QHash<QString, LexemType>();
+QRegExp Lexer::_RxCompound = QRegExp();
+QRegExp Lexer::_RxKeyWords = QRegExp();
+QRegExp Lexer::_RxConst = QRegExp();
+QRegExp Lexer::_RxTypes = QRegExp();
+QHash<QString,AST::VariableBaseType> Lexer::_BaseTypes = QHash<QString, AST::VariableBaseType>();
+QHash<QString,AST::VariableBaseType> Lexer::_BaseTypes0 = QHash<QString, AST::VariableBaseType>();
+QHash<QString,bool> Lexer::_BoolConstantValues = QHash<QString,bool>();
+QSet<QString> Lexer::_ArrayTypes = QSet<QString>();
+QString Lexer::_RetvalKeyword = QString();
 
 QString Lexer::testName(const QString &name)
 {
     if ( name.isEmpty() )
         return QString();
 
-//    if (name==d->retvalKeyword)
+//    if (name==_retvalKeyword)
 //        return QString();
 
 
@@ -1418,8 +1414,8 @@ AST::VariableBaseType Lexer::baseTypeByClassName(const QString &clazz) const
 {
     QString normName = clazz;
     normName.remove(" ");
-    if (d->baseTypes.contains(normName)) {
-        return d->baseTypes[normName];
+    if (_BaseTypes.contains(normName)) {
+        return _BaseTypes[normName];
     }
     else {
         return AST::TypeNone;
@@ -1430,18 +1426,18 @@ bool Lexer::isArrayClassName(const QString &clazz) const
 {
     QString normName = clazz;
     normName.remove(" ");
-    return d->arrayTypes.contains(normName);
+    return _ArrayTypes.contains(normName);
 }
 
 bool Lexer::boolConstantValue(const QString &val) const
 {
-    Q_ASSERT(d->boolConstantValues.contains(val));
-    return d->boolConstantValues[val];
+    Q_ASSERT(_BoolConstantValues.contains(val));
+    return _BoolConstantValues[val];
 }
 
 bool Lexer::isReturnVariable(const QString &name) const
 {
-    return name==d->retvalKeyword;
+    return name==_RetvalKeyword;
 }
 
 QString Lexer::testingAlgorhitmName()

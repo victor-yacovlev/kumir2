@@ -1,5 +1,4 @@
 #include "analizer.h"
-#include "analizer_p.h"
 #include "interfaces/error.h"
 #include "interfaces/lexemtype.h"
 #include "lexer.h"
@@ -11,51 +10,83 @@
 
 namespace KumirAnalizer {
 
-QLocale::Language AnalizerPrivate::nativeLanguage = QLocale::Russian;
+QLocale::Language Analizer::_NativeLanguage = QLocale::Russian;
 
 void Analizer::connectSignalImportsChanged(QObject *receiver, const char *slot)
 {
-    QObject::connect(d->analizer, SIGNAL(importsChanged(QStringList)),
+    QObject::connect(_syntaxAnalizer, SIGNAL(importsChanged(QStringList)),
                      receiver, slot);
 }
 
 void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language &language)
 {
     Lexer::setLanguage(resourcesRoot, language);
-    AnalizerPrivate::nativeLanguage = language;
+    Analizer::_NativeLanguage = language;
 }
 
 void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
 {
     if (moduleName==QString::fromLatin1("Files"))
-        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
+        Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
     if (moduleName==QString::fromLatin1("Strings"))
-        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
+        Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
     if (moduleName==QString::fromLatin1("Keyboard"))
-        AnalizerPrivate::AlwaysAvailableModulesName.append(QString::fromUtf8("Клавиатура"));
+        Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Клавиатура"));
 }
 
 Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
     : QObject(plugin)
-    , teacherMode_(teacherMode)
-    , plugin_(plugin)
+    , _teacherMode(teacherMode)
+    , _plugin(plugin)
 {
-    d = new AnalizerPrivate(plugin, this);
+
+    _hiddenBaseLine = -1;
+    _ast = AST::DataPtr(new AST::Data());
+    _lexer = new Lexer(this);
+    _pdAutomata = new PDAutomata(_plugin->myResourcesDir(), this);
+    _syntaxAnalizer = new SyntaxAnalizer(_lexer, _AlwaysAvailableModulesName, _teacherMode, this);
+    _syntaxAnalizer->init(_statements, _ast);
+    _builtinModules.resize(16);
+    ActorInterface * stdFunct = new StdLibModules::RTL;
+    _builtinModules[0] = stdFunct;
+    createModuleFromActor_stage1(stdFunct, 0xF0);
+    createModuleFromActor_stage2(stdFunct);
+    ActorInterface * filesFunct = new StdLibModules::Files;
+    _builtinModules[1] = filesFunct;
+    createModuleFromActor_stage1(filesFunct, 0xF1);
+    createModuleFromActor_stage2(filesFunct);
+    ActorInterface * stringsFunct = new StdLibModules::Strings;
+    _builtinModules[2] = stringsFunct;
+    createModuleFromActor_stage1(stringsFunct, 0xF2);
+    createModuleFromActor_stage2(stringsFunct);
+    QList<ExtensionSystem::KPlugin*> actors = _plugin->loadedPlugins("Actor*");
+    foreach (QObject *o, actors) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        if (actor) {
+            createModuleFromActor_stage1(actor, 0);
+        }
+    }
+    foreach (QObject *o, actors) {
+        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
+        if (actor) {
+            createModuleFromActor_stage2(actor);
+        }
+    }
 }
 
 Shared::AnalizerInterface * Analizer::plugin()
 {
-    return plugin_;
+    return _plugin;
 }
 
 QString Analizer::suggestFileName() const
 {
-    return d->analizer->suggestFileName();
+    return _syntaxAnalizer->suggestFileName();
 }
 
 QString Analizer::sourceText() const
 {
-    return d->sourceText.join("\n")+"\n";
+    return _sourceText.join("\n")+"\n";
 }
 
 std::string Analizer::rawSourceData() const
@@ -71,18 +102,18 @@ std::string Analizer::rawSourceData() const
 
 QString Analizer::createImportStatementLine(const QString &importName) const
 {
-    return d->lexer->importKeyword() + " " + importName;
+    return _lexer->importKeyword() + " " + importName;
 }
 
 
 void Analizer::setSourceDirName(const QString &dirName)
 {
-    d->analizer->setSourceDirName(dirName);
+    _syntaxAnalizer->setSourceDirName(dirName);
 }
 
 bool Analizer::multipleStatementsInLine(int lineNo) const
 {
-    const QList<TextStatementPtr> & sts = d->statements;
+    const QList<TextStatementPtr> & sts = _statements;
     QList<int> usedLineNumbers;
     Q_FOREACH(TextStatementPtr st, sts) {
         int statementLine = -1;
@@ -103,7 +134,7 @@ Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) c
 {
     AST::ModulePtr currentModule = findModuleByLine(lineNo);
     QList<LexemPtr> lexems;
-    d->lexer->splitIntoLexems(text, lexems, d->gatherExtraTypeNames(currentModule));
+    _lexer->splitIntoLexems(text, lexems, gatherExtraTypeNames(currentModule));
     Shared::Analizer::LineProp lp(text.length(), LxTypeEmpty);
     bool delimFound = false;
     for (int i=0; i<lexems.size(); i++) {
@@ -115,7 +146,7 @@ Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) c
             else if (moduleNames().contains(lx->data.trimmed())) {
                 lx->type = LxNameModule;
             }
-            else if (d->lexer->baseTypeByClassName(lx->data.trimmed())!=AST::TypeNone) {
+            else if (_lexer->baseTypeByClassName(lx->data.trimmed())!=AST::TypeNone) {
                 lx->type = LxNameClass;
             }
             else if (i>0) {
@@ -140,13 +171,13 @@ Shared::Analizer::LineProp Analizer::lineProp(int lineNo, const QString &text) c
 QStringList Analizer::algorithmsAvailabaleForModule(const AST::ModulePtr currentModule) const
 {
     QStringList result;
-    for (int i=0; i<d->ast->modules.size(); i++) {
-        const AST::ModulePtr module = d->ast->modules[i];
-        bool alwaysEnabled = i==0 || d->AlwaysAvailableModulesName.contains(module->header.name);
+    for (int i=0; i<_ast->modules.size(); i++) {
+        const AST::ModulePtr module = _ast->modules[i];
+        bool alwaysEnabled = i==0 || _AlwaysAvailableModulesName.contains(module->header.name);
         bool enabled = alwaysEnabled || module->isEnabledFor(currentModule);
         if (enabled) {
-            for (int j=0; j<d->ast->modules[i]->impl.algorhitms.size(); j++) {
-                result << d->ast->modules[i]->impl.algorhitms[j]->header.name;
+            for (int j=0; j<_ast->modules[i]->impl.algorhitms.size(); j++) {
+                result << _ast->modules[i]->impl.algorhitms[j]->header.name;
             }
         }
     }
@@ -155,58 +186,21 @@ QStringList Analizer::algorithmsAvailabaleForModule(const AST::ModulePtr current
 
 bool Analizer::isModuleAlwaysEnabled(const ModulePtr module) const
 {
-    return d->AlwaysAvailableModulesName.contains(module->header.name);
+    return _AlwaysAvailableModulesName.contains(module->header.name);
 }
 
 
 QStringList Analizer::moduleNames() const
 {
     QStringList result;
-    for (int i=0; i<d->ast->modules.size(); i++) {
-        result << d->ast->modules[i]->header.name;
+    for (int i=0; i<_ast->modules.size(); i++) {
+        result << _ast->modules[i]->header.name;
     }
     return result;
 }
 
-AnalizerPrivate::AnalizerPrivate(KumirAnalizerPlugin * plugin_,
-                                 Analizer *qq)
-{
-    hiddenBaseLine = -1;
-    q = qq;
-    ast = AST::DataPtr(new AST::Data());
-    lexer = new Lexer(q);
-    pdAutomata = new PDAutomata(plugin_->myResourcesDir(), q);
-    analizer = new SyntaxAnalizer(lexer, AlwaysAvailableModulesName, qq->teacherMode_, q);
-    analizer->init(statements, ast);
-    builtinModules.resize(16);
-    ActorInterface * stdFunct = new StdLibModules::RTL;
-    builtinModules[0] = stdFunct;
-    createModuleFromActor_stage1(stdFunct, 0xF0);
-    createModuleFromActor_stage2(stdFunct);
-    ActorInterface * filesFunct = new StdLibModules::Files;
-    builtinModules[1] = filesFunct;
-    createModuleFromActor_stage1(filesFunct, 0xF1);
-    createModuleFromActor_stage2(filesFunct);
-    ActorInterface * stringsFunct = new StdLibModules::Strings;
-    builtinModules[2] = stringsFunct;
-    createModuleFromActor_stage1(stringsFunct, 0xF2);
-    createModuleFromActor_stage2(stringsFunct);
-    QList<ExtensionSystem::KPlugin*> actors = plugin_->loadedPlugins("Actor*");
-    foreach (QObject *o, actors) {
-        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
-        if (actor) {
-            createModuleFromActor_stage1(actor, 0);
-        }
-    }
-    foreach (QObject *o, actors) {
-        ActorInterface * actor = qobject_cast<ActorInterface*>(o);
-        if (actor) {
-            createModuleFromActor_stage2(actor);
-        }
-    }
-}
 
-void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
+void Analizer::setHiddenText(const QString &text, int baseLineNo)
 {
 //    teacherText = text;
 //    hiddenBaseLine = baseLineNo;
@@ -252,25 +246,21 @@ void AnalizerPrivate::setHiddenText(const QString &text, int baseLineNo)
 
 }
 
-AnalizerPrivate::~AnalizerPrivate()
-{
-    delete lexer;
-    delete pdAutomata;  
-    delete builtinModules[0];
-    delete builtinModules[1];
-    delete builtinModules[2];
-}
 
 Analizer::~Analizer()
 {
-    delete d;
+    delete _lexer;
+    delete _pdAutomata;
+    delete _builtinModules[0];
+    delete _builtinModules[1];
+    delete _builtinModules[2];
 }
 
 
 Shared::Analizer::TextAppend Analizer::closingBracketSuggestion(int lineNo) const
 {
-    for (int i=0; i<d->statements.size(); i++) {
-        const TextStatementPtr st = d->statements.at(i);
+    for (int i=0; i<_statements.size(); i++) {
+        const TextStatementPtr st = _statements.at(i);
         if (st->data.size()>0 && st->data.last()->lineNo==lineNo) {
             if (st->suggestedClosingBracket.first.length()>0)
                 return st->suggestedClosingBracket;
@@ -281,8 +271,8 @@ Shared::Analizer::TextAppend Analizer::closingBracketSuggestion(int lineNo) cons
 
 QStringList Analizer::importModuleSuggestion(int lineNo) const
 {
-    for (int i=0; i<d->statements.size(); i++) {
-        const TextStatementPtr st = d->statements.at(i);
+    for (int i=0; i<_statements.size(); i++) {
+        const TextStatementPtr st = _statements.at(i);
         if (st->data.size()>0 && st->data.last()->lineNo==lineNo) {
             return st->suggestedImportModuleNames;
         }
@@ -302,25 +292,25 @@ static AST::ModulePtr moduleByActor(AST::DataPtr ast, Shared::ActorInterface* ac
 
 void Analizer::setSourceText(const QString & text)
 {
-    QList<AST::ModulePtr>::iterator it = d->ast->modules.begin();
-    while (it!=d->ast->modules.end()) {
+    QList<AST::ModulePtr>::iterator it = _ast->modules.begin();
+    while (it!=_ast->modules.end()) {
         AST::ModulePtr module = *it;
         if ( module->header.type == AST::ModTypeTeacher ||
              module->header.type == AST::ModTypeTeacherMain ||
              module->header.type == AST::ModTypeUserMain ||
              module->header.type == AST::ModTypeUser ) {
-            it = d->ast->modules.erase(it);
+            it = _ast->modules.erase(it);
         }
         else {
             module->header.usedBy.clear();
             it++;
         }
     }
-    d->statements.clear();
-    d->sourceText = text.split("\n", QString::KeepEmptyParts);
+    _statements.clear();
+    _sourceText = text.split("\n", QString::KeepEmptyParts);
 
     QList<TextStatementPtr> preprocessorStatements;
-    d->lexer->splitIntoStatements(d->sourceText, 0, preprocessorStatements, QStringList());
+    _lexer->splitIntoStatements(_sourceText, 0, preprocessorStatements, QStringList());
 
     QStringList extraTypeNames;
 
@@ -328,7 +318,7 @@ void Analizer::setSourceText(const QString & text)
         if (st->data.size()>1 && st->data.at(0)->type==LxPriImport) {
             if (st->data.at(1)->type!=LxConstLiteral && st->data.at(1)->type!=LxPriImport) {
                 const QString moduleName = st->data.at(1)->data;
-                foreach (const AST::ModulePtr & pmod, d->ast->modules) {
+                foreach (const AST::ModulePtr & pmod, _ast->modules) {
                     if (pmod->header.type==AST::ModTypeExternal &&
                             pmod->header.name==moduleName)
                     {
@@ -340,7 +330,7 @@ void Analizer::setSourceText(const QString & text)
                         QList<Shared::ActorInterface*> deps =
                                 pmod->impl.actor->usesList();
                         foreach (Shared::ActorInterface* actor, deps) {
-                            AST::ModulePtr dmod = moduleByActor(d->ast, actor);
+                            AST::ModulePtr dmod = moduleByActor(_ast, actor);
                             foreach (const AST::Type ptype, dmod->header.types) {
                                 const QString typeName = ptype.name;
                                 if (!extraTypeNames.contains(typeName))
@@ -354,9 +344,9 @@ void Analizer::setSourceText(const QString & text)
         }
     }
 
-    foreach (AST::ModulePtr module, d->ast->modules) {
+    foreach (AST::ModulePtr module, _ast->modules) {
         if (module->header.type == AST::ModTypeExternal
-                && d->AlwaysAvailableModulesName.contains(module->header.name))
+                && _AlwaysAvailableModulesName.contains(module->header.name))
         {
             foreach (const AST::Type ptype, module->header.types) {
                 const QString typeName = ptype.name;
@@ -366,17 +356,17 @@ void Analizer::setSourceText(const QString & text)
         }
     }
 
-    d->lexer->splitIntoStatements(d->sourceText, 0, d->statements, extraTypeNames);
-    d->doCompilation(d->statements, AnalizerPrivate::CS_StructureAndNames);
-    d->doCompilation(d->statements, AnalizerPrivate::CS_Contents);
+    _lexer->splitIntoStatements(_sourceText, 0, _statements, extraTypeNames);
+    doCompilation(_statements, Analizer::CS_StructureAndNames);
+    doCompilation(_statements, Analizer::CS_Contents);
 
 }
 
 
 
-QStringList AnalizerPrivate::AlwaysAvailableModulesName;
+QStringList Analizer::_AlwaysAvailableModulesName;
 
-void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * actor, quint8 forcedId)
+void Analizer::createModuleFromActor_stage1(Shared::ActorInterface * actor, quint8 forcedId)
 {
     // Stage 1 -- add to table and build type list
     AST::ModulePtr mod = AST::ModulePtr(new AST::Module());
@@ -384,12 +374,12 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
     mod->header.type = AST::ModTypeExternal;
     mod->header.name = actor->localizedModuleName(QLocale::Russian);
     mod->header.asciiName = actor->asciiModuleName();
-//    if (-1 != mod->header.name.indexOf("%")) {
-//        mod->header.nameTemplate = mod->header.name;
+//    if (-1 != mo_header.name.indexOf("%")) {
+//        mo_header.nameTemplate = mo_header.name;
 //        static const QRegExp rxTemplateParameter("%[sdfb]");
 //        int p = 0;
 //        Q_FOREVER {
-//            p = rxTemplateParameter.indexIn(mod->header.nameTemplate, p);
+//            p = rxTemplateParameter.indexIn(mo_header.nameTemplate, p);
 //            if (-1 == p) break;
 //            p += rxTemplateParameter.matchedLength();
 //            const QString cap = rxTemplateParameter.cap();
@@ -401,17 +391,17 @@ void AnalizerPrivate::createModuleFromActor_stage1(Shared::ActorInterface * acto
 //            case 'b': templateType = QVariant::Bool; break;
 //            default:  templateType = QVariant::String;
 //            }
-//            mod->header.templateTypes.append(templateType);
-//            mod->header.templateParameters.append(QVariant::Invalid);
+//            mo_header.templateTypes.append(templateType);
+//            mo_header.templateParameters.append(QVariant::Invalid);
 //        }
 
-//        mod->header.name = mod->header.name.left(mod->header.name.indexOf("%")).trimmed();
+//        mo_header.name = mo_header.name.left(mo_header.name.indexOf("%")).trimmed();
 //    }
-//    if (-1 != mod->header.asciiName.indexOf("%")) {
-//        mod->header.asciiName = mod->header.asciiName.left(mod->header.asciiName.indexOf("%")).trimmed();
+//    if (-1 != mo_header.asciiName.indexOf("%")) {
+//        mo_header.asciiName = mo_header.asciiName.left(mo_header.asciiName.indexOf("%")).trimmed();
 //    }
     mod->impl.actor = AST::ActorPtr(actor);
-    ast->modules << ModulePtr(mod);
+    _ast->modules << ModulePtr(mod);
     const Shared::ActorInterface::TypeList typeList = actor->typeList();
     for (int i=0; i<typeList.size(); i++) {
         typedef Shared::ActorInterface AI;
@@ -483,14 +473,14 @@ static AST::Type actorTypeToASTType(const Shared::ActorInterface::FieldType ft,
     return result;
 }
 
-void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * actor)
+void Analizer::createModuleFromActor_stage2(Shared::ActorInterface * actor)
 {
     // Stage 2 -- build functions list
-    AST::ModulePtr mod = moduleByActor(ast, actor);
+    AST::ModulePtr mod = moduleByActor(_ast, actor);
     QList<Shared::ActorInterface*> deps = actor->usesList();
     foreach (Shared::ActorInterface* dep, deps) {
-        AST::ModulePtr dmod = moduleByActor(ast, dep);
-        dmod->header.usedBy.append(mod.toWeakRef());
+        AST::ModulePtr dmod = moduleByActor(_ast, dep);
+        mod->header.usedBy.append(mod.toWeakRef());
     }
     foreach (const Shared::ActorInterface::Function & function, actor->functionList()) {
 
@@ -542,7 +532,7 @@ void AnalizerPrivate::createModuleFromActor_stage2(Shared::ActorInterface * acto
 
 
 
-AST::AlgorithmPtr AnalizerPrivate::findAlgorhitmByPos(AST::DataPtr data, int pos)
+AST::AlgorithmPtr Analizer::findAlgorhitmByPos(AST::DataPtr data, int pos)
 {
     if (pos==-1) {
         return AST::AlgorithmPtr();
@@ -571,7 +561,7 @@ AST::AlgorithmPtr AnalizerPrivate::findAlgorhitmByPos(AST::DataPtr data, int pos
 QList<Shared::Analizer::Error> Analizer::errors() const
 {
     QList<Shared::Analizer::Error> result;
-    QList<TextStatementPtr> all = d->statements;
+    QList<TextStatementPtr> all = _statements;
     for (int i=0; i<all.size(); i++) {
         foreach (const LexemPtr lx, all[i]->data) {
             if (!lx->error.isEmpty()) {
@@ -581,7 +571,7 @@ QList<Shared::Analizer::Error> Analizer::errors() const
                 err.len = lx->length;
                 err.message = ErrorMessages::message(
                             "KumirAnalizer",
-                            AnalizerPrivate::nativeLanguage,
+                            Analizer::_NativeLanguage,
                             lx->error
                             );
                 if (result.size()>0 && result.last().line==err.line && result.last().message==err.message) {
@@ -602,13 +592,13 @@ QList<Shared::Analizer::Error> Analizer::errors() const
 QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
 {
     QList<Shared::Analizer::LineProp> result;
-    QStringList lines = d->sourceText + d->teacherText.split("\n");
+    QStringList lines = _sourceText + _teacherText.split("\n");
     for (int i=0; i<lines.size(); i++) {
         result << Shared::Analizer::LineProp(lines[i].size(), LxTypeEmpty);
     }
 
     result << Shared::Analizer::LineProp(0, LxTypeEmpty);
-    QList<TextStatementPtr> all = d->statements;
+    QList<TextStatementPtr> all = _statements;
 
     for (int i=0; i<all.size(); i++) {
         foreach (const LexemPtr lx, all[i]->data) {
@@ -630,9 +620,9 @@ QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
 QStringList Analizer::imports() const
 {
     QStringList result;
-//    for (int i=0; i<d->ast->modules.size(); i++) {
-//        for (int j=0; j<d->ast->modules[i]->header.uses.size(); j++) {
-//            const QString import = d->ast->modules[i]->header.uses.toList()[j];
+//    for (int i=0; i<_ast->modules.size(); i++) {
+//        for (int j=0; j<_ast->modules[i]->header.uses.size(); j++) {
+//            const QString import = _ast->modules[i]->header.uses.toList()[j];
 //            if (!result.contains(import)) {
 //                result << import;
 //            }
@@ -644,11 +634,11 @@ QStringList Analizer::imports() const
 QList<QPoint> Analizer::lineRanks() const
 {
     QList<QPoint> result;
-    QStringList lines = d->sourceText + d->teacherText.split("\n");
+    QStringList lines = _sourceText + _teacherText.split("\n");
     for (int i=0; i<lines.size(); i++) {
         result << QPoint(0,0);
     }
-    QList<TextStatementPtr> all = d->statements;
+    QList<TextStatementPtr> all = _statements;
     for (int i=0; i<all.size(); i++) {
         Q_ASSERT (!all[i]->data.isEmpty());
         const LexemPtr lx = all[i]->data.first();
@@ -699,7 +689,7 @@ bool findAlgorhitmBounds( const QList<TextStatement*> & statements
     return begin && end;
 }
 
-bool AnalizerPrivate::findInstructionsBlock(
+bool Analizer::findInstructionsBlock(
     AST::DataPtr data
     , const QList<TextStatement*> statements
     , LAS &lst
@@ -764,7 +754,7 @@ bool AnalizerPrivate::findInstructionsBlock(
 
 
 
-bool AnalizerPrivate::findInstructionsBlock(
+bool Analizer::findInstructionsBlock(
     AST::DataPtr data
     , const QList<TextStatement *> statements
     , int pos
@@ -787,7 +777,7 @@ bool AnalizerPrivate::findInstructionsBlock(
     return findInstructionsBlock(data, nearbyStatements, lst, dummy, outPos, mod, alg);
 }
 
-QPair<TextStatementPtr,LexemPtr> AnalizerPrivate::findSourceLexemContext(DataPtr data
+QPair<TextStatementPtr,LexemPtr> Analizer::findSourceLexemContext(DataPtr data
                                                    , const QList<TextStatementPtr> statements
                                                    , int lineNo
                                                    , int colNo
@@ -824,9 +814,9 @@ QPair<TextStatementPtr,LexemPtr> AnalizerPrivate::findSourceLexemContext(DataPtr
     return result;
 }
 
-void AnalizerPrivate::removeAllVariables(const AST::VariablePtr var)
+void Analizer::removeAllVariables(const AST::VariablePtr var)
 {
-    foreach (AST::ModulePtr mod, ast->modules) {
+    foreach (AST::ModulePtr mod, _ast->modules) {
         mod->impl.globals.removeAll(var);
         foreach (AST::AlgorithmPtr alg, mod->impl.algorhitms) {
             alg->impl.locals.removeAll(var);
@@ -834,8 +824,8 @@ void AnalizerPrivate::removeAllVariables(const AST::VariablePtr var)
     }
 }
 
-QList< AnalizerPrivate::ModuleStatementsBlock >
-AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
+QList< Analizer::ModuleStatementsBlock >
+Analizer::splitIntoModules(const QList<TextStatementPtr> &statements)
 {
     // 0. Check for invalid markers
     QList<TextStatementPtr> markers;
@@ -946,7 +936,7 @@ AnalizerPrivate::splitIntoModules(const QList<TextStatementPtr> &statements)
     return result;
 }
 
-void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, AnalizerPrivate::CompilationStage stage)
+void Analizer::doCompilation(QList<TextStatementPtr> & allStatements, Analizer::CompilationStage stage)
 {   
     if (stage == CS_StructureAndNames) {
         foreach (TextStatementPtr st, allStatements) {
@@ -995,29 +985,29 @@ void AnalizerPrivate::doCompilation(QList<TextStatementPtr> & allStatements, Ana
             if (block.end)
                 block.end->mod = blockModule;
             if (blockModule != unnamedUserModule && blockModule != unnamedTeacherModule) {
-                ast->modules.append(blockModule);
+                _ast->modules.append(blockModule);
             }
             if (statements.size() > 0) {
-                pdAutomata->init(statements, blockModule);
-                pdAutomata->process();
-                pdAutomata->postProcess();
+                _pdAutomata->init(statements, blockModule);
+                _pdAutomata->process();
+                _pdAutomata->postProcess();
             }
         }
 
-        ast->modules.append(unnamedUserModule);
-        ast->modules.append(unnamedTeacherModule);
+        _ast->modules.append(unnamedUserModule);
+        _ast->modules.append(unnamedTeacherModule);
 
-        analizer->init(allStatements, ast);
-        analizer->buildTables(false);
+        _syntaxAnalizer->init(allStatements, _ast);
+        _syntaxAnalizer->buildTables(false);
     }
     else {
-        analizer->processAnalisys();
+        _syntaxAnalizer->processAnalisys();
     }
 }
 
 const AST::DataPtr Analizer::abstractSyntaxTree() const
 {
-    return d->ast;
+    return _ast;
 }
 
 
@@ -1028,15 +1018,15 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
 
     // Filter modules to be sources available for
     QList<AST::ModulePtr> sourceProvidedModules;
-    std::copy_if(d->ast->modules.begin(),
-                 d->ast->modules.end(),
+    std::copy_if(_ast->modules.begin(),
+                 _ast->modules.end(),
                  std::back_inserter(sourceProvidedModules),
                  [this](AST::ModulePtr p)->bool
     {
         const AST::ModuleType type = p->header.type;
         return
                 (AST::ModTypeUser == type || AST::ModTypeUserMain == type) ||
-                (teacherMode_ && (AST::ModTypeTeacher == type || AST::ModTypeTeacherMain == type));
+                (_teacherMode && (AST::ModTypeTeacher == type || AST::ModTypeTeacherMain == type));
     });
 
     if (sourceProvidedModules.isEmpty()) {
@@ -1059,7 +1049,7 @@ const AST::ModulePtr Analizer::findModuleByLine(int lineNo) const
         entry = sourceProvidedModules.begin();
     }
 
-    AST::ModulePtr result = d->ast->modules.end() == entry ? AST::ModulePtr() : * entry;
+    AST::ModulePtr result = _ast->modules.end() == entry ? AST::ModulePtr() : * entry;
 
     return result;
 }
@@ -1087,11 +1077,11 @@ QList<Shared::Analizer::Suggestion> Analizer::suggestAutoComplete(int lineNo, co
     QStringList beforeProgram;
     beforeProgram << before;
     QList<TextStatementPtr> beforeStatements;
-    d->lexer->splitIntoStatements(beforeProgram, 0, beforeStatements, QStringList());
+    _lexer->splitIntoStatements(beforeProgram, 0, beforeStatements, QStringList());
     QList<LexemPtr> afterLexems;
-    d->lexer->splitIntoLexems(after, afterLexems, QStringList());
+    _lexer->splitIntoLexems(after, afterLexems, QStringList());
     const TextStatementPtr lastStatement = beforeStatements.size()>0? beforeStatements.last() : TextStatementPtr();
-    QList<Shared::Analizer::Suggestion> result = d->analizer->suggestAutoComplete(lineNo, lastStatement, afterLexems, mod, alg);
+    QList<Shared::Analizer::Suggestion> result = _syntaxAnalizer->suggestAutoComplete(lineNo, lastStatement, afterLexems, mod, alg);
     QList<Shared::Analizer::Suggestion> filteredResult;
     for (int i_sugg=0; i_sugg<result.size(); i_sugg++) {
         // filter by space at end
@@ -1146,8 +1136,8 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
     using namespace Shared::Analizer;
 
     // get context by line number
-    QPair<TextStatementPtr,LexemPtr> context = AnalizerPrivate::findSourceLexemContext(
-                d->ast, d->statements, lineNo, colNo, includeRightBound
+    QPair<TextStatementPtr,LexemPtr> context = Analizer::findSourceLexemContext(
+                _ast, _statements, lineNo, colNo, includeRightBound
                 );    
 
     ApiHelpItem result;
@@ -1162,7 +1152,7 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
     // the compiled text line might be outdated, so use new one
     QList<LexemPtr> lexems;
     QStringList dummy;
-    d->lexer->splitIntoLexems(text, lexems, dummy);
+    _lexer->splitIntoLexems(text, lexems, dummy);
     LexemPtr lx;
 
     for (int i=0; i<lexems.size(); i++) {
@@ -1195,7 +1185,7 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
             AST::AlgorithmPtr resultAlgorithm;
             AST::ModulePtr resultModule;
             QVariantList templateParameters;
-            if (d->analizer->findAlgorithm(name,
+            if (_syntaxAnalizer->findAlgorithm(name,
                                            contextModule, contextAlgorithm,
                                            resultModule, resultAlgorithm,
                                            templateParameters))
@@ -1214,13 +1204,13 @@ Shared::Analizer::ApiHelpItem Analizer::itemUnderCursor(const QString & text, in
 }
 
 
-QStringList AnalizerPrivate::gatherExtraTypeNames(const AST::ModulePtr currentModule) const
+QStringList Analizer::gatherExtraTypeNames(const AST::ModulePtr currentModule) const
 {
     QStringList result;
-    if (ast) {
-        for (int i=0; i<ast->modules.size(); i++) {
-            const AST::ModulePtr module = ast->modules[i];
-            bool alwaysEnabled = i==0 || AlwaysAvailableModulesName.contains(module->header.name);
+    if (_ast) {
+        for (int i=0; i<_ast->modules.size(); i++) {
+            const AST::ModulePtr module = _ast->modules[i];
+            bool alwaysEnabled = i==0 || _AlwaysAvailableModulesName.contains(module->header.name);
             bool enabled = alwaysEnabled || module->isEnabledFor(currentModule);
             if (enabled) {
                 for (int j=0; j<module->header.types.size(); j++) {
@@ -1230,7 +1220,7 @@ QStringList AnalizerPrivate::gatherExtraTypeNames(const AST::ModulePtr currentMo
                 if (module->impl.actor) {
                     QList<Shared::ActorInterface*> deps = module->impl.actor->usesList();
                     foreach (Shared::ActorInterface * actor, deps) {
-                        const AST::ModulePtr actorMod = moduleByActor(ast, actor);
+                        const AST::ModulePtr actorMod = moduleByActor(_ast, actor);
                         for (int j=0; j<actorMod->header.types.size(); j++) {
                             AST::Type tp = actorMod->header.types[j];
                             result << tp.name;
