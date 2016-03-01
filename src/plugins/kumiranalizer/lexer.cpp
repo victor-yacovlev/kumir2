@@ -29,9 +29,12 @@ int Lexer::splitIntoStatements(const QStringList &lines
         splitLineIntoLexems(line, lexems, extraTypeNames);
         QList<TextStatementPtr> sts;
         groupLexemsByStatements(lexems, sts);
-        for (int j=0; j<sts.size(); j++) {
-            for (int k=0; k<sts[j]->data.size(); k++) {
-                sts[j]->data[k]->lineNo = baseLineNo==-1? -1 : baseLineNo + i;
+        preprocessIncludeStatements(sts, extraTypeNames);
+        typedef QList<TextStatementPtr>::iterator OuterIt;
+        for (OuterIt j=sts.begin(); sts.end() != j; ++j) {
+            TextStatementPtr statement = *j;
+            for (int k=0; k<statement->data.size(); k++) {
+                statement->data[k]->lineNo = baseLineNo==-1? -1 : baseLineNo + i;
             }
         }
         statements << sts;
@@ -117,8 +120,8 @@ void Lexer::InitNormalizator(const QString &fileName)
                     addToMap(_KwdMap, value, LxPriHalt);
                 }
                 else if (context=="include text") {
-//                    keyWords << value;
-//                    addToMap(kwdMap, value, KS_INCLUDE);
+                    _KeyWords << value;
+                    addToMap(_KwdMap, value, LxPriInclude);
                 }
                 else if (context=="use module") {
                     _KeyWords << value;
@@ -831,9 +834,78 @@ void Lexer::groupLexemsByStatements(
     while (lexemsCopy.size()>0) {
         TextStatement statement;
         popFirstStatement(lexemsCopy, statement);
-        if (statement.data.size()>0)
-            statements << TextStatementPtr(new TextStatement(statement));
+        if (statement.data.size()>0) {
+            statements.push_back(TextStatementPtr(new TextStatement(statement)));
+        }
     }
+}
+
+void Lexer::preprocessIncludeStatements(QList<TextStatementPtr> &statements
+                                        , const QStringList & extraTypeNames) const
+{
+    QList<TextStatementPtr>::iterator it = statements.begin();
+    while (statements.end() != it) {
+        const TextStatementPtr statement = *it;
+        if (LxPriInclude == statement->type) {
+            // Check lexems count
+            if (0 == statement->data.size()) {
+                statement->setError(_("What to include?"), Lexem::Lexer, Lexem::AsIs);
+                ++it;
+            }
+            else if (statement->data.size() > 2) {
+                statement->setError(_("Garbage at end of line"), Lexem::Lexer, Lexem::AsIs);
+                ++it;
+            }
+            else if (LxConstLiteral != statement->data.at(1)->type) {
+                statement->setError(_("Not a string literal"), Lexem::Lexer, Lexem::AsIs);
+                ++it;
+            }
+            else {
+                const QList<TextStatementPtr> includeStatements =
+                        preprocessOneIncludeStatement(statement, extraTypeNames);
+                Q_FOREACH(TextStatementPtr is, includeStatements) {
+                    it = statements.insert(it, is);
+                    ++it;
+                    // TODO replace with STL linked list and use
+                    // std::list::insert instead
+                }
+                it = statements.erase(it);
+            }
+        }
+        else ++it;
+    }
+}
+
+QList<TextStatementPtr> Lexer::preprocessOneIncludeStatement(const TextStatementPtr include
+                                                                 , const QStringList & extraTypeNames) const
+{
+    QList<TextStatementPtr> newStatements;
+    const QString fileName = include->data.at(1)->data;
+    const QString absoluteFileName = QDir(_sourceDirName).absoluteFilePath(fileName);
+    QFile includeFile(absoluteFileName);
+    if (!includeFile.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        include->setError(_("Include file not found"), Lexem::Lexer, Lexem::AsIs);
+        newStatements.push_back(include);
+    }
+    else {
+        QTextStream ts(&includeFile);
+        ts.setCodec("UTF-8");
+        ts.setAutoDetectUnicode(true);
+        const QStringList lines = ts.readAll().split("\n");
+        includeFile.close();
+
+        Lexer temporaryLexer;
+        temporaryLexer.setSourceDirName(_sourceDirName);
+        temporaryLexer.splitIntoStatements(lines, 0, newStatements, extraTypeNames);
+
+        Q_FOREACH(TextStatementPtr is, newStatements) {
+            Q_FOREACH(LexemPtr lx, is->data) {
+                lx->linePos = -1;
+                lx->lineNo = include->data.at(0)->lineNo;
+            }
+        }
+    }
+    return newStatements;
 }
 
 
@@ -900,6 +972,7 @@ void popFinputStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popFoutputStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popAssertStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popImportStatement(QList<LexemPtr> & lexems, TextStatement &result);
+void popIncludeStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popExitStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popPauseStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popHaltStatement(QList<LexemPtr> & lexems, TextStatement &result);
@@ -1053,6 +1126,9 @@ void popFirstStatementByKeyword(QList<LexemPtr> &lexems, TextStatement &result)
     }
     else if (lexems[0]->type==LxPriImport) {
         popImportStatement(lexems, result);
+    }
+    else if (LxPriInclude==lexems[0]->type) {
+        popIncludeStatement(lexems, result);
     }
     else if (lexems[0]->type==LxPriExit) {
         popExitStatement(lexems, result);
@@ -1280,6 +1356,14 @@ void popImportStatement(QList<LexemPtr> &lexems, TextStatement &result)
     popLexemsUntilSemicolon(lexems, result);
 }
 
+void popIncludeStatement(QList<AST::LexemPtr> &lexems, TextStatement &result)
+{
+    result.type = lexems[0]->type;
+    result.data << lexems[0];
+    lexems.pop_front();
+    popLexemsUntilSemicolon(lexems, result);
+}
+
 void popVarDeclStatement(QList<LexemPtr> &lexems, TextStatement &result)
 {
     result.type = lexems[0]->type;
@@ -1438,6 +1522,11 @@ bool Lexer::boolConstantValue(const QString &val) const
 bool Lexer::isReturnVariable(const QString &name) const
 {
     return name==_RetvalKeyword;
+}
+
+void Lexer::setSourceDirName(const QString &dir)
+{
+    _sourceDirName = dir;
 }
 
 QString Lexer::testingAlgorhitmName()

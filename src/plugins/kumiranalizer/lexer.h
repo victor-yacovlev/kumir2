@@ -33,6 +33,8 @@ public:
     bool isReturnVariable(const QString & name) const;
     inline QString inputLexemName() const { return QString::fromUtf8("ввод"); }
     inline QString outputLexemName() const{ return QString::fromUtf8("вывод"); }
+    void setSourceDirName(const QString &dir);
+
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
@@ -51,9 +53,14 @@ private /*methods*/:
                                  , QList<TextStatementPtr> & statements
                                  ) const;
 
+    void preprocessIncludeStatements(QList<TextStatementPtr> & statements, const QStringList &) const;
+    QList<TextStatementPtr> preprocessOneIncludeStatement(const TextStatementPtr include, const QStringList &) const;
+
     static void InitNormalizator(const QString &fileName);
 
 private /*fields*/:
+    QString _sourceDirName;
+
     static QStringList _KeyWords;
     static QStringList _Operators;
     static QStringList _TypeNames;

@@ -109,6 +109,7 @@ QString Analizer::createImportStatementLine(const QString &importName) const
 void Analizer::setSourceDirName(const QString &dirName)
 {
     _syntaxAnalizer->setSourceDirName(dirName);
+    _lexer->setSourceDirName(dirName);
 }
 
 bool Analizer::multipleStatementsInLine(int lineNo) const

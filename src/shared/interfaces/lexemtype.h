@@ -72,6 +72,7 @@ namespace Shared {
         LxPriAssign	= 0xa000,
         LxPriAssert	= 0xa800,
         LxPriImport	= 0xb000,
+        LxPriInclude    = 0xb800,
 
         LxPriExit	= 0xc000,
         LxPriPause      = 0xc800,

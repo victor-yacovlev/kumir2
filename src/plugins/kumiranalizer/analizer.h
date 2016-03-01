@@ -22,6 +22,8 @@
 
 #include <QtCore>
 
+#include <list>
+
 namespace KumirAnalizer {
 
 class Analizer
