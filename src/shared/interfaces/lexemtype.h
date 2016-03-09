@@ -48,6 +48,7 @@ namespace Shared {
         LxSecIn         = 0x1a0,
         LxSecInout	= 0x1c0,
         LxSecCurrentStringLength = 0x1c1,
+        LxSecInclude    = 0x1c2,
 
 
         // LxTypePrimaryKwd values
@@ -72,7 +73,7 @@ namespace Shared {
         LxPriAssign	= 0xa000,
         LxPriAssert	= 0xa800,
         LxPriImport	= 0xb000,
-        LxPriInclude    = 0xb800,
+
 
         LxPriExit	= 0xc000,
         LxPriPause      = 0xc800,

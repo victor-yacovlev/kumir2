@@ -602,16 +602,22 @@ QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
     QList<TextStatementPtr> all = _statements;
 
     for (int i=0; i<all.size(); i++) {
-        foreach (const LexemPtr lx, all[i]->data) {
+        const TextStatementPtr statement = all[i];
+        foreach (const LexemPtr lx, statement->data) {
             for (int j=lx->linePos; j<lx->linePos+lx->length; j++) {
-                unsigned int value = lx->type;
-                const unsigned int errorMask = LxTypeError;
+                const LexemType lxType = lx->type;
+                quint32 value = quint32(lxType);
+                const quint32 errorMask = LxTypeError;
                 if (!lx->error.isEmpty()) {
                     value = value | errorMask;
                 }
                 const int lineNo = lx->lineNo;
-                if (lineNo>=0 && lineNo < result.size() && j>=0 && j<result[lineNo].size())
+                const bool validLineNo = lineNo>=0 && lineNo < result.size();
+                const int lineLength = validLineNo? result[lineNo].size() : 0;
+                const bool validLexemPos = lx->linePos >= 0 && lx->linePos < lineLength;
+                if (validLineNo && validLexemPos) {
                     result[lineNo][j] = LexemType(value);
+                }
             }
         }
     }

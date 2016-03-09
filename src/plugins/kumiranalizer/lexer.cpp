@@ -24,7 +24,8 @@ int Lexer::splitIntoStatements(const QStringList &lines
 {
     int errorsCount = 0;
     for (int i=0; i<lines.size(); i++) {
-        const QString line = lines[i];
+        const QString & line = lines[i];
+        if (line.isEmpty()) { continue; }
         QList<LexemPtr> lexems;
         splitLineIntoLexems(line, lexems, extraTypeNames);
         QList<TextStatementPtr> sts;
@@ -121,7 +122,7 @@ void Lexer::InitNormalizator(const QString &fileName)
                 }
                 else if (context=="include text") {
                     _KeyWords << value;
-                    addToMap(_KwdMap, value, LxPriInclude);
+                    addToMap(_KwdMap, value, LxSecInclude);
                 }
                 else if (context=="use module") {
                     _KeyWords << value;
@@ -846,30 +847,37 @@ void Lexer::preprocessIncludeStatements(QList<TextStatementPtr> &statements
     QList<TextStatementPtr>::iterator it = statements.begin();
     while (statements.end() != it) {
         const TextStatementPtr statement = *it;
-        if (LxPriInclude == statement->type) {
+        if (LxSecInclude == statement->type) {
             // Check lexems count
-            if (0 == statement->data.size()) {
+            if (1 == statement->data.size()) {
                 statement->setError(_("What to include?"), Lexem::Lexer, Lexem::AsIs);
                 ++it;
             }
-            else if (statement->data.size() > 2) {
-                statement->setError(_("Garbage at end of line"), Lexem::Lexer, Lexem::AsIs);
+            else if (LxConstLiteral != statement->data.at(1)->type) {
+                statement->data[1]->error = _("Not a string literal");
+                statement->data[1]->errorRaisePosition = Lexem::AsIs;
+                statement->data[1]->errorStage = Lexem::Lexer;
                 ++it;
             }
-            else if (LxConstLiteral != statement->data.at(1)->type) {
-                statement->setError(_("Not a string literal"), Lexem::Lexer, Lexem::AsIs);
+            else if (statement->data.size() > 2) {
+                for (int j=2; j<statement->data.size(); ++j) {
+                    statement->data[j]->error = _("Garbage at end of line");
+                    statement->data[j]->errorRaisePosition = Lexem::AsIs;
+                    statement->data[j]->errorStage = Lexem::Lexer;
+                }
                 ++it;
             }
             else {
                 const QList<TextStatementPtr> includeStatements =
                         preprocessOneIncludeStatement(statement, extraTypeNames);
                 Q_FOREACH(TextStatementPtr is, includeStatements) {
-                    it = statements.insert(it, is);
                     ++it;
+                    it = statements.insert(it, is);
                     // TODO replace with STL linked list and use
                     // std::list::insert instead
                 }
-                it = statements.erase(it);
+//                it = statements.erase(it);
+                ++it;
             }
         }
         else ++it;
@@ -909,6 +917,8 @@ QList<TextStatementPtr> Lexer::preprocessOneIncludeStatement(const TextStatement
 }
 
 
+void popIncludeStatement(QList<LexemPtr> & lexems, TextStatement &result);
+
 
 void popFirstStatement(QList<LexemPtr> & lexems, TextStatement & result )
 {
@@ -927,6 +937,10 @@ void popFirstStatement(QList<LexemPtr> & lexems, TextStatement & result )
     else if (lexems[0]->type & LxTypePrimaryKwd || lexems[0]->type==LxNameClass) {
         // Statement type can be determined by primary keyword
         popFirstStatementByKeyword(lexems, result);
+    }
+    else if (LxSecInclude == lexems[0]->type) {
+        // Special case for lexer-level preprocessor
+        popIncludeStatement(lexems, result);
     }
     else {
         // Generic assignment (or algothitm call) statement
@@ -972,7 +986,6 @@ void popFinputStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popFoutputStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popAssertStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popImportStatement(QList<LexemPtr> & lexems, TextStatement &result);
-void popIncludeStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popExitStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popPauseStatement(QList<LexemPtr> & lexems, TextStatement &result);
 void popHaltStatement(QList<LexemPtr> & lexems, TextStatement &result);
@@ -1127,7 +1140,7 @@ void popFirstStatementByKeyword(QList<LexemPtr> &lexems, TextStatement &result)
     else if (lexems[0]->type==LxPriImport) {
         popImportStatement(lexems, result);
     }
-    else if (LxPriInclude==lexems[0]->type) {
+    else if (LxSecInclude==lexems[0]->type) {
         popIncludeStatement(lexems, result);
     }
     else if (lexems[0]->type==LxPriExit) {

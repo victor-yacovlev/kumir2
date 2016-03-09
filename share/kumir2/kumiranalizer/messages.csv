@@ -178,7 +178,7 @@
 "Garbage in expression";"Мусор в конце выражения";"";"";"";"";
 "Here must be \"input\" or \"output\"";"";"";"";"";"";
 "Hidden part must contain only algorithm";"";"";"";"";"";
-"Include file not found";"";"";"";"";"";
+"Include file not found";"Файл не найден";"";"";"";"";
 "Incompatible types";"Плохой тип параметра";"";"";"";"";
 "Incomplete module name";"Не полное имя исполнителя";"";"";"";"";
 "Incorrect algorithm name";"Некорректное имя алгоритма";"";"";"";"";
@@ -280,7 +280,7 @@
 "Non-literal constant is not indexable";"У этой величины не бывает индексов";"";"";"";"";
 "Not a constant value";"Это не константа";"";"";"";"";
 "Not a simple index";"Индекс – не число";"";"";"";"";
-"Not a string literal";"";"";"";"";"";
+"Not a string literal";"Должна быть литеральная константа";"";"";"";"";
 "Not enought algorithm arguments";"Мало аргументов";"";"";"";"";
 "Not enought indeces";"Не все индексы";"";"";"";"";
 "Not integer for-loop variable";"Величина не целая";"";"";"";"";
@@ -337,7 +337,7 @@
 "Void argument";"Пустой аргумент";"";"";"";"";
 "Void index";"Пустой индекс";"";"";"";"";
 "What to assign?";"Что назначать?";"";"";"";"";
-"What to include?";"";"";"";"";"";
+"What to include?";"Что включать?";"";"";"";"";
 "What to input from file?";"Куда вводить из файла?";"";"";"";"";
 "What to input?";"Куда вводить?";"";"";"";"";
 "What to output to file?";"Что выводить в файл?";"";"";"";"";
