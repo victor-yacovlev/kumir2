@@ -267,6 +267,21 @@ private:
         return MainWindow->Csize();
     };
 
+    int VodoleyModule::runInA()
+    {
+        return MainWindow->CurA();
+    };
+    int VodoleyModule::runInB()
+    {
+        return MainWindow->CurB();
+    };
+    int VodoleyModule::runInC()
+    {
+        return MainWindow->CurC();
+    };
+    
+    
+    
     void VodoleyModule::openRecent()
     {
  

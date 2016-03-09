@@ -41,7 +41,7 @@ class taskControlInterface
  public:
     virtual void start(QString csName)=0;
     virtual void setCSmode(int mode)=0;
-    virtual void setCSinterface(CSInterface* interface)=0;
+    virtual void setCSinterface(CSInterface* _interface)=0;
     virtual void setWindowGeometry(QRect retc)=0;
     virtual void show()=0;
     virtual void checkFinished(int mark)=0;

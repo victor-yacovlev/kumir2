@@ -11,6 +11,7 @@ Build manual for openSUSE 13.1
     - zlib-devel
     - llvm-devel
     - llvm-clang
+    - python3-devel
     
 2. Build and install commands
     mkdir build

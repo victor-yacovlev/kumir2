@@ -18,6 +18,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "Russian"
 
+
 !define SHCNE_ASSOCCHANGED 0x08000000
 !define SHCNF_IDLIST 0
 
@@ -72,7 +73,7 @@ Section "Kumir" Kumir
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
     CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
-
+    CreateShortCut "$SMPROGRAMS\Кумир2\Удалить Кумир.lnk" "$INSTDIR\uninstall.exe"
     ; Uninstaller registration
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
@@ -81,7 +82,18 @@ Section "Kumir" Kumir
     
 SectionEnd
 
-Section "Uninstall"
+function un.onInit
+	SetShellVarContext all
+ 
+	#Verify the uninstaller - last chance to back out
+	MessageBox MB_OKCANCEL "Удалить Кумир 2.1?" IDOK next
+		Abort
+	next:
+	
+functionEnd
+
+Section "uninstall"
+
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
     RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
