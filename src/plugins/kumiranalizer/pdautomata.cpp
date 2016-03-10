@@ -76,7 +76,7 @@ void PDAutomata::init(const QList<TextStatementPtr> & statements, AST::ModulePtr
                 }
             }
         }
-        if (st->type!=LxTypeComment && !hasPrePDError)
+        if (st->type!=LxTypeComment && LxSecInclude!= st->type && !hasPrePDError)
             source_ << st;
     }
 

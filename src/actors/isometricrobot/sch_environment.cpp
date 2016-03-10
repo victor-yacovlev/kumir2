@@ -336,6 +336,7 @@ extern bool parceJSON(const QScriptValue &value, Environment &environment)
     environment.painted = QSet<QPoint>::fromList( parcePointList(value.property("painted")) );
     environment.pointed = QSet<QPoint>::fromList( parcePointList(value.property("pointed")) );
     environment.walls = QSet< QPair<QPoint,QPoint> >::fromList( parcePointPairList(value.property("walls")) );
+    environment.flags = QSet<QPoint>::fromList( parcePointList(value.property("flags")) );
     return true;
 }
 

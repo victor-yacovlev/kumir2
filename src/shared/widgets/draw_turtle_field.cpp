@@ -79,6 +79,8 @@ void DrawNavigator::XvalueChange(double value)
 {
     emit netStepChange(value);
     netStepYS->setSingleStep(value/10);
+     netStepXS->setSingleStep(Zoom/500);
+    qDebug()<<"Zoom"<<Zoom<<" Step"<<netStepXS->singleStep();
     netStepYS->setValue(value);
     
     

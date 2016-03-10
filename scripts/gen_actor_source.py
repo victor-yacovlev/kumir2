@@ -167,6 +167,20 @@ import string
 import os
 import inspect
 
+def string_join(lines, sep):
+    result = ""
+    for index, line in enumerate(lines):
+        if index > 0:
+            result += sep
+        result += line
+    return result
+
+# Hacks for Python 2/3 compatibility
+if sys.version_info.major >= 3:
+    unicode = str
+    string.join = string_join
+
+
 
 MODULE_CLASS_SUFFIX = "Module"
 MODULE_BASE_CLASS_SUFFIX = "ModuleBase"
@@ -980,8 +994,8 @@ class Module:
         :rtype:             Module
         :return:            Kumir module object
         """
-        f = open(file_name, 'r')
-        data = json.load(f, "utf-8")
+        f = open(file_name, 'r', encoding="utf-8")
+        data = json.load(f, encoding="utf-8")
         f.close()
         absolute_path = os.path.abspath(file_name)
         module_dir = os.path.dirname(absolute_path)
@@ -1219,7 +1233,10 @@ class CppClassBase:
         constructor = None
         public_typedefs = []
         non_inspectable = map(lambda x: ("CppImplementation", x), self.extra_implementations)
-        for key, value in inspect.getmembers(self) + non_inspectable:
+        self_members = inspect.getmembers(self)
+        if sys.version_info.major >= 3:
+            non_inspectable = list(non_inspectable)
+        for key, value in self_members + non_inspectable:
             assert isinstance(key, str)
             if key.endswith("CppImplementation"):
                 if isinstance(value, str) or isinstance(value, unicode):
@@ -1274,11 +1291,11 @@ class CppClassBase:
         if private_slots:
             private_slots = ["private Q_SLOTS:"] + private_slots
         if self.signals:
-            signals = string.join(["Q_SIGNALS:"] + map(lambda x: _add_indent(x + ";"), self.signals), '\n')
+            signals = string.join(["Q_SIGNALS:"] + list(map(lambda x: _add_indent(x + ";"), self.signals)), '\n')
         else:
             signals = ""
         if self.fields:
-            fields = string.join(["protected /* fields */:"] + map(lambda x: _add_indent(x + ";"), self.fields), '\n')
+            fields = string.join(["protected /* fields */:"] + list(map(lambda x: _add_indent(x + ";"), self.fields)), '\n')
         else:
             fields = ""
         if self.base_classes:
@@ -1326,7 +1343,7 @@ $classDeclarationSuffix
         :return:    C++ class implementation code
         """
         result = ""
-        non_inspectable = map(lambda x: ("CppImplementation", x), self.extra_implementations)
+        non_inspectable = list(map(lambda x: ("CppImplementation", x), self.extra_implementations))
         for key, value in inspect.getmembers(self) + non_inspectable:
             assert isinstance(key, str)
             if key.endswith("CppImplementation") or key == "constructorImplementation":
@@ -3102,18 +3119,21 @@ def _update_file(file_name, target_dir, text):
     """
     force_rewrite = True
     assert isinstance(text, unicode)
-    data = text.encode("utf-8")
+    if sys.version_info.major < 3:
+        data = text.encode("utf-8")
+    else:
+        data = text
     if target_dir:
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
         file_name = os.path.normpath(target_dir + os.path.sep + file_name)
     if os.path.exists(file_name):
-        f = open(file_name, 'r')
+        f = open(file_name, 'r', encoding="utf-8")
         old_data = f.read()
         f.close()
         force_rewrite = old_data != data
     if force_rewrite:
-        f = open(file_name, 'w')
+        f = open(file_name, 'w', encoding="utf-8")
         f.write(data)
         f.close()
 
@@ -3560,6 +3580,9 @@ if(${USE_QT} GREATER 4)
     include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
     set(MOC_PARAMS "-I/usr/include/qt5" "-I/usr/include/qt5/QtCore" "-I${_qt5Core_install_prefix}/include/QtCore" "-DQT_PLUGIN")
+    foreach(IDIR ${Qt5Core_INCLUDE_DIRS})
+        set(MOC_PARAMS "-I${IDIR}" ${MOC_PARAMS})
+    endforeach()
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
@@ -3567,7 +3590,7 @@ else()
     include(${QT_USE_FILE})
 endif()
 
-find_package(PythonInterp 2.6 REQUIRED)
+find_package(PythonInterp 3.2.0 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES

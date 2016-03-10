@@ -65,7 +65,7 @@ public:
         //  zoomNormal->move(zoomText->pos().x()+27,zoomText->pos().y()+25 );
         //   zoomDown->move(zoomText->pos().x()+57,zoomText->pos().y()+25 );
         //   zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
-        
+        netStepXS->setSingleStep(Zoom/500);
         update();
     }
     //void setDraw(DrawModule* draw);

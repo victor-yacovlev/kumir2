@@ -20,7 +20,7 @@ class CellGraphicsItem;
 
 struct RobotCell {
     inline RobotCell() {
-        painted = pointed = false;
+        painted = pointed = flag = false;
         wallUp = wallDown = wallLeft = wallRight = false;
         cellItem = NULL;
         pointItem = NULL;
@@ -33,6 +33,7 @@ struct RobotCell {
     bool wallLeft;
     bool wallRight;
     bool pointed;
+    bool flag;
     quint8 paintState;
     qreal baseZOrder;
     CellGraphicsItem *cellItem;

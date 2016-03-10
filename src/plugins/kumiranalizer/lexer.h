@@ -1,6 +1,12 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "dataformats/lexem.h"
+#include "interfaces/lexemtype.h"
+#include "statement.h"
+#include "interfaces/error.h"
+#include "dataformats/ast_variabletype.h"
+
 #include "interfaces/lineprop.h"
 #include "statement.h"
 #include "interfaces/error.h"
@@ -27,6 +33,8 @@ public:
     bool isReturnVariable(const QString & name) const;
     inline QString inputLexemName() const { return QString::fromUtf8("ввод"); }
     inline QString outputLexemName() const{ return QString::fromUtf8("вывод"); }
+    void setSourceDirName(const QString &dir);
+
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo
@@ -35,8 +43,40 @@ public slots:
                              ) const;
     void splitIntoLexems(const QString & text, QList<LexemPtr> & lexems,
                          const QStringList & extraTypeNames);
-private:
-    struct LexerPrivate * d;
+private /*methods*/:
+    void splitLineIntoLexems(const QString &text
+                             , QList<LexemPtr> & lexems
+                             , const QStringList & extraTypeNames
+                             ) const;
+
+    void groupLexemsByStatements(const QList<LexemPtr> & lexems
+                                 , QList<TextStatementPtr> & statements
+                                 ) const;
+
+    void preprocessIncludeStatements(QList<TextStatementPtr> & statements, const QStringList &) const;
+    QList<TextStatementPtr> preprocessOneIncludeStatement(const TextStatementPtr include, const QStringList &) const;
+
+    static void InitNormalizator(const QString &fileName);
+
+private /*fields*/:
+    QString _sourceDirName;
+
+    static QStringList _KeyWords;
+    static QStringList _Operators;
+    static QStringList _TypeNames;
+    static QStringList _ConstNames;
+    static QStringList _Compounds;
+
+    static QHash<QString,Shared::LexemType> _KwdMap;
+    static QHash<QString,AST::VariableBaseType> _BaseTypes;
+    static QHash<QString,AST::VariableBaseType> _BaseTypes0;
+    static QHash<QString,bool> _BoolConstantValues;
+    static QSet<QString> _ArrayTypes;
+    static QString _RetvalKeyword;
+    static QRegExp _RxCompound;
+    static QRegExp _RxKeyWords;
+    static QRegExp _RxConst;
+    static QRegExp _RxTypes;
 
 };
 

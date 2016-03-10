@@ -19,6 +19,8 @@ struct Environment
     QSet<QPoint> pointed;
     /** Set of walls: each wall determined by a pair of neighbour cells */
     QSet< QPair<QPoint,QPoint> > walls;
+    /** Set of finish flags coordinates */
+    QSet<QPoint> flags;
     /** Initial actor position */
     QPoint position;
     /** Initial actor direction */

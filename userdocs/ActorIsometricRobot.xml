@@ -230,6 +230,23 @@
 			Алгоритмы, описанные ниже могут быть вызваны только из "скрытой" части программы. Они служат для получении
 			различных данных о текущей обстановке исполнителя <emphasis role="bold">Вертун</emphasis>.
 		</para>
+                <section>
+                    <title>Система координат Вертуна</title>
+                    <para>
+                        Учительские алгоритмы предполагают получение информации о поле Вертуна с использованием
+                        декартовой системы координат. Клетки нумеруются с единицы по двум координатам.
+                    </para>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata format="SVG" fileref="ActorIsometricRobot/coordinates.svg"/>
+                        </imageobject>
+                        <imageobject>
+                            <imagedata format="PDF" fileref="ActorIsometricRobot/coordinates.pdf"/>
+                        </imageobject>
+                        <caption>Система координат Вертуна. Поле на этом рисунке имеет размеры: 6 клеток в ширину,
+                        и 5 клеток в высоту</caption>
+                    </mediaobject>
+                </section>
 		<section id="@@есть точка">
 			<title>@@есть точка</title>
 			<funcsynopsis role="кумир">
@@ -376,5 +393,23 @@
 				Возвращает высоту обстановки исполнителя "Вертун".
 			</para>
 		</section>
+            <section>
+                <title>@@финишная</title>
+                <funcsynopsis role="кумир">
+                    <funcsynopsisinfo><package>Вертун</package></funcsynopsisinfo>
+                    <funcprototype>
+                        <funcdef>алг <type>лог</type><function>@@финишная</function></funcdef>
+                        <paramdef>цел <parameter>x</parameter></paramdef>
+                        <paramdef>цел <parameter>y</parameter></paramdef>
+                    </funcprototype>
+                </funcsynopsis>
+                <para>
+                Проверяет, есть ли финишный флаг в клетке с координатами
+                <code role="кумир">(<parameter>x</parameter>, <parameter>y</parameter>)</code>.
+                Если флаг в клетке есть, возвращает <code role="кумир">да</code>, иначе --
+                <code role="кумир">нет</code>.
+                </para>
+            </section>
 	</section>
+
 </article>

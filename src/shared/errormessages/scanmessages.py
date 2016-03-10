@@ -21,6 +21,7 @@ import os.path
 import re
 
 
+
 def dequote(s):
     """
     Removes quotation of string
@@ -71,7 +72,7 @@ def parseTable(contents):
         for i in range(0, min(len(languages), len(values))):
             language = dequote(languages[i])
             message = dequote(values[i])
-            if database.has_key(language):
+            if language in database:
                 data = database[language]
             else:
                 data = dict()
@@ -90,7 +91,7 @@ def readCxx(filename):
     :rtype:     list
     """
     result = list()
-    f = open(filename, 'r')
+    f = open(filename, 'r', encoding="utf-8")
     if f is None:
         return result
     cpp = f.read()
@@ -130,10 +131,13 @@ def readRules(filename):
     :rtype:     list
     """
     result = list()
-    f = open(filename, 'r')
+    f = open(filename, 'r', encoding="utf-8")
     if f is None:
         return result
-    lines = unicode(f.read(), 'utf-8').split('\n')
+    if sys.version_info.major < 3:
+        lines = unicode(f.read(), 'utf-8').split('\n')
+    else:
+        lines = f.read().split('\n')
     f.close()
     for line in lines:
         if len(line.strip()) == 0 or line.strip().startswith('#'):
@@ -275,8 +279,11 @@ if __name__ == "__main__":
         for filename in relespaths:
             allkeys |= set(readRules(filename))
 
-    db_file = open(db_file_name, 'r')
-    source_csv_contents = unicode(db_file.read(), 'utf-8')
+    db_file = open(db_file_name, 'r', encoding="utf-8")
+    if sys.version_info.major < 3:
+        source_csv_contents = unicode(db_file.read(), 'utf-8')
+    else:
+        source_csv_contents = db_file.read()
     db_file.close()
 
     database = parseTable(source_csv_contents)
@@ -288,12 +295,18 @@ if __name__ == "__main__":
 
     if new_csv_contents != source_csv_contents:
         for file_name in [db_file_name, out_file_name]:
-            f = open(file_name, 'w')
-            f.write(new_csv_contents.encode('utf-8'))
+            f = open(file_name, 'w', encoding="utf-8")
+            if sys.version_info.major < 3:
+                f.write(new_csv_contents.encode('utf-8'))
+            else:
+                f.write(new_csv_contents)
             f.close()
 
     if not os.path.exists(out_file_name):
-        f = open(out_file_name, 'w')
-        f.write(new_csv_contents.encode('utf-8'))
+        f = open(out_file_name, 'w', encoding="utf-8")
+        if sys.version_info.major < 3:
+            f.write(new_csv_contents.encode('utf-8'))
+        else:
+            f.write(new_csv_contents)
         f.close()
 

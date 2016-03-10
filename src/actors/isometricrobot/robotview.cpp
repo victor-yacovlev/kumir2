@@ -192,6 +192,15 @@ void RobotView::createField()
         m_field[y].last().wallRightItem = w;
     }
 
+    for (int y=0; y<m_field.size(); ++y) {
+        for (int x=0; x<m_field[y].size(); ++x) {
+            if (m_field[y][x].flag) {
+                QGraphicsItem *flagItem = createFlagItem(x, y, m_field[y][x].baseZOrder);
+                l_allItems << flagItem;
+            }
+        }
+    }
+
     for (int y=0; y<m_field.size(); y++) {
         for (int x=0; x<m_field[y].size(); x++) {
             RobotCell cell = m_field[y][x];
@@ -479,6 +488,31 @@ QGraphicsItem* RobotView::createVerticalWall(int x, int y, qreal zOrder)
 //    m_scene->addItem(group);
     group->setParentItem(this);
 
+    return group;
+}
+
+QGraphicsItem *RobotView::createFlagItem(int x, int y, qreal zOrder)
+{
+    QGraphicsItemGroup *group = new QGraphicsItemGroup();
+    const QPointF base = mapToIsometricCoordinates(x * m_cellSize + 7, y * m_cellSize + 9, 0.0);
+    static const qreal StickHeight = 80;
+    static const qreal StickWidth = 4;
+    static const qreal FlagSize = 12;
+    static const QColor FlagColor = QColor(Qt::yellow);
+    QGraphicsRectItem * stick = new QGraphicsRectItem(QRectF(base.x(), base.y()-StickHeight, StickWidth, StickHeight), group);
+    stick->setPen(Qt::NoPen);
+    stick->setBrush(QColor(Qt::black));
+
+    group->setParentItem(this);
+    QPolygonF flagPolygon;
+    flagPolygon.append(base + QPointF(StickWidth/2 + 0, -StickHeight+FlagSize));
+    flagPolygon.append(base + QPointF(StickWidth/2 + 2*FlagSize, -StickHeight+0.5*FlagSize));
+    flagPolygon.append(base + QPointF(StickWidth/2 + 0, -StickHeight));
+    QGraphicsPolygonItem * flag = new QGraphicsPolygonItem(flagPolygon, group);
+    flag->setPen(QPen(QColor(Qt::black), 1));
+    flag->setBrush(FlagColor);
+
+    group->setZValue(zOrder);
     return group;
 }
 
@@ -836,9 +870,9 @@ bool RobotView::isPainted()
 
 bool RobotView::isPainted(int x, int y) const
 {
-    if (y>m_field.size() || y<0)
+    if (y>=m_field.size() || y<0)
         return false;
-    if (x>m_field[y].size() || x<0)
+    if (x>=m_field[y].size() || x<0)
         return false;
     RobotCell cell = m_field[y][x];
     return cell.painted;
@@ -846,12 +880,22 @@ bool RobotView::isPainted(int x, int y) const
 
 bool RobotView::isPointed(int x, int y) const
 {
-    if (y>m_field.size() || y<0)
+    if (y>=m_field.size() || y<0)
         return false;
-    if (x>m_field[y].size() || x<0)
+    if (x>=m_field[y].size() || x<0)
         return false;
     RobotCell cell = m_field[y][x];
     return cell.pointed;
+}
+
+bool RobotView::isFlagged(int x, int y) const
+{
+    if (y>=m_field.size() || y<0)
+        return false;
+    if (x>=m_field[y].size() || x<0)
+        return false;
+    const RobotCell & cell = m_field[y][x];
+    return cell.flag;
 }
 
 int RobotView::sizeX() const
@@ -902,6 +946,7 @@ bool RobotView::loadEnvironment(const Schema::Environment &env)
             QPoint coord(x,y);
             m_field[y][x].painted = env.painted.contains(coord);
             m_field[y][x].pointed = env.pointed.contains(coord);
+            m_field[y][x].flag = env.flags.contains(coord);
             m_field[y][x].wallLeft = x==0;
             m_field[y][x].wallRight = x==env.size.width()-1;
             m_field[y][x].wallUp = y==0;

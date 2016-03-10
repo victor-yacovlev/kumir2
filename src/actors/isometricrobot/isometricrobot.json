@@ -60,7 +60,16 @@
         {
             "name": { "ascii": "@@size y", "ru_RU": "@@размер поля y" },
             "returnType": "int"
+        },
+        {
+            "name": { "ascii": "@@is flagged", "ru_RU": "@@финишная" },
+            "returnType": "bool",
+            "arguments": [
+                { "name": "x", "baseType": "int" },
+                { "name": "y", "baseType": "int" }
+            ]
         }
+
     ],
     
     "gui": {

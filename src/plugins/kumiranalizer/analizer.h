@@ -1,6 +1,15 @@
 #ifndef ANALIZER_H
 #define ANALIZER_H
 
+#include "dataformats/lexem.h"
+#include "statement.h"
+#include "interfaces/lexemtype.h"
+#include "interfaces/error.h"
+#include "interfaces/lineprop.h"
+#include "dataformats/ast.h"
+#include "interfaces/analizerinterface.h"
+#include "interfaces/actorinterface.h"
+
 #include "interfaces/analizer_instanceinterface.h"
 
 #include "interfaces/error.h"
@@ -12,6 +21,8 @@
 #include "interfaces/analizerinterface.h"
 
 #include <QtCore>
+
+#include <list>
 
 namespace KumirAnalizer {
 
@@ -79,11 +90,136 @@ public slots:
 
     QString suggestFileName() const;
 
-private:
+
+private /*typedefs*/:
+
+    typedef AST::Data AST_Data;
+
+    typedef QList<AST::StatementPtr> * LAS;
+
+    enum CompilationStage {
+        CS_StructureAndNames, CS_Contents
+    };
+
+    struct ModuleStatementsBlock {
+        QList<TextStatementPtr> statements;
+        TextStatementPtr begin;
+        TextStatementPtr end;
+        bool teacher;
+
+        inline ModuleStatementsBlock(): teacher(false) {}
+        inline operator bool() const { return statements.size() > 0; }
+    };
+
+private /*methods*/:
+
     const AST::AlgorithmPtr findAlgorhitmByLine(const AST::ModulePtr mod, int lineNo) const;
-    struct AnalizerPrivate * d;
-    bool teacherMode_;
-    class KumirAnalizerPlugin * plugin_;
+
+    void createModuleFromActor_stage1(Shared::ActorInterface * actor, quint8 forcedId);
+    void createModuleFromActor_stage2(Shared::ActorInterface * actor);
+    QStringList gatherExtraTypeNames(const AST::ModulePtr currentModule) const;
+
+
+
+
+    void removeAllVariables(const AST::VariablePtr var);
+
+    void setHiddenBaseLine(int lineNo);
+    void setHiddenText(const QString & text, int baseLineNo);
+
+
+
+
+
+    /** Find algorhitm in AST by real line number */
+    static AST::AlgorithmPtr findAlgorhitmByPos(AST::DataPtr data, int pos);
+
+    /** Find begin/end iterators in AST instructions list,
+      * containing provided lexem groups
+      * @param IN data - AST
+      * @param IN statements - list of lexem groups
+      * @param OUT lst - list of AST instructions
+      * @param OUT begin - begin iterator
+      * @param OUT end - end iterator
+      * @param OUT mod - module reference
+      * @param OUT alg - algorhitm reference
+      * @return true on found, false if not found
+      */
+    static bool findInstructionsBlock(AST::DataPtr data
+                                      , const QList<TextStatement*> _statements
+                                      , LAS & lst
+                                      , int & begin
+                                      , int & end
+                                      , AST::ModulePtr & mod
+                                      , AST::AlgorithmPtr & alg
+                                      );
+    /** Find context of AST instructions list,
+      * containing provided lexem groups
+      * @param IN data - AST
+      * @param IN statements - list of lexem groups
+      * @param IN pos - position, where lexems inserted
+      * @param OUT lst - list of AST instructions
+      * @param OUT outPos - position, where statements to be insert
+      * @param OUT mod - module reference
+      * @param OUT alg - algorhitm reference
+      * @return true on found, false if not found
+      */
+    static bool findInstructionsBlock(AST::DataPtr data
+                                      , const QList<TextStatement*> _statements
+                                      , int pos
+                                      , LAS & lst
+                                      , int & outPos
+                                      , AST::ModulePtr & mod
+                                      , AST::AlgorithmPtr & alg
+                                      );
+
+    /** Find instruction in AST by source text position
+     * @param IN data - AST
+     * @param IN statements - list of lexem groups
+     * @param IN lineNo - line number in source text
+     * @param IN colNo - column number in source text line
+     * @return pointer to lexem group and lexem, or null pointers pair if not found
+     */
+    static QPair<TextStatementPtr,LexemPtr> findSourceLexemContext(AST::DataPtr data
+                                , const QList<TextStatementPtr> _statements
+                                , int lineNo
+                                , int colNo
+                                , bool includeRightBound
+                                );
+
+
+
+
+    void doCompilation(QList<TextStatementPtr> & allStatements, CompilationStage stage);
+
+
+
+
+    static QList<struct ModuleStatementsBlock> splitIntoModules(const QList<TextStatementPtr> & _statements);
+
+private /*fields*/:
+
+
+    std::vector<Shared::ActorInterface*> _builtinModules;
+
+    class Lexer * _lexer;
+    class PDAutomata * _pdAutomata;
+    class SyntaxAnalizer * _syntaxAnalizer;
+    AST::DataPtr _ast;
+
+    QStringList _sourceText;
+    QList<TextStatementPtr> _statements;
+
+    QString _teacherText;
+    int _hiddenBaseLine;
+
+    static QStringList _AlwaysAvailableModulesName;
+    static QLocale::Language _NativeLanguage;
+
+
+
+    bool _teacherMode;
+    class KumirAnalizerPlugin * _plugin;
 
 
 

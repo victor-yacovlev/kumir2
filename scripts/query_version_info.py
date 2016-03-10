@@ -42,7 +42,12 @@ def _add_path_env(value):
         sep = ";"
     else:
         sep = ":"
-    os.environ['PATH'] = os.getenv('PATH') + sep + value
+    old_path = os.getenv('PATH')
+    if old_path is None:
+        new_path = value
+    else:
+        new_path = old_path + sep + value
+    os.environ['PATH'] = new_path
 
 
 for path_variant in GIT_PATH_SEARCH:
@@ -133,6 +138,10 @@ def cmake_disabled_modules():
     if disabled_list:
         OUT_FILE.write(" ".join(disabled_list))
 
+def _split_into_branch_and_hash(s):
+    assert isinstance(s, str)
+    index = s.rindex("-")
+    return s[:index], s[index+1:]
 
 def cmake_version_info():
     version_name = get_version_information(os.getcwd())
@@ -143,7 +152,7 @@ def cmake_version_info():
         OUT_FILE.write("-DGIT_HASH=\"unknown\";")
     else:
         OUT_FILE.write("-DGIT_TAG=\"unknown\";")
-        branch, ghash = version_name.split("-")
+        branch, ghash = _split_into_branch_and_hash(version_name)
         OUT_FILE.write("-DGIT_BRANCH=\"{}\";".format(branch))
         OUT_FILE.write("-DGIT_HASH=\"{}\";".format(ghash))
     OUT_FILE.write("-DGIT_TIMESTAMP=\"{}\";".format(timestamp))
