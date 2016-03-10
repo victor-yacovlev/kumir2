@@ -1,4 +1,4 @@
-find_package(PythonInterp 2.7.0 REQUIRED)
+find_package(PythonInterp 3.2.0 REQUIRED)
 
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"

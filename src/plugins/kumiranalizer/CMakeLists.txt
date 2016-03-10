@@ -1,6 +1,6 @@
 project(KumirAnalizer)
 cmake_minimum_required(VERSION 2.8.3)
-find_package(PythonInterp 2.6.0 REQUIRED)
+find_package(PythonInterp 3.2.0 REQUIRED)
 
 if(NOT DEFINED USE_QT)
     set(USE_QT 4)

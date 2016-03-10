@@ -21,7 +21,7 @@ else()
     include(${QT_USE_FILE})
 endif()
 
-find_package(PythonInterp 2.6 REQUIRED)
+find_package(PythonInterp 3.2.0 REQUIRED)
 include(../../kumir2_plugin.cmake)
 
 set(SOURCES
