@@ -1,2 +1,2 @@
 name    = Python3Language
-provides= Analizer, Runner
+provides= Analizer, Runner, StartPage
