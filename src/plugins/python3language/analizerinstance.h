@@ -43,7 +43,7 @@ protected /*methods*/:
     void stopPythonInterpreter();
     explicit PythonAnalizerInstance(Python3LanguagePlugin *parent,
                                     const QString & extraPythonPath);
-    void initializePyAnalizer();
+    void initializePyAnalizer(const QString & extraPythonPath);
 
     void queryErrors();
     void queryLineProperties();

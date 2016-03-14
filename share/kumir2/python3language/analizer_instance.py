@@ -58,7 +58,7 @@ def set_source_dir_name(path):
 def _make_syntax_checks(text):
     global ERRORS
     global USE_PEP8
-    checkers = [pylint_wrapper, pyflakes_wrapper, types_analyser_wrapper]
+    checkers = [pylint_wrapper, pyflakes_wrapper]
     if USE_PEP8:
         checkers += [pep8_wrapper]
     for checker in checkers:

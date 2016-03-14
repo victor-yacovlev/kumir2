@@ -1,5 +1,7 @@
 #include "pyutils.h"
 
+#include <iostream>
+
 #ifdef PYTHON_SCRIPT_DEBUG
 #include <QMessageBox>
 #endif
@@ -34,17 +36,19 @@ extern PyObject* QStringToPyUnicode(const QString & qstring)
 
 extern PythonError fetchPythonErrorAsString()
 {
+    PythonError result;
     PyObject * ptype, *pvalue, *ptraceback;
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
-    PyObject * pvalueRepr = PyObject_Repr(pvalue);
-    PyObject * ptracebackRepr = PyObject_Repr(ptraceback);
-
-    QString qvalue = PyUnicodeToQString(pvalueRepr);
-    QString qtraceback = PyUnicodeToQString(ptracebackRepr);
-
-    PythonError result;
-    result.value = qvalue;
-    result.traceback = qtraceback;
+    if (pvalue) {
+        PyObject * pvalueRepr = PyObject_Repr(pvalue);
+        PyObject * ptracebackRepr = PyObject_Repr(ptraceback);
+        QString qvalue = PyUnicodeToQString(pvalueRepr);
+        std::cerr << qvalue.toLocal8Bit().constData() << std::endl;
+        PyTraceBack_Print(ptraceback, PyFile_NewStdPrinter(fileno(stderr)));
+        QString qtraceback = PyUnicodeToQString(ptracebackRepr);
+        result.value = qvalue;
+        result.traceback = qtraceback;
+    }
     return result;
 }
 
@@ -352,11 +356,20 @@ extern QVariant callPythonFunction(
         )
 {
     Q_ASSERT(PyCallable_Check(callable));
-    PyEval_AcquireThread(interpreter);
+    PyThreadState* prevState = PyThreadState_Swap(interpreter);
+    PyGILState_STATE prevGIL = PyGILState_Ensure();
+//    PyEval_AcquireThread(interpreter);
     PyObject * py_args = QVariantListToPyList(args, true);
+
+    // Erase last occured error from previous call
+    PythonError lastError = fetchPythonErrorAsString();
+    PyErr_Clear();
+
     PyObject * py_result = PyObject_CallObject(callable, py_args);
     QVariant result = PyObjectToQVariant(py_result);
-    PyEval_ReleaseThread(interpreter);
+//    PyEval_ReleaseThread(interpreter);
+    PyGILState_Release(prevGIL);
+    PyThreadState_Swap(prevState);
     return result;
 }
 

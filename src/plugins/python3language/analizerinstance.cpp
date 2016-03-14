@@ -18,24 +18,15 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
     , py_getLineProperty(0)
     , py_setUsePep8(0)
 { 
-#ifdef Q_OS_WIN32
-    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
-#else
-    if (PyThreadState_GET())
-#endif
-        ::PyEval_AcquireLock();
-    else
-        ::PyGILState_Ensure();
-    py_ = ::Py_NewInterpreter();
-#ifdef Q_OS_WIN32
-    Q_UNUSED(extraPythonPath);
-    prepareBundledSysPath();
-#else
-    appendToSysPath(extraPythonPath);
-#endif
-    createSysArgv(QStringList() << "");
-    initializePyAnalizer();
-    ::PyEval_ReleaseThread(py_);
+
+    PyGILState_STATE prevGILState = PyGILState_Ensure();
+    PyThreadState* prevThreadState = PyThreadState_Swap(0);
+
+    py_ = Py_NewInterpreter();
+    PyThreadState_Swap(prevThreadState);
+    PyGILState_Release(prevGILState);
+
+    initializePyAnalizer(extraPythonPath);
 }
 
 PythonAnalizerInstance::~PythonAnalizerInstance()
@@ -53,12 +44,25 @@ void PythonAnalizerInstance::stopPythonInterpreter()
     py_ = 0;
 }
 
-void PythonAnalizerInstance::initializePyAnalizer()
+void PythonAnalizerInstance::initializePyAnalizer(const QString & extraPythonPath)
 {
+    PyThreadState* prevThreadState = PyThreadState_Swap(py_);
+    PyGILState_STATE prevGILState = PyGILState_Ensure();
+
+    PyObject* sys_path = PySys_GetObject("path");
+    PyList_Insert(sys_path, 0, QStringToPyUnicode(extraPythonPath));
+    PyObject* sys_pathRepr = PyObject_Repr(sys_path);
+    const char *sys_pathReprStr = PyUnicode_AsUTF8(sys_pathRepr);
+    qDebug() << "Using sys.path: " << sys_pathReprStr;
+    Py_DECREF(sys_pathRepr);
+
+    PyObject* sys_argv = PyList_New(0);
+    PySys_SetObject("argv", sys_argv);
+
     py_analizerInstance = ::PyImport_ImportModule("analizer_instance");
     if (!py_analizerInstance) {
         printPythonTraceback();
-        return;
+        goto err;
     }
     py_setSourceDirName = ::PyObject_GetAttrString(
                 py_analizerInstance, "set_source_dir_name"
@@ -89,6 +93,10 @@ void PythonAnalizerInstance::initializePyAnalizer()
                 py_analizerInstance, "set_use_pep8"
                 );
     if (!py_setUsePep8) { printError("'set_use_pep8' not implemented"); }
+
+    err:
+    PyGILState_Release(prevGILState);
+    PyThreadState_Swap(prevThreadState);
 }
 
 Shared::AnalizerInterface * PythonAnalizerInstance::plugin()
