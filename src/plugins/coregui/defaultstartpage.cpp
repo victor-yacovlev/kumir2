@@ -5,10 +5,10 @@
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000
+#   include <QtWidgets>
 #else
 #   include <QtGui>
 #endif
-#   include <QtWidgets>
 
 
 CoreGUI::DefaultStartPage::DefaultStartPage(Plugin* plugin, MainWindow* mw, QWidget *parent)
