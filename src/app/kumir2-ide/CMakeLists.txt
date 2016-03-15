@@ -21,9 +21,16 @@ else()
     include(${QT_USE_FILE})
 endif()
 
-set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Actor*,Browser,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
-)
+if(${USE_QT} GREATER 4)
+    set(CONFIGURATION_TEMPLATE
+        "CourseManager,Editor,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
+    )
+else()
+    set(CONFIGURATION_TEMPLATE
+        "CourseManager,Editor,Actor*,Browser,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
+    )
+endif()
+
 
 set(SPLASHSCREEN
     "coregui/splashscreens/professional.png"

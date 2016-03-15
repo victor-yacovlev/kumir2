@@ -66,6 +66,9 @@ public:
     static QString DockGeometryKey;
     static QString DockSideKey;
 
+    QObject * mainWindowObject();
+    QObject * pluginObject();
+
 public slots:
     void setProgramSource(const ProgramSourceText &source);
     ProgramSourceText programSource() const;
@@ -99,8 +102,10 @@ protected:
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void saveSession() const;
+    void setStartTabStyle(const QString &tabStyle);
     void createStartPage();
     void createWebKitStartPage();
+    void createDefaultStartPage();
     void createSpecializedStartPage(Shared::StartpageWidgetInterface * plugin);
     void restoreSession();
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);

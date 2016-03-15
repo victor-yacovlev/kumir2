@@ -805,6 +805,19 @@ void MainWindow::handleTabTitleChanged()
     setTitleForTab(index);
 }
 
+QString MainWindow::applicationTitle() const
+{
+    QString appName = tr("Kumir");
+    using namespace Shared;
+    using namespace ExtensionSystem;
+    PluginManager * manager = PluginManager::instance();
+    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
+    if (analizer) {
+        appName = analizer->languageName();
+    }
+    return appName;
+}
+
 void MainWindow::setTitleForTab(int index)
 {
     if (index<0 || index>=tabWidget_->count())
@@ -817,15 +830,7 @@ void MainWindow::setTitleForTab(int index)
     TabWidgetElement * twe = currentTab();
     QString title = twe->title();
 
-    QString appName = tr("Kumir");
-    using namespace Shared;
-    using namespace ExtensionSystem;
-    PluginManager * manager = PluginManager::instance();
-    AnalizerInterface * analizer = manager->findPlugin<AnalizerInterface>();
-    if (analizer) {
-        appName = analizer->languageName();
-    }
-    setWindowTitle(title + " - "+ appName);
+    setWindowTitle(title + " - "+ applicationTitle());
     tabWidget_->setTabText(index, title);
 }
 

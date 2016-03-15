@@ -38,6 +38,7 @@ set(SOURCES
     guisettingspage.cpp
     toolbarcontextmenu.cpp
     iosettingseditorpage.cpp
+    defaultstartpage.cpp
 )
 
 set(EXTRA_LIBS
@@ -70,6 +71,7 @@ set(MOC_HEADERS
     guisettingspage.h
     toolbarcontextmenu.h
     iosettingseditorpage.h
+    defaultstartpage.h
 )
 
 set(FORMS
@@ -79,6 +81,7 @@ set(FORMS
     systemopenfilesettings.ui
     guisettingspage.ui
     iosettingseditorpage.ui
+    defaultstartpage.ui
 )
 
 set(RESOURCES

@@ -72,6 +72,9 @@ public:
     class TabWidgetElement * currentTab();
     void disableTabs();
     QSize minimumSizeHint() const;
+
+    QString applicationTitle() const;
+
 public slots:
 
     void switchToRowFirstLayout();

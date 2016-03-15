@@ -19,6 +19,7 @@ public:
     QSize minimumSizeHint() const /*override*/;
 protected:
     void paintEvent(QPaintEvent *);
+    void customizeStyle();
 };
 
 } // namespace CoreGUI

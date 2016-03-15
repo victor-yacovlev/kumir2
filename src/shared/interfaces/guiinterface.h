@@ -24,6 +24,8 @@ public:
         QUrl url;
     };
 public slots:
+    virtual QObject * pluginObject() = 0;
+    virtual QObject * mainWindowObject() = 0;
     virtual void setProgramSource(const ProgramSourceText &source) = 0;
     virtual ProgramSourceText programSource() const = 0;
 
