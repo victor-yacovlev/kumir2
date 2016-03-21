@@ -17,7 +17,7 @@ public:
     explicit TabBar(QWidget *parent = 0);
 protected:
     void tabInserted(int index);
-    void tabRemoved(int index);
+    void tabRemoved(int index);    
 signals:
 private slots:
     void handleChanged(int index);

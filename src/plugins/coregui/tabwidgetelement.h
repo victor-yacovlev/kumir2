@@ -37,7 +37,7 @@ public:
     void setEditor(Shared::Editor::InstanceInterface* editor);
 
     inline Shared::StartpageWidgetInterface* startPage() const { return startPageInstance_; }
-    inline void setStartPage(Shared::StartpageWidgetInterface* sp) { startPageInstance_ = sp; }
+    void setStartPage(Shared::StartpageWidgetInterface* sp);
 
     inline class KumirProgram * kumirProgram() { return kumirProgram_; }
     inline bool isCourseManagerTab() const { return courseManagerTab_; }

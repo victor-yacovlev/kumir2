@@ -1,0 +1,114 @@
+#headerBox {
+    min-height: 50;
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #99c9ff, stop:1 white);
+}
+
+#headerText {
+    margin: 5;
+    font-size: 14pt;
+    font-weight: bold;
+    color: #115bb2;
+}
+
+
+#programsText, #coursesText, #helpText {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #777777;
+    qproperty-alignment: "AlignCenter";
+    margin-bottom: 5;
+}
+
+#btnNewProgram, #btnLoadProgram, #btnShowCourses, #btnShowHelp {
+    border-style: solid;
+    border-width: 1px;
+    height: 28px;
+    font-size: 11pt;
+    color: #ededed;
+}
+
+#btnNewProgram:hover, #btnLoadProgram:hover, #btnShowCourses:hover, #btnShowHelp:hover {
+    color: white;
+}
+
+#btnNewProgram {
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #ef9331, stop:1 #e9701d);
+    border-color: #d46400;
+    border-bottom-width: 0;
+}
+
+#btnNewProgram:pressed {
+    background: #ef9331;
+}
+
+#btnLoadProgram:pressed, #btnShowCourses:pressed, #btnShowHelp:pressed {
+    background: #5699e7;
+}
+
+#btnLoadProgram, #btnShowCourses, #btnShowHelp {
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #5699e7, stop:1 #1a72db);
+    border-color: #306aaf;
+    border-bottom-left-radius: 5;
+    border-bottom-right-radius: 5;
+    margin-bottom: 10;
+}
+
+#btnNewProgram, #btnShowCourses, #btnShowHelp {
+    border-top-left-radius: 5;
+    border-top-right-radius: 5;
+}
+
+
+
+#centralViewScroll {
+    border: 0;
+}
+
+#centralScrollPane {
+    background-color: white;
+}
+
+#footerBox {
+    min-height: 36;
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:1 #99c9ff, stop:0 white);
+}
+
+#programsList QPushButton, #coursesList QPushButton, #helpList QPushButton {
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #f3f3f3, stop:1 #e0e0e0);
+    border-width: 1px;
+    border-bottom-width: 0;
+    border-style: solid;
+    font-size: 10pt;
+    height: 24px;
+    border-color: #c3c3c5;
+    color: #1000b0;
+}
+
+#programsList QPushButton[first="true"], #coursesList QPushButton[first="true"], #helpList QPushButton[first="true"] {
+    border-top-left-radius: 5;
+    border-top-right-radius: 5;
+    border-bottom-width: 0;
+}
+
+#programsList QPushButton[single="true"], #coursesList QPushButton[single="true"], #helpList QPushButton[single="true"] {
+    border-top-left-radius: 5;
+    border-top-right-radius: 5;
+    border-bottom-left-radius: 5;
+    border-bottom-right-radius: 5;
+    border-bottom-width: 1;
+}
+
+#programsList QPushButton[last="true"], #coursesList QPushButton[last="true"], #helpList QPushButton[last="true"] {
+    border-bottom-left-radius: 5;
+    border-bottom-right-radius: 5;
+    border-bottom-width: 1;
+}
+
+#programsList QPushButton:hover, #coursesList QPushButton:hover, #helpList QPushButton:hover {
+    color: black;
+}
+
+#programsList QPushButton:pressed, #coursesList QPushButton:pressed, #helpList QPushButton:pressed {
+    background-color: #f3f3f3;
+}
+

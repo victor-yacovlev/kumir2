@@ -4,8 +4,12 @@ find_package(Llvm)
 find_package(PythonLibs 3.2)
 
 # Mainstream plugins to be always build
-
-add_subdirectory(browser)
+if(${USE_QT} GREATER 4)
+    # QtWebkit deprecated since Qt 5.5,
+    # so do not build Browser
+else()
+    add_subdirectory(browser)
+endif()
 add_subdirectory(editor)
 add_subdirectory(coregui)
 add_subdirectory(coursemanager)

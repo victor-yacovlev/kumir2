@@ -140,6 +140,11 @@ void TabWidgetElement::setEditor(Editor::InstanceInterface *editor)
     }
 }
 
+void TabWidgetElement::setStartPage(StartpageWidgetInterface *sp)
+{
+    startPageInstance_ = sp;
+}
+
 void TabWidgetElement::updateCompilerImportsList(const QStringList &localizedNames)
 {
     using ExtensionSystem::PluginManager;

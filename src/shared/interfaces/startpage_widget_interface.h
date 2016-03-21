@@ -6,6 +6,7 @@
 #include <QList>
 #include <QAction>
 #include <QMenu>
+#include <QColor>
 
 namespace Shared {
 
@@ -19,6 +20,7 @@ public:
     virtual void setStartPageTitleChangeHandler(const QObject * receiver,
                                        const char * method /*(QString title, const QObject * sender)*/
                                        ) = 0;
+    virtual QString startPageTabStyle() const { return ""; }
 };
 
 }

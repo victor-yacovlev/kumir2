@@ -14,6 +14,8 @@
 #include "guisettingspage.h"
 #include "iosettingseditorpage.h"
 
+#include "defaultstartpage.h"
+
 #ifdef Q_OS_MACX
 #include "mac-fixes.h"
 #endif
@@ -875,6 +877,20 @@ void Plugin::saveSession() const
         secWindow->saveState();
 }
 
+void Plugin::setStartTabStyle(const QString &tabStyle)
+{
+#if QT_VERSION >= 0x050000
+    int styleBeginImplPos = tabStyle.indexOf("{");
+    if (-1 == styleBeginImplPos)
+        return;
+    const QString styleSelector = "QTabBar::tab:first, QTabBar::tab:only-one";
+    const QString styleImpl = tabStyle.mid(styleBeginImplPos);
+    const QString newCss = styleSelector + " " + styleImpl;
+    const QString oldCss = mainWindow_->tabWidget_->tabBar()->styleSheet();
+    mainWindow_->tabWidget_->tabBar()->setStyleSheet(oldCss + "\n" + newCss);
+#endif
+}
+
 void Plugin::createStartPage()
 {
     using namespace ExtensionSystem;
@@ -885,7 +901,11 @@ void Plugin::createStartPage()
         createSpecializedStartPage(plugin);
     }
     else {
+#if QT_VERSION >= 0x050000
+        createDefaultStartPage();
+#else
         createWebKitStartPage();
+#endif
     }
 }
 
@@ -927,6 +947,38 @@ void Plugin::createWebKitStartPage()
     }
 }
 
+void Plugin::createDefaultStartPage()
+{
+    QWidget * startPage = new DefaultStartPage(this, mainWindow_);
+    startPage->setProperty("uncloseable", true);
+
+
+    if (mainWindow_->tabWidget_->count()==0) {
+        QMenu * editMenu = new QMenu(mainWindow_->ui->menuEdit->title(), mainWindow_);
+        QMenu * insertMenu = new QMenu(mainWindow_->ui->menuInsert->title(), mainWindow_);
+        QAction * editNotAvailable = editMenu->addAction(mainWindow_->tr("No actions for this tab"));
+        QAction * insertNotAvailable = insertMenu->addAction(mainWindow_->tr("No actions for this tab"));
+
+        editNotAvailable->setEnabled(false);
+        insertNotAvailable->setEnabled(false);
+
+        TabWidgetElement * twe = mainWindow_->addCentralComponent(
+                    tr("Start"),
+                    startPage,
+                    QList<QAction*>(),
+                    QList<QMenu*>() << editMenu << insertMenu,
+                    MainWindow::StartPage
+                    );
+
+        twe->setStartPage(qobject_cast<Shared::StartpageWidgetInterface*>(startPage));
+        const QString tabStyle = qobject_cast<Shared::StartpageWidgetInterface*>(startPage)->startPageTabStyle();
+        if (tabStyle.length() > 0) {
+            setStartTabStyle(tabStyle);
+        }
+    }
+    mainWindow_->setTitleForTab(0);
+}
+
 void Plugin::createSpecializedStartPage(Shared::StartpageWidgetInterface * plugin)
 {
     plugin->setStartPageTitleChangeHandler(mainWindow_, SLOT(updateStartPageTitle(QString,const Shared::Browser::InstanceInterface*)));
@@ -962,6 +1014,7 @@ void Plugin::createSpecializedStartPage(Shared::StartpageWidgetInterface * plugi
 
         twe->setStartPage(plugin);
     }
+    mainWindow_->setTitleForTab(0);
 }
 
 
@@ -984,6 +1037,16 @@ void Plugin::restoreSession()
 Plugin::~Plugin()
 {
 
+}
+
+QObject *Plugin::mainWindowObject()
+{
+    return mainWindow_;
+}
+
+QObject *Plugin::pluginObject()
+{
+    return this;
 }
 
 

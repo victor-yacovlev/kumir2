@@ -6,11 +6,9 @@ namespace CoreGUI {
 TabWidget::TabWidget(QWidget *parent) :
     QTabWidget(parent)
 {
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     TabBar * tb = new TabBar(this);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setTabBar(tb);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    customizeStyle();
 }
 
 QSize TabWidget::minimumSizeHint() const
@@ -39,6 +37,44 @@ void TabWidget::paintEvent(QPaintEvent * e)
         painter.drawLine(0, 0, width(), 0);
     }
 #endif
+}
+
+void TabWidget::customizeStyle()
+{
+#ifdef Q_OS_MAC
+    static const char * css =
+            "QTabBar::close-button {"
+            "  image: url(:/coregui/close-tab.png);"
+            "}"
+            "QTabBar::close-button:hover {"
+            "  image: url(:/coregui/close-tab-hovered.png);"
+            "}"
+            ;
+#else
+    static const char * css =
+            "QTabBar::tab {"
+            "  min-width: 18ex;"
+            "  height: 28px;"
+            "  text-align: right;"
+            "}"
+            "QTabBar::tab:selected {"
+            "}"
+            "QTabBar::close-button {"
+            "  image: url(:/coregui/close-tab.png);"
+            "}"
+            "QTabBar::close-button:hover {"
+            "  image: url(:/coregui/close-tab-hovered.png);"
+            "}"
+            ;
+#endif // MAC
+
+    const QString preprocessedCss = QString::fromLatin1(css)
+            .replace("$windowColor", palette().brush(QPalette::Window).color().name())
+            .replace("$baseColor", palette().brush(QPalette::Base).color().name())
+            .replace("$textColor", palette().brush(QPalette::Text).color().name())
+            ;
+
+    setStyleSheet(preprocessedCss);
 }
 
 
