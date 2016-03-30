@@ -1618,6 +1618,7 @@ public:
             fmode = L"ab";
         FILE * res = _wfopen(fileName.c_str(), fmode);
 //        _wfopen_s(&res, fileName.c_str(), fmode);
+        const bool file_not_exists = ENOENT==errno;
 #else
         const char * fmode;
         if (mode==FileType::Read)
@@ -1627,10 +1628,16 @@ public:
         else if (mode==FileType::Append)
             fmode = "ab";
         FILE* res = fopen(path, fmode);
+        const bool file_not_exists = ENOENT==errno;
 #endif
         FileType f;
         if (res==0) {
-            Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
+            if (file_not_exists) {
+                Core::abort(Core::fromUtf8("Файл не существует: ")+fileName);
+            }
+            else {
+                Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
+            }
         }
         else {
             if (mode==FileType::Append)
