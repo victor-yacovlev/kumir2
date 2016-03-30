@@ -645,6 +645,8 @@
             <mathml:math><mathml:mrow>
                 <mathml:mn>2</mathml:mn>
                 <mathml:msup><mathml:mn>31</mathml:mn></mathml:msup>
+                <mathml:mo>-</mathml:mo>
+                <mathml:mn>1</mathml:mn>
             </mathml:mrow></mathml:math>.
             Величина этого числа определяется способом представления чисел в современных
             компьютерах и примерно одинаковая в большинстве современных языков программирования.
