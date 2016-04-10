@@ -102,8 +102,13 @@ void EditorInstance::loadDocument(QIODevice *device, const QString &fileNameSuff
     }
     else {
         QTextCodec * codec = QTextCodec::codecForName(sourceEncoding.toLatin1());
+        if (!codec)
+            codec = QTextCodec::codecForLocale();
+        QTextStream ts(bytes);
+        ts.setCodec(codec);
+        ts.setAutoDetectUnicode(true);
         data.hasHiddenText = false;
-        data.visibleText = codec->toUnicode(bytes);
+        data.visibleText = ts.readAll();
     }
     data.canonicalSourceLanguageName = fileNameSuffix;
     data.sourceUrl = sourceUrl;
