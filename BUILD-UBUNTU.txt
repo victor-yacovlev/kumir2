@@ -10,6 +10,7 @@ Build manual for Ubuntu 14.04 LTS
     - libboost-dev
     - llvm-dev
     - clang
+    - python3.2-dev (or higher)
     
 2. Build and install commands
     mkdir build
