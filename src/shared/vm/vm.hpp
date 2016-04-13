@@ -140,7 +140,8 @@ public /*methods*/:
     inline void setNextCallToEnd();
     inline void setNextCallStepOver();
 
-
+    inline static Record toRecordValue(const Kumir::FileType & ft);
+    inline static Kumir::FileType fromRecordValue(const Record & record);
 
 private /*fields*/:
     std::vector<ModuleContext> moduleContexts_;
@@ -193,8 +194,7 @@ private /*methods*/:
     inline Context & currentContext();
     inline void nextIP();
 
-    inline static Record toRecordValue(const Kumir::FileType & ft);
-    inline static Kumir::FileType fromRecordValue(const Record & record);
+
 
     inline Variable & findVariable(uint8_t scope, uint16_t id);
 
@@ -1637,7 +1637,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг файл открыть на чтение(лит имя файла) */
     case 0x0000: {
         const String x = valuesStack_.pop().toString();
-        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read);
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Read, true, 0);
         Record yy = toRecordValue(y);
         Variable res(yy, Kumir::Core::fromUtf8("файл"), std::string("file"));
         valuesStack_.push(res);
@@ -1647,7 +1647,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг файл открыть на запись(лит имя файла) */
     case 0x0001: {
         const String x = valuesStack_.pop().toString();
-        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write);
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Write, true, 0);
         Record yy = toRecordValue(y);
         valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл"), std::string("file")));
         error_ = Kumir::Core::getError();
@@ -1656,7 +1656,7 @@ void KumirVM::do_filescall(uint16_t alg)
     /* алг файл открыть на добавление(лит имя файла) */
     case 0x0002: {
         const String x = valuesStack_.pop().toString();
-        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append);
+        Kumir::FileType y = Kumir::Files::open(x, Kumir::FileType::Append, true, 0);
         Record yy = toRecordValue(y);
         valuesStack_.push(Variable(yy, Kumir::Core::fromUtf8("файл"), std::string("file")));
         error_ = Kumir::Core::getError();
@@ -1916,7 +1916,7 @@ inline Record KumirVM::toRecordValue(const Kumir::FileType & ft) {
     record.fields[0] = AnyValue(ft.fullPath);
     record.fields[1] = AnyValue(ft.mode);
     record.fields[2] = AnyValue(ft.type);
-    record.fields[3] = AnyValue(ft.valid);
+    record.fields[3] = AnyValue(ft.valid);    
     return record;
 }
 

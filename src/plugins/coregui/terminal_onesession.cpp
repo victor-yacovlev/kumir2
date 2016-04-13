@@ -949,7 +949,7 @@ void OneSession::tryFinishInput()
         }
         else if (format.contains("::")) {
             const QStringList typeName = format.split("::", QString::KeepEmptyParts);
-            const QString & moduleName = typeName[0];
+            const QByteArray moduleAsciiName = typeName[0].toLatin1();
             const QByteArray classAsciiName = typeName[1].toLatin1();
             const QString & className  = typeName[2];
             QList<ExtensionSystem::KPlugin*> plugins =
@@ -958,7 +958,7 @@ void OneSession::tryFinishInput()
             for (int i=0; i<plugins.size(); i++) {
                 actor = qobject_cast<Shared::ActorInterface*>(plugins[i]);
                 if (actor) {
-                    if (actor->localizedModuleName(QLocale::Russian)==moduleName)
+                    if (actor->asciiModuleName()==moduleAsciiName)
                         break;
                     else
                         actor = 0;
