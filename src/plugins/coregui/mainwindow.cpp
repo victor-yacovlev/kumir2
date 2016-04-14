@@ -460,9 +460,9 @@ void MainWindow::switchToRowFirstLayout()
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
 
     centralSide_->setCollapsible(0, false);
-    centralSide_->setCollapsible(1, true);
-    secondarySide_->setCollapsible(0, true);
-    secondarySide_->setCollapsible(1, true);
+    centralSide_->setCollapsible(1, /*true*/ false);
+    secondarySide_->setCollapsible(0, /*true*/ false);
+    secondarySide_->setCollapsible(1, /*true*/ false);
     centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Vertical);
 }
@@ -482,7 +482,7 @@ void MainWindow::switchToColumnFirstLayout()
     ui->splitter->addWidget(centralSide_);
     ui->splitter->addWidget(secondarySide_);
     ui->splitter->setCollapsible(0, false);
-    ui->splitter->setCollapsible(1, true);
+    ui->splitter->setCollapsible(1, /*true*/ false);
 
     centralSide_->addComponent(tabWidget_, true);
     centralSide_->addComponent(consolePlace_, true);
@@ -521,9 +521,9 @@ void MainWindow::switchToColumnFirstLayout()
     connect(centralSide_, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
 
     centralSide_->setCollapsible(0, false);
-    centralSide_->setCollapsible(1, true);
-    secondarySide_->setCollapsible(0, true);
-    secondarySide_->setCollapsible(1, true);
+    centralSide_->setCollapsible(1, /*true*/ false);
+    secondarySide_->setCollapsible(0, /*true*/ false);
+    secondarySide_->setCollapsible(1, /*true*/ false);
     centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Horizontal);
 }
