@@ -268,7 +268,32 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
             // Move text cursor into clicked position
             editor_->cursor()->moveTo(textY, textX);
+
+            // Check if clicked out of selected text
+            const uint indentSymbols = 2 * editor_->document()->indentAt(textY);
+            const uint realTextPosition = uint(textX - indentSymbols);
+            QList<bool> selectionMask = editor_->document()->selectionMaskAt(textY);
+            bool clearSelection = false;
+            if (textY >= editor_->document()->linesCount()) {
+                clearSelection = true;
+            }
+            else if (textX < indentSymbols) {
+                clearSelection = true;
+            }
+            else if (textX >= indentSymbols + selectionMask.size()) {
+                clearSelection = true;
+            }
+            else if (realTextPosition < selectionMask.size() && !selectionMask.at(realTextPosition)) {
+                clearSelection = true;
+            }
+
+            if (clearSelection) {
+                editor_->cursor()->removeSelection();
+                editor_->cursor()->removeRectSelection();
+            }
+
             editor_->document()->checkForCompilationRequest(QPoint(editor_->cursor()->column(), editor_->cursor()->row()));
+
 
             // Store text clicked position for possible
             // selection handling
