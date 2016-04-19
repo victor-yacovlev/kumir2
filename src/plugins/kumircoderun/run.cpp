@@ -23,7 +23,7 @@ Run::Run(QObject *parent) :
     vm.reset(new KumirVM);
     VMMutex_.reset(new Mutex);
     vm->setMutex(VMMutex_);
-    variablesModel_ = new KumVariablesModel(vm, VMMutex_, this);
+    _variablesModel = new KumVariablesModel(vm, VMMutex_, this);
 
     originFunctionDeep_ = 0;
     interactDoneFlag_ = stoppingFlag_ = stepDoneFlag_ = algDoneFlag_ = false;
@@ -34,7 +34,7 @@ Run::Run(QObject *parent) :
     breakHitMutex_ = new QMutex;
     breakHitFlag_ = false;
     ignoreLineChangeFlag_ = false;
-    runMode_ = RM_ToEnd;
+    _runMode = Shared::RunInterface::RM_ToEnd;
     stdInBuffer_ = 0;
     supportBreakpoints_ = true;
 
@@ -75,7 +75,7 @@ void Run::runStepOver()
     stepDoneFlag_ = false;
     stoppingFlag_ = false;
     breakHitFlag_ = false;
-    runMode_ = RM_StepOver;
+    _runMode = Shared::RunInterface::RM_StepOver;
     vm->setNextCallStepOver();
     start();
 }
@@ -84,7 +84,7 @@ void Run::runStepIn()
 {
     stepDoneFlag_ = false;
     breakHitFlag_ = false;
-    runMode_ = RM_StepIn;
+    _runMode = Shared::RunInterface::RM_StepIn;
     vm->setNextCallInto();
     start();
 }
@@ -96,7 +96,7 @@ void Run::runToEnd()
     breakHitFlag_ = false;
     ignoreLineChangeFlag_ = false;
     emit lineChanged(-1, 0u, 0u);
-    runMode_ = RM_StepOut;
+    _runMode = Shared::RunInterface::RM_StepOut;
     vm->setNextCallToEndOfContext();
     start();
 }
@@ -106,7 +106,7 @@ void Run::runBlind()
     stoppingFlag_ = false;
     breakHitFlag_ = false;
     ignoreLineChangeFlag_ = false;
-    runMode_ = RM_ToEnd;
+    _runMode = Shared::RunInterface::RM_ToEnd;
     vm->setDebugOff(true);
     vm->setNextCallToEnd();
     start();
@@ -114,7 +114,7 @@ void Run::runBlind()
 
 void Run::runContinuous()
 {
-    runMode_ = RM_ToEnd;
+    _runMode = Shared::RunInterface::RM_ToEnd;
     stoppingFlag_ = false;
     breakHitFlag_ = false;
     ignoreLineChangeFlag_ = false;
@@ -125,29 +125,29 @@ void Run::runContinuous()
 
 void Run::debuggerReset()
 {
-    variablesModel_->clear();
+    _variablesModel->clear();
 }
 
 void Run::debuggerNoticeBeforePopContext()
 {
-    int index = variablesModel_->rowCount(QModelIndex()) - 1;
-    variablesModel_->beginRemoveRows(QModelIndex(), index, index);
+    int index = _variablesModel->rowCount(QModelIndex()) - 1;
+    _variablesModel->beginRemoveRows(QModelIndex(), index, index);
 }
 
 void Run::debuggerNoticeAfterPopContext()
 {
-    variablesModel_->endRemoveRows();
+    _variablesModel->endRemoveRows();
 }
 
 void Run::debuggerNoticeBeforePushContext()
 {
-    int index = variablesModel_->rowCount(QModelIndex());
-    variablesModel_->beginInsertRows(QModelIndex(), index, index);
+    int index = _variablesModel->rowCount(QModelIndex());
+    _variablesModel->beginInsertRows(QModelIndex(), index, index);
 }
 
 void Run::debuggerNoticeAfterPushContext()
 {
-    variablesModel_->endInsertRows();    
+    _variablesModel->endInsertRows();
 }
 
 void Run::debuggerNoticeBeforeArrayInitialize(const Variable & variable,
@@ -158,8 +158,8 @@ void Run::debuggerNoticeBeforeArrayInitialize(const Variable & variable,
     int count = firstEnd - firstStart + 1;
     QModelIndex variableIndex;
     KumVariableItem * item = nullptr;
-    for (int i=0; i<variablesModel_->cache_.size(); i++) {
-        KumVariableItem * it = variablesModel_->cache_[i];
+    for (int i=0; i<_variablesModel->cache_.size(); i++) {
+        KumVariableItem * it = _variablesModel->cache_[i];
         if (it->itemType() == KumVariableItem::Variable) {
             if (it->variable() == &variable) {
                 item = it;
@@ -167,16 +167,16 @@ void Run::debuggerNoticeBeforeArrayInitialize(const Variable & variable,
             }
         }
     }
-    if (item && variablesModel_->modelIndeces_.contains(item)) {
-        variableIndex = variablesModel_->modelIndeces_[item];
+    if (item && _variablesModel->modelIndeces_.contains(item)) {
+        variableIndex = _variablesModel->modelIndeces_[item];
     }
-    variablesModel_->beginInsertRows(variableIndex, 0, count - 1);
+    _variablesModel->beginInsertRows(variableIndex, 0, count - 1);
 }
 
 void Run::debuggerNoticeAfterArrayInitialize(const Variable & variable)
 {
-    variablesModel_->endInsertRows();
-    variablesModel_->emitValueChanged(variable, QVector<int>());
+    _variablesModel->endInsertRows();
+    _variablesModel->emitValueChanged(variable, QVector<int>());
 }
 
 void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * indeces)
@@ -186,7 +186,7 @@ void Run::debuggerNoticeOnValueChanged(const Variable & variable, const int * in
             : QVector<int>(indeces[3]);
     if (ind.size() > 0)
         ::memcpy(ind.data(), indeces, indeces[3] * sizeof(int));
-    variablesModel_->emitValueChanged(variable, ind);
+    _variablesModel->emitValueChanged(variable, ind);
 }
 
 void Run::debuggerNoticeOnBreakpointHit(const String &filename, const quint32 lineNo)
@@ -198,7 +198,7 @@ void Run::debuggerNoticeOnBreakpointHit(const String &filename, const quint32 li
     breakHitFlag_ = true;
     ignoreLineChangeFlag_ = true;
     breakHitMutex_->unlock();
-    runMode_ = RM_StepOver;
+    _runMode = Shared::RunInterface::RM_StepOver;
     vm->setNextCallStepOver();
     emit breakpointHit(QString::fromStdWString(filename), lineNo);
 }
@@ -272,10 +272,10 @@ bool Run::mustStop() const
         return true;
     }
 
-    if (runMode_==RM_StepOut) {
+    if (_runMode==Shared::RunInterface::RM_StepOut) {
         return algDoneFlag_;
     }
-    else if (runMode_!=RM_ToEnd) {
+    else if (_runMode!=Shared::RunInterface::RM_ToEnd) {
         return stepDoneFlag_;
     }
     else {
@@ -296,7 +296,7 @@ void Run::handleAlgorhitmDone(int lineNo, quint32 colStart, quint32 colEnd)
 
 void Run::handlePauseRequest()
 {
-    runMode_ = RM_StepOver;
+    _runMode = Shared::RunInterface::RM_StepOver;
     vm->setNextCallStepOver();
     vm->setDebugOff(false);
 }

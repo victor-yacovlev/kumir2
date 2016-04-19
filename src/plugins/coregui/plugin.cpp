@@ -772,7 +772,7 @@ void Plugin::showActorWindow(const QByteArray &asciiName)
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
-    using namespace Shared;
+    using namespace Shared;    
     if (state==PluginInterface::GS_Unlocked) {
 //        m_kumirStateLabel->setText(tr("Editing"));
         mainWindow_->clearMessage();
@@ -787,7 +787,8 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
 //        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
-        _debugger->setDebuggerEnabled(true);
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
@@ -798,11 +799,14 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
     else if (state==PluginInterface::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
-        _debugger->setDebuggerEnabled(true);
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     else if (state==PluginInterface::GS_Input) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     kumirProgram_->switchGlobalState(old, state);
     terminal_->changeGlobalState(old, state);

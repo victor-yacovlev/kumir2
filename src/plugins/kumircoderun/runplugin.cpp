@@ -525,6 +525,11 @@ KumirRunPlugin::~KumirRunPlugin()
         delete common_;
 }
 
+Shared::RunInterface::RunMode KumirRunPlugin::currentRunMode() const
+{
+    return pRun_->currentRunMode();
+}
+
 
 void KumirRunPlugin::prepareCommonRun()
 {

@@ -24,6 +24,7 @@ public:
     };
 
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
+    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
 
     inline virtual bool hasBreakpointsSupport() const { return false; }
     inline virtual void setBreakpoint(
@@ -35,6 +36,7 @@ public:
     virtual bool loadProgram(const RunnableProgram &sourceInfo) = 0;
     virtual QDateTime loadedProgramVersion() const = 0;
 
+    virtual RunMode currentRunMode() const = 0;
     virtual bool canStepOut() const = 0;
     virtual void runBlind() = 0;
     virtual void runContinuous() = 0;

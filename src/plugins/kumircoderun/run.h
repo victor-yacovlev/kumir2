@@ -5,6 +5,7 @@
 #define DO_NOT_DECLARE_STATIC
 #include "vm/vm.hpp"
 #include "interfaces/actorinterface.h"
+#include "interfaces/runinterface.h"
 #include "kumvariablesmodel.h"
 #include "guirun.h"
 #include <memory>
@@ -50,7 +51,7 @@ class Run
 {
     Q_OBJECT
 public:
-    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
+
     explicit Run(QObject *parent);
     std::shared_ptr<VM::KumirVM> vm;
     bool programLoaded;
@@ -73,9 +74,10 @@ public:
     void reset();
     void evaluateNextInstruction();
     bool canStepOut() const;
+    inline Shared::RunInterface::RunMode currentRunMode() const { return _runMode ; }
     QVariant valueStackTopItem() const;
     inline QAbstractItemModel* variablesModel() const {
-        return variablesModel_;
+        return _variablesModel;
     }
 
 
@@ -138,7 +140,7 @@ signals:
 protected :
     void run();
 
-    RunMode runMode_;
+    Shared::RunInterface::RunMode _runMode;
 
     bool stoppingFlag_;
     QMutex* stoppingMutex_;
@@ -163,7 +165,7 @@ protected :
     QVariant funcResult_;
     QString funcError_;
     mutable class std::shared_ptr<Mutex> VMMutex_;
-    KumVariablesModel * variablesModel_;
+    KumVariablesModel * _variablesModel;
     QString programLoadError_;
 
     Gui::SimulatedInputBuffer * stdInBuffer_;
