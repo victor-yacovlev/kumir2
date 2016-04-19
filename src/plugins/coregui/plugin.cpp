@@ -50,7 +50,7 @@ Plugin::Plugin() :
     coursesWindow_ = 0;
     terminal_ = 0;
     kumirProgram_ = 0;
-    debugger_ = 0;
+    _debugger = 0;
     sessionsDisableFlag_ = false;
     helpViewer_ = 0;
     courseManager_ = 0;
@@ -593,12 +593,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             mainWindow_, SLOT(newText(QString,QString)), Qt::DirectConnection);
 
 
-    debugger_ = new DebuggerView(plugin_kumirCodeRun);
+    _debugger = new DebuggerView(plugin_kumirCodeRun);
 
 
     Widgets::SecondaryWindow * debuggerWindow =
             Widgets::SecondaryWindow::createSecondaryWindow(
-                debugger_,
+                _debugger,
                 tr("Variables"),
                 QIcon(), // TODO window icon
                 mainWindow_,
@@ -778,26 +778,27 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem
         mainWindow_->clearMessage();
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
-        debugger_->reset();
-        debugger_->setDebuggerEnabled(false);
+        _debugger->reset();
+        _debugger->setDebuggerEnabled(false);
     }
     else if (state==PluginInterface::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
         mainWindow_->showMessage(kumirProgram_->endStatusText());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
-        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
+//        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
+        _debugger->setDebuggerEnabled(true);
     }
     else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
         mainWindow_->clearMessage();
         mainWindow_->lockActions();
-        debugger_->setDebuggerEnabled(false);
+        _debugger->setDebuggerEnabled(false);
     }
     else if (state==PluginInterface::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
-        debugger_->setDebuggerEnabled(true);
+        _debugger->setDebuggerEnabled(true);
     }
     else if (state==PluginInterface::GS_Input) {
 //        m_kumirStateLabel->setText(tr("Pause"));
