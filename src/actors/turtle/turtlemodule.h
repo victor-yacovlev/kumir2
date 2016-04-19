@@ -17,12 +17,168 @@ You should change it corresponding to functionality.
 //#include "turtle.h"
 #include "pult.h"
 // Qt includes
-#include <QtCore>
+#if QT_VERSION >= 0x050000
+#include <QtWidgets>
+#else
 #include <QtGui>
-class turtle;
+#endif
+#include <QtCore>
+
+class DrawNavigator;
 namespace ActorTurtle {
 
 
+    class TurtleModule;
+  
+    class TurtlePen: public QGraphicsItem
+    {
+    public:
+        TurtlePen(QGraphicsItem *parent, const QString svgFileName): QGraphicsItem(parent)
+        {
+            turtle=new QGraphicsSvgItem(svgFileName);
+            turtle->scale(0.01,0.01);
+            QMatrix mat;
+            mat.rotate(180);
+            mat.scale(0.5,0.5);
+            // turtle.setBoundingRect(QRect(-15,-15,15,15));
+            tail.cubicTo(QPointF(-10*2,13*2),QPointF(19,17),QPointF(0,-1) );
+            tailColor=QColor(Qt::black);
+            tail=mat.map(tail);
+            mX=30;mY=30;
+            tailup=false;
+        }
+        void setTailColor(const QColor  color)
+        {
+            tailColor=color;
+        }
+        void tailUp()
+        {
+            tailup=true;
+        }
+        void tailDown()
+        {
+            tailup=false;
+        }
+        QRectF boundingRect() const
+        {
+            return QRectF(-15, -30, mX, mY);
+        }
+        bool isTailUp()
+        {
+            return tailup;
+        }
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+        {
+            Q_UNUSED(option) Q_UNUSED(widget);
+            painter->setPen(QColor(Qt::black));
+            if(!tailup){
+                painter->setBrush(tailColor);
+                painter->drawPath(tail);
+            }
+            turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
+        
+        }
+        
+    private:
+        qreal mX,mY;
+        QGraphicsSvgItem* turtle;
+        QPainterPath tail;
+        QColor tailColor;
+        bool tailup;
+    };
+    
+    class TurtleView
+    : public QGraphicsView
+    {
+    public:
+        TurtleView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
+            net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
+        void setDraw(TurtleModule* draw){DRAW=draw;};
+        double zoom()const
+        {return c_scale;};
+        void setZoom(double zoom);
+        void setNet();//RESIZE NET
+        bool isNet() const
+        {
+            return net;
+            
+        }
+        void forceRedraw()
+        {
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+            
+            verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+            verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+            
+        }
+    protected:
+        // void scrollContentsBy ( int dx, int dy );
+        void resizeEvent ( QResizeEvent * event );
+        void wheelEvent ( QWheelEvent * event );
+        void mousePressEvent ( QMouseEvent * event );
+        void mouseReleaseEvent ( QMouseEvent * event );
+        void mouseMoveEvent ( QMouseEvent * event );
+    private:
+        TurtleModule* DRAW;
+        double c_scale;
+        bool pressed;
+        bool net;
+        QPoint press_pos;
+        bool firstResize;
+        double lastStep;
+        QLabel* smallNetLabel;
+        
+    };
+    class TurtleScene
+    : public QGraphicsScene
+    {
+    public:
+        TurtleScene ( QObject * parent = 0 ){};
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net);
+        void setDraw(TurtleModule* draw){DRAW=draw;};
+        void addDrawLine(QLineF lineF,QColor color)
+        {
+            QGraphicsLineItem* line=addLine(lineF);
+            line->setPen(QPen(QColor(color)));
+            line->setZValue(90);
+            lines.append(line);
+            
+            
+        }
+        void reset()
+        {
+            for(int i=0;i<lines.count();i++)
+                removeItem(lines.at(i));
+            lines.clear();
+            for(int i=0;i<texts.count();i++)
+                removeItem(texts.at(i));
+            texts.clear();
+            
+        }
+        void DestroyNet();
+        void drawOnlyAxis(double startx ,double endx,double starty,double endy);
+        bool isLineAt(const QPointF &pos,qreal radius);
+        qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
+        QRectF getRect();
+        int saveToFile(const QString& p_FileName);
+        int loadFromFile(const QString& p_FileName);
+    protected:
+        // void resizeEvent ( QResizeEvent * event );
+    private:
+        bool isUserLine(QGraphicsItem*);//Return true if item is user item;
+        QList<QGraphicsLineItem*> lines;
+        QList<QGraphicsLineItem*> Netlines;
+        QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
+        QList<QGraphicsSimpleTextItem*> texts;
+        TurtleModule* DRAW;
+        
+        
+        
+        
+    }; 
+   
+    
 class TurtleModule
     : public TurtleModuleBase
 {
@@ -33,7 +189,57 @@ public /* methods */:
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
-public slots:
+    void scalePen(double factor)
+    {
+        mutex.lock();
+        mPen->setScale(factor);
+        mTurt->setScale(factor);
+        qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
+        mutex.unlock();
+    }
+    bool isAutoNet() const
+    {
+        return autoNet;
+    }
+    void setAutoNet(bool state)
+    {
+        autoNet=state;
+    }
+    double NetStepX() const
+    {
+        return netStepX;
+    }
+    void setNetStepX(double step)
+    {
+        netStepX=step;
+    }
+    double NetStepY() const
+    {
+        return netStepY;
+    }
+    void setNetStepY(double step)
+    {
+        netStepY=step;
+    }
+    double zoom()
+    {
+        return CurView->zoom();
+    }
+    
+    TurtlePen* Pen()
+    {
+        return mPen;
+    }
+     static ExtensionSystem::SettingsPtr TurtleSettings();
+    QColor axisColor()
+    {
+        return QColor(TurtleSettings()->value("AxisColor","blue").toString());
+    }
+   TurtleView * getCurView()
+    {
+        return CurView;
+    }
+    public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
     void reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys);
@@ -42,23 +248,50 @@ public slots:
     void setAnimationEnabled(bool enabled);
     void runTailUp();
     void runTailDown();
-    void runForward(const int dist);
-    void runBack(const int dist);
-    void runLeft(const int angle);
-    void runRight(const int angle);
-
+    void runForward(const qreal dist);
+    void runBack(const qreal dist);
+    void runLeft(const qreal angle);
+    void runRight(const qreal angle);
+    void runSetPenColor(const Color& color);
+    
+    void drawNet();
+    void autoNetChange(bool value);
+    void netStepChange(double value);
+    void zoomIn();
+    void zoomOut();
+    void zoomNorm();
+    void zoomFullDraw();
+    
+    void showNavigator(bool state);
 
 
     /* ========= CLASS PRIVATE ========= */
 
 private:
     void createGui();
-    turtle* Turtle;
+   // turtle* Turtle;
     TurtlePult* Tpult;
     bool animation;
     QMutex mutex;
+    void CreatePen(void);
+    
+    TurtleScene* CurScene;
+    TurtleView* CurView;
+    
+    TurtlePen* mPen;
+    QGraphicsSvgItem* mTurt;
+    double netStepX,netStepY;
+    QColor netColor;
+    bool autoNet;
+    bool penIsDrawing;
+    Color penColor;
 
-
+    DrawNavigator* navigator;
+    QToolButton *showToolsBut;
+    QDir curDir;
+    qreal curAngle;
+    qreal AncX,AncY;
+    
 
 };
         

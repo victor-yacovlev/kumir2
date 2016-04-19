@@ -474,8 +474,7 @@ if (WindowZoom > MaxZoom)return;
 
 
 
-	qreal CenterX=center().x();
-	qreal CenterY=center().y();
+
 
 	WindowZoom = WindowZoom*2;
 
@@ -498,8 +497,7 @@ void KumKuznec::ZoomDown(void)
 if (WindowZoom < MinZoom)return;
 
 
-	qreal CenterX=center().x();
-	qreal CenterY=center().y();
+
 	//if(WindowZoom>64)WindowY0 += 1;
 	WindowZoom = WindowZoom/2;
 
@@ -709,7 +707,7 @@ MV->setWindowTitle ( Title);
 qreal CurrentScale; 
 
 	QString tmp = "";
-	char ctmp[200];
+
 	QString l_String;
 	QFile l_File(p_FileName);
 	
@@ -721,7 +719,7 @@ qreal CurrentScale;
 //	long l_Err;
 	//int CurX,CurY;
 //	int SizeX, SizeY;	
-qreal x1,y1,x2,y2;
+
 	if  (!l_File.open(QIODevice::ReadOnly))	
 	{
 	QMessageBox::information( MV, "", QString::fromUtf8("Ошибка открытия файла"), 0,0,0);

@@ -171,11 +171,11 @@ namespace ActorRobot {
     void FieldItm::setTextColor()
     {
         sett=RobotModule::robotSettings();
-        TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
+        TextColor=QColor(sett->value("TextColor","#FFFFFF").toString());
         
         
-        upCharItm->setDefaultTextColor(TextColor);
-        downCharItm->setDefaultTextColor(TextColor);
+       if(upCharItm) upCharItm->setDefaultTextColor(TextColor);
+        if(downCharItm)downCharItm->setDefaultTextColor(TextColor);
 
         
     };
@@ -1149,9 +1149,9 @@ namespace ActorRobot {
                                                                    fieldSize));
                     
                 };
-                
+              
                 row->at(j)->showCharMark(upLeftCorner(i,j).x(),upLeftCorner(i,j).y(),fieldSize);
-                
+                 row->at(j)->setTextColor();
                 
             };
         };
@@ -1557,6 +1557,7 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+      //  TextColor=QColor(sett->value("TextColor","#FFFFFF").toString());
         
         destroyNet();
         destroyField();

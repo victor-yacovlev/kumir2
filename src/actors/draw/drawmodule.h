@@ -50,11 +50,11 @@ namespace ActorDraw {
         }
         void forceRedraw()
         {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +5);
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-5);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
             
-            verticalScrollBar()->setValue(horizontalScrollBar()->value() +5);
-            verticalScrollBar()->setValue(horizontalScrollBar()->value()-5);
+            verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+            verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
            
         }
     protected:
@@ -89,7 +89,7 @@ namespace ActorDraw {
             line->setZValue(90);
             lines.append(line); 
             
-            //qDebug()<<"Lines count:"<<lines.count();
+            
         }
         void reset()
         {
@@ -114,7 +114,7 @@ namespace ActorDraw {
         bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
         QList<QGraphicsLineItem*> Netlines;
-        QList<QGraphicsLineItem*> linesDubl;
+        QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
         

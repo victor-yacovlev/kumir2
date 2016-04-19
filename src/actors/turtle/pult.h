@@ -34,9 +34,9 @@
 #define LEFT 3
 #define RIGHT 4
 #define TEXTT 5
+namespace ActorTurtle {
 
-
-
+    class TurtleModule;}
 class OvenTimer : public QWidget
 {
     Q_OBJECT
@@ -89,7 +89,7 @@ public:
     bool Link(){return link;};
     pultLogger * Logger;
 	pultLogger * pltLogger(){return Logger;};
-	turtle* turtleObj; 
+    ActorTurtle::TurtleModule* turtleObj;
 	bool libMode;
 	//KNPServer* form_kumir;
 

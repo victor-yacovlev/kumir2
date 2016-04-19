@@ -1,5 +1,6 @@
 {
 	"name": { "ascii": "turtle", "ru_RU": "Черепаха" },
+	 "uses": [ "_Colorer" ],
 	"methods": [
 		{ "name": {"ascii": "tailUp", "ru_RU": "поднять хвост" }},
 		{ "name": {"ascii": "tailDown", "ru_RU": "опустить хвост" } },
@@ -7,7 +8,7 @@
 		"name": {"ascii": "forward", "ru_RU": "вперед" },
          "async": true,
 		"arguments": [
-                     { "name": "dist", "baseType": "int" }
+                     { "name": "dist", "baseType": "double" }
                        ]
 
 		
@@ -16,7 +17,7 @@
 		"name": {"ascii": "back", "ru_RU": "назад" },
             "async": true,
 		"arguments": [
-                     { "name": "dist", "baseType": "int" }
+                     { "name": "dist", "baseType": "double" }
                        ]
 
 		
@@ -25,16 +26,24 @@
 		"name": {"ascii": "left", "ru_RU": "влево" },
             "async": true,
 		"arguments": [
-                     { "name": "angle", "baseType": "int" }
+                     { "name": "angle", "baseType": "double" }
                        ]
 
 		
-		},
+		},        
+		{
+            "name": {"ascii": "set pen color", "ru_RU": "выбрать чернила"},
+            "async": false,
+            "arguments": [
+                {"baseType": "color", "name": "color"}
+            ]
+        },
+		
 		{ 
 		"name": {"ascii": "right", "ru_RU": "вправо" },
          "async": true,
 		"arguments": [
-                     { "name": "angle", "baseType": "int" }
+                     { "name": "angle", "baseType": "double" }
                        ]
 
 		
@@ -47,6 +56,24 @@
 			{ "role": "pult", "icon": "turtle-pult" }
 		]
 		
-	}
+	},
+	            "settings": {
+                "BackColor": {
+                        "type": "color",
+                        "default": "#FFFFFF",
+                        "title": {"ascii": "Background color", "ru_RU": "Цвет фона"}
+                },
+                "LineColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
+                },
+                "AxisColor": {
+                        "type": "color",
+                        "default": "#C8C800",
+                        "title": {"ascii": "Axis color", "ru_RU": "Цвет осей"}
+                }
+	            }
+
 
 }

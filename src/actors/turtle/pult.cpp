@@ -453,37 +453,37 @@ void TurtlePult::Up()
     if(!greenLight->link())return;
 
 
-    turtleObj->step=stepVal->value ();
-    if(turtleObj->moveT())
-        Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
-	else
-		Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
+   // turtleObj->step=stepVal->value ();
+   // if(turtleObj->moveT())
+//        Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
+//	else
+//		Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
 
 };
 void TurtlePult::Down()
 {
     if(!greenLight->link())return;
 
-    turtleObj->step=-stepVal->value ();
-    if(turtleObj->moveT())
-        Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
-	else
-		Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+"\n)",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
+//    turtleObj->step=-stepVal->value ();
+//    if(turtleObj->moveT())
+//        Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
+//	else
+//		Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+"\n)",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
 };
 void TurtlePult::Left()
 {
-    if(!greenLight->link())return;
-    Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
-    turtleObj->grad=-gradVal->value();
-    turtleObj->rotate();
+//    if(!greenLight->link())return;
+//    Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
+//    turtleObj->grad=-gradVal->value();
+//    turtleObj->rotate();
 
 };
 void TurtlePult::Right()
 {
-    if(!greenLight->link())return;
-    Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
-    turtleObj->grad=gradVal->value();
-    turtleObj->rotate();
+//    if(!greenLight->link())return;
+//    Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
+//    turtleObj->grad=gradVal->value();
+//    turtleObj->rotate();
 };
 
 void TurtlePult::SwStena()
@@ -496,20 +496,20 @@ void TurtlePult::SwSvobodno()
 };
 void TurtlePult::TempS()
 {
-    if(!greenLight->link())return;
-    turtleObj->TailDown();
-    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
+//    if(!greenLight->link())return;
+//    turtleObj->TailDown();
+//    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
 };
 void TurtlePult::RadS()
 {
-    if(!greenLight->link())return;
-    turtleObj->TailUp();
-    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
+//    if(!greenLight->link())return;
+//    turtleObj->TailUp();
+//    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
 };
 
 void TurtlePult::resetTurtle()
 {
-    turtleObj->reset();
+//    turtleObj->reset();
 };
 void TurtlePult::newClient(QString message)
 {
@@ -547,8 +547,8 @@ void TurtlePult::closeEvent ( QCloseEvent * event )
 								   QMessageBox::No,
 								   QMessageBox::Cancel | QMessageBox::Escape);
 	if (ret == QMessageBox::Yes) {
-		turtleObj->AutoClose();
-		turtleObj->close();
+//		turtleObj->AutoClose();
+//		turtleObj->close();
 		event->accept();
 	} else {
 		event->ignore();
