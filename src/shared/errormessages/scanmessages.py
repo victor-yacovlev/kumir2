@@ -49,10 +49,6 @@ def parseTable(contents):
     """
     empty = dict()
     empty["ru"] = dict()
-    empty["en"] = dict()
-    empty["ua"] = dict()
-    empty["by"] = dict()
-    empty["kz"] = dict()
     database = empty
     lines = contents.split("\n")
     if len(lines) == 0:
