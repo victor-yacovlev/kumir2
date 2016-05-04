@@ -243,7 +243,7 @@ void TextCursor::normalizePlainText(QString &s)
             line.remove(0, 2);
         }
     }
-    s = lines.join('\n');
+    s = lines.join(QString::fromLatin1("\n"));
 }
 
 void TextCursor::evaluateCommand(const KeyCommand &command)
