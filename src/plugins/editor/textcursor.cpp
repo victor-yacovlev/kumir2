@@ -251,6 +251,7 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
     if (recordingMacro_)
         recordingMacro_->commands.push_back(command);
     int prevRow = row_;
+    int prevCol = column_;
     int prevLines = editor_->document()->linesCount();
     bool clearCurrentLineError = false;
     switch (command.type) {
@@ -432,9 +433,20 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                     }
                 }
                 if (removeLeadingSpaces) {
+                    QRegExp rxLeadingSpaces("^\\s+");
+                    QRegExp rxLineComment = editor_->analizer()->helper()
+                            ? editor_->analizer()->helper()->lineCommentStartLexemPattern()
+                            : QRegExp();
                     QStringList lines = textToInsert.split("\n", QString::KeepEmptyParts);
                     for (int i=0; i<lines.size(); i++) {
-                        lines[i] = lines[i].trimmed();
+                        QString &line = lines[i];
+                        if (0 == rxLeadingSpaces.indexIn(line)) {
+                            const int commentPos = rxLineComment.indexIn(line);
+                            const int leadingSpacesCount = rxLeadingSpaces.cap().length();
+                            if (commentPos != leadingSpacesCount) {
+                                line = line.mid(leadingSpacesCount);
+                            }
+                        }
                     }
                     textToInsert = lines.join("\n");
                 }
@@ -505,6 +517,32 @@ void TextCursor::evaluateCommand(const KeyCommand &command)
                                     KeyCommand::InsertImport,
                                     modulesList.first()
                                     ));
+            }
+
+            // Try to continue line comment
+            if (prevRow >= 0 && prevRow < editor_->document()->linesCount())
+            {
+                const TextLine & prevLine = editor_->document()->at(prevRow);
+                if (prevLine.text.length() > 0) {
+                    int i = prevLine.highlight.size()-1;
+                    Shared::LexemType lastLexem = prevLine.highlight[i];
+                    while (i>0 && Shared::LxTypeEmpty==lastLexem) {
+                        lastLexem = prevLine.highlight[--i];
+                    }
+                    if (Shared::LxTypeComment == lastLexem) {
+                        QRegExp commentSymbolPattern =
+                                editor_->analizerInstance_->helper()->lineCommentStartLexemPattern();
+                        const int commentPos = commentSymbolPattern.indexIn(prevLine.text);
+                        const int prevIndent = 2 * editor_->document()->indentAt(prevRow);
+                        const int prevTextPos = prevCol - prevIndent;
+                        if (-1 != commentPos && prevTextPos >= commentPos) {
+                            const QString commentLexem = commentSymbolPattern.cap();
+                            QString textToInsert = QString(" ").repeated(commentPos) + commentLexem + " ";
+                            evaluateCommand(KeyCommand(KeyCommand::InsertText, textToInsert));
+                            editor_->document()->checkForCompilationRequest(QPoint(column(), row()));
+                        }
+                    }
+                }
             }
         }
     }
