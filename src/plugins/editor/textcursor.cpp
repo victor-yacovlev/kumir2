@@ -222,6 +222,7 @@ Macro* TextCursor::endRecordMacro()
 
 void TextCursor::normalizePlainText(QString &s)
 {
+    // 1. Replace text processor specific characters
     static const QString from = QString::fromUtf8("–«»“”");
     static const QString to = QString::fromLatin1("-\"\"\"\"");
     Q_ASSERT(from.length() == to.length());
@@ -230,6 +231,19 @@ void TextCursor::normalizePlainText(QString &s)
         const QChar & t = to[i];
         s = s.replace(f, t);
     }
+
+    // 2. Replace leading indents
+    QStringList lines = s.split('\n', QString::KeepEmptyParts);
+    const int textLength = s.length();
+    s.clear();
+    s.reserve(textLength);
+    for (int i=0; i<lines.size(); ++i) {
+        QString &line = lines[i];
+        while (line.startsWith(". ")) {
+            line.remove(0, 2);
+        }
+    }
+    s = lines.join('\n');
 }
 
 void TextCursor::evaluateCommand(const KeyCommand &command)
