@@ -40,6 +40,7 @@ public:
     ~EditorInstance();
 
     QScrollBar * scrollBar(Qt::Orientation orientation);
+    QFont editorFont() const;
 
     bool isTeacherMode() const;
     QList<QAction*> toolBarActions() const;
