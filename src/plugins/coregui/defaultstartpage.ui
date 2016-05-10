@@ -132,6 +132,9 @@
              </item>
              <item>
               <widget class="QPushButton" name="btnNewProgram">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>New Program</string>
                </property>
@@ -139,6 +142,9 @@
              </item>
              <item>
               <widget class="QPushButton" name="btnLoadProgram">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>Load Program</string>
                </property>
@@ -214,6 +220,9 @@
              </item>
              <item>
               <widget class="QPushButton" name="btnShowCourses">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>Show Courses</string>
                </property>
@@ -289,6 +298,9 @@
              </item>
              <item>
               <widget class="QPushButton" name="btnShowHelp">
+               <property name="cursor">
+                <cursorShape>PointingHandCursor</cursorShape>
+               </property>
                <property name="text">
                 <string>Show Help</string>
                </property>
