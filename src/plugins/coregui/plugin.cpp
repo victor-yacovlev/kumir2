@@ -906,11 +906,11 @@ void Plugin::createStartPage()
         createSpecializedStartPage(plugin);
     }
     else {
-#if QT_VERSION >= 0x050000
+//#if QT_VERSION >= 0x050000
         createDefaultStartPage();
-#else
-        createWebKitStartPage();
-#endif
+//#else
+//        createWebKitStartPage();
+//#endif
     }
 }
 
