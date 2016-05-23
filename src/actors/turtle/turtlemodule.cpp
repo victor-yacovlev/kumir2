@@ -48,7 +48,7 @@ const double Pi = 3.14159265;
     
     QRectF TurtleScene::getRect() //User lines bounding rect
     {
-        QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
+        QRectF boundRect=QRectF(QPointF(-7,15),QPointF(5,-5));//default rect
         
         for(int i=0;i<lines.count();i++)
         {
@@ -779,8 +779,8 @@ TurtleModule::TurtleModule(ExtensionSystem::KPlugin * parent)
 void TurtleModule::createGui()
 {
    // Turtle=new turtle(myResourcesDir());
-   // Tpult=new TurtlePult(myResourcesDir());
-    //Tpult->turtleObj=this;
+    pult=new TurtlePult(myResourcesDir());
+    pult->turtleObj=this;
     CurView=new TurtleView();
     netStepX=1;
     netStepY=1;
@@ -821,14 +821,14 @@ void TurtleModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
+    CurView->setViewportUpdateMode (QGraphicsView::BoundingRectViewportUpdate);//For better perfomance; Manual Update;
     drawNet();
     CreatePen();
     CurView->setZoom(50);
     CurView->setNet();
     netStepX=1;
     netStepY=1;
-    
+
     
     
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -840,6 +840,7 @@ void TurtleModule::createGui()
     Black.r=0;Black.g=0;Black.b=0;Black.a=255;
     
     penColor=Black;
+    zoomOut();zoomOut();zoomOut();zoomOut();zoomOut();
 }
 
 QString TurtleModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
@@ -895,9 +896,15 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     // Returns module control view widget, or nullptr if there is no control view
     // NOTE: the method is const and might be called at any time,
     //       so DO NOT create widget here, just return!
-    return 0;
+  
     // TODO implement me
-   // static QWidget * dummy = new AAA(Tpult);
+    if (!pult) return 0;
+    // Returns module control view widget, or nullptr if there is no control view
+    // NOTE: the method is const and might be called at any time,
+    //       so DO NOT create widget here, just return!
+    // TODO implement me
+    static QWidget * dummy = new AAA(pult);
+    return dummy;
     //return dummy;
    
 }
@@ -916,6 +923,9 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     mPen->tailUp();
     penIsDrawing=false;
     mPen->setPos(0,0);
+    mPen->setRotation(0);
+    curAngle=0;
+    mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
     CurScene->reset();
     Color Black;
     Black.r=0;Black.g=0;Black.b=0;Black.a=255;
@@ -1008,6 +1018,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     
    // Turtle->rotate();
     mutex.unlock();
+    CurScene->update();
     
 }
 

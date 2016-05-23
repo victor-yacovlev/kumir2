@@ -291,7 +291,7 @@ private:
     QDir curDir;
     qreal curAngle;
     qreal AncX,AncY;
-    
+    TurtlePult * pult;
 
 };
         

@@ -13,6 +13,10 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
+
+#ifndef TURTLEPULT_H
+#define TURTLEPULT_H
+
 #include <QWidget>
 
 #include "ui_pult.h"
@@ -92,7 +96,7 @@ public:
     ActorTurtle::TurtleModule* turtleObj;
 	bool libMode;
 	//KNPServer* form_kumir;
-
+    void connectTurtle();
 	void AutoClose(){autoClose=true;};
 	public
 			slots:
@@ -116,7 +120,7 @@ public:
 	void showMessage(QString message){label->setText(message);};
 	void logToKumir();
 signals:
-	void goUp();
+	void goUp(qreal step);
 	void goDown();
 	void goLeft();
 	void goRight();
@@ -152,3 +156,5 @@ private:
     OvenTimer * GradInput;
    
 };
+
+#endif
