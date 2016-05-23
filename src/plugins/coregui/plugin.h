@@ -136,7 +136,7 @@ protected:
     Term * terminal_;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;
-    class DebuggerView * debugger_;
+    class DebuggerView * _debugger;
     DocBookViewer::DocBookView * helpViewer_;  
     Shared::CoursesInterface* courseManager_;
     bool sessionsDisableFlag_;

@@ -2205,12 +2205,12 @@ void SyntaxAnalizer::parseAssertPrePost(int str)
     if (st.hasError()) {
         return;
     }
-    if (st.data.size()==1) {
-        QString err = _("No expressions after '%1'", st.data[0]->data);
-        if (st.data[0]->type!=LxPriPre && st.data[0]->type!=LxPriPost)
-            st.data[0]->error = err;
-        return;
-    }
+//    if (st.data.size()==1) {
+//        QString err = _("No expressions after '%1'", st.data[0]->data);
+//        if (st.data[0]->type!=LxPriPre && st.data[0]->type!=LxPriPost)
+//            st.data[0]->error = err;
+//        return;
+//    }
     if (st.data.last()->type==LxOperComa) {
         st.data.last()->error = _("Statement ends with coma");
         return;

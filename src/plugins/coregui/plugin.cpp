@@ -50,7 +50,7 @@ Plugin::Plugin() :
     coursesWindow_ = 0;
     terminal_ = 0;
     kumirProgram_ = 0;
-    debugger_ = 0;
+    _debugger = 0;
     sessionsDisableFlag_ = false;
     helpViewer_ = 0;
     courseManager_ = 0;
@@ -593,12 +593,12 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
             mainWindow_, SLOT(newText(QString,QString)), Qt::DirectConnection);
 
 
-    debugger_ = new DebuggerView(plugin_kumirCodeRun);
+    _debugger = new DebuggerView(plugin_kumirCodeRun);
 
 
     Widgets::SecondaryWindow * debuggerWindow =
             Widgets::SecondaryWindow::createSecondaryWindow(
-                debugger_,
+                _debugger,
                 tr("Variables"),
                 QIcon(), // TODO window icon
                 mainWindow_,
@@ -772,36 +772,41 @@ void Plugin::showActorWindow(const QByteArray &asciiName)
 
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState state)
 {
-    using namespace Shared;
+    using namespace Shared;    
     if (state==PluginInterface::GS_Unlocked) {
 //        m_kumirStateLabel->setText(tr("Editing"));
         mainWindow_->clearMessage();
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
-        debugger_->reset();
-        debugger_->setDebuggerEnabled(false);
+        _debugger->reset();
+        _debugger->setDebuggerEnabled(false);
     }
     else if (state==PluginInterface::GS_Observe) {
 //        m_kumirStateLabel->setText(tr("Observe"));
         mainWindow_->showMessage(kumirProgram_->endStatusText());
         mainWindow_->setFocusOnCentralWidget();
         mainWindow_->unlockActions();
-        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
+//        debugger_->setDebuggerEnabled(kumirProgram_->endStatus() == KumirProgram::Exception);
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     else if (state==PluginInterface::GS_Running) {
 //        m_kumirStateLabel->setText(tr("Running"));
         mainWindow_->clearMessage();
         mainWindow_->lockActions();
-        debugger_->setDebuggerEnabled(false);
+        _debugger->setDebuggerEnabled(false);
     }
     else if (state==PluginInterface::GS_Pause) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
-        debugger_->setDebuggerEnabled(true);
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     else if (state==PluginInterface::GS_Input) {
 //        m_kumirStateLabel->setText(tr("Pause"));
         mainWindow_->lockActions();
+        const RunInterface::RunMode runMode = kumirProgram_->runner()->currentRunMode();
+        _debugger->setDebuggerEnabled(RunInterface::RM_ToEnd != runMode);
     }
     kumirProgram_->switchGlobalState(old, state);
     terminal_->changeGlobalState(old, state);
@@ -901,11 +906,11 @@ void Plugin::createStartPage()
         createSpecializedStartPage(plugin);
     }
     else {
-#if QT_VERSION >= 0x050000
+//#if QT_VERSION >= 0x050000
         createDefaultStartPage();
-#else
-        createWebKitStartPage();
-#endif
+//#else
+//        createWebKitStartPage();
+//#endif
     }
 }
 

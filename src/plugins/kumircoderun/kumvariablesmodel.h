@@ -21,19 +21,19 @@ public:
     enum Type {
         GlobalsTable, LocalsTable, Variable, ArrayItem
     };
-    inline Type itemType() const { return type_; }
-    inline int numberInTable() const { return tableNumber_; }
-    inline TableOfVariables * table() const { return table_; }
-    inline const VM::Variable * variable() const { return variable_; }
-    inline QVector<int> arrayIndeces() const { return indeces_; }
+    inline Type itemType() const { return _type; }
+    inline int numberInTable() const { return _tableNumber; }
+    inline TableOfVariables * table() const { return _table; }
+    inline const VM::Variable * variable() const { return _variable; }
+    inline QVector<int> arrayIndeces() const { return _indeces; }
     QString name() const;
     QString variableTypeName() const;
     QString valueRepresentation() const;
     QString arrayRepresentation() const;
     bool hasValue() const;
     bool isReference() const;
-    inline quint64 framePointer() const { return framePointer_; }
-    inline void setFramePointer(quint64 p) { framePointer_ = p; }
+    inline quint64 framePointer() const { return _framePointer; }
+    inline void setFramePointer(quint64 p) { _framePointer = p; }
 private:
     explicit KumVariableItem(TableOfVariables * table, int row);
     explicit KumVariableItem(TableOfVariables * table, int row,
@@ -47,13 +47,13 @@ private:
     QString array2Representation(const QVector<int> & indeces, int maxItems, int & readItems) const;
     QString array3Representation(const QVector<int> & indeces, int maxItems, int & readItems) const;
 
-    Type type_;
-    const VM::Variable * variable_;
-    TableOfVariables * table_;
-    int tableNumber_;
-    QVector<int> indeces_;
-    QString algorithmName_;
-    quint64 framePointer_;
+    Type _type;
+    const VM::Variable * _variable;
+    TableOfVariables * _table;
+    int _tableNumber;
+    QVector<int> _indeces;
+    QString _algorithmName;
+    quint64 _framePointer;
 };
 
 class KumVariablesModel : public QAbstractItemModel
@@ -84,7 +84,7 @@ protected:
     void emitValueChanged(const VM::Variable & variable, const QVector<int> & indeces);
 
 private:
-    std::shared_ptr<VM::KumirVM> vm_;
+    std::shared_ptr<VM::KumirVM> _vm;
     std::shared_ptr<VM::CriticalSectionLocker> mutex_;
     QHash<QModelIndex, QModelIndex> parents_;
     mutable QList<KumVariableItem*> cache_;

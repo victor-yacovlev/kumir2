@@ -18,7 +18,7 @@ KumVariablesModel::KumVariablesModel(
         QObject *parent)
 
         : QAbstractItemModel(parent)
-        , vm_(vm)
+        , _vm(vm)
         , mutex_(mutex)
 {
 }
@@ -62,7 +62,7 @@ QModelIndex KumVariablesModel::index(int row, int column, const QModelIndex &par
 QModelIndex KumVariablesModel::topLevelIndex(int row) const
 {
     mutex_->lock();
-    TableOfVariables * globalsTable = vm_->getMainModuleGlobals();
+    TableOfVariables * globalsTable = _vm->getMainModuleGlobals();
     bool hasGlobals = globalsTable && globalsTable->size() > 0;
     mutex_->unlock();
     size_t globalsOffset = hasGlobals? 1u : 0u;
@@ -77,7 +77,7 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
         }
         if (result == nullptr) {
             mutex_->lock();
-            result = new KumVariableItem(vm_->getMainModuleGlobals(), row);
+            result = new KumVariableItem(_vm->getMainModuleGlobals(), row);
             mutex_->unlock();
             cache_.push_back(result);
         }
@@ -85,7 +85,7 @@ QModelIndex KumVariablesModel::topLevelIndex(int row) const
     else {
         const VM::Context * mainContext = nullptr;
         mutex_->lock();
-        const VM::Stack<VM::Context> & stack = vm_->callStack();
+        const VM::Stack<VM::Context> & stack = _vm->callStack();
         for (int i=0; i<stack.reservedSize(); i++) {
             const VM::Context & context = stack.at(i);
             if (context.type == Bytecode::EL_MAIN) {
@@ -285,7 +285,7 @@ int KumVariablesModel::rowCount(const QModelIndex &parent) const
         // top level item
         mutex_->lock();
         int topLevelItemsCount = 0;
-        const VM::Stack<VM::Context> & stack = vm_->callStack();
+        const VM::Stack<VM::Context> & stack = _vm->callStack();
         bool hasMain =false;
         for (size_t i=0; i<stack.size(); i++) {
             // Calculate function calls
@@ -304,7 +304,7 @@ int KumVariablesModel::rowCount(const QModelIndex &parent) const
         if (hasMain) {
             topLevelItemsCount += 1;  // Always show main context
         }
-        TableOfVariables * globalsTable = vm_->getMainModuleGlobals();
+        TableOfVariables * globalsTable = _vm->getMainModuleGlobals();
         if (globalsTable && globalsTable->size() > 0)
             topLevelItemsCount ++;
         mutex_->unlock();
@@ -508,20 +508,20 @@ void KumVariablesModel::emitValueChanged(
 QString KumVariableItem::name() const
 {
     QString result;
-    if (type_ == Variable) {
-        result = QString::fromStdWString(variable_->myName());
-        if (variable_->name() == variable_->algorhitmName()) {
+    if (_type == Variable) {
+        result = QString::fromStdWString(_variable->myName());
+        if (_variable->name() == _variable->algorhitmName()) {
             result = QString::fromUtf8("знач");
         }
-        if (variable_->dimension() > 0) {
+        if (_variable->dimension() > 0) {
             int bounds[7];
             result += "[";
-            variable_->getEffectiveBounds(bounds);
-            for (uint d=0; d<variable_->dimension(); d++) {
+            _variable->getEffectiveBounds(bounds);
+            for (uint d=0; d<_variable->dimension(); d++) {
                 if (d > 0) {
                     result += ",";
                 }
-                if (variable_->hasValue()) {
+                if (_variable->hasValue()) {
                     int left = bounds[d*2];
                     int right = bounds[d*2+1];
                     result += QString::number(left)
@@ -535,18 +535,18 @@ QString KumVariableItem::name() const
             result += "]";
         }
     }
-    else if (type_ == ArrayItem) {
-        result = QString::fromStdWString(variable_->myName());
+    else if (_type == ArrayItem) {
+        result = QString::fromStdWString(_variable->myName());
         result += "[";
-        for (int i=0; i<indeces_.size(); i++) {
+        for (int i=0; i<_indeces.size(); i++) {
             if (i > 0)
                 result += ",";
-            result += QString::number(indeces_[i]);
+            result += QString::number(_indeces[i]);
         }
         result += "]";
     }
-    else if (type_ == LocalsTable) {
-        result = algorithmName_;
+    else if (_type == LocalsTable) {
+        result = _algorithmName;
     }
     return result;
 }
@@ -554,26 +554,26 @@ QString KumVariableItem::name() const
 QString KumVariableItem::variableTypeName() const
 {
     QString result;
-    if (variable_) {
-        if (variable_->baseType() == VM::VT_record) {
-            result = QString::fromStdWString(variable_->recordClassLocalizedName());
+    if (_variable) {
+        if (_variable->baseType() == VM::VT_record) {
+            result = QString::fromStdWString(_variable->recordClassLocalizedName());
         }
-        else if (variable_->baseType() == VM::VT_int) {
+        else if (_variable->baseType() == VM::VT_int) {
             result = QString::fromUtf8("цел");
         }
-        else if (variable_->baseType() == VM::VT_real) {
+        else if (_variable->baseType() == VM::VT_real) {
             result = QString::fromUtf8("вещ");
         }
-        else if (variable_->baseType() == VM::VT_bool) {
+        else if (_variable->baseType() == VM::VT_bool) {
             result = QString::fromUtf8("лог");
         }
-        else if (variable_->baseType() == VM::VT_char) {
+        else if (_variable->baseType() == VM::VT_char) {
             result = QString::fromUtf8("сим");
         }
-        else if (variable_->baseType() == VM::VT_string) {
+        else if (_variable->baseType() == VM::VT_string) {
             result = QString::fromUtf8("лит");
         }
-        if (variable_->dimension() > 0) {
+        if (_variable->dimension() > 0) {
             result += QString::fromUtf8("таб");
         }
     }
@@ -588,9 +588,9 @@ QString KumVariableItem::array1Representation(
     QString result = "{";
     readItems = 0;
     int bounds[7];
-    variable_->getEffectiveBounds(bounds);
+    _variable->getEffectiveBounds(bounds);
     int ind[4];
-    ind[3] = variable_->dimension();
+    ind[3] = _variable->dimension();
     int indexToVary = indeces.size();
     if (indeces.size() > 0)
         ::memcpy(ind, indeces.constData(), indeces.size() * sizeof(int));
@@ -600,13 +600,13 @@ QString KumVariableItem::array1Representation(
         if (i > start)
             result += ", ";
         ind[indexToVary] = i;
-        if (variable_->hasValue(ind)) {
-            QString itm = QString::fromStdWString(variable_->toString(ind));
-            if (variable_->baseType() == Bytecode::VT_string) {
+        if (_variable->hasValue(ind)) {
+            QString itm = QString::fromStdWString(_variable->toString(ind));
+            if (_variable->baseType() == Bytecode::VT_string) {
                 itm.push_back('"');
                 itm.push_front('"');
             }
-            else if (variable_->baseType() == Bytecode::VT_char) {
+            else if (_variable->baseType() == Bytecode::VT_char) {
                 itm.push_back('\'');
                 itm.push_front('\'');
             }
@@ -636,7 +636,7 @@ QString KumVariableItem::array2Representation(
     QString result = "{";
     readItems = 0;
     int bounds[7];
-    variable_->getEffectiveBounds(bounds);
+    _variable->getEffectiveBounds(bounds);
     int indexToVary = indeces.size();
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
@@ -668,7 +668,7 @@ QString KumVariableItem::array3Representation(
     QString result = "{";
     readItems = 0;
     int bounds[7];
-    variable_->getEffectiveBounds(bounds);
+    _variable->getEffectiveBounds(bounds);
     int indexToVary = indeces.size();
     int start = bounds[2 * indexToVary];
     int end = bounds[2 * indexToVary + 1];
@@ -695,17 +695,17 @@ QString KumVariableItem::array3Representation(
 QString KumVariableItem::arrayRepresentation() const
 {
     QString result;
-    int dim = variable_->dimension();
-    int realDim = dim - indeces_.size();
+    int dim = _variable->dimension();
+    int realDim = dim - _indeces.size();
     int dummy;
     if (realDim == 1) {
-        result = array1Representation(indeces_, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
+        result = array1Representation(_indeces, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
     }
     else if (realDim == 2) {
-        result = array2Representation(indeces_, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
+        result = array2Representation(_indeces, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
     }
     else if (realDim == 3) {
-        result = array3Representation(indeces_, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
+        result = array3Representation(_indeces, MAXIMUM_SHOWN_TABLE_ITEMS_COUNT, dummy);
     }
     return result;
 }
@@ -714,29 +714,29 @@ QString KumVariableItem::arrayRepresentation() const
 QString KumVariableItem::valueRepresentation() const
 {
     QString result;
-    if (type_ == Variable && hasValue()) {
-        if (variable_->dimension() == 0) {
-            result = QString::fromStdWString(variable_->toString());
-            if (variable_->baseType() == Bytecode::VT_string) {
+    if (_type == Variable && hasValue()) {
+        if (_variable->dimension() == 0) {
+            result = QString::fromStdWString(_variable->toString());
+            if (_variable->baseType() == Bytecode::VT_string) {
                 result.push_back('"');
                 result.push_front('"');
             }
-            else if (variable_->baseType() == Bytecode::VT_char) {
+            else if (_variable->baseType() == Bytecode::VT_char) {
                 result.push_back('\'');
                 result.push_front('\'');
             }
         }
     }
-    else if (type_ == ArrayItem && hasValue()) {
+    else if (_type == ArrayItem && hasValue()) {
         int ind[4];
-        ::memcpy(ind, indeces_.data(), indeces_.size() * sizeof(int));
-        ind[3] = indeces_.size();
-        result += QString::fromStdWString(variable_->toString(ind));
-        if (variable_->baseType() == Bytecode::VT_string) {
+        ::memcpy(ind, _indeces.data(), _indeces.size() * sizeof(int));
+        ind[3] = _indeces.size();
+        result += QString::fromStdWString(_variable->toString(ind));
+        if (_variable->baseType() == Bytecode::VT_string) {
             result.push_back('"');
             result.push_front('"');
         }
-        else if (variable_->baseType() == Bytecode::VT_char) {
+        else if (_variable->baseType() == Bytecode::VT_char) {
             result.push_back('\'');
             result.push_front('\'');
         }
@@ -746,14 +746,14 @@ QString KumVariableItem::valueRepresentation() const
 
 bool KumVariableItem::hasValue() const
 {
-    if (type_ == Variable) {
-        return variable_->hasValue();
+    if (_type == Variable) {
+        return _variable->hasValue();
     }
-    else if (type_ == ArrayItem) {
+    else if (_type == ArrayItem) {
         int ind[4];
-        ind[3] = indeces_.size();
-        memcpy(ind, indeces_.data(), indeces_.size() * sizeof(int));
-        return variable_->hasValue(ind);
+        ind[3] = _indeces.size();
+        memcpy(ind, _indeces.data(), _indeces.size() * sizeof(int));
+        return _variable->hasValue(ind);
     }
     else {
         return false;
@@ -762,8 +762,8 @@ bool KumVariableItem::hasValue() const
 
 bool KumVariableItem::isReference() const
 {
-    if (variable_) {
-        return variable_->isReference();
+    if (_variable) {
+        return _variable->isReference();
     }
     else {
         return false;
@@ -771,42 +771,42 @@ bool KumVariableItem::isReference() const
 }
 
 KumVariableItem::KumVariableItem(TableOfVariables *table, int row)
-    : type_(GlobalsTable)
-    , variable_(nullptr)
-    , table_(table)
-    , tableNumber_(row)
-    , framePointer_(0)
+    : _type(GlobalsTable)
+    , _variable(nullptr)
+    , _table(table)
+    , _tableNumber(row)
+    , _framePointer(0)
 {
 }
 
 KumVariableItem::KumVariableItem(TableOfVariables *table, int row, const QString &name)
-    : type_(LocalsTable)
-    , variable_(nullptr)
-    , table_(table)
-    , tableNumber_(row)
-    , algorithmName_(name)
-    , framePointer_(0)
+    : _type(LocalsTable)
+    , _variable(nullptr)
+    , _table(table)
+    , _tableNumber(row)
+    , _algorithmName(name)
+    , _framePointer(0)
 {
 }
 
 KumVariableItem::KumVariableItem(const VM::Variable *variable, int row,
                                  TableOfVariables * table)
-    : type_(Variable)
-    , variable_(variable)
-    , table_(table)
-    , tableNumber_(row)
-    , framePointer_(0)
+    : _type(Variable)
+    , _variable(variable)
+    , _table(table)
+    , _tableNumber(row)
+    , _framePointer(0)
 {
 }
 
 KumVariableItem::KumVariableItem(const VM::Variable *variable, int row,
                                  const QVector<int> &indeces)
-    : type_(ArrayItem)
-    , variable_(variable)
-    , table_(nullptr)
-    , tableNumber_(row)
-    , indeces_(indeces)
-    , framePointer_(0)
+    : _type(ArrayItem)
+    , _variable(variable)
+    , _table(nullptr)
+    , _tableNumber(row)
+    , _indeces(indeces)
+    , _framePointer(0)
 {
 }
 

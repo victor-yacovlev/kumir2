@@ -750,6 +750,11 @@ QScrollBar * EditorInstance::scrollBar(Qt::Orientation orientation)
     }
 }
 
+QFont EditorInstance::editorFont() const
+{
+    return plane_->font();
+}
+
 Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const
 {
     typedef Shared::Analizer::ApiHelpItem ResType;

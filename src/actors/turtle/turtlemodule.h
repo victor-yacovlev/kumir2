@@ -36,7 +36,11 @@ namespace ActorTurtle {
         TurtlePen(QGraphicsItem *parent, const QString svgFileName): QGraphicsItem(parent)
         {
             turtle=new QGraphicsSvgItem(svgFileName);
-            turtle->scale(0.01,0.01);
+//            turtle->scale(0.01,0.01);
+
+            // See Qt documentation!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            turtle->setTransform(QTransform::fromScale(0.01, 0.01), true);
+
             QMatrix mat;
             mat.rotate(180);
             mat.scale(0.5,0.5);

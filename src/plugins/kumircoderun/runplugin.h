@@ -24,7 +24,7 @@ public:
     explicit KumirRunPlugin();
     ~KumirRunPlugin();
 
-
+    RunMode currentRunMode() const;
     bool canStepOut() const;
     void terminateAndWaitForStopped();
     bool loadProgram(const RunnableProgram &sourceInfo);
