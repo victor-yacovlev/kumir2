@@ -1264,7 +1264,7 @@ EXTERN void Files_read_open(__kumir_scalar * result, const __kumir_scalar * name
 {
     __kumir_check_value_defined(name);
     std::wstring wsname(name->data.s);
-    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Read);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Read, true, 0);
     *result = __kumir_file_type_to_scalar(f);
 }
 
@@ -1272,7 +1272,7 @@ EXTERN void Files_write_open(__kumir_scalar * result, const __kumir_scalar * nam
 {
     __kumir_check_value_defined(name);
     std::wstring wsname(name->data.s);
-    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Write);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Write, true, 0);
     *result = __kumir_file_type_to_scalar(f);
 }
 
@@ -1280,7 +1280,7 @@ EXTERN void Files_append_open(__kumir_scalar  * result, const __kumir_scalar * n
 {
     __kumir_check_value_defined(name);
     std::wstring wsname(name->data.s);
-    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Append);
+    Kumir::FileType f = Kumir::Files::open(wsname, Kumir::FileType::Append, true, 0);
     *result = __kumir_file_type_to_scalar(f);
 }
 
