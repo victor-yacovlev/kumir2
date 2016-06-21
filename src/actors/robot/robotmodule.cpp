@@ -344,7 +344,7 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            upCharItm->setPos(upLeftCornerX+1,upLeftCornerY-2);
+            upCharItm->setPos(upLeftCornerX,upLeftCornerY-2);
             upCharItm->setZValue(1);
         }
     }
@@ -362,9 +362,9 @@ namespace ActorRobot {
         if (downChar.isPrint() && downChar!=' ') {
             downCharItm=Scene->addText(downChar,font);
             downCharItm->setDefaultTextColor(TextColor);
-            downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-17);
+            downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-17);
             #ifdef Q_OS_WIN
-                downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-19);
+                downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-19);
             #endif
             downCharItm->setZValue(1);
         }
