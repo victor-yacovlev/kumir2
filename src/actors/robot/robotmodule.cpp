@@ -344,7 +344,7 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            upCharItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
+            upCharItm->setPos(upLeftCornerX+1,upLeftCornerY);
             upCharItm->setZValue(1);
         }
     }
@@ -362,7 +362,7 @@ namespace ActorRobot {
         if (downChar.isPrint() && downChar!=' ') {
             downCharItm=Scene->addText(downChar,font);
             downCharItm->setDefaultTextColor(TextColor);
-            downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
+            downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-17);
             downCharItm->setZValue(1);
         }
     }
@@ -380,7 +380,7 @@ namespace ActorRobot {
             }
             markItm=Scene->addText(QChar(9787),font);
             markItm->setDefaultTextColor(TextColor);
-            markItm->setPos(upLeftCornerX+size-(size/3)-3,upLeftCornerY-15+size);
+            markItm->setPos(upLeftCornerX+size-(size/3)-5,upLeftCornerY-17+size);
             markItm->setZValue(1);
         }
     }

@@ -709,14 +709,14 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                // lastStep=DRAW->NetStepX();
             }else
             {
-                if(pixel_per_cell>15 && !net && pixel_per_cell<150)
+                if(pixel_per_cell>15 && !net && pixel_per_cell<this->width()*2)
                 {
                  net=true;
                     smallNetLabel->hide();
                     DRAW->setNetStepX(lastStep);
                     DRAW->setNetStepY(lastStep);
                 }
-                if(pixel_per_cell>150)
+                if(pixel_per_cell>this->width()*2)
                 {
                    net=false; 
                 }
