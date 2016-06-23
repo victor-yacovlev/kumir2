@@ -4290,7 +4290,10 @@ void RobotModule::loadEnv()
         //QString	RobotFile=dialog.selectedFiles().first();
         QFileInfo info(RobotFile);
         QDir dir=info.absoluteDir();
-        QImage image(field->width()*3, field->height()*3, QImage::Format_ARGB32_Premultiplied);
+        
+        int cellSize=robotSettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt();
+        float multip=robotSettings()->value("ImageSize",FIELD_SIZE_SMALL).toFloat()/cellSize;
+        QImage image(field->width()*multip, field->height()*multip, QImage::Format_ARGB32_Premultiplied);
         QPainter painter(&image);
         field->render(&painter);
         image.save(RobotFile);

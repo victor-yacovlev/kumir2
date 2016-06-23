@@ -226,6 +226,11 @@
 			"type": "color",
 			"default": "#00008C",
 			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
+		},
+				"ImageSize": {
+			"type": "int",
+			"default": "50",
+			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
 		}
 	}
 }
