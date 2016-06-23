@@ -3595,7 +3595,8 @@ void RobotModule::createGui()
     connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv()));
     connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
     connect(m_actionRobotAutoWindowSize,SIGNAL(triggered()) , this, SLOT(setWindowSize()));
-
+    connect(m_actionRobotSave2Png,SIGNAL(triggered()) , this, SLOT(save2png()));
+    
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
@@ -4280,6 +4281,19 @@ void RobotModule::loadEnv()
     void RobotModule::resetEnv()
     {
         reset();
+    }
+    void RobotModule::save2png()
+    {
+        QString	RobotFile=QFileDialog::getSaveFileName(mainWidget(), QString::fromUtf8 ("Сохранить как изображение"), curDir, "(*.png)");
+        
+        
+        //QString	RobotFile=dialog.selectedFiles().first();
+        QFileInfo info(RobotFile);
+        QDir dir=info.absoluteDir();
+        QImage image(field->width()*3, field->height()*3, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&image);
+        field->render(&painter);
+        image.save(RobotFile);
     }
     void RobotModule::prepareNewWindow()
     {

@@ -527,6 +527,7 @@ namespace ActorRobot {
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
         void resetEnv();
+        void save2png();
         void saveEnv();
         void editEnv();
         void newEnv();

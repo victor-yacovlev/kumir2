@@ -178,6 +178,13 @@
 		            				    },
 						"icon": "file-save-as"
 		    },
+		     {
+						"title": {
+							"ascii": "Save2Png.", 
+		                    "ru_RU": "Сохранить как изображение…"
+		            				    },
+						"icon": "file-save-as"
+		    },
                           {
                           "title": {
                           "ascii": "New Environment...", 
