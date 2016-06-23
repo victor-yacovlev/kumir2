@@ -381,11 +381,12 @@ namespace ActorRobot {
                 delete markItm;
                 markItm = NULL;
             }
-            markItm=Scene->addText(QChar(9787),font);
+          //  markItm=Scene->addText(QChar(9787),font);
+            markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
-            markItm->setPos(upLeftCornerX+size-(size/3)-5,upLeftCornerY-17+size);
+            markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-20+size);
             #ifdef Q_OS_WIN
-                markItm->setPos(upLeftCornerX+size-(size/3)-5,upLeftCornerY-19+size);
+                markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-23+size);
             #endif
             markItm->setZValue(1);
         }
