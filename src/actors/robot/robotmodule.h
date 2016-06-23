@@ -550,7 +550,7 @@ namespace ActorRobot {
         RoboField * startField;
         bool animation;
         RobotView * view;
-        QString curDir;
+        QString curDir,curPDir;
         bool pressed;
         bool inDock;
         QPushButton * btnOK1;

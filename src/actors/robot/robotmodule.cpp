@@ -384,9 +384,9 @@ namespace ActorRobot {
           //  markItm=Scene->addText(QChar(9787),font);
             markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
-            markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-20+size);
+            markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-18+size);
             #ifdef Q_OS_WIN
-                markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-23+size);
+                markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-20+size);
             #endif
             markItm->setZValue(1);
         }
@@ -1594,7 +1594,7 @@ namespace ActorRobot {
         
         for (int i = -1; i < rows(); i++)//Horizontalnie linii
         {
-            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2,Pen));
+            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL+5, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2,Pen));
             setka.last()->setZValue(0.5);
         }
        
@@ -3778,6 +3778,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         if(sett->value("Robot/Dir").isValid())
         {
             curDir=sett->value("Robot/Dir").toString();
+            curPDir=curDir;
         }
         // setWindowSize();
     }
@@ -4285,15 +4286,17 @@ void RobotModule::loadEnv()
     }
     void RobotModule::save2png()
     {
-        QString	RobotFile=QFileDialog::getSaveFileName(mainWidget(), QString::fromUtf8 ("Сохранить как изображение"), curDir, "(*.png)");
+        QString	RobotFile=QFileDialog::getSaveFileName(mainWidget(), QString::fromUtf8 ("Сохранить как изображение"), curPDir, "(*.png)");
         
         
         //QString	RobotFile=dialog.selectedFiles().first();
         QFileInfo info(RobotFile);
         QDir dir=info.absoluteDir();
-        
+        curPDir=dir.path();
+
         int cellSize=robotSettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt();
         float multip=robotSettings()->value("ImageSize",FIELD_SIZE_SMALL).toFloat()/cellSize;
+        
         QImage image(field->width()*multip, field->height()*multip, QImage::Format_ARGB32_Premultiplied);
         QPainter painter(&image);
         field->render(&painter);
