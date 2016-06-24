@@ -344,7 +344,8 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            upCharItm->setPos(upLeftCornerX,upLeftCornerY-2);
+            float lettShift=sett->value("LettShift","1").toFloat();
+            upCharItm->setPos(upLeftCornerX,upLeftCornerY-2-lettShift);
             upCharItm->setZValue(1);
         }
     }
@@ -362,9 +363,10 @@ namespace ActorRobot {
         if (downChar.isPrint() && downChar!=' ') {
             downCharItm=Scene->addText(downChar,font);
             downCharItm->setDefaultTextColor(TextColor);
-            downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-17);
+            float lettShift=sett->value("LettShift","1").toFloat();
+            downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-17-lettShift);
             #ifdef Q_OS_WIN
-                downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-19);
+                downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-19-lettShift);
             #endif
             downCharItm->setZValue(1);
         }
@@ -381,12 +383,14 @@ namespace ActorRobot {
                 delete markItm;
                 markItm = NULL;
             }
+            float xshift=sett->value("MarkShiftLeft","1").toFloat();
+             float yshift=sett->value("MarkShift","1").toFloat();
           //  markItm=Scene->addText(QChar(9787),font);
             markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
-            markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-18+size);
+            markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-18+size-yshift);
             #ifdef Q_OS_WIN
-                markItm->setPos(upLeftCornerX+size-(size/3)-2,upLeftCornerY-20+size);
+                markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-20+size-yshift);
             #endif
             markItm->setZValue(1);
         }

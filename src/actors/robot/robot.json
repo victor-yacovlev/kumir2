@@ -164,6 +164,13 @@
 		                },
 						"icon": "file-save-as"
 					},
+						     {
+						"title": {
+							"ascii": "Save2Png.", 
+		                    "ru_RU": "Сохранить как изображение…"
+		            				    },
+						"icon": "file-save-as"
+		    },
                     {
 						"title": {
 							"ascii": "Edit Environment...", 
@@ -178,13 +185,7 @@
 		            				    },
 						"icon": "file-save-as"
 		    },
-		     {
-						"title": {
-							"ascii": "Save2Png.", 
-		                    "ru_RU": "Сохранить как изображение…"
-		            				    },
-						"icon": "file-save-as"
-		    },
+	
                           {
                           "title": {
                           "ascii": "New Environment...", 
@@ -227,7 +228,22 @@
 			"default": "#00008C",
 			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
 		},
-				"ImageSize": {
+		"LettShift": {
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг символов вверх/вниз"}
+		},		
+		"MarkShift": {
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Marks Shift", "ru_RU": "Здвиг точки вверх/вниз"}
+		},
+		"MarkShiftLeft": {
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг точки право/лево"}
+		},
+			"ImageSize": {
 			"type": "int",
 			"default": "50",
 			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
