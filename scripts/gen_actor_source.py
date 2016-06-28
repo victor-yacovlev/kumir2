@@ -1086,6 +1086,10 @@ class SettingsEntry:
         else:
             self._maximum = None
         self._title = Name(json_entry["title"])
+        if "order" in json_entry:
+            self._order = json_entry["order"]
+        else:
+            self._order = 99999999
 
     def get_entry_cpp_implementation(self, map_to_add):
         """
@@ -1123,9 +1127,10 @@ class SettingsEntry:
     entry.defaultValue = %s;
     entry.minimumValue = %s;
     entry.maximumValue = %s;
+    entry.displayOrder = %s;
     %s["%s"] = entry;
 }
-        """ % (title, typee, default, minimum, maximum, map_to_add, self._key)
+        """ % (title, typee, default, minimum, maximum, self._order, map_to_add, self._key)
 
 
 class Settings:

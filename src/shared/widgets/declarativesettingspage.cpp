@@ -15,8 +15,16 @@ DeclarativeSettingsPage::DeclarativeSettingsPage(
     pImpl_->entries_ = entries;
     QVBoxLayout * layout = new QVBoxLayout();
     setLayout(layout);
-    foreach (const QString &key, entries.keys()) {
-        const Entry entry = entries[key];
+    QList<Entry> entriesArray;
+    entriesArray.reserve(entries.size());
+    Q_FOREACH(const QString &key, entries.keys()) {
+        Entry entry = entries[key];
+        entry.key = key;
+        entriesArray.push_back(entry);
+    }
+    qSort(entriesArray);
+    Q_FOREACH(const Entry & entry, entriesArray) {
+        const QString & key = entry.key;
         if (entry.type==Integer) {
             pImpl_->addIntegerField(key, entry);
         }
