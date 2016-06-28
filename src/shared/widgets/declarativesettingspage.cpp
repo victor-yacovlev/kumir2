@@ -20,6 +20,9 @@ DeclarativeSettingsPage::DeclarativeSettingsPage(
         if (entry.type==Integer) {
             pImpl_->addIntegerField(key, entry);
         }
+        else if (entry.type==Double) {
+            pImpl_->addRealField(key, entry);
+        }
         else if (entry.type==Color) {
             pImpl_->addColorField(key, entry);
         }

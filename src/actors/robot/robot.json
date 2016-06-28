@@ -244,7 +244,7 @@
 			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг точки право/лево"}
 		},
 			"ImageSize": {
-			"type": "int",
+            "type": "double",
 			"default": "50",
 			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
 		}
