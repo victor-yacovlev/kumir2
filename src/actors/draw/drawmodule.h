@@ -53,8 +53,8 @@ namespace ActorDraw {
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
             horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
             
-            verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
-            verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+           // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+          //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
            
         }
     protected:

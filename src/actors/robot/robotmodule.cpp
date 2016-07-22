@@ -390,7 +390,7 @@ namespace ActorRobot {
             markItm->setDefaultTextColor(TextColor);
             markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-18+size-yshift);
             #ifdef Q_OS_WIN
-                markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-20+size-yshift);
+                markItm->setPos(upLeftCornerX+size-(size/3)-xshift,upLeftCornerY-20+size-yshift);
             #endif
             markItm->setZValue(1);
         }
