@@ -527,6 +527,7 @@ namespace ActorRobot {
         void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
         void loadEnv();
         void resetEnv();
+        void save2png();
         void saveEnv();
         void editEnv();
         void newEnv();
@@ -549,7 +550,7 @@ namespace ActorRobot {
         RoboField * startField;
         bool animation;
         RobotView * view;
-        QString curDir;
+        QString curDir,curPDir;
         bool pressed;
         bool inDock;
         QPushButton * btnOK1;

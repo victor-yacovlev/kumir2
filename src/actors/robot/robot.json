@@ -164,6 +164,13 @@
 		                },
 						"icon": "file-save-as"
 					},
+						     {
+						"title": {
+							"ascii": "Save2Png.", 
+		                    "ru_RU": "Сохранить как изображение…"
+		            				    },
+						"icon": "file-save-as"
+		    },
                     {
 						"title": {
 							"ascii": "Edit Environment...", 
@@ -178,6 +185,7 @@
 		            				    },
 						"icon": "file-save-as"
 		    },
+	
                           {
                           "title": {
                           "ascii": "New Environment...", 
@@ -191,34 +199,64 @@
 	},
 	"settings": {
 		"TextColor": {
+            "order": 1,
 			"type": "color",
 			"default": "#FFFFFF",
 			"title": {"ascii": "Text color", "ru_RU": "Цвет смиволов"}
 		},
 		"LineColor": {
+            "order": 2,
 			"type": "color",
 			"default": "#C8C800",
 			"title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
 		},
 		"LineColorEdit": {
+            "order": 3,
 			"type": "color",
 			"default": "#C8C800",
 			"title": {"ascii": "Grid  color (edit mode)", "ru_RU": "Цвет сетки (редактирование)"}
 		},
 		"WallColor": {
+            "order": 4,
 			"type": "color",
 			"default": "#C8C800",
 			"title": {"ascii": "Wall color", "ru_RU": "Цвет стен"}
 		},
 		"NormalColor": {
+            "order": 5,
 			"type": "color",
 			"default": "#289628",
 			"title": {"ascii": "Background color", "ru_RU": "Цвет поля"}
 		},
 		"EditColor": {
+            "order": 6,
 			"type": "color",
 			"default": "#00008C",
 			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
+		},
+		"LettShift": {
+            "order": 7,
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг символов вверх/вниз"}
+		},		
+		"MarkShift": {
+            "order": 8,
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Marks Shift", "ru_RU": "Здвиг точки вверх/вниз"}
+		},
+		"MarkShiftLeft": {
+            "order": 9,
+			"type": "int",
+			"default": "0",
+			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг точки право/лево"}
+		},
+			"ImageSize": {
+            "order": 10,
+            "type": "double",
+			"default": "50",
+			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
 		}
 	}
 }

@@ -164,6 +164,7 @@ namespace ActorDraw {
         texts.last()->setScale(psizeF);
         texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
         texts.last()->setPen(QPen(color));
+        texts.last()->setZValue(90);
         return widthChar;
     };
     void DrawScene::DestroyNet()
@@ -708,14 +709,14 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                // lastStep=DRAW->NetStepX();
             }else
             {
-                if(pixel_per_cell>15 && !net && pixel_per_cell<150)
+                if(pixel_per_cell>15 && !net && pixel_per_cell<this->width()*2)
                 {
                  net=true;
                     smallNetLabel->hide();
                     DRAW->setNetStepX(lastStep);
                     DRAW->setNetStepY(lastStep);
                 }
-                if(pixel_per_cell>150)
+                if(pixel_per_cell>this->width()*2)
                 {
                    net=false; 
                 }
@@ -943,7 +944,7 @@ void DrawModule::showNavigator(bool state)
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
-    QBrush curBackground=QBrush(QColor(settings->value("Draw/BackColor","lightgreen").toString()));
+    QBrush curBackground=QBrush(QColor(settings->value("BackColor","lightgreen").toString()));
     
     CurScene->setBackgroundBrush (curBackground);
     netColor=QColor(settings->value("LineColor","gray").toString());

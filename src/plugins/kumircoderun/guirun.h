@@ -127,7 +127,9 @@ signals:
     void requestInput(const QString & format);
     void requestOutput(const QString & data);
 private:
-    bool inputScalarArgument(const QString & message,
+    bool inputScalarArgument(const QString & name,
+                             const QString & indeces,
+                             const QString & messageSuffix,
                              const QString & format,
                              AnyValue & value);
 private slots:

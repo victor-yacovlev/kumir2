@@ -5,6 +5,10 @@
 #include "extensionsystem/pluginmanager.h"
 #include "interfaces/actorinterface.h"
 
+#define DO_NOT_DECLARE_STATIC
+#include "shared/vm/vm.hpp"
+#include "shared/vm/variant.hpp"
+
 namespace KumirCodeRun {
 
 namespace Gui {
@@ -91,7 +95,7 @@ bool InputFunctor::operator ()(VariableReferencesList references, Kumir::String 
         else if (references[i].baseType()==VT_record) {
             const Variable & variable = references[i];
             const String typeFullName =
-                    variable.recordModuleLocalizedName()+
+                    Kumir::Core::fromAscii(variable.recordModuleAsciiName())+
                     Kumir::Core::fromAscii("::")+
                     Kumir::Core::fromAscii(variable.recordClassAsciiName())+
                     Kumir::Core::fromAscii("::")+
@@ -340,9 +344,13 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
         format.push_back('c');
     else if (reference.baseType()==VT_string)
         format.push_back('s');
+    else if (VT_record == reference.baseType()
+             && 0==reference.recordModuleAsciiName().length()
+             && "file"==reference.recordClassAsciiName())
+        format.push_back('f');
     else if (reference.baseType()==VT_record) {
         const String typeFullName =
-                reference.recordModuleLocalizedName()+
+                Kumir::Core::fromAscii(reference.recordModuleAsciiName())+
                 Kumir::Core::fromAscii("::")+
                 Kumir::Core::fromAscii(reference.recordClassAsciiName())+
                 Kumir::Core::fromAscii("::")+
@@ -352,7 +360,7 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
 
     if (reference.dimension()==0) {
         AnyValue val;
-        if (inputScalarArgument(QString::fromUtf8("Введите %1: ").arg(QString::fromStdWString(reference.name())),format,val))
+        if (inputScalarArgument(QString::fromStdWString(reference.name()), "","",format,val))
             reference.setValue(val);
     }
     else if (reference.dimension()==1) {
@@ -360,7 +368,7 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
         reference.getEffectiveBounds(bounds);
         for (int x=bounds[0]; x<=bounds[1]; x++) {
             AnyValue val;
-            if (inputScalarArgument(QString::fromUtf8("Введите %1[%2]: ").arg(QString::fromStdWString(reference.name())).arg(x),format,val))
+            if (inputScalarArgument(QString::fromStdWString(reference.name()), QString::fromLatin1("[%1]: ").arg(x),"",format,val))
                 reference.setValue(x,val);
             else
                 return;
@@ -372,7 +380,7 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
         for (int y=bounds[0]; y<=bounds[1]; y++) {
             for (int x=bounds[2]; x<=bounds[3]; x++) {
                 AnyValue val;
-                if (inputScalarArgument(QString::fromUtf8("Введите %1[%2,%3]: ").arg(QString::fromStdWString(reference.name())).arg(y).arg(x),format,val))
+                if (inputScalarArgument(QString::fromStdWString(reference.name()), QString::fromLatin1("[%1,%2]: ").arg(y).arg(x),"",format,val))
                     reference.setValue(y,x,val);
                 else
                     return;
@@ -386,7 +394,7 @@ void GetMainArgumentFunctor::operator ()(Variable & reference, Kumir::String * e
             for (int y=bounds[2]; y<=bounds[3]; y++) {
                 for (int x=bounds[4]; x<=bounds[5]; x++) {
                     AnyValue val;
-                    if (inputScalarArgument(QString::fromUtf8("Введите %1[%2,%3,%4]: ").arg(QString::fromStdWString(reference.name())).arg(z).arg(y).arg(x),format,val))
+                    if (inputScalarArgument(QString::fromStdWString(reference.name()), QString::fromLatin1("[%1,%2,%3]: ").arg(z).arg(y).arg(x),"",format,val))
                         reference.setValue(z,y,x,val);
                     else
                         return;
@@ -424,11 +432,90 @@ void ReturnMainValueFunctor::setRunnerInstance(Run *runner)
 }
 
 bool GetMainArgumentFunctor::inputScalarArgument(
-        const QString &message,
+        const QString & name,
+        const QString & indeces,
+        const QString & messageSuffix,
         const QString & format,
         AnyValue &val
         )
 {
+    QString message;
+
+    if ("f" == format) {
+        static const QString FileNameSuffix = QString::fromUtf8(" (имя файла)");
+        static const QString FileModeSuffix = QString::fromUtf8(" (режим открытия: [ч]тение, [з]апись, [д]обавление)");
+
+        AnyValue fileNameValue;
+        QString fileName;
+        bool inputNameSuccess = false;
+        Q_FOREVER {
+            inputNameSuccess = inputScalarArgument(name, indeces, FileNameSuffix, "s", fileNameValue);
+            if (!inputNameSuccess)
+                return false;
+            fileName = QString::fromStdWString(fileNameValue.toString());
+            if (!QFile::exists(fileName)) {
+                emit requestOutput(trUtf8("Файл %1 не существует. Введите имя еще раз.\n").arg(fileName));
+            }
+            else {
+                break;
+            }
+        }
+
+        AnyValue fileModeValue;
+        QString fileMode;
+        static const QStringList ReadModes = QStringList()
+                << "read" << "r"
+                << QString::fromUtf8("чтение")
+                << QString::fromUtf8("ч");
+        static const QStringList WriteModes = QStringList()
+                << "write" << "w"
+                << QString::fromUtf8("запись")
+                << QString::fromUtf8("з");
+        static const QStringList AppendModes = QStringList()
+                << "append" << "a"
+                << QString::fromUtf8("добавление")
+                << QString::fromUtf8("д");
+        bool inputModeSuccess = false;
+        Q_FOREVER {
+            inputModeSuccess = inputScalarArgument(name, indeces, FileModeSuffix, "s", fileModeValue);
+            if (!inputModeSuccess)
+                return false;
+            fileMode = QString::fromStdWString(fileModeValue.toString());
+            Kumir::FileType::OpenMode openMode = Kumir::FileType::NotOpen;
+            if (ReadModes.contains(fileMode.trimmed().toLower()))
+                openMode = Kumir::FileType::Read;
+            if (WriteModes.contains(fileMode.trimmed().toLower()))
+                openMode = Kumir::FileType::Write;
+            if (AppendModes.contains(fileMode.trimmed().toLower()))
+                openMode = Kumir::FileType::Append;
+            if (Kumir::FileType::NotOpen == openMode) {
+                emit requestOutput(trUtf8("Неверный режим доступа. Введите еще раз.\n"));
+            }
+            else {
+                QFileInfo fi(fileName);
+                bool enoughtPermissions = false;
+                if (Kumir::FileType::Write == openMode || Kumir::FileType::Append == openMode)
+                    enoughtPermissions = fi.isWritable();
+                else if (Kumir::FileType::Read == openMode)
+                    enoughtPermissions = fi.isReadable();
+                if (!enoughtPermissions) {
+                    emit requestOutput(trUtf8("Недостаточно прав для доступа к файлу. Попробуйте другой режим.\n"));
+                }
+                else {
+                    Kumir::FileType file = Kumir::Files::open(fileName.toStdWString(), openMode, false, 0);
+                    VM::Record fileRecord = KumirVM::toRecordValue(file);
+                    val = AnyValue(fileRecord);
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    message = trUtf8("Введите %1%2%3: ").arg(name).arg(indeces).arg(messageSuffix);
+
+
     // Show message
     emit requestOutput(message);
 
@@ -454,16 +541,6 @@ bool GetMainArgumentFunctor::inputScalarArgument(
 
     val = Util::QVariantToValue(inputValues_.at(0), 0);
 
-//    if      (format[0]=='i')
-//        val = inputValues_[0].toInt();
-//    else if (format[0]=='r')
-//        val = inputValues_[0].toDouble();
-//    else if (format[0]=='b')
-//        val = inputValues_[0].toBool();
-//    else if (format[0]=='c')
-//        val = inputValues_[0].toChar().unicode();
-//    else if (format[0]=='s')
-//        val = inputValues_[0].toString().toStdWString();
     return true;
 }
 

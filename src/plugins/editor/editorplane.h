@@ -38,6 +38,7 @@ public:
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
+
 public slots:
     void selectAll();
     void copy();
@@ -48,6 +49,8 @@ public slots:
     void setLineHighlighted(int lineNo, const QColor & color, quint32 colStart, quint32 colEnd);
     void updateSettings(const QStringList & keys);
 protected:
+    enum MouseAreaPart { NoActionPart, LockSymbolPart, BreakpointPart, TextAreaPart, MarginLinePart, MarginPart };
+
     static QPolygon errorUnderline(int x, int y, int len);
     void dragEventHandler(QDragMoveEvent * e);
     void wheelEvent(QWheelEvent *);
@@ -59,6 +62,10 @@ protected:
     void focusInEvent(QFocusEvent *e);
     void focusOutEvent(QFocusEvent *e);
     bool canDrop(const QPoint &pos, const QMimeData * data) const;
+    uint leftTextAreaPosition() const;
+    uint rightTextAreaPosition() const;
+    uint lockSymbolWidth() const;
+    MouseAreaPart partAtPosition(const QPoint & pos) const;
     void mouseMoveEvent(QMouseEvent *e);
     void mousePressEvent(QMouseEvent *e);
     void mouseReleaseEvent(QMouseEvent *e);

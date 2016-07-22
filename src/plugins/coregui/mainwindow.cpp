@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <QSharedPointer>
+#include <QMessageBox>
 
 namespace CoreGUI {
 
@@ -460,9 +461,9 @@ void MainWindow::switchToRowFirstLayout()
     connect(ui->splitter, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
 
     centralSide_->setCollapsible(0, false);
-    centralSide_->setCollapsible(1, true);
-    secondarySide_->setCollapsible(0, true);
-    secondarySide_->setCollapsible(1, true);
+    centralSide_->setCollapsible(1, /*true*/ false);
+    secondarySide_->setCollapsible(0, /*true*/ false);
+    secondarySide_->setCollapsible(1, /*true*/ false);
     centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Vertical);
 }
@@ -482,7 +483,7 @@ void MainWindow::switchToColumnFirstLayout()
     ui->splitter->addWidget(centralSide_);
     ui->splitter->addWidget(secondarySide_);
     ui->splitter->setCollapsible(0, false);
-    ui->splitter->setCollapsible(1, true);
+    ui->splitter->setCollapsible(1, /*true*/ false);
 
     centralSide_->addComponent(tabWidget_, true);
     centralSide_->addComponent(consolePlace_, true);
@@ -521,9 +522,9 @@ void MainWindow::switchToColumnFirstLayout()
     connect(centralSide_, SIGNAL(splitterMoved(int,int)), this, SLOT(checkForConsoleHiddenBySplitter(int,int)));
 
     centralSide_->setCollapsible(0, false);
-    centralSide_->setCollapsible(1, true);
-    secondarySide_->setCollapsible(0, true);
-    secondarySide_->setCollapsible(1, true);
+    centralSide_->setCollapsible(1, /*true*/ false);
+    secondarySide_->setCollapsible(0, /*true*/ false);
+    secondarySide_->setCollapsible(1, /*true*/ false);
     centralSide_->setVisible(true);
     restoreSizes(visibleSizes, Qt::Horizontal);
 }
@@ -1959,7 +1960,6 @@ void MainWindow::fileOpen()
     const QString fileNameSuffix = analizer->defaultDocumentFileNameSuffix();
     filters << tr("%1 programs (*%2)").arg(languageName).arg(fileNameSuffix);
     if (!tabsDisabledFlag_) {
-        filters << tr("Web pages (*.html *.htm)");
         filters << tr("Text files (*.txt)");
     }
     filters << tr("All files (*)");
@@ -2177,6 +2177,24 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         QFileInfo f(url.toLocalFile());
         Shared::Editor::InstanceInterface * editor = nullptr;
         QString error;
+
+        if (f.size() > 100*1024) {
+            QMessageBox *bigFileWarning = new QMessageBox(
+                        QMessageBox::Warning,
+                        tr("Big size file open"),
+                                 tr(""
+                                    "You are about to open file of big size.\n"
+                                    "This might cause to make system work too slow or even freeze.\n"
+                                    "Are you sure?"
+                                    ""), QMessageBox::Open|QMessageBox::Cancel, this);
+            bigFileWarning->button(QMessageBox::Open)->setText(tr("Open anyway"));
+            bigFileWarning->button(QMessageBox::Cancel)->setText(tr("Do not open"));
+            if (bigFileWarning->exec() != QMessageBox::Open) {
+                bigFileWarning->deleteLater();
+                return nullptr;
+            }
+            bigFileWarning->deleteLater();
+        }
 
         editor = m_plugin->plugin_editor->loadDocument(url.toLocalFile(), &error);
 

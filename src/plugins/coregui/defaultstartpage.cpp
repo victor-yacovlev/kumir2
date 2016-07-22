@@ -141,6 +141,7 @@ void CoreGUI::DefaultStartPage::updateRecentFiles()
         const QString & name = names[i];
         const QString & path = paths[i];
         QPushButton * item = new QPushButton;
+        item->setCursor(Qt::PointingHandCursor);
         if (0 == i && 1 == names.size())
             item->setProperty("single", true);
         else if (0 == i)
@@ -175,6 +176,7 @@ void CoreGUI::DefaultStartPage::updateRecentCourses()
         const QString & name = names[i];
         const QString & path = paths[i];
         QPushButton * item = new QPushButton;
+        item->setCursor(Qt::PointingHandCursor);
         if (0 == i && 1 == names.size())
             item->setProperty("single", true);
         else if (0 == i)
@@ -205,6 +207,7 @@ void CoreGUI::DefaultStartPage::updateHelp()
     for (int i=0; i<names.size(); ++i) {
         const QString & name = names[i];
         QPushButton * item = new QPushButton;
+        item->setCursor(Qt::PointingHandCursor);
         if (0 == i && 1 == names.size())
             item->setProperty("single", true);
         else if (0 == i)

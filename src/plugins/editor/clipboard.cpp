@@ -93,6 +93,9 @@ ClipboardData Clipboard::content() const
         if (cl->mimeData()->hasText()) {
             result.type = ClipboardData::Text;
             result.text = cl->mimeData()->text();
+            // Microsoft PowerPoint compatibility hack:
+            // it uses character with code 11 as new line
+            result.text.replace(QChar(11), "\n");
         }
         if (cl->mimeData()->hasFormat(BlockMimeType)) {
             result.type = ClipboardData::Block;

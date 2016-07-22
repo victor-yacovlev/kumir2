@@ -34,7 +34,7 @@
     <message>
         <location filename="../../../src/shared/extensionsystem/declarativesettingspage.cpp" line="138"/>
         <source>Choose color</source>
-        <translation>Выберете цвет</translation>
+        <translation>Выберите цвет</translation>
     </message>
 </context>
 <context>
@@ -141,7 +141,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Укажите каталог пользователя&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Кумир хранит Ваши программы, файлы данных и временные файлы, а также настройки в одном каталоге.&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Выберете рабочий каталог для текущего сеанса.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Выберите рабочий каталог для текущего сеанса.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../../../src/shared/extensionsystem/switchworkspacedialog.ui" line="60"/>
@@ -161,7 +161,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../src/shared/extensionsystem/switchworkspacedialog.cpp" line="53"/>
         <source>Select directory for use as workspace</source>
-        <translation>Выберете каталог пользователя</translation>
+        <translation>Выберите каталог пользователя</translation>
     </message>
 </context>
 </TS>

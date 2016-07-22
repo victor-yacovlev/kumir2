@@ -102,8 +102,13 @@ void EditorInstance::loadDocument(QIODevice *device, const QString &fileNameSuff
     }
     else {
         QTextCodec * codec = QTextCodec::codecForName(sourceEncoding.toLatin1());
+        if (!codec)
+            codec = QTextCodec::codecForLocale();
+        QTextStream ts(bytes);
+        ts.setCodec(codec);
+        ts.setAutoDetectUnicode(true);
         data.hasHiddenText = false;
-        data.visibleText = codec->toUnicode(bytes);
+        data.visibleText = ts.readAll();
     }
     data.canonicalSourceLanguageName = fileNameSuffix;
     data.sourceUrl = sourceUrl;
@@ -743,6 +748,11 @@ QScrollBar * EditorInstance::scrollBar(Qt::Orientation orientation)
     else {
         return verticalScrollBar_;
     }
+}
+
+QFont EditorInstance::editorFont() const
+{
+    return plane_->font();
 }
 
 Shared::Analizer::ApiHelpItem EditorInstance::contextHelpItem() const

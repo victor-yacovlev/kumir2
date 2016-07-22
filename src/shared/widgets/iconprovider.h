@@ -20,11 +20,12 @@ class WIDGETS_EXPORT IconProvider
 public:
     static IconProvider* self();
     QIcon iconForName(const QString & name) const;
+    static QIcon iconFromPath(const QString &path, qreal intensivity = 1.0, const QSize &targetSize = QSize());
 
 private:
 
     void loadToCache(const QString & name) const;
-    static QImage loadAndPreprocess(const QString & fileName);
+    static QImage loadAndPreprocess(const QString & fileName, qreal intensivity = 1.0);
     static QImage centerizeToSize(const QImage & source, const QSize & size);
 
     IconProvider();    

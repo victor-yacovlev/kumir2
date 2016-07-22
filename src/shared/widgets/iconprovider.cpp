@@ -18,6 +18,19 @@ QIcon IconProvider::iconForName(const QString &name) const
     return cache_[name];
 }
 
+QIcon IconProvider::iconFromPath(const QString &path, qreal intensivity, const QSize &targetSize)
+{
+    QIcon result;
+    QImage image = loadAndPreprocess(path, intensivity);
+    if (targetSize.isValid()) {
+        result.addPixmap(QPixmap::fromImage(centerizeToSize(image, targetSize)));
+    }
+    else {
+        result.addPixmap(QPixmap::fromImage(image));
+    }
+    return result;
+}
+
 void IconProvider::loadToCache(const QString &name) const
 {
     QIcon icon;
@@ -43,7 +56,7 @@ void IconProvider::loadToCache(const QString &name) const
     cache_[name] = icon;
 }
 
-QImage IconProvider::loadAndPreprocess(const QString &fileName)
+QImage IconProvider::loadAndPreprocess(const QString &fileName, qreal intensivity)
 {
     QImage source(fileName);    
     QImage result;
@@ -79,9 +92,9 @@ QImage IconProvider::loadAndPreprocess(const QString &fileName)
             qreal sourceIntensivity = 1.0 -
                     (sourceRed + sourceGreen + sourceBlue) /
                     (3.0 * 255.0) ;
-            int resultRed = bgRed + normRed * sourceIntensivity;
-            int resultBlue = bgBlue + normBlue * sourceIntensivity;
-            int resultGreen = bgGreen + normGreen * sourceIntensivity;
+            int resultRed = bgRed + normRed * sourceIntensivity * intensivity;
+            int resultBlue = bgBlue + normBlue * sourceIntensivity * intensivity;
+            int resultGreen = bgGreen + normGreen * sourceIntensivity * intensivity;
             QRgb resultPixel;
             if (isGray) {
                 // Adopt to system theme

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#coding=utf-8
+# coding=utf-8
 
 """
 Generates and keeps up-to-date actor skeleton sources.
@@ -167,6 +167,7 @@ import string
 import os
 import inspect
 
+
 def string_join(lines, sep):
     result = ""
     for index, line in enumerate(lines):
@@ -175,12 +176,11 @@ def string_join(lines, sep):
         result += line
     return result
 
+
 # Hacks for Python 2/3 compatibility
 if sys.version_info.major >= 3:
     unicode = str
     string.join = string_join
-
-
 
 MODULE_CLASS_SUFFIX = "Module"
 MODULE_BASE_CLASS_SUFFIX = "ModuleBase"
@@ -228,6 +228,7 @@ def _add_indent(text):
     assert isinstance(text, unicode) or isinstance(text, str)
     lines = text.split('\n')
     indented_lines = map(lambda x: "    " + x, lines)
+    # noinspection PyUnresolvedReferences
     return string.join(indented_lines, '\n')
 
 
@@ -280,32 +281,32 @@ class Name:
         """
         result = ""
         next_is_capital = False
-        ascii = self.data["ascii"]
-        if ascii == "+":
+        ascii_name = self.data["ascii"]
+        if ascii_name == "+":
             return "OperatorPLUS"
-        elif ascii == "-":
+        elif ascii_name == "-":
             return "OperatorMINUS"
-        elif ascii == "*":
+        elif ascii_name == "*":
             return "OperatorASTERISK"
-        elif ascii == "**":
+        elif ascii_name == "**":
             return "OperatorPOWER"
-        elif ascii == "/":
+        elif ascii_name == "/":
             return "OperatorSLASH"
-        elif ascii == "=":
+        elif ascii_name == "=":
             return "OperatorEQUAL"
-        elif ascii == "<>":
+        elif ascii_name == "<>":
             return "OperatorNOTEQUAL"
-        elif ascii == "<":
+        elif ascii_name == "<":
             return "OperatorLESS"
-        elif ascii == ">":
+        elif ascii_name == ">":
             return "OperatorGREATER"
-        elif ascii.startswith(":="):
+        elif ascii_name.startswith(":="):
             return "OperatorASSIGN"
-        elif ascii == "input":
+        elif ascii_name == "input":
             return "OperatorINPUT"
-        elif ascii == "output":
+        elif ascii_name == "output":
             return "OperatorOUTPUT"
-        for c in ascii:
+        for c in ascii_name:
             if c == ' ':
                 next_is_capital = True
             elif c in "\\%":
@@ -473,6 +474,7 @@ class BaseType:
         else:
             name_decl = self.get_qt_name()
             fields_decl = ""
+            # noinspection PyTypeChecker
             for name, base_type in self._fields:
                 assert isinstance(name, Name)
                 assert isinstance(base_type, BaseType)
@@ -504,6 +506,7 @@ $fields
             result = "{\n"
             result += "    Shared::ActorInterface::CustomType custom;\n"
             result += "    Shared::ActorInterface::Record record;\n"
+            # noinspection PyTypeChecker
             for fieldName, fieldType in self._fields:
                 assert isinstance(fieldName, Name)
                 assert isinstance(fieldType, BaseType)
@@ -529,7 +532,9 @@ $fields
         For non-standard types creates kumir type declaration, an empty string otherwise
 
         :type variable_to_append:    str or None
-        :para variable_to_append:    C++ variable name (std::list or QList) to store result
+        :param variable_to_append:   C++ variable name (std::list or QList) to store result
+        :type variable_to_assign:    str or None
+        :param variable_to_assign:   C++ variable name to assign
         :rtype:     unicode
         :return:    an empty string for standard type or Shared::ActorInterface::CustomType implementation code
         """
@@ -541,6 +546,7 @@ $fields
             assert variable_to_assign or variable_to_append
             result = "{\n"
             result += "    Shared::ActorInterface::RecordSpecification recordSpec;\n"
+            # noinspection PyTypeChecker
             for field_name, field_type in self._fields:
                 assert isinstance(field_name, Name)
                 assert isinstance(field_type, BaseType)
@@ -550,7 +556,8 @@ $fields
                 if typee[0].lower() == 'q':
                     typee = typee[1:]
                 typee = "Shared::ActorInterface::" + typee[0].upper() + typee[1:]
-                result += "    recordSpec.record.push_back(Shared::ActorInterface::Field(QByteArray(\"%s\"), %s));\n" % (name, typee)
+                result += "    recordSpec.record.push_back(Shared::ActorInterface::Field(QByteArray(\"%s\"), %s));\n" \
+                          % (name, typee)
             result += "    recordSpec.asciiName = QByteArray(\"%s\");\n" % self._name.get_ascii_value()
             for key, value in self._name.data.items():
                 qlocale = None
@@ -577,6 +584,7 @@ $fields
         else:
             body_encode = ""
             body_decode = ""
+            # noinspection PyTypeChecker
             for index, (field_name, field_type) in enumerate(self._fields):
                 assert isinstance(field_name, Name)
                 assert isinstance(field_type, BaseType)
@@ -770,6 +778,7 @@ class Method:
             assert isinstance(rtype, BaseType)
             result += rtype.get_qt_name() + " "
         arg_declarations = map(lambda x: x.get_cpp_argument_declaration(), self.arguments)
+        # noinspection PyUnresolvedReferences
         result += "run" + self.name.get_camel_case_cpp_value() + "(" + string.join(arg_declarations, ", ") + ")"
         return result
 
@@ -781,13 +790,14 @@ class Method:
         return:     Kumir header to be parsed by Kumir analizer as text program
         """
         result = u"алг "
-        if not self.return_type is None:
+        if self.return_type is not None:
             rtype = self.return_type
             assert isinstance(rtype, BaseType)
             result += rtype.get_kumir_name() + " "
         result += self.name.get_kumir_value()
         if self.arguments:
             arg_declarations = map(lambda x: x.get_kumir_argument_declaration(), self.arguments)
+            # noinspection PyUnresolvedReferences
             result += "(" + string.join(arg_declarations, ", ") + ")"
         return result
 
@@ -803,7 +813,7 @@ class Method:
         kumir_return_type = ""
         retval = None
         result = "/* public slot */ "
-        if not self.return_type is None:
+        if self.return_type is not None:
             kumir_return_type = self.return_type.get_kumir_name() + " "
             if self.return_type.get_qt_name() == "qreal":
                 retval = "0.0"
@@ -1076,6 +1086,10 @@ class SettingsEntry:
         else:
             self._maximum = None
         self._title = Name(json_entry["title"])
+        if "order" in json_entry:
+            self._order = json_entry["order"]
+        else:
+            self._order = 99999999
 
     def get_entry_cpp_implementation(self, map_to_add):
         """
@@ -1113,9 +1127,10 @@ class SettingsEntry:
     entry.defaultValue = %s;
     entry.minimumValue = %s;
     entry.maximumValue = %s;
+    entry.displayOrder = %s;
     %s["%s"] = entry;
 }
-        """ % (title, typee, default, minimum, maximum, map_to_add, self._key)
+        """ % (title, typee, default, minimum, maximum, self._order, map_to_add, self._key)
 
 
 class Settings:
@@ -1251,10 +1266,12 @@ class CppClassBase:
                     continue  # pure virtual method
                 group_end_pos = first_line.index("*/")
                 group_name = first_line[2:group_end_pos].strip().replace(" ", "_")
+                # noinspection PyTypeChecker
                 return_type_end_pos = first_line.index(" " + self.class_name + "::", group_end_pos + 3)
                 return_type = first_line[group_end_pos + 2:return_type_end_pos].strip()
+                # noinspection PyTypeChecker
                 signature_begin_pos = first_line.index(self.class_name + "::", return_type_end_pos) + 2 + len(
-                    self.class_name)
+                        self.class_name)
                 signature = first_line[signature_begin_pos:]
                 assert group_name in ["public", "protected", "private", "public_slot", "protected_slot", "private_slot",
                                       "public_virtual", "public_virtual_slot", "public_static"]
@@ -1291,17 +1308,22 @@ class CppClassBase:
         if private_slots:
             private_slots = ["private Q_SLOTS:"] + private_slots
         if self.signals:
+            # noinspection PyUnresolvedReferences
             signals = string.join(["Q_SIGNALS:"] + list(map(lambda x: _add_indent(x + ";"), self.signals)), '\n')
         else:
             signals = ""
         if self.fields:
-            fields = string.join(["protected /* fields */:"] + list(map(lambda x: _add_indent(x + ";"), self.fields)), '\n')
+            # noinspection PyUnresolvedReferences
+            fields = string.join(["protected /* fields */:"] + list(map(lambda x: _add_indent(x + ";"), self.fields)),
+                                 '\n')
         else:
             fields = ""
         if self.base_classes:
+            # noinspection PyUnresolvedReferences
             base_classes = "\n    : public " + string.join(self.base_classes, "\n    , public ")
         else:
             base_classes = ""
+        # noinspection PyUnresolvedReferences
         substitutions = {
             "className": self.class_name,
             "classDeclarationPrefix": self.class_declaration_prefix,
@@ -1389,7 +1411,8 @@ class PluginCppClass(CppClassBase):
             "QVariantList optResults_",
             "ExtensionSystem::CommandLine commandLineParameters_"
         ]
-        self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)", "void notifyOnTemplateParametersChanged()"]
+        self.signals = ["void sync()", "void asyncRun(quint32, const QVariantList &)",
+                        "void notifyOnTemplateParametersChanged()"]
         self.class_declaration_prefix = """
     friend class %s;
     friend class %s;
@@ -1616,8 +1639,8 @@ private:
                 else:
                     body += "result.last().arguments.last().type = Shared::ActorInterface::RecordType;\n"
                     body += argument.base_type.get_cpp_record_spec_creation(
-                        None,
-                        "result.last().arguments.last().typeSpecification"
+                            None,
+                            "result.last().arguments.last().typeSpecification"
                     )
                 body += "result.last().arguments.last().dimension = %du;\n" % argument.dimension
 
@@ -1845,7 +1868,8 @@ private:
 }
         """ % self.class_name
 
-     # noinspection PyPep8Naming
+        # noinspection PyPep8Naming
+
     def terminateEvaluationCppImplementation(self):
         """
         Creates reset C++ implementation
@@ -1923,6 +1947,7 @@ private:
                         switch_body += "encode("
                 else:
                     switch_body += "    "
+                # noinspection PyUnresolvedReferences
                 switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
                 if method.return_type:
                     switch_body += ");\n"
@@ -2012,6 +2037,7 @@ private:
                         switch_body += "encode("
                 else:
                     switch_body += "    "
+                # noinspection PyUnresolvedReferences
                 switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
                 if method.return_type:
                     switch_body += ");\n"
@@ -2291,6 +2317,7 @@ private:
             """ % self.class_name
         else:
             plugins_list = map(lambda s: "\"Actor" + s + "\"", self._module.uses_list)
+            # noinspection PyUnresolvedReferences
             return """
 /* public */ QList<Shared::ActorInterface*> %s::usesList() const
 {
@@ -2451,6 +2478,7 @@ class AsyncThreadCppClass(CppClassBase):
                     switch_body += "encode("
             else:
                 switch_body += "    "
+            # noinspection PyUnresolvedReferences
             switch_body += "module_->run%s(%s)" % (method.name.get_camel_case_cpp_value(), string.join(args, ", "))
             if method.return_type:
                 switch_body += ");\n"
@@ -3533,6 +3561,7 @@ def create_plugin_spec_file(module, target_dir=""):
     requires = ""
     if module.uses_list:
         plugin_names = map(lambda s: "Actor" + s, module.uses_list)
+        # noinspection PyUnresolvedReferences
         requires = "requires = " + string.join(plugin_names, ", ")
     if module.gui:
         gui = "true"
@@ -3579,7 +3608,11 @@ if(${USE_QT} GREATER 4)
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
     include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-    set(MOC_PARAMS "-I/usr/include/qt5" "-I/usr/include/qt5/QtCore" "-I${_qt5Core_install_prefix}/include/QtCore" "-DQT_PLUGIN")
+    set(MOC_PARAMS "-I/usr/include/qt5"
+                   "-I/usr/include/qt5/QtCore"
+                   "-I${_qt5Core_install_prefix}/include/QtCore"
+                   "-DQT_PLUGIN"
+    )
     foreach(IDIR ${Qt5Core_INCLUDE_DIRS})
         set(MOC_PARAMS "-I${IDIR}" ${MOC_PARAMS})
     endforeach()

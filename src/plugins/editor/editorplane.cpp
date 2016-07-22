@@ -152,23 +152,11 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
         return;
     }
 
-    // The width of symbol "line locked" in teacher mode
-    const uint lockSymbolWidth = editor_->plugin_->teacherMode_ &&
-            editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
-
-    const uint breakpointPaneWidth = editor_->hasBreakpointSupport()
-            ? BREAKPOINT_PANE_WIDTH : 0u;
-
     // Left border of editable area
-    const uint editableAreaLeftBorder =
-            charWidth() * LEFT_MARGIN_SIZE +
-            lockSymbolWidth + breakpointPaneWidth/* + 8*/;
+    const int editableAreaLeftBorder = leftTextAreaPosition();
 
     // Right border of editable area
-    const uint editableAreaRightBorder =
-            editableAreaLeftBorder +
-            widthInChars() * charWidth() -
-            lockSymbolWidth ;
+    const int editableAreaRightBorder = rightTextAreaPosition();
 
     // Force text cursor (managed primarily from keyboard) to temporary hide
     editor_->cursor()->setViewMode(TextCursor::VM_Hidden);
@@ -181,9 +169,11 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
 
 
     // Perform an action depending on position where mouse clicked
+    const QPoint & mousePos = e->pos();
+    const MouseAreaPart partUnderMouse = partAtPosition(mousePos);
 
-    if (editor_->analizerInstance_ && editor_->plugin_->teacherMode_ &&
-            e->pos().x() < lockSymbolWidth)
+
+    if (LockSymbolPart == partUnderMouse)
     {
         // Toggle 'locked' line status
 
@@ -199,7 +189,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
                         );
         }
     }
-    else if (editor_->hasBreakpointSupport() && e->pos().x() < editableAreaLeftBorder) {
+    else if (BreakpointPart == partUnderMouse) {
         const uint realY = qMax(0, e->pos().y() - offset().y());
         const uint textY = realY / lineHeight();
         if (textY < editor_->document()->linesCount()) {
@@ -219,15 +209,12 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             }
         }
     }
-    else if (editor_->analizerInstance_ &&
-             // Pointer position near margin line
-             marginLineRect().contains(e->pos()))
+    else if (MarginLinePart == partUnderMouse)
     {
         // Begin drag margin line
         marginMousePressedPoint_ = e->pos();
     }
-    else if ( editableAreaLeftBorder < e->pos().x() &&
-              e->pos().x() < editableAreaRightBorder-2 )
+    else if ( TextAreaPart == partUnderMouse )
     {
         // There are two actions possible:
         //   1) click on a text;
@@ -271,14 +258,42 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             // Calculate text position
             const uint realX = qMax(0, e->pos().x() - offset().x());
             const uint realY = qMax(0, e->pos().y() - offset().y());
-            const uint textX = realX / charWidth();
+            uint textX = realX / charWidth();
+            const uint symbolXOffset = realX % charWidth();
+            if (symbolXOffset > charWidth() / 2)
+                textX += 1;
             const uint textY = realY / lineHeight();
 
 
 
             // Move text cursor into clicked position
             editor_->cursor()->moveTo(textY, textX);
+
+            // Check if clicked out of selected text
+            const uint indentSymbols = 2 * editor_->document()->indentAt(textY);
+            const uint realTextPosition = uint(textX - indentSymbols);
+            QList<bool> selectionMask = editor_->document()->selectionMaskAt(textY);
+            bool clearSelection = false;
+            if (textY >= editor_->document()->linesCount()) {
+                clearSelection = true;
+            }
+            else if (textX < indentSymbols) {
+                clearSelection = true;
+            }
+            else if (textX >= indentSymbols + selectionMask.size()) {
+                clearSelection = true;
+            }
+            else if (realTextPosition < selectionMask.size() && !selectionMask.at(realTextPosition)) {
+                clearSelection = true;
+            }
+
+            if (clearSelection) {
+                editor_->cursor()->removeSelection();
+                editor_->cursor()->removeRectSelection();
+            }
+
             editor_->document()->checkForCompilationRequest(QPoint(editor_->cursor()->column(), editor_->cursor()->row()));
+
 
             // Store text clicked position for possible
             // selection handling
@@ -402,6 +417,36 @@ void EditorPlane::leaveEvent(QEvent *e)
     QWidget::leaveEvent(e);
 }
 
+EditorPlane::MouseAreaPart EditorPlane::partAtPosition(const QPoint &pos) const
+{
+    if (pos.x() < 0 || pos.x() >= width())
+        return NoActionPart;
+    const uint x = uint(pos.x());
+    const uint lockAreaWidth = lockSymbolWidth();
+    const uint lineNoAreaWidth = charWidth() * LEFT_MARGIN_SIZE;
+    const uint breakpointAreaWidth = editor_->hasBreakpointSupport()
+            ? BREAKPOINT_PANE_WIDTH : 0u;
+    const uint textAreaLeftPadding = charWidth() / 2;
+    if (x < lockAreaWidth)
+        return LockSymbolPart;
+    if (breakpointAreaWidth > 0) {
+        if (x < lockAreaWidth + lineNoAreaWidth)
+            return NoActionPart;
+        if (x < lockAreaWidth + lineNoAreaWidth + breakpointAreaWidth - textAreaLeftPadding)
+            return BreakpointPart;
+    }
+    else {
+        if (x < lockAreaWidth + lineNoAreaWidth - textAreaLeftPadding)
+            return NoActionPart;
+    }
+    if (x < rightTextAreaPosition())
+        return TextAreaPart;
+    if (x < marginLineRect().right())
+        return MarginLinePart;
+    if (x < width())
+        return MarginPart;
+    return NoActionPart;
+}
 
 /** Handles mouse move (while button pressed or not) enent.
  * The reason to handle the event while button is not pressed is
@@ -427,6 +472,9 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
             editableAreaLeftBorder +
             widthInChars() * charWidth() -
             lockSymbolWidth ;
+
+    const QPoint & mousePosition = e->pos();
+    const MouseAreaPart partUnderMouse = partAtPosition(mousePosition);
 
     // Line number of highlighted (by mouseover) 'lock' symbol or -1 if none
     highlightedLockSymbolLineNumber_ = -1;
@@ -463,7 +511,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 delimeterLineRect.contains(e->pos());
     }
 
-    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_ && e->pos().x()<lockSymbolWidth) {
+    if (LockSymbolPart == partUnderMouse) {
         // Programs in teacher mode have visible 'lock' symbols to the left
         // of line numbers. Mouseover these symbols causes to highlight them
 
@@ -483,10 +531,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
     // Set proper mouse cursor shape depending on mouse pointer position
 
-    if (editor_->plugin_->teacherMode_ && editor_->analizerInstance_ &&
-            ( 0 <= e->pos().x() && e->pos().x() <= lockSymbolWidth ) &&
-            highlightedLockSymbolLineNumber_ != -1
-            )
+    if (LockSymbolPart == partUnderMouse && highlightedLockSymbolLineNumber_ != -1)
     {
         // Pointer is over 'lock' symbol and real text line exists near it.
         // It is possible to toggle 'locked' status, so pointer shape should
@@ -494,7 +539,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
         setCursor(Qt::PointingHandCursor);
     }
-    else if (e->pos().x()<editableAreaLeftBorder) {
+    else if (NoActionPart == partUnderMouse) {
         // Pointer is out of editable text, so there should be
         // regular 'arrow' shape instead of this widget default
         // 'text beam' shape
@@ -535,7 +580,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         // Just a simple regular case: mouse pointer is over editable area
         // or text margin, so restore cursor shape to its regular "text beam"
 
-        if (e->pos().x() < editableAreaRightBorder )
+        if (TextAreaPart == partUnderMouse)
             setCursor(Qt::IBeamCursor);
         else
             unsetCursor();
@@ -635,7 +680,10 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 const uint realY = qMax(0, e->pos().y() - offset().y());
 
                 // Translate pointer pixel-coordinates into text coordinates
-                const uint textX = realX / charWidth();
+                uint textX = realX / charWidth();
+                const uint symbolXoffset = realX % charWidth();
+                if (symbolXoffset > charWidth() / 2)
+                    textX += 1;
                 const uint textY = realY / lineHeight();
 
                 if (editor_->analizerInstance_==0 &&
@@ -1806,6 +1854,39 @@ bool EditorPlane::canDrop(const QPoint &pos, const QMimeData *data) const
     return result;
 }
 
+uint EditorPlane::leftTextAreaPosition() const
+{
+    uint result = lockSymbolWidth();
+
+    const uint breakpointPaneWidth = editor_->hasBreakpointSupport()
+            ? BREAKPOINT_PANE_WIDTH : 0u;
+
+    result += breakpointPaneWidth;
+
+    const uint lineNumbersPaneWidth = charWidth() * LEFT_MARGIN_SIZE;
+
+    result += lineNumbersPaneWidth;
+
+    return result;
+}
+
+uint EditorPlane::rightTextAreaPosition() const
+{
+    const uint left = leftTextAreaPosition();
+    const uint areaWidth = widthInChars() * charWidth();
+    const uint result = left + areaWidth;
+    return result;
+}
+
+uint EditorPlane::lockSymbolWidth() const
+{
+    const uint result = editor_->plugin_->teacherMode_ &&
+            editor_->analizerInstance_ ? LOCK_SYMBOL_WIDTH : 0;
+    return result;
+}
+
+
+
 
 void EditorPlane::dragEventHandler(QDragMoveEvent *e)
 {
@@ -2233,7 +2314,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     const uint startLine = qMax(0, rect.top() / int(lineHeight()) - 1);
     const uint endLine = qMax(0, rect.bottom() / int(lineHeight()) + 1);
 
-    uint lockSymbolOffset = editor_->plugin_->teacherMode_? LOCK_SYMBOL_WIDTH : 0;
+    uint lockSymbolOffset = lockSymbolWidth();
 
     bool drawBreakpoints = editor_->hasBreakpointSupport();
 
@@ -2247,13 +2328,13 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
     p->setBrush(palette().brush(QPalette::Window));
     p->drawRect(0,
                 0,
-                charWidth() * 4+ charWidth() / 2 + lockSymbolOffset + breakpointPaneWidth,
+                leftTextAreaPosition() - charWidth() / 2,
                 height()
                 );
 
     // Draw a small white border to the right
     p->setBrush(palette().brush(QPalette::Base));
-    p->drawRect(charWidth() * 4 + charWidth() / 2 + lockSymbolOffset + breakpointPaneWidth,
+    p->drawRect(leftTextAreaPosition() - charWidth() / 2,
                 0,
                 charWidth() / 2,
                 height()

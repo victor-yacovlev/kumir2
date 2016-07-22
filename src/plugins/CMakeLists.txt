@@ -8,7 +8,9 @@ if(${USE_QT} GREATER 4)
     # QtWebkit deprecated since Qt 5.5,
     # so do not build Browser
 else()
-    add_subdirectory(browser)
+    # Do not use WebKit to make unform
+    # Look'n'Feel to Qt5 version
+    # add_subdirectory(browser)
 endif()
 add_subdirectory(editor)
 add_subdirectory(coregui)

@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#include <extensionsystem/pluginmanager.h>
+
 namespace Editor
 {
 
@@ -601,7 +603,8 @@ struct Chunk {
 
 static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
                                         const TextLine & textLine,
-                                        bool primaryAlphabetIsLatin)
+                                        const bool primaryAlphabetIsLatin
+                                        )
 {
     using namespace Shared;
     QList<Chunk> result;
@@ -756,11 +759,44 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
 
     QByteArray result;
 
+    // Check if margin data exists
+    bool containsMarginText = false;
+    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
+        QString text;
+        const TextLine::Margin & margin = marginAt(i);
+        if (margin.text.length() > 0) {
+            containsMarginText = true;
+            break;
+        }
+        else {
+            if (margin.errors.size() > 0) {
+                containsMarginText = true;
+                break;
+            }
+        }
+    }
+
+    using Shared::PluginInterface;
+    PluginInterface::GlobalState gs = ExtensionSystem::PluginManager::instance()->currentGlobalState();
+    if (PluginInterface::GS_Unlocked != gs) {
+        containsMarginText = true;
+    }
+
     // RTF header
     result.append("{\\rtf1\\ansicpg1251\r\n");
 
+    const QFont usedFont = editor_->editorFont();
+
+//    const QString fontName = usedFont.family();
+    const QString fontName = "Courier New"; // TODO embed Kumir font into RTF data
+    const int fontSize = usedFont.pointSize();
+
     // Font table
-    result.append("{\\fonttbl{\\f0\\fmodern\\fcharset204 Courier New;}}\r\n");
+    result.append(QString(
+                      "{\\fonttbl{\\f0\\fmodern\\fcharset204 %1;}}\r\n"
+                      )
+                  .arg(fontName)
+                  );
 
     // Begin color table
     result.append("{\\colortbl;");
@@ -779,78 +815,93 @@ QByteArray TextDocument::toRtf(uint fromLine, uint toLine) const
     result.append("}\r\n");
 
     // Begin code style
-    result.append("{\\f0\\lang1024\r\n");
+    result.append(QString("{\\f0\\fs%1\\lang1024\r\n").arg(fontSize * 2));
 
     // Begin table row
-    result.append("\\trowd\r\n");
-    result.append("\\trgraph144\r\n");
-    result.append("\\trautofit1\r\n");
-    result.append("\\intbl\r\n");
-    result.append("\\trftsWidth2\\trwWidth5000\r\n");
-    result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
-    result.append("\\clNoWrap\\clftsWidth2\\clwWidth3000\\cellx6000\r\n");
-    result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
-    result.append("\\clNoWrap\\clftsWidth2\\clwWidth2000\\cellx10000\r\n");
+
+    if (containsMarginText) {
+
+        result.append("\\trowd\r\n");
+        result.append("\\trgraph144\r\n");
+        result.append("\\trautofit1\r\n");
+        result.append("\\intbl\r\n");
+        result.append("\\trftsWidth2\\trwWidth5000\r\n");
+        result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
+        result.append("\\clNoWrap\\clftsWidth2\\clwWidth3000\\cellx6000\r\n");
+        result.append("\\clbrdrt\\brdrs\\clbrdrl\\brdrs\\clbrdrb\\brdrs\\clbrdrr\\brdrs\r\n");
+        result.append("\\clNoWrap\\clftsWidth2\\clwWidth2000\\cellx10000\r\n");
+
+    }
 
     // Main program cell
     for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
-        result.append("\\intbl");
+        if (containsMarginText)
+            result.append("\\intbl");
         // Indent spaces
         if (this->indentAt(i) > 0) {
             result.append("{");
             for (uint j=0; j<this->indentAt(i); j++) {
-                result.append("  ");
+                result.append("{\\b .} ");
             }
             result.append("}");
         }
         const TextLine & textLine = data_[i];
         bool primaryAlphabetIsLatin = editor_->analizer() && editor_->analizerPlugin_->primaryAlphabetIsLatin();
-        const QList<RTF::Chunk> chunks = splitLineIntoChunks(editor_->mySettings(), textLine, primaryAlphabetIsLatin);
+        const QList<RTF::Chunk> chunks = splitLineIntoChunks(
+                    editor_->mySettings(),
+                    textLine,
+                    primaryAlphabetIsLatin
+                    );
         for (uint j=0; j<chunks.size(); j++) {
             result.append(chunks[j].data);
         }
         if (fromLine!=toLine && i<toLine) {
-            result.append("\\par\r\n");
-        }
-    }
-    // End main proram cell
-    result.append("\\cell\r\n");
-
-    // Margin cell
-    for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
-        QString text;
-        bool red = false;
-        const TextLine::Margin & margin = marginAt(i);
-        if (margin.text.length() > 0) {
-            text = margin.text;
-            red = false;
-        }
-        else {
-            if (margin.errors.size() > 0) {
-                text = margin.errors.first();
-                red = true;
-            }
-        }
-        static QTextCodec * codec = QTextCodec::codecForName("CP1251");
-        result.append("\\intbl");
-        if (text.length()>0) {
-            result.append("{");
-            if (red) {
-                result.append("\\cf9 ");
-            }
-            result.append(codec->fromUnicode(text));
-            result.append("}");
-        }
-        if (fromLine!=toLine && i<toLine) {
-            result.append("\\par\r\n");
+            result.append(containsMarginText ? "\\par\r\n" : "\\line\r\n");
         }
     }
 
-    // End margin cell
-    result.append("\\cell\r\n");
+    if (containsMarginText) {
 
-    // End table row
-    result.append("\\row\r\n");
+        // End main proram cell
+        result.append("\\cell\r\n");
+
+        // Margin cell
+        for (uint i=fromLine; i<qMin(toLine+1, linesCount()); i++) {
+            QString text;
+            bool red = false;
+            const TextLine::Margin & margin = marginAt(i);
+            if (margin.text.length() > 0) {
+                text = margin.text;
+                red = false;
+            }
+            else {
+                if (margin.errors.size() > 0) {
+                    text = margin.errors.first();
+                    red = true;
+                }
+            }
+            static QTextCodec * codec = QTextCodec::codecForName("CP1251");
+            result.append("\\intbl");
+            if (text.length()>0) {
+                result.append(QString("{\\fs%1 ").arg(fontSize * 2));
+                if (red) {
+                    result.append("\\cf9 ");
+                }
+                result.append(codec->fromUnicode(text));
+                result.append("}");
+            }
+            if (fromLine!=toLine && i<toLine) {
+                result.append("\\par\r\n");
+            }
+        }
+
+        // End margin cell
+        result.append("\\cell\r\n");
+
+        // End table row
+        result.append("\\row\r\n");
+
+    } // end if (containsMarginText)
 
     // Code style end
     result.append("}\r\n");

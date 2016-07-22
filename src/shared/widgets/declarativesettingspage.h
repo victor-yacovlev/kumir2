@@ -32,7 +32,12 @@ public:
         QVariant defaultValue;
         QVariant minimumValue;
         QVariant maximumValue;
+        qreal displayOrder;
+        QString key;
 
+        inline bool operator < (const struct Entry & other) const {
+            return this->displayOrder < other.displayOrder;
+        }
     };
 
     explicit DeclarativeSettingsPage(

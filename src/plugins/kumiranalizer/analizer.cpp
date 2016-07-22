@@ -84,6 +84,11 @@ QString Analizer::suggestFileName() const
     return _syntaxAnalizer->suggestFileName();
 }
 
+QRegExp Analizer::lineCommentStartLexemPattern() const
+{
+    return QRegExp(QString::fromLatin1("[|!]"));
+}
+
 QString Analizer::sourceText() const
 {
     return _sourceText.join("\n")+"\n";

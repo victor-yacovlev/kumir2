@@ -21,15 +21,11 @@ else()
     include(${QT_USE_FILE})
 endif()
 
-if(${USE_QT} GREATER 4)
+
     set(CONFIGURATION_TEMPLATE
         "CourseManager,Editor,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
     )
-else()
-    set(CONFIGURATION_TEMPLATE
-        "CourseManager,Editor,Actor*,Browser,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
-    )
-endif()
+
 
 
 set(SPLASHSCREEN

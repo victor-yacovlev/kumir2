@@ -773,7 +773,7 @@
     <message>
         <location filename="../../../src/plugins/editor/settingspage.cpp" line="430"/>
         <source>Choose color</source>
-        <translation>Выберете цвет</translation>
+        <translation>Выберите цвет</translation>
     </message>
 </context>
 <context>

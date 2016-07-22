@@ -171,11 +171,11 @@ namespace ActorRobot {
     void FieldItm::setTextColor()
     {
         sett=RobotModule::robotSettings();
-        TextColor=QColor(sett->value("Robot/TextColor","#FFFFFF").toString());
+        TextColor=QColor(sett->value("TextColor","#FFFFFF").toString());
         
         
-        upCharItm->setDefaultTextColor(TextColor);
-        downCharItm->setDefaultTextColor(TextColor);
+       if(upCharItm) upCharItm->setDefaultTextColor(TextColor);
+        if(downCharItm)downCharItm->setDefaultTextColor(TextColor);
 
         
     };
@@ -344,7 +344,8 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            upCharItm->setPos(upLeftCornerX+1,upLeftCornerY+1);
+            float lettShift=sett->value("LettShift","1").toFloat();
+            upCharItm->setPos(upLeftCornerX,upLeftCornerY-2-lettShift);
             upCharItm->setZValue(1);
         }
     }
@@ -362,7 +363,11 @@ namespace ActorRobot {
         if (downChar.isPrint() && downChar!=' ') {
             downCharItm=Scene->addText(downChar,font);
             downCharItm->setDefaultTextColor(TextColor);
-            downCharItm->setPos(upLeftCornerX+1,upLeftCornerY+size-16);
+            float lettShift=sett->value("LettShift","1").toFloat();
+            downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-17-lettShift);
+            #ifdef Q_OS_WIN
+                downCharItm->setPos(upLeftCornerX,upLeftCornerY+size-19-lettShift);
+            #endif
             downCharItm->setZValue(1);
         }
     }
@@ -378,9 +383,15 @@ namespace ActorRobot {
                 delete markItm;
                 markItm = NULL;
             }
-            markItm=Scene->addText(QChar(9787),font);
+            float xshift=sett->value("MarkShiftLeft","1").toFloat();
+             float yshift=sett->value("MarkShift","1").toFloat();
+          //  markItm=Scene->addText(QChar(9787),font);
+            markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
-            markItm->setPos(upLeftCornerX+size-(size/3)-3,upLeftCornerY-15+size);
+            markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-18+size-yshift);
+            #ifdef Q_OS_WIN
+                markItm->setPos(upLeftCornerX+size-(size/3)-2-xshift,upLeftCornerY-20+size-yshift);
+            #endif
             markItm->setZValue(1);
         }
     }
@@ -1149,9 +1160,9 @@ namespace ActorRobot {
                                                                    fieldSize));
                     
                 };
-                
+              
                 row->at(j)->showCharMark(upLeftCorner(i,j).x(),upLeftCorner(i,j).y(),fieldSize);
-                
+                 row->at(j)->setTextColor();
                 
             };
         };
@@ -1557,6 +1568,7 @@ namespace ActorRobot {
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
         EditColor=QColor(sett->value("EditColor","#00008C").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
+      //  TextColor=QColor(sett->value("TextColor","#FFFFFF").toString());
         
         destroyNet();
         destroyField();
@@ -1586,7 +1598,7 @@ namespace ActorRobot {
         
         for (int i = -1; i < rows(); i++)//Horizontalnie linii
         {
-            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2,Pen));
+            setka.append(this->addLine(-FIELD_SIZE_SMALL, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2 ,(columns()+1 )* FIELD_SIZE_SMALL+5, i * FIELD_SIZE_SMALL+ddx-1+FIELD_SIZE_SMALL/2,Pen));
             setka.last()->setZValue(0.5);
         }
        
@@ -3588,7 +3600,8 @@ void RobotModule::createGui()
     connect(m_actionRobotEditEnvironment,SIGNAL(triggered()) , this, SLOT(editEnv()));
     connect(m_actionRobotNewEnvironment,SIGNAL(triggered()) , this, SLOT(newEnv()));
     connect(m_actionRobotAutoWindowSize,SIGNAL(triggered()) , this, SLOT(setWindowSize()));
-
+    connect(m_actionRobotSave2Png,SIGNAL(triggered()) , this, SLOT(save2png()));
+    
     prepareNewWindow();
     rescentMenu=new QMenu();
     m_actionRobotLoadRescent->setMenu(rescentMenu);
@@ -3769,6 +3782,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         if(sett->value("Robot/Dir").isValid())
         {
             curDir=sett->value("Robot/Dir").toString();
+            curPDir=curDir;
         }
         // setWindowSize();
     }
@@ -4273,6 +4287,24 @@ void RobotModule::loadEnv()
     void RobotModule::resetEnv()
     {
         reset();
+    }
+    void RobotModule::save2png()
+    {
+        QString	RobotFile=QFileDialog::getSaveFileName(mainWidget(), QString::fromUtf8 ("Сохранить как изображение"), curPDir, "(*.png)");
+        
+        
+        //QString	RobotFile=dialog.selectedFiles().first();
+        QFileInfo info(RobotFile);
+        QDir dir=info.absoluteDir();
+        curPDir=dir.path();
+
+        int cellSize=robotSettings()->value("Robot/CellSize",FIELD_SIZE_SMALL).toInt();
+        float multip=robotSettings()->value("ImageSize",FIELD_SIZE_SMALL).toFloat()/cellSize;
+        
+        QImage image(field->width()*multip, field->height()*multip, QImage::Format_ARGB32_Premultiplied);
+        QPainter painter(&image);
+        field->render(&painter);
+        image.save(RobotFile);
     }
     void RobotModule::prepareNewWindow()
     {

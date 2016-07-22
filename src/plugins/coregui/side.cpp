@@ -10,13 +10,10 @@ Side::Side(QWidget *parent, const QString &settingsKey)
     : QSplitter(Qt::Horizontal, parent)
     , settingsKey_(settingsKey)
 {   
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
+    setChildrenCollapsible(false);
     setVisible(false);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setHandleWidth(10);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
     setAutoFillBackground(true);
-    // qDebug() << "LINE DEBUG: " << QFileInfo(QString(__FILE__)).fileName() << ":" << __LINE__;
 }
 
 void Side::updateSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -51,7 +48,8 @@ void Side::addComponent(QWidget *widget, bool autoResizable)
 {
     addWidget(widget);
     autoResizable_.push_back(autoResizable);
-    setCollapsible(count()-1, !autoResizable);
+//    setCollapsible(count()-1, !autoResizable);
+    setCollapsible(count()-1, false);
     updateGeometry();
 }
 

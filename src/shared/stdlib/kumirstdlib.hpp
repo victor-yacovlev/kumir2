@@ -62,8 +62,8 @@ inline String & operator+(String & s, const Char c) {
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
     enum SpecialType { RegularFile, Console };
-    inline static const char * _() { return "siib"; }
-    inline FileType() { valid = false; mode = NotOpen; type = RegularFile; }
+    inline static const char * _() { return "siibbl"; }
+    inline FileType() { valid = false; mode = NotOpen; type = RegularFile; autoClose = false; handle = 0; }
     inline void setName(const String &name) {
         fullPath = name;
     }
@@ -87,6 +87,7 @@ struct FileType {
     }
     inline void invalidate() {
         valid = false;
+        handle = 0;
     }
     inline bool operator==(const FileType & other) const {
         return other.fullPath==fullPath;
@@ -99,6 +100,8 @@ struct FileType {
     int mode;
     int type;
     bool valid;
+    bool autoClose;
+    FILE* handle;
 };
 
 class AbstractInputBuffer {
@@ -1219,7 +1222,17 @@ public:
         consoleOutputBuffer = b;
     }
 
-    inline static bool isOpenedFiles() { return openedFiles.size()> 0; }
+    inline static bool isOpenedFiles() {
+        bool remainingOpenedFiles = false;
+        for (std::deque<FileType>::iterator it=openedFiles.begin(); it != openedFiles.end(); ++it) {
+            FileType & f = *it;
+            if (!f.autoClose) {
+                remainingOpenedFiles = true;
+                break;
+            }
+        }
+        return remainingOpenedFiles;
+    }
 
     inline static void init() {
         fileEncoding = DefaultEncoding;
@@ -1229,10 +1242,11 @@ public:
         if (isOpenedFiles() && Core::getError().length()==0)
             Core::abort(Core::fromUtf8("Остались не закрытые файлы"));
         for (size_t i=0; i<openedFiles.size(); i++) {
-            fclose(openedFileHandles[i]);
+            FileType & f = openedFiles[i];
+            if (f.handle)
+                fclose(f.handle);
         }
         openedFiles.clear();
-        openedFileHandles.clear();
         if (assignedIN!=stdin)
             fclose(assignedIN);
         if (assignedOUT!=stdout)
@@ -1584,7 +1598,7 @@ public:
         }
     }
 
-    inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember=true, FILE* *fh = 0) {
+    inline static FileType open(const String & shortName, FileType::OpenMode mode, bool remember, FILE* *fh) {
         const String fileName = getAbsolutePath(shortName);
         for (std::deque<FileType>::const_iterator it = openedFiles.begin(); it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
@@ -1618,6 +1632,7 @@ public:
             fmode = L"ab";
         FILE * res = _wfopen(fileName.c_str(), fmode);
 //        _wfopen_s(&res, fileName.c_str(), fmode);
+        const bool file_not_exists = ENOENT==errno;
 #else
         const char * fmode;
         if (mode==FileType::Read)
@@ -1627,30 +1642,34 @@ public:
         else if (mode==FileType::Append)
             fmode = "ab";
         FILE* res = fopen(path, fmode);
+        const bool file_not_exists = ENOENT==errno;
 #endif
         FileType f;
         if (res==0) {
-            Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
+            if (file_not_exists) {
+                Core::abort(Core::fromUtf8("Файл не существует: ")+fileName);
+            }
+            else {
+                Core::abort(Core::fromUtf8("Невозможно открыть файл: ")+fileName);
+            }
         }
         else {
             if (mode==FileType::Append)
                 mode = FileType::Write;
             f.setName(fileName);
             f.setMode(mode);
-            if (remember) {
-                openedFiles.push_back(f);
-                openedFileHandles.push_back(res);
-            }
-            else if (fh) {
+            f.handle = res;
+            f.autoClose = !remember;
+            openedFiles.push_back(f);
+            if (fh) {
                 *fh = res;
             }
         }
         return f;
     }
     inline static void close(const FileType & key) {
-        std::deque<FileType>::iterator it = openedFiles.begin();
-        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
-        for (; it!=openedFiles.end(); ++it, ++it2) {
+        std::deque<FileType>::iterator it = openedFiles.begin();        
+        for (; it!=openedFiles.end(); ++it) {
             FileType f = (*it);
             if (f==key) {
                 break;
@@ -1661,17 +1680,16 @@ public:
             return;
         }
         FileType f = (*it);
-        FILE * fh = (*it2);
+        FILE * fh = f.handle;
         f.invalidate();
-        fclose(fh);
-        openedFiles.erase(it);
-        openedFileHandles.erase(it2);
+        if (fh)
+            fclose(fh);
+        openedFiles.erase(it);        
     }
 
     inline static void reset(FileType & key) {
         std::deque<FileType>::iterator it = openedFiles.begin();
-        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
-        for (; it!=openedFiles.end(); ++it, ++it2) {
+        for (; it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f==key) {
                 break;
@@ -1682,13 +1700,12 @@ public:
             return;
         }
         const FileType & f = (*it);
-        FILE * fh = (*it2);
+        FILE * fh = f.handle;
         fseek(fh, 0, 0);
     }
     inline static bool eof(const FileType & key) {
         std::deque<FileType>::iterator it = openedFiles.begin();
-        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
-        for (; it!=openedFiles.end(); ++it, ++it2) {
+        for (; it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f==key) {
                 break;
@@ -1699,7 +1716,7 @@ public:
             return false;
         }
         const FileType & f = (*it);
-        FILE * fh = (*it2);
+        FILE * fh = f.handle;
         if (feof(fh))
             return true;
         unsigned char ch = 0x00;
@@ -1716,8 +1733,7 @@ public:
     }
     inline static bool hasData(const FileType & key) {
         std::deque<FileType>::iterator it = openedFiles.begin();
-        std::deque<FILE*>::iterator it2 = openedFileHandles.begin();
-        for (; it!=openedFiles.end(); ++it, ++it2) {
+        for (; it!=openedFiles.end(); ++it) {
             const FileType & f = (*it);
             if (f==key) {
                 break;
@@ -1727,7 +1743,7 @@ public:
             Core::abort(Core::fromUtf8("Неверный ключ"));
             return false;
         }
-        FILE * fh = (*it2);
+        FILE * fh = (*it).handle;
         long backPos = -1;
         if (fh!=stdin)
             backPos = ftell(fh);
@@ -1807,7 +1823,6 @@ private:
     static FILE * assignedOUT;
 
     static std::deque<FileType> openedFiles;
-    static std::deque<FILE*> openedFileHandles;
 
     static AbstractInputBuffer* consoleInputBuffer;
     static AbstractOutputBuffer* consoleOutputBuffer;
@@ -2381,9 +2396,8 @@ public:
             return InputStream(Files::consoleInputBuffer);
         }
         else {
-            std::deque<FileType>::iterator it = Files::openedFiles.begin();
-            std::deque<FILE*>::iterator it2 = Files::openedFileHandles.begin();
-            for ( ; it!=Files::openedFiles.end(); ++it, ++it2) {
+            std::deque<FileType>::iterator it = Files::openedFiles.begin();            
+            for ( ; it!=Files::openedFiles.end(); ++it) {
                 if (*it==fileNo) {
                     break;
                 }
@@ -2397,7 +2411,7 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на запись"));
                 return InputStream();
             }
-            return InputStream(*it2, Files::fileEncoding);
+            return InputStream((*it).handle, Files::fileEncoding);
         }
     }
 
@@ -2410,9 +2424,8 @@ public:
             return OutputStream(Files::consoleOutputBuffer);
         }
         else {
-            std::deque<FileType>::iterator it = Files::openedFiles.begin();
-            std::deque<FILE*>::iterator it2 = Files::openedFileHandles.begin();
-            for ( ; it!=Files::openedFiles.end(); ++it, ++it2) {
+            std::deque<FileType>::iterator it = Files::openedFiles.begin();            
+            for ( ; it!=Files::openedFiles.end(); ++it) {
                 if (*it==fileNo) {
                     break;
                 }
@@ -2426,7 +2439,7 @@ public:
                 Core::abort(Core::fromUtf8("Файл с таким ключем открыт на чтение"));
                 return OutputStream();
             }
-            return OutputStream(*it2, Files::fileEncoding);
+            return OutputStream((*it).handle, Files::fileEncoding);
         }
     }
 
@@ -2558,7 +2571,6 @@ inline void finalizeStandardLibrary() {
 String Core::error = String();
 void (*Core::AbortHandler)() = 0;
 std::deque<FileType> Files::openedFiles;
-std::deque<FILE*> Files::openedFileHandles;
 AbstractInputBuffer* Files::consoleInputBuffer = 0;
 AbstractOutputBuffer* Files::consoleOutputBuffer = 0;
 AbstractOutputBuffer* Files::consoleErrorBuffer = 0;

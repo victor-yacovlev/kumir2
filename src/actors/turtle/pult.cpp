@@ -15,7 +15,7 @@
 ****************************************************************************/
 
 #include "pult.h"
-
+#include "turtlemodule.h"
 const double DegreesPerMinute = 7.0;
 const double DegreesPerSecond = DegreesPerMinute / 60;
 const int MaxMinutes = 45;
@@ -207,133 +207,6 @@ void linkLight::paintEvent ( QPaintEvent * event )
 
 
 
-//    MainButton::MainButton ( QWidget* parent) :
-//            QWidget(parent)
-//    {
-//        direction=UP;
-//        posX=1;
-//        posY=1;
-//        buttonImageUp.load(":/icons/71_71grMet.png");
-//        buttonImageDown.load(":/icons/71_71grMet_d.png");
-//        downFlag=false;
-//        Parent=parent;
-//        int mid=buttonImageUp.width()/2;
-//        Q_UNUSED(mid);
-//        // upArrow.append(QLine(mid,30,mid-15,40));
-//        // upArrow.append(QLine(mid,30,mid+15,40));
-//        // downArrow.append(QLine(mid,40,mid-15,30));
-//        // downArrow.append(QLine(mid,40,mid+15,30));
-//        // leftArrow.append(QLine(30,mid,40,mid-15));
-//        // leftArrow.append(QLine(30,mid,40,mid+15));
-//        // rightArrow.append(QLine(40,mid,30,mid-15));
-//        // rightArrow.append(QLine(40,mid,30,mid+15));
-//        text="";
-//        checked=false;
-//        checkable=false;
-//        mouseOver=false;
-//        icon=false;
-//        resize(71,71);
-//    };
-//
-//    void MainButton::paintEvent ( QPaintEvent * event )
-//    {
-//        Q_UNUSED(event);
-//        QPainter painter(this);
-//        painter.setRenderHint (QPainter::Antialiasing,true );
-//        if(!downFlag)
-//        {
-//            painter.drawImage(QPoint(posX,posY),buttonImageUp);
-//            if(icon)painter.drawImage(1,1,buttonIcon);
-//            QPen blackPen(QColor(40,40,40));
-//            blackPen.setWidth(3);
-//            painter.setPen(blackPen);
-//            drawAddons(&painter);
-//            if(mouseOver)
-//            {
-//                QLinearGradient grad( 1, 1, 5, 65);
-//                grad.setColorAt(0.7,QColor(200,190,222));
-//                grad.setColorAt(0.3,QColor(191,208,208));
-//
-//                QBrush solidBrush(grad);
-//                painter.setBrush(solidBrush);
-//                painter.setOpacity(0.1);
-//                painter.drawRect(3,3,100,40);
-//            };
-//            
-//        }
-//        else 	{
-//            painter.drawImage(QPoint(posX,posY),buttonImageDown);
-//            if(icon){
-//                //buttonIcon.invertPixels();
-//                painter.drawImage(3,3,buttonIcon);
-//                //buttonIcon.invertPixels();
-//            };
-//            QPen whitePen(QColor(170,170,170));
-//            whitePen.setWidth(3);
-//            painter.setPen(whitePen);
-//            //drawAddons(&painter);
-//            
-//        };
-//    };
-//
-//    void MainButton::drawAddons(QPainter* painter)
-//    {
-//        if(direction==UP)painter->drawLines(upArrow);
-//        if(direction==DOWN)painter->drawLines(downArrow);
-//        if(direction==LEFT)painter->drawLines(leftArrow);
-//        if(direction==RIGHT)painter->drawLines(rightArrow);
-//        if(direction==TEXTT)
-//        {
-//            if(!downFlag)painter->setPen(QColor(10,10,10));
-//            QFont font("FreeSans");
-//            font.setBold(true);
-//            painter->setFont(font);
-//            QStringList textLines=text.split("|");
-//            int start_pos=42-7*textLines.count();
-//            for(int i=0;i<textLines.count();i++)painter->drawText(7,start_pos+TEXT_STEP*i,textLines[i]);
-//        }
-//
-//    }
-//
-//    bool MainButton::loadIcon(QString iconFile)
-//    {
-//        icon=true;
-//        return buttonIcon.load(iconFile);
-//    }
-//
-//    void MainButton::mousePressEvent ( QMouseEvent * event )
-//    {
-//        Q_UNUSED(event);
-//        qWarning("MousePress");
-//        emit pressed();
-//        if(checkable)checked=!checked;
-//        downFlag=true;
-//        repaint();
-//    }
-//
-//    void MainButton::mouseReleaseEvent ( QMouseEvent * event )
-//    {
-//        Q_UNUSED(event);
-//        if(checkable){if(!checked)downFlag=false;}else downFlag=false;
-//        if(mouseOver)emit clicked();
-//        repaint();
-//    }
-//
-//
-//    void MainButton::enterEvent ( QEvent * event )
-//    {
-//        Q_UNUSED(event);
-//        if(!mouseOver){mouseOver=true;repaint();};
-//
-//
-//    }
-//    void MainButton::leaveEvent ( QEvent * event )
-//    {
-//        Q_UNUSED(event);
-//        if(mouseOver){mouseOver=false;repaint();};
-//    }
-//
-//
 
 
 TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
@@ -435,12 +308,19 @@ TurtlePult::TurtlePult ( QDir resdir,QWidget* parent, Qt::WindowFlags fl )
 	connect(ClearLog,SIGNAL(clicked()),this,SLOT(resetTurtle()));
 
 	connect(toKumir,SIGNAL(clicked()),this,SLOT(logToKumir()));
+    
 	//	connect(CopyLog,SIGNAL(clicked()),Logger,SLOT(CopyLog()));
     //setMinimumSize(100,200);
 	link=true;
 	toKumir->setEnabled(true);
 };
+void TurtlePult::connectTurtle()
+{
+    if(turtleObj!=0)
+    {
 
+    }
+}
 
 void TurtlePult::noLink(){
 	link=false;
@@ -453,37 +333,34 @@ void TurtlePult::Up()
     if(!greenLight->link())return;
 
 
-    turtleObj->step=stepVal->value ();
-    if(turtleObj->moveT())
-        Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
-	else
-		Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
+
+    turtleObj->runForward(stepVal->value ());
+    Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
+
 
 };
 void TurtlePult::Down()
 {
     if(!greenLight->link())return;
 
-    turtleObj->step=-stepVal->value ();
-    if(turtleObj->moveT())
-        Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
-	else
-		Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+"\n)",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")",QString::fromUtf8("Отказ"));
+    turtleObj->runBack(stepVal->value ());
+
+    Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
+
 };
 void TurtlePult::Left()
 {
-    if(!greenLight->link())return;
-    Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
-    turtleObj->grad=-gradVal->value();
-    turtleObj->rotate();
+ turtleObj->runLeft(gradVal->value ());
+ Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
+
 
 };
 void TurtlePult::Right()
 {
-    if(!greenLight->link())return;
-    Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
-    turtleObj->grad=gradVal->value();
-    turtleObj->rotate();
+     if(!greenLight->link())return;
+     turtleObj->runRight(gradVal->value ());
+     Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
+
 };
 
 void TurtlePult::SwStena()
@@ -496,15 +373,15 @@ void TurtlePult::SwSvobodno()
 };
 void TurtlePult::TempS()
 {
-    if(!greenLight->link())return;
-    turtleObj->TailDown();
-    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
+//    if(!greenLight->link())return;
+//    turtleObj->TailDown();
+//    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
 };
 void TurtlePult::RadS()
 {
-    if(!greenLight->link())return;
-    turtleObj->TailUp();
-    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
+//    if(!greenLight->link())return;
+//    turtleObj->TailUp();
+//    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
 };
 
 void TurtlePult::resetTurtle()
@@ -547,8 +424,8 @@ void TurtlePult::closeEvent ( QCloseEvent * event )
 								   QMessageBox::No,
 								   QMessageBox::Cancel | QMessageBox::Escape);
 	if (ret == QMessageBox::Yes) {
-		turtleObj->AutoClose();
-		turtleObj->close();
+//		turtleObj->AutoClose();
+//		turtleObj->close();
 		event->accept();
 	} else {
 		event->ignore();
