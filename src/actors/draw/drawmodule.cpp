@@ -912,10 +912,12 @@ void DrawModule::showNavigator(bool state)
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
   
+    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
     CurView->viewport()->update();
+    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
