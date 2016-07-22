@@ -95,7 +95,7 @@ bool InputFunctor::operator ()(VariableReferencesList references, Kumir::String 
         else if (references[i].baseType()==VT_record) {
             const Variable & variable = references[i];
             const String typeFullName =
-                    variable.recordModuleLocalizedName()+
+                    Kumir::Core::fromAscii(variable.recordModuleAsciiName())+
                     Kumir::Core::fromAscii("::")+
                     Kumir::Core::fromAscii(variable.recordClassAsciiName())+
                     Kumir::Core::fromAscii("::")+

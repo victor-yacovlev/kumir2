@@ -666,6 +666,7 @@ Variable KumirVM::fromTableElem(const Bytecode::TableElem &e) {
     r.setConstantFlag(e.type==EL_CONST);
     r.setModuleName(e.moduleLocalizedName);
     r.setRecordModuleLocalizedName(e.recordModuleLocalizedName);
+    r.setRecordModuleAsciiName(e.recordModuleAsciiName);
     r.setRecordClassAsciiName(e.recordClassAsciiName);
     r.setRecordClassLocalizedName(e.recordClassLocalizedName);
     return r;
