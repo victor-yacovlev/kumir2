@@ -182,8 +182,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     if (!plugin_editor)
         return "Can't load editor plugin!";
 
-    qDebug() << "Creating and connection I/O terminal";
-
     terminal_ = new Term(mainWindow_);
     terminal_->setTerminalFont(plugin_editor->defaultEditorFont());
     terminal_->setSettings(mySettings());
@@ -198,24 +196,24 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     connect(terminal_, SIGNAL(message(QString)),
             mainWindow_, SLOT(showMessage(QString)));
 
-    qDebug() << "Done creating and connecting terminal";
+    static const int StatusBarIconSize = 16;
 
-
-    qDebug() << "Creating near terminal icons";
-
-    const QString qtcreatorIconsPath =
+    static const QString mdiIconsPath =
             ExtensionSystem::PluginManager::instance()->sharePath()
-            + "/icons/from_qtcreator/";
+            + QString::fromLatin1("/icons/iconset/%1x%2/")
+            .arg(StatusBarIconSize).arg(StatusBarIconSize);
 
+    static const QString showConsoleIconPath = mdiIconsPath + "statusbar-terminal.png";
+    static const QString saveConsoleIconPath = mdiIconsPath + "statusbar-save.png";
+    static const QString copyConsoleIconPath = mdiIconsPath + "statusbar-copy.png";
+    static const QString clearConsoleIconPath = mdiIconsPath + "statusbar-clear.png";
+    static const QString editConsoleIconPath = mdiIconsPath + "statusbar-edit.png";
 
-    const QString showConsoleIconPath = qtcreatorIconsPath + "category_core.png";
-
-    const QString clearConsoleIconPath = qtcreatorIconsPath + "clean_pane_small.png";
-
-
-    const QIcon showConsoleIcon = QIcon(showConsoleIconPath);
-
-    const QIcon cleanConsoleIcon = QIcon(clearConsoleIconPath);
+    const QIcon showConsoleIcon = Widgets::IconProvider::iconFromPath(showConsoleIconPath, 0.75);
+    const QIcon saveConsoleIcon = Widgets::IconProvider::iconFromPath(saveConsoleIconPath, 0.75);
+    const QIcon copyConsoleIcon = Widgets::IconProvider::iconFromPath(copyConsoleIconPath, 0.75);
+    const QIcon clearConsoleIcon = Widgets::IconProvider::iconFromPath(clearConsoleIconPath, 0.75);
+    const QIcon editConsoleIcon = Widgets::IconProvider::iconFromPath(editConsoleIconPath, 0.75);
 
 
 
@@ -224,6 +222,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     mainWindow_->ui->actionShow_Console_Pane->setIcon(showConsoleIcon);
 
     btnShowConsole->setDefaultAction(mainWindow_->ui->actionShow_Console_Pane);
+    btnShowConsole->setIconSize(QSize(StatusBarIconSize, StatusBarIconSize));
 
     btnShowConsole->setToolTip(mainWindow_->ui->actionShow_Console_Pane->text());
 
@@ -236,60 +235,44 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     QMenu * menuSaveTerm = new QMenu(btnSaveTerm);
 
     btnSaveTerm->setToolTip(tr("Save console output"));
-
     btnSaveTerm->setMenu(menuSaveTerm);
-
-    btnSaveTerm->setIcon(QIcon(qtcreatorIconsPath + "filesave.png"));
-
+    btnSaveTerm->setIcon(saveConsoleIcon);
+    btnSaveTerm->setIconSize(QSize(StatusBarIconSize, StatusBarIconSize));
     menuSaveTerm->addAction(terminal_->actionSaveLast());
-
     menuSaveTerm->addAction(terminal_->actionSaveAll());
 
-//    mainWindow_->statusBar()->insertWidget(0, btnSaveTerm);
     mainWindow_->statusBar_->addButtonToLeft(btnSaveTerm);
 
 
     QToolButton * btnCopyTerm = new QToolButton(mainWindow_);
-
     btnCopyTerm->setPopupMode(QToolButton::InstantPopup);
 
     QMenu * menuCopyTerm = new QMenu(btnCopyTerm);
-
     btnCopyTerm->setToolTip(tr("Copy to clipboard console output"));
-
     btnCopyTerm->setMenu(menuCopyTerm);
-
-    btnCopyTerm->setIcon(QIcon(qtcreatorIconsPath + "editcopy.png"));
-
+    btnCopyTerm->setIcon(copyConsoleIcon);
+    btnCopyTerm->setIconSize(QSize(StatusBarIconSize, StatusBarIconSize));
     menuCopyTerm->addAction(terminal_->actionCopyLast());
-
     menuCopyTerm->addAction(terminal_->actionCopyAll());
-
     mainWindow_->statusBar_->addButtonToLeft(btnCopyTerm);
 
 
     QToolButton * btnClearTerm = new QToolButton(mainWindow_);
-
-    terminal_->actionClear()->setIcon(cleanConsoleIcon);
-
+    terminal_->actionClear()->setIcon(clearConsoleIcon);
     btnClearTerm->setDefaultAction(terminal_->actionClear());
-
-//    mainWindow_->statusBar()->insertWidget(1, btnClearTerm);
+    btnClearTerm->setIconSize(QSize(StatusBarIconSize, StatusBarIconSize));
     mainWindow_->statusBar_->addButtonToLeft(btnClearTerm);
 
     QToolButton * btnEditTerm = nullptr;
 
     if (!parameters.contains("notabs",Qt::CaseInsensitive)) {
-
         btnEditTerm = new QToolButton(mainWindow_);
-
+        btnEditTerm->setIconSize(QSize(StatusBarIconSize, StatusBarIconSize));
+        terminal_->actionEditLast()->setIcon(editConsoleIcon);
         btnEditTerm->setDefaultAction(terminal_->actionEditLast());
-
         mainWindow_->statusBar_->addButtonToLeft(btnEditTerm);
-
     }
 
-    qDebug() << "Created near terminal icons";
 
 #ifdef Q_OS_MAC
     static const char * statusBarButtonCSS =

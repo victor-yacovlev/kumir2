@@ -39,7 +39,12 @@ void StatusBar::addButtonToLeft(QToolButton *btn)
 {
     btn->setParent(this);
     btn->setAutoRaise(true);
-    btn->setFixedSize(btn->iconSize() + QSize(8, 8));
+    const QSize iconSize = btn->iconSize();
+    const int w = btn->menu()
+            ? iconSize.width() + 4 + 10
+            : iconSize.width() + 4 ;
+    const int h = iconSize.height() + 4;
+    btn->setFixedSize(w, h);
     addWidget(btn);
     int x = 0;
     for (int i=0; i<toolButtons_.size(); i++) {
