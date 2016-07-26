@@ -133,6 +133,7 @@ protected:
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Widgets::SecondaryWindow* helpWindow_;
     Widgets::SecondaryWindow* coursesWindow_;
+    Widgets::SecondaryWindow* quickRefWindow_;
     Term * terminal_;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;

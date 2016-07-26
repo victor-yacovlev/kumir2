@@ -11,6 +11,7 @@ namespace KumirAnalizer {
 
 class Analizer;
 class KumFileHandler;
+class QuickReferenceWidget;
 
 class KumirAnalizerPlugin
         : public ExtensionSystem::KPlugin
@@ -39,6 +40,8 @@ public:
     inline bool supportPartialCompiling() const { return true; }
     inline IndentsBehaviour indentsBehaviour() const { return HardIndents; }
 
+    QWidget * languageQuickReferenceWidget();
+
     inline QString defaultDocumentFileNameSuffix() const { return "kum"; }
     inline QString languageName() const { return QString::fromUtf8("Кумир"); }    
     inline QByteArray asciiLanguageIdentifier() const { return "kumir"; }
@@ -53,6 +56,8 @@ private:
     QVector<Analizer*> analizers_;
     bool teacherMode_;
     KumFileHandler* kumFileHandler_;
+    QuickReferenceWidget* _quickReferenceWidget;
+
 };
 
 }

@@ -7,6 +7,7 @@
 #include <QtCore>
 
 #include "kumfilehandler.h"
+#include "quickreferencewidget.h"
 
 using namespace KumirAnalizer;
 
@@ -14,6 +15,7 @@ KumirAnalizerPlugin::KumirAnalizerPlugin()
     : ExtensionSystem::KPlugin()
     , teacherMode_(false)
     , kumFileHandler_(new KumFileHandler(this))
+    , _quickReferenceWidget(NULL)
 {
     analizers_ = QVector<Analizer*> (128, NULL);
 }
@@ -27,6 +29,18 @@ Shared::Analizer::SourceFileInterface* KumirAnalizerPlugin::sourceFileHandler()
 
 KumirAnalizerPlugin::~KumirAnalizerPlugin()
 {
+}
+
+QWidget *KumirAnalizerPlugin::languageQuickReferenceWidget()
+{
+    bool hasGui = true;
+#ifdef Q_WS_X11
+    hasGui = getenv("DISPLAY")!=0;
+#endif
+    if (!_quickReferenceWidget && hasGui) {
+        _quickReferenceWidget = new QuickReferenceWidget(this);
+    }
+    return _quickReferenceWidget;
 }
 
 

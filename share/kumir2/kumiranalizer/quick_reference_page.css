@@ -1,0 +1,66 @@
+#centralView {
+    background-color: white;
+}
+
+
+#statementsLabel, #typesLabel, #functionsLabel {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #777777;
+    qproperty-alignment: "AlignCenter";
+    margin-bottom: 5;
+}
+
+/*#statementsBlock {
+    background: red;
+}
+
+#typesBlock {
+    background: yellow;
+}
+
+#functionsBlock {
+    background: green;
+}*/
+
+#statementsContents, #typesContents, #functionsContents {
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #f3f3f3, stop:1 #e0e0e0);
+    border-width: 1px;
+    border-style: solid;
+    font-size: 10pt;
+    border-color: #c3c3c5;
+    color: #1000b0;
+    border-radius: 5;
+}
+
+
+#statementsContents QPushButton {
+    color: black;
+    border-bottom-color: black;
+}
+
+#typesContents QPushButton {
+    color: #bf5800;
+    border-bottom-color: #bf5800;
+}
+
+#functionsContents QPushButton {
+    color: #0000c7;
+    border-bottom-color: #0000c7;
+}
+
+QPushButton {
+    font-size: 12pt;
+    font-weight: bold;
+    border: none;
+}
+
+QPushButton:hover {
+    border-bottom: 1px solid;
+}
+
+QPushButton:pressed {
+    background: qlineargradient(x1:0 y1:0, x2:0 y2:1, stop:0 #e0e0e0, stop:1 #f3f3f3);
+    color: #888888;
+}
+

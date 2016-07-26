@@ -76,6 +76,7 @@ public slots:
 
     QStringList algorithmsAvailabaleForModule(const AST::ModulePtr currentModule) const;
     bool isModuleAlwaysEnabled(const AST::ModulePtr module) const;
+    static bool isModuleAlwaysEnabled(const QString &localizedName);
     QStringList moduleNames() const;
 
 
