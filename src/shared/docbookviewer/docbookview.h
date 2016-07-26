@@ -42,6 +42,7 @@ public:
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);
     bool hasAlgorithm(const QString & name) const;
     void navigateToApiFunction(const QString & package, const QString & function);
+    void navigateFromQuickReference(const int topicType, const QString &name);
     void clearNavigationFilters();
     void setInitialView();
 

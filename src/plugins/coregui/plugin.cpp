@@ -357,6 +357,9 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                         );
             connect(mainWindow_->ui->actionLanguage_Quick_Reference, SIGNAL(triggered()),
                     quickRefWindow_, SLOT(activate()));
+            connect(analizerPlugin->languageQuickReferenceWidget(),
+                    SIGNAL(openTopicInDocumentation(int,QString)),
+                    this, SLOT(showHelpWindowFromQuickReference(int,QString)));
         }
     }
 
@@ -1104,6 +1107,16 @@ void Plugin::showHelpWindow(int index)
     }
     if (helpViewer_) {
         helpViewer_->activateBookIndex(index);
+    }
+}
+
+void Plugin::showHelpWindowFromQuickReference(const int topicType, const QString &name)
+{
+    if (helpWindow_) {
+        helpWindow_->activate();
+    }
+    if (helpViewer_) {
+        helpViewer_->navigateFromQuickReference(topicType, name);
     }
 }
 

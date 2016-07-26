@@ -87,6 +87,7 @@ public slots:
     QStringList coursesList(bool fullPaths) const;
 
     void showHelpWindow(int index);
+    void showHelpWindowFromQuickReference(const int topicType, const QString &name);
     QStringList helpList() const;
 
 protected slots:

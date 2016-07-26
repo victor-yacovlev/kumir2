@@ -2,6 +2,7 @@
 #include "docbookview_impl.h"
 
 #include <QResizeEvent>
+#include <QDebug>
 
 namespace DocBookViewer {
 
@@ -97,6 +98,13 @@ bool DocBookView::hasAlgorithm(const QString &name) const
 void DocBookView::navigateToApiFunction(const QString &package, const QString & function)
 {
     pImpl_->navigateToApiFunction(package, function);
+}
+
+void DocBookView::navigateFromQuickReference(const int topicType, const QString &name)
+{
+    qDebug() << "navigateFromQuickReference(" << topicType << ", " << name << ")";
+    if (2 == topicType)
+        navigateToApiFunction("", name);
 }
 
 void DocBookView::clearNavigationFilters()
