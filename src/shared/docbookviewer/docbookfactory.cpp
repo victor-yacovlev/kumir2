@@ -331,6 +331,15 @@ bool DocBookFactory::startElement(
     else if (element == "guibutton") {
         model = new DocBookModel(root_, GuiButton);
     }
+    else if (element == "sectioninfo") {
+        model = new DocBookModel(root_, SectionInfo);
+    }
+    else if (element == "keywordset") {
+        model = new DocBookModel(root_, KeywordSet);
+    }
+    else if (element == "keyword") {
+        model = new DocBookModel(root_, Keyword);
+    }
     else if (element == "xref") {
         model = new DocBookModel(root_, Xref);
         model->xrefLinkEnd_ = atts.value("linkend");
@@ -731,6 +740,34 @@ QMap<QString, ModelPtr> & DocBookFactory::updateListOfAlgorithms(
         }
         item->indexParent_ = moduleRoot;
         moduleRoot->children_.append(item);
+    }
+
+    return result;
+}
+
+QMap<QString, ModelPtr> &DocBookFactory::updateListOfKeywords(ModelPtr root, QMap<QString, ModelPtr> &result)
+{
+    QList<ModelPtr> allSets = findEntriesOfType(root, KeywordSet);
+
+    Q_FOREACH( ModelPtr keywordSet, allSets ) {
+        ModelPtr targetNode = keywordSet->parent();
+        while (targetNode && Section!=targetNode->modelType() && Chapter!=targetNode->modelType() && Article!=targetNode->modelType()) {
+            targetNode = targetNode->parent();
+        }
+        if (targetNode) {
+            QList<ModelPtr> keywords = findEntriesOfType(keywordSet, Keyword);
+            Q_FOREACH( ModelPtr keywordElement, keywords ) {
+                QString keyword;
+                Q_FOREACH( ModelPtr child, keywordElement->children() ) {
+                    if (Text == child->modelType()) {
+                        if (keyword.length() > 0)
+                            keyword += " ";
+                        keyword += child->text().trimmed();
+                    }
+                }
+                result[keyword] = targetNode;
+            }
+        }
     }
 
     return result;

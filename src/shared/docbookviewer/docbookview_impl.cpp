@@ -301,6 +301,15 @@ void DocBookViewImpl::navigateToApiFunction(const QString & package, const QStri
     }
 }
 
+void DocBookViewImpl::navigateToIndex(const QString &index)
+{
+    const ModelPtr topic = sidePanel_->findKeywordTopic(index);
+    if (topic) {
+        sidePanel_->selectItem(topic);
+        showAnItem(topic);
+    }
+}
+
 void DocBookViewImpl::clearNavigationFilters()
 {
     sidePanel_->clearNavigationFilters();

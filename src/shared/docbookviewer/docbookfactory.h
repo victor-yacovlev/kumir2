@@ -32,6 +32,10 @@ public:
                                         );
     static QMap<QString,ModelPtr> &
     updateListOfAlgorithms(ModelPtr root, QMap<QString,ModelPtr> &result);
+
+    static QMap<QString,ModelPtr> &
+    updateListOfKeywords(ModelPtr root, QMap<QString,ModelPtr> &result);
+
     Document createNamedSet(const QString &name, const QList<Document> documents) const;
     void setConfigurationName(const QString & configurationName);
 

@@ -100,11 +100,18 @@ void DocBookView::navigateToApiFunction(const QString &package, const QString & 
     pImpl_->navigateToApiFunction(package, function);
 }
 
+void DocBookView::navigateToIndex(const QString &index)
+{
+    pImpl_->navigateToIndex(index);
+}
+
 void DocBookView::navigateFromQuickReference(const int topicType, const QString &name)
 {
     qDebug() << "navigateFromQuickReference(" << topicType << ", " << name << ")";
     if (2 == topicType)
         navigateToApiFunction("", name);
+    else
+        navigateToIndex(name);
 }
 
 void DocBookView::clearNavigationFilters()
