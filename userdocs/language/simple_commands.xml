@@ -44,6 +44,13 @@ b[i,j]:=-b[j,i]
         </para>
     </section>
     <section>
+        <sectioninfo>
+            <keywordset>
+                <keyword>дано</keyword>
+                <keyword>надо</keyword>
+                <keyword>утв</keyword>
+            </keywordset>
+        </sectioninfo>
         <title>Контроль выполнения</title>
 		<para>
 			Команды контроля выполнения в языке КуМир делятся на две категории:
