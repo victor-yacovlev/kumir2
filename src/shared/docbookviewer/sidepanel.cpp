@@ -68,6 +68,7 @@ void SidePanel::addDocument(Document document, bool bookSetItemsAsTopLevel)
         createListOfExamples(model);
         createListOfTables(model);
         createListOfAlgorithms(model);
+        createIndex(model);
         modelsOfItems_[item] = model;
         itemsOfModels_[model] = item;
     }
@@ -342,6 +343,11 @@ void SidePanel::createListOfAlgorithms(ModelPtr root)
     }
 }
 
+void SidePanel::createIndex(ModelPtr root)
+{
+    DocBookFactory::updateListOfKeywords(root, keywordsIndex_);
+}
+
 ModelPtr SidePanel::findApiFunction(const QString &name) const
 {
     foreach (const FunctionName &fn, functionsIndex_.keys()) {
@@ -355,6 +361,16 @@ ModelPtr SidePanel::findApiFunction(const QString &package, const QString &funct
 {
     if (functionsIndex_.contains(FunctionName(package, function))) {
         return functionsIndex_[FunctionName(package, function)];
+    }
+    else {
+        return ModelPtr();
+    }
+}
+
+ModelPtr SidePanel::findKeywordTopic(const QString &index) const
+{
+    if (keywordsIndex_.contains(index)) {
+        return keywordsIndex_[index];
     }
     else {
         return ModelPtr();

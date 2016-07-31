@@ -35,6 +35,7 @@ public /* methods */:
     void removeDocument(const Document & existingDocument);
     bool hasAlgorithm(const QString & name) const;
     void navigateToApiFunction(const QString & package, const QString & function);
+    void navigateToIndex(const QString &index);
     void clearNavigationFilters();
 
     void updateSettings(ExtensionSystem::SettingsPtr settings, const QString & prefix);

@@ -95,6 +95,13 @@
     <section>
         <title>Описание алгоритма</title>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>алг</keyword>
+                    <keyword>нач</keyword>
+                    <keyword>кон</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>Общий вид описания</title>
             <para>Алгоритм на языке Кумир записывается в следующем виде:</para>
             <programlisting role="кумир"><![CDATA[
@@ -120,6 +127,11 @@
         </section>
         <section>
             <title>Алгоритмы-процедуры и алгоритмы-функции</title>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>знач</keyword>
+                </keywordset>
+            </sectioninfo>
             <para>
                 Алгоритмы делятся на
                 <emphasis>алгоритмы-процедуры</emphasis>
@@ -169,6 +181,13 @@
         </section>
     </section>
     <section>
+        <sectioninfo>
+            <keywordset>
+                <keyword>арг</keyword>
+                <keyword>рез</keyword>
+                <keyword>аргрез</keyword>
+            </keywordset>
+        </sectioninfo>
         <title>Параметры алгоритма</title>
         <para>
             Если алгоритм не имеет параметров (аргументов и результатов), то в строке <code language="кумир">алг</code>

@@ -34,6 +34,9 @@ public:
     /** Find function in specified package by name */
     ModelPtr findApiFunction(const QString & package, const QString & function) const;
 
+    /** Find some topic by keyword */
+    ModelPtr findKeywordTopic(const QString & index) const;
+
 
     ~SidePanel();
 
@@ -51,6 +54,7 @@ private:
     void createListOfExamples(ModelPtr root);
     void createListOfTables(ModelPtr root);
     void createListOfAlgorithms(ModelPtr root);
+    void createIndex(ModelPtr root);
 
     static QSet<QTreeWidgetItem*> findFilteredItems(
             const QString & text,
@@ -65,6 +69,7 @@ private:
     QMap<QTreeWidgetItem*, ModelPtr> modelsOfItems_;
     QMap<ModelPtr, QTreeWidgetItem*> itemsOfModels_;
     QMap<FunctionName, ModelPtr> functionsIndex_;
+    QMap<QString, ModelPtr> keywordsIndex_;
     QList<Document> loadedDocuments_;
     QList<ModelPtr> topLevelItems_;
 

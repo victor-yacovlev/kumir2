@@ -87,6 +87,7 @@ public slots:
     QStringList coursesList(bool fullPaths) const;
 
     void showHelpWindow(int index);
+    void showHelpWindowFromQuickReference(const int topicType, const QString &name);
     QStringList helpList() const;
 
 protected slots:
@@ -133,6 +134,7 @@ protected:
     QList<Widgets::SecondaryWindow*> secondaryWindows_;
     Widgets::SecondaryWindow* helpWindow_;
     Widgets::SecondaryWindow* coursesWindow_;
+    Widgets::SecondaryWindow* quickRefWindow_;
     Term * terminal_;
     QMap<QString,QObject*> m_browserObjects;
     KumirProgram * kumirProgram_;

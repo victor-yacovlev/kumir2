@@ -7,6 +7,14 @@
     <section>
         <title>Команды ветвления</title>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>ечсли</keyword>
+                    <keyword>то</keyword>
+                    <keyword>иначе</keyword>
+                    <keyword>все</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>если-то-иначе-все</title>
             <para>
                 Общий вид команды:
@@ -62,6 +70,12 @@
             </example>
         </section>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>выбор</keyword>
+                    <keyword>при</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>выбор-при-иначе-все</title>
             <para>
                 Общий вид команды:
@@ -137,8 +151,22 @@
         </section>
     </section>
     <section>
+        <sectioninfo>
+            <keywordset>
+                <keyword>нц</keyword>
+                <keyword>кц</keyword>
+            </keywordset>
+        </sectioninfo>
         <title>Команды цикла</title>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>для</keyword>
+                    <keyword>от</keyword>
+                    <keyword>до</keyword>
+                    <keyword>шаг</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>Цикл "для"</title>
             <para>
                 Общий вид цикла <emphasis>для</emphasis>:
@@ -202,6 +230,11 @@
             </example>
         </section>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>пока</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>Цикл "пока"</title>
             <para>
                 Общий вид цикла <emphasis>пока</emphasis>:
@@ -243,6 +276,11 @@
             </example>
         </section>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>кц_при</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>Цикл "до тех пор"</title>
             <para>
                 Общий вид цикла <emphasis>до тех пор</emphasis>:
@@ -309,6 +347,11 @@
             </para>
         </section>
         <section>
+            <sectioninfo>
+                <keywordset>
+                    <keyword>раз</keyword>
+                </keywordset>
+            </sectioninfo>
             <title>Цикл "N раз"</title>
             <para>
                 Общий вид цикла <emphasis>N раз</emphasis>:
