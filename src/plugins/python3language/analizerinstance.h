@@ -42,8 +42,8 @@ Q_SIGNALS:
 protected /*methods*/:
     void stopPythonInterpreter();
     explicit PythonAnalizerInstance(Python3LanguagePlugin *parent,
-                                    const QString & extraPythonPath);
-    void initializePyAnalizer(const QString & extraPythonPath);
+                                    const QStringList & extraPythonPaths);
+    void initializePyAnalizer(const QStringList & extraPythonPaths);
 
     void queryErrors();
     void queryLineProperties();

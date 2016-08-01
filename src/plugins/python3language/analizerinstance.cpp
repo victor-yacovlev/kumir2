@@ -5,7 +5,7 @@
 namespace Python3Language {
 
 PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
-                                               const QString & extraPythonPath)
+                                               const QStringList & extraPythonPaths)
     : QObject(parent)
     , plugin_(parent)
     , py_(0)
@@ -26,7 +26,7 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
     PyThreadState_Swap(prevThreadState);
     PyGILState_Release(prevGILState);
 
-    initializePyAnalizer(extraPythonPath);
+    initializePyAnalizer(extraPythonPaths);
 }
 
 PythonAnalizerInstance::~PythonAnalizerInstance()
@@ -44,13 +44,17 @@ void PythonAnalizerInstance::stopPythonInterpreter()
     py_ = 0;
 }
 
-void PythonAnalizerInstance::initializePyAnalizer(const QString & extraPythonPath)
+void PythonAnalizerInstance::initializePyAnalizer(const QStringList & extraPythonPaths)
 {
     PyThreadState* prevThreadState = PyThreadState_Swap(py_);
     PyGILState_STATE prevGILState = PyGILState_Ensure();
 
     PyObject* sys_path = PySys_GetObject("path");
-    PyList_Insert(sys_path, 0, QStringToPyUnicode(extraPythonPath));
+    for (int i=extraPythonPaths.size()-1; i>=0; --i) {
+        const QString & extraPathItem = extraPythonPaths.at(i);
+        PyList_Insert(sys_path, 0, QStringToPyUnicode(extraPathItem));
+    }
+
     PyObject* sys_pathRepr = PyObject_Repr(sys_path);
     const char *sys_pathReprStr = PyUnicode_AsUTF8(sys_pathRepr);
     qDebug() << "Using sys.path: " << sys_pathReprStr;

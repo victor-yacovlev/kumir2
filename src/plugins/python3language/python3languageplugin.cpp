@@ -130,9 +130,10 @@ void Python3LanguagePlugin::updateSettings(const QStringList & keys)
     }
 }
 
+
 Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
 {
-    static const QString ExtraPythonPath = myResourcesDir().absolutePath();
+    static const QStringList ExtraPythonPath = extraPaths();
     analizerInstances_.append(new PythonAnalizerInstance(this, ExtraPythonPath));
     analizerInstances_.last()->setUsePep8(
                 mySettings()->value(
@@ -213,6 +214,22 @@ QString Python3LanguagePlugin::extractFunction(const QString &source, const QStr
     if (-1!=lineStart) {
         QStringList midLines = sourceLines.mid(lineStart, lineCount);
         result = midLines.join("\n");
+    }
+    return result;
+}
+
+QStringList Python3LanguagePlugin::extraPaths() const
+{
+    QStringList result;
+    result.append(myResourcesDir().absolutePath());
+    QDir thirdPartyRoot = QDir(myResourcesDir().absolutePath() + "/3rd-party");
+    QStringList thirdPartyItems = thirdPartyRoot.entryList(QDir::Dirs);
+    Q_FOREACH(const QString & item, thirdPartyItems) {
+        const QString &itemPath = thirdPartyRoot.absoluteFilePath(item);
+        result.append(itemPath);
+        if (QDir(itemPath+"/src").exists()) {
+            result.append(itemPath + "/src");
+        }
     }
     return result;
 }

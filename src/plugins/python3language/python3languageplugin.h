@@ -105,6 +105,7 @@ protected:
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void stop();
     static QString extractFunction(const QString & source, const QString &funcName);
+    QStringList extraPaths() const;
 
 protected Q_SLOTS:
     void updateSettings(const QStringList &);
