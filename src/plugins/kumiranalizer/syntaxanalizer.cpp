@@ -5373,6 +5373,7 @@ AST::ExpressionPtr  SyntaxAnalizer::parseExpression(
     }
     result = makeExpressionTree(subexpression, mod);
     convertDuplicateOperandsToCacheItems(result);
+    optimizeUnaryPlus(result);
     if (result)
         result->lexems = lexems;
     return result;
@@ -5393,6 +5394,18 @@ void SyntaxAnalizer::convertDuplicateOperandsToCacheItems(AST::ExpressionPtr roo
     using namespace AST;
     QSet<AST::ExpressionPtr> cache;
     convertDuplicateOperandsToCacheItems_r(root, cache);
+}
+
+void SyntaxAnalizer::optimizeUnaryPlus(ExpressionPtr & root) const
+{
+    if (!root) return;
+    using namespace AST;
+    if (ExprSubexpression==root->kind && OpSumm==root->operatorr && 1==root->operands.size()) {
+        root = root->operands.at(0);
+    }
+    for (int i=0; i<root->operands.size(); ++i) {
+        optimizeUnaryPlus(root->operands[i]);
+    }
 }
 
 static QStringList possibleModuleImports(
