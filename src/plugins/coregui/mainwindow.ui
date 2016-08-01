@@ -24,7 +24,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item row="0" column="0">
@@ -45,7 +54,7 @@
      <x>0</x>
      <y>0</y>
      <width>742</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -53,7 +62,7 @@
      <bool>false</bool>
     </property>
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionNewProgram"/>
     <addaction name="actionNewText"/>
@@ -84,6 +93,7 @@
     </property>
     <addaction name="actionUsage"/>
     <addaction name="actionVariables"/>
+    <addaction name="actionLanguage_Quick_Reference"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -93,17 +103,17 @@
    </widget>
    <widget class="QMenu" name="menuInsert">
     <property name="title">
-     <string>Insert</string>
+     <string>&amp;Insert</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuRun">
     <property name="title">
-     <string>Run</string>
+     <string>&amp;Run</string>
     </property>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>Window</string>
+     <string>Wi&amp;ndow</string>
     </property>
     <addaction name="actionShow_Console_Pane"/>
    </widget>
@@ -116,7 +126,7 @@
   </widget>
   <action name="actionNewProgram">
    <property name="text">
-    <string>New program</string>
+    <string>&amp;New program</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -124,7 +134,7 @@
   </action>
   <action name="actionNewText">
    <property name="text">
-    <string>New text</string>
+    <string>New te&amp;xt</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>
@@ -132,7 +142,7 @@
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open...</string>
+    <string>&amp;Open...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -140,12 +150,12 @@
   </action>
   <action name="actionRecent_files">
    <property name="text">
-    <string>Recent files</string>
+    <string>&amp;Recent files</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -153,12 +163,12 @@
   </action>
   <action name="actionSave_as">
    <property name="text">
-    <string>Save as...</string>
+    <string>Sa&amp;ve as...</string>
    </property>
   </action>
   <action name="actionSave_all">
    <property name="text">
-    <string>Save all</string>
+    <string>Save a&amp;ll</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -166,7 +176,7 @@
   </action>
   <action name="actionClose">
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -174,12 +184,12 @@
   </action>
   <action name="actionSwitch_workspace">
    <property name="text">
-    <string>Switch workspace...</string>
+    <string>Switch &amp;workspace...</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -193,7 +203,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Manuals</string>
+    <string>&amp;Manuals</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -204,12 +214,12 @@
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About...</string>
+    <string>&amp;About...</string>
    </property>
   </action>
   <action name="actionPreferences">
    <property name="text">
-    <string>Preferences...</string>
+    <string>&amp;Preferences...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::PreferencesRole</enum>
@@ -225,7 +235,7 @@
   </action>
   <action name="actionRestore_previous_session">
    <property name="text">
-    <string>Restore previous session</string>
+    <string>Restore prev&amp;ious session</string>
    </property>
   </action>
   <action name="actionVariables">
@@ -233,7 +243,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Variable Current Values</string>
+    <string>&amp;Variable Current Values</string>
    </property>
    <property name="shortcut">
     <string>F2</string>
@@ -247,7 +257,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Console Pane</string>
+    <string>&amp;Show Console Pane</string>
    </property>
    <property name="shortcut">
     <string>F12</string>
@@ -255,7 +265,21 @@
   </action>
   <action name="actionMake_native_executable">
    <property name="text">
-    <string>Make native executable...</string>
+    <string>&amp;Make native executable...</string>
+   </property>
+  </action>
+  <action name="actionLanguage_Quick_Reference">
+   <property name="text">
+    <string>Language Quick Reference</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

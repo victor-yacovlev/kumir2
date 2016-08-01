@@ -39,6 +39,7 @@ set(SOURCES
     secondarywindow_generic.cpp
     utf8textbrowser.cpp
     iconprovider.cpp
+    flowlayout.cpp
 )
 
 set(MOC_HEADERS

@@ -57,6 +57,7 @@ namespace ActorDraw {
           //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
            
         }
+
     protected:
        // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
@@ -181,6 +182,17 @@ public /* methods */:
     {
         return QColor(DrawSettings()->value("AxisColor","blue").toString());
     }
+    void redrawPicture()
+    {
+     
+            CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+            CurView->forceRedraw();
+            CurScene->update(CurScene->sceneRect());
+            CurView->repaint();
+            CurView->viewport()->update();
+            CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+       
+    }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
@@ -197,6 +209,7 @@ public slots:
     bool runIsLineAtCircle(const qreal x, const qreal y, const qreal radius);
     void zoomFullDraw();
     
+    
     void drawNet();
     void autoNetChange(bool value);
     void netStepChange(double value);
@@ -207,6 +220,7 @@ public slots:
     void showNavigator(bool state);
     void openFile();
     void saveFile();
+    void redraw();
 
 
     /* ========= CLASS PRIVATE ========= */
@@ -226,7 +240,8 @@ private:
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
     QDir curDir;
-
+    bool animate;
+    QTimer *redrawTimer;
 
 
 };

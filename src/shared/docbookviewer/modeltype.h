@@ -25,6 +25,7 @@ enum ModelType {
     Xref,
     Emphasis,
     XInfo,
+    SectionInfo,
     KeywordSet,
     Keyword,
     Synopsis,

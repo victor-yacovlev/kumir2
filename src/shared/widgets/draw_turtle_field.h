@@ -44,7 +44,7 @@ public:
         else zoomText->setPlainText(QString::number(Zoom/50)+":1");
         qDebug()<<"Zoom"<<Zoom;
         //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-        if(isAutonet){
+        if(isAutonet->isChecked()){
         netStepXS->setMaximum(300*(1/Zoom));
         netStepXS->setMinimum(5*(1/Zoom));
         netStepYS->setMaximum(300*(1/Zoom));
@@ -76,7 +76,7 @@ private:
     QGraphicsScene* myScene;
     QGraphicsLineItem * mainLineX,*mainLineY;
     QGraphicsTextItem * zoomText,*zoomLab,*netLab;
-
+    
      
     QCheckBox * isAutonet;
     QLabel * isAnLabel;

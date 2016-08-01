@@ -341,6 +341,26 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         helpViewer_->setRole(DocBookViewer::Section, apiHelpListingRole);
         helpViewer_->setRole(DocBookViewer::Type, apiHelpListingRole);
         helpViewer_->setRole(DocBookViewer::Code, apiHelpListingRole);
+
+        if (analizerPlugin->languageQuickReferenceWidget()) {
+            mainWindow_->ui->actionLanguage_Quick_Reference->setVisible(true);
+            mainWindow_->ui->actionLanguage_Quick_Reference->setEnabled(true);
+            quickRefWindow_ = Widgets::SecondaryWindow::createSecondaryWindow(
+                        analizerPlugin->languageQuickReferenceWidget(),
+                        tr("Quick Reference"),
+                        QIcon(),
+                        mainWindow_,
+//                        mainWindow_->helpAndCoursesPlace_,
+                        0,
+                        "QuickReferenceWindow",
+                        true
+                        );
+            connect(mainWindow_->ui->actionLanguage_Quick_Reference, SIGNAL(triggered()),
+                    quickRefWindow_, SLOT(activate()));
+            connect(analizerPlugin->languageQuickReferenceWidget(),
+                    SIGNAL(openTopicInDocumentation(int,QString)),
+                    this, SLOT(showHelpWindowFromQuickReference(int,QString)));
+        }
     }
 
     indexFileName = helpPath + indexFileName;
@@ -1087,6 +1107,16 @@ void Plugin::showHelpWindow(int index)
     }
     if (helpViewer_) {
         helpViewer_->activateBookIndex(index);
+    }
+}
+
+void Plugin::showHelpWindowFromQuickReference(const int topicType, const QString &name)
+{
+    if (helpWindow_) {
+        helpWindow_->activate();
+    }
+    if (helpViewer_) {
+        helpViewer_->navigateFromQuickReference(topicType, name);
     }
 }
 

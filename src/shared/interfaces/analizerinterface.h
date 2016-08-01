@@ -10,6 +10,8 @@
 
 #include <QtCore>
 
+class QWidget;
+
 namespace Shared {
 
 class AnalizerInterface {
@@ -20,11 +22,13 @@ public:
     virtual bool caseInsensitiveGrammatic() const = 0;
     virtual IndentsBehaviour indentsBehaviour() const = 0;
     virtual QString languageName() const = 0;
+    virtual QWidget * languageQuickReferenceWidget() { return 0; }
     inline virtual QByteArray asciiLanguageIdentifier() const { return languageName().toLower().toLatin1(); }
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 
     virtual Analizer::InstanceInterface * createInstance() = 0;
     virtual Analizer::SourceFileInterface * sourceFileHandler() = 0;
+
 };
 
 }

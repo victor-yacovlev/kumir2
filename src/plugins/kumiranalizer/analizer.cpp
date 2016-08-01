@@ -195,6 +195,11 @@ bool Analizer::isModuleAlwaysEnabled(const ModulePtr module) const
     return _AlwaysAvailableModulesName.contains(module->header.name);
 }
 
+bool Analizer::isModuleAlwaysEnabled(const QString &localizedName)
+{
+    return _AlwaysAvailableModulesName.contains(localizedName);
+}
+
 
 QStringList Analizer::moduleNames() const
 {
