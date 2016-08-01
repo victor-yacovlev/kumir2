@@ -60,11 +60,11 @@ void SandboxWidget::reset()
         PyEval_ReleaseLock();
     }
 
-#ifdef Q_OS_WIN32
-    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
-#else
+//#ifdef Q_OS_WIN32
+//    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
+//#else
     if (PyThreadState_GET())
-#endif
+//#endif
         PyEval_AcquireLock();
     else
         PyGILState_Ensure();

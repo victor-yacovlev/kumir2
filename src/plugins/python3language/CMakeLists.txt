@@ -22,6 +22,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DPYTHON_SCRIPT_DEBUG)
 endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
+unset(PYTHON_LIBRARY)
 find_package(PythonLibs 3.4)
 include_directories(${PYTHON_INCLUDE_DIRS})
 if(MSVC)
