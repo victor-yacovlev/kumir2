@@ -41,7 +41,7 @@ namespace ActorDraw {
     
     QRectF DrawScene::getRect() //User lines bounding rect
     {
-        QRectF boundRect=QRectF(QPointF(-1,5),QPointF(4,-1));//default rect
+        QRectF boundRect=QRectF(QPointF(-5,-5),QPointF(5,5));//default rect
   
         for(int i=0;i<lines.count();i++)
         {
@@ -830,7 +830,9 @@ QString DrawModule::initialize(const QStringList &configurationParameters, const
 {
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
-       
+        animate=false;
+        redrawTimer = new QTimer(this);
+        connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
     }
     return "";
 }
@@ -918,6 +920,11 @@ void DrawModule::showNavigator(bool state)
     CurView->repaint();
     CurView->viewport()->update();
     CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+    if(current==GlobalState::GS_Running)
+    {
+        redrawTimer->start(500);
+    }else
+        redrawTimer->stop();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
@@ -980,7 +987,8 @@ void DrawModule::showNavigator(bool state)
     // Sets GUI animation flag on run
     // NOTE this method just setups a flag and might be called anytime, even module not needed
     // TODO implement me
-    Q_UNUSED(enabled);  // Remove this line on implementation
+   // Q_UNUSED(enabled);  // Remove this line on implementation
+    animate=enabled;
 }
 
 /* public slot */ void DrawModule::runSetupPen()
@@ -1028,7 +1036,7 @@ void DrawModule::showNavigator(bool state)
     }
     CurView->resetCachedContent();
     CurView->update();
-    
+    if(animate)redrawPicture();
     mutex.unlock();
 }
 
@@ -1044,6 +1052,7 @@ void DrawModule::showNavigator(bool state)
             CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
         }
     CurView->update();
+     if(animate)redrawPicture();
     mutex.unlock();
 }
 
@@ -1132,9 +1141,10 @@ void DrawModule::drawNet()
         qreal size=qMax(width,heigth);
         QRectF sceneInfoRect=CurScene->getRect();//Get user lines bounding rect from scene
    
-        sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
+        //sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
  
-        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"MaxSize"<<qMax(sceneInfoRect.height(),sceneInfoRect.width());
+        qDebug()<<"SceneInfoRect:"<<sceneInfoRect<<"L"<<sceneInfoRect.left()<<"R"<<sceneInfoRect.right()<<"t"<<sceneInfoRect.top()<<"B"<<sceneInfoRect.bottom()<<"MaxSize"<<qMax(sceneInfoRect.height(),sceneInfoRect.width())<<"Center"<<sceneInfoRect.center();;
+        //sceneInfoRect.setY(-sceneInfoRect.y());//Convert to Kumir Coordinates
  
       //  CurView->setSceneRect(QRectF(QPointF(sceneInfoRect.x()-(CurView->geometry().width())*(1/zoom()),sceneInfoRect.y()-(CurView->geometry().height()*2)*(1/zoom())),
        //                              QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
@@ -1186,6 +1196,7 @@ void DrawModule::drawNet()
         navigator->updateSelf(NetStepX(),NetStepY());
         CurView->update();
         CurView->forceRedraw();
+        redrawPicture();
     };
     void DrawModule::CreatePen(void)
     {
@@ -1226,5 +1237,11 @@ void DrawModule::drawNet()
         setNetStepX(value);
         if(oldValue!=value && value>navigator->netStepYS->minimum() )drawNet();
     }
-
+void DrawModule::redraw()
+    {
+         mutex.lock();
+        redrawPicture();
+         mutex.unlock();
+        
+    }
 } // namespace ActorDraw
