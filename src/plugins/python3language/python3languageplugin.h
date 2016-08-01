@@ -118,6 +118,10 @@ private /*fields*/:
     SandboxWidget * sandboxWidget_;
     SyntaxCheckSettingsPage * syntaxCheckSettingsPage_;
 
+
+    // RunInterface interface
+public:
+    RunMode currentRunMode() const;
 };
 
 } // namespace

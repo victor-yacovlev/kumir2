@@ -110,6 +110,16 @@ void PythonRunThread::setStdOutStream(QTextStream *stream)
     callback_->setStdOutStream(stream);
 }
 
+RunInterface::RunMode PythonRunThread::currentRunMode() const
+{
+    if (runMode_.isEmpty()) {
+        return RunInterface::RM_Idle;
+    }
+    else {
+        return runMode_.top();
+    }
+}
+
 void PythonRunThread::releaseSemaphores()
 {
     if (!runPauseSemaphore_->available()) {
@@ -343,20 +353,20 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
                 self->dispatchLineChange();
 
             if (!self->runMode_.isEmpty()) {
-                RunMode mode = self->runMode_.last();
-                if (RM_StepOver==mode || RM_StepIn==mode) {
+                RunInterface::RunMode mode = self->runMode_.last();
+                if (RunInterface::RM_StepOver==mode || RunInterface::RM_StepIn==mode) {
                     self->updateDebuggerVariablesModel(frame);
                 }
             }
 
 
             if (PyTrace_LINE==what && !self->runMode_.isEmpty()) {
-                RunMode mode = self->runMode_.last();
-                bool stopOnStep = RM_StepOver==mode || RM_StepIn==mode;
-                bool stopOnBreakpoint = RM_Blind!=mode && RM_Idle!=mode
+                RunInterface::RunMode mode = self->runMode_.last();
+                bool stopOnStep = RunInterface::RM_StepOver==mode || RunInterface::RM_StepIn==mode;
+                bool stopOnBreakpoint = RunInterface::RM_Blind!=mode && RunInterface::RM_Idle!=mode
                         && self->checkForBreakpoint(BreakpointLocation(fileName, lineNumber));
                 if (stopOnStep || stopOnBreakpoint) {
-                    if (RM_Regular==mode)  // not emited while in dispatchLineChange()
+                    if (RunInterface::RM_Regular==mode)  // not emited while in dispatchLineChange()
                         Q_EMIT self->lineChanged(lineNumber, 0, 0);
                     Q_EMIT self->stopped(RunInterface::SR_UserInteraction);
                     self->runPauseSemaphore_->acquire();
@@ -365,17 +375,17 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
 
 
             if (PyTrace_CALL==what) {
-                RunMode curMode = RM_StepOver;
+                RunInterface::RunMode curMode = RunInterface::RM_StepOver;
                 if (!self->runMode_.isEmpty())
                     curMode = self->runMode_.top();
-                RunMode nextMode;
-                if (RM_Blind == curMode || RM_Regular == curMode)
+                RunInterface::RunMode nextMode;
+                if (RunInterface::RM_Blind == curMode || RunInterface::RM_Regular == curMode)
                     nextMode = curMode;
-                else if (RM_StepIn == curMode)
-                    nextMode = RM_StepOver;
+                else if (RunInterface::RM_StepIn == curMode)
+                    nextMode = RunInterface::RM_StepOver;
                 else
-                    nextMode = RM_StepOut;
-                self->runMode_.push(curMode==RM_StepIn ? RM_StepOver : RM_Regular);
+                    nextMode = RunInterface::RM_StepOut;
+                self->runMode_.push(curMode==RunInterface::RM_StepIn ? RunInterface::RM_StepOver : RunInterface::RM_Regular);
             }
 
             if (PyTrace_RETURN==what && !self->runMode_.isEmpty()) {
@@ -395,8 +405,8 @@ int PythonRunThread::python_trace_dispatch(PyObject *, PyFrameObject *frame, int
         else {
             // not same file
             self->mutex_->lock();
-            if (!self->runMode_.isEmpty() && RM_StepIn==self->runMode_.top()) {
-                self->runMode_.top() = RM_StepOver;
+            if (!self->runMode_.isEmpty() && RunInterface::RM_StepIn==self->runMode_.top()) {
+                self->runMode_.top() = RunInterface::RM_StepOver;
             }
             self->mutex_->unlock();
         }
@@ -433,10 +443,10 @@ void PythonRunThread::terminate()
 void PythonRunThread::dispatchLineChange()
 {
     mutex_->lock();
-    RunMode currentMode = RM_Regular;
+    RunInterface::RunMode currentMode = RunInterface::RM_Regular;
     if (!runMode_.isEmpty())
         currentMode = runMode_.top();
-    bool emitSteps = RM_StepOver==currentMode || RM_StepIn==currentMode || RM_StepOut==currentMode;
+    bool emitSteps = RunInterface::RM_StepOver==currentMode || RunInterface::RM_StepIn==currentMode || RunInterface::RM_StepOut==currentMode;
     bool justStarted = false;
     unsigned long int stepsCounter = 0;
     int lineNumber = lineNumber_;
@@ -459,7 +469,7 @@ void PythonRunThread::dispatchLineChange()
     }
 
     // Highlight current line if need
-    if (RM_StepOver==currentMode || RM_StepIn==currentMode || RM_StepOut==currentMode) {
+    if (RunInterface::RM_StepOver==currentMode || RunInterface::RM_StepIn==currentMode || RunInterface::RM_StepOut==currentMode) {
         Q_EMIT lineChanged(lineNumber, 0, 0);
     }
 
@@ -500,11 +510,11 @@ void PythonRunThread::updateDebuggerVariablesModel(PyFrameObject *current_frame)
     variablesModel_->update(current_frame);
 }
 
-void PythonRunThread::startOrContinue(const RunMode runMode)
+void PythonRunThread::startOrContinue(const RunInterface::RunMode runMode)
 {    
     if (!isRunning()) {
         runMode_.clear();
-        runMode_.push(RM_StepOver==runMode? RM_StepIn : runMode);
+        runMode_.push(RunInterface::RM_StepOver==runMode? RunInterface::RM_StepIn : runMode);
         actorsHandler_->resetActors();
         start();
     }

@@ -7,7 +7,7 @@ extern "C" {
 #include <frameobject.h>
 }
 
-#include "runmode.h"
+#include "interfaces/runinterface.h"
 
 namespace Python3Language {
 
@@ -40,6 +40,8 @@ public /*methods*/:
     inline bool canStepOut() const { QMutexLocker l(mutex_); return canStepOut_; }
     void setStdInStream(QTextStream * stream);
     void setStdOutStream(QTextStream * stream);
+
+    Shared::RunInterface::RunMode currentRunMode() const;
 
     void forceGlobalVariableValue(const QByteArray & name, PyObject * value);
     inline void setTestRunCount(quint32 n) { QMutexLocker l(mutex_); testRunCount_ = n; }
@@ -76,7 +78,7 @@ public Q_SLOTS:
         postTestSource_ = postTestSource;
     }
 
-    void startOrContinue(const RunMode runMode);
+    void startOrContinue(const Shared::RunInterface::RunMode runMode);
     void terminate();
     void setInputResult(const QVariantList &results);
 
@@ -96,7 +98,7 @@ private /*methods*/:
 
 private /*fields*/:
     static PythonRunThread* self;
-    QStack<RunMode> runMode_;
+    QStack<Shared::RunInterface::RunMode> runMode_;
     InterpreterCallback * callback_;
     ActorsHandler* actorsHandler_;
     QString pythonPath_;
