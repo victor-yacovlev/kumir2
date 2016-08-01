@@ -1,0 +1,99 @@
+﻿Contributors
+------------
+
+Order doesn't matter (not that much, at least ;)
+
+* Sylvain Thenault (Logilab): main author / maintainer
+
+* Torsten Marek (Google): maintainer, contributor
+
+* Claudiu Popa: maintainer, contributor
+
+* Daniel Balparda (Google): GPyLint maintainer (Google's pylint variant),
+  various patches
+
+* Martin Pool (Google): warnings for anomalous backslashes, symbolic names for
+  messages (like 'unused'), etc
+
+* Alexandre Fayolle (Logilab): TkInter gui, documentation, debian support
+
+* Julien Cristau, Emile Anclin (Logilab): python 3 support
+
+* Sandro Tosi: Debian packaging
+
+* Mads Kiilerich, Boris Feld, Bill Wendling, Sebastian Ulrich:
+  various patches
+
+* Brian van den Broek: windows installation documentation
+
+* Amaury Forgeot d'Arc: check names imported from a module exists in the module
+
+* Benjamin Niemann: allow block level enabling/disabling of messages
+
+* Nathaniel Manista: suspicious lambda checking
+
+* David Shea: invalid sequence and slice index
+
+* Carl Crowder: don't evaluate the value of arguments for 'dangerous-default-value'
+
+* Michal Nowikowski: wrong-spelling-in-comment, wrong-spelling-in-docstring,
+  parallel execution on multiple CPUs and other patches.
+
+* David Lindquist: logging-format-interpolation warning.
+
+* Brett Cannon: Port source code to be Python 2/3 compatible, Python 3
+  checker.
+
+* Vlad Temian: redundant-unittest-assert and the JSON reporter.
+
+* Cosmin Poieană: unichr-builtin and improvements to bad-open-mode.
+
+* Viorel Știrbu: intern-builtin warning.
+
+* Dan Goldsmith: support for msg-template in HTML reporter.
+
+* Chris Rebert: unidiomatic-typecheck.
+
+* Steven Myint: duplicate-except.
+
+* Radu Ciorba: not-context-manager and confusing-with-statement warnings.
+
+* Bruno Daniel: check_docs extension.
+
+* James Morgensen: ignored-modules option applies to import errors.
+
+* Wolfgang Grafen, Axel Muller, Fabio Zadrozny, Pierre Rouleau,
+  Maarten ter Huurne, Mirko Friedenhagen and all the Logilab's team (among others):
+  bug reports, feedback, feature requests... Many other people have contributed
+  by their feedback or even patches, if I've forgotten you, send me a note !
+
+* Cezar Elnazli: deprecated-method
+
+* Stéphane Wirtel: nonlocal-without-binding
+
+* Dmitry Pribysh: multiple-imports, not-iterable, not-a-mapping, various patches.
+
+* Laura Medioni (Logilab, on behalf of the CNES): misplaced-comparison-constant,
+  no-classmethod-decorator, no-staticmethod-decorator, too-many-nested-blocks,
+  too-many-boolean-expressions, unneeded-not, wrong-import-order, ungrouped-imports,
+  wrong-import-position, redefined-variable-type
+
+* Aru Sahni: Git ignoring, regex-based ignores
+
+* Mike Frysinger: contributor.
+
+* Łukasz Rogalski: invalid-length-returned
+
+* Moisés López (Vauxoo): Support for deprecated-modules in modules not installed,
+  Refactory wrong-import-order to integrate it with `isort` library
+  Add check too-complex with mccabe for cyclomatic complexity
+  Refactory wrong-import-position to skip try-import and nested cases.
+
+* Luis Escobar (Vauxoo), Moisés López (Vauxoo): Add bad-docstring-quotes and docstring-first-line-empty
+
+* Ashley Whetter: check_docs extension can find constructor parameters in __init__
+	Added check_raise_docs extension.
+
+* Yannick Brehon: contributor.
+
+* Glenn Matthews: bug reports, occasional bug fixes
