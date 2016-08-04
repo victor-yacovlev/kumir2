@@ -439,6 +439,7 @@ bool KumirRunPlugin::isTestingRun() const
 
 void KumirRunPlugin::terminate()
 {
+    common_->call.terminate();
     if (gui_)
         gui_->delay.stop();
     pRun_->stop();

@@ -169,6 +169,7 @@ public:
         return AnyValue();
     }
     inline virtual void checkForActorConnected(const std::string & /*asciiModuleName*/) {}
+    inline virtual void terminate() {}
 };
 
 class CustomTypeToStringFunctor: public Functor {
