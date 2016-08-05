@@ -892,8 +892,9 @@ SyntaxAnalizer::suggestValueAutoComplete(
             )
     {
         QList<AST::AlgorithmPtr> algs;
-        if (contextModule)
+        if (contextModule) {
             algs += contextModule->impl.algorhitms;
+        }
         QList<AST::ModulePtr> enabledModules;
         std::copy_if(ast_->modules.begin(),
                      ast_->modules.end(),
@@ -904,12 +905,17 @@ SyntaxAnalizer::suggestValueAutoComplete(
                     alwaysEnabledModules_.contains(p->header.name);
         });
         std::for_each(enabledModules.begin(), enabledModules.end(),
-                      [&algs](AST::ModulePtr p) {algs += p->header.algorhitms;});
+                      [&algs](AST::ModulePtr p)
+        {
+            std::list<AST::AlgorithmPtr> modulePublicAlgorithms =
+                    p->header.algorhitms.toStdList();
+            std::copy(modulePublicAlgorithms.begin(), modulePublicAlgorithms.end(),
+                      std::back_inserter(algs));
+        });
 
         // Filter algs list by return type matching
-        std::remove_if(algs.begin(), algs.end(),
-                     [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)->bool
-        {
+        for (QList<AST::AlgorithmPtr>::iterator it=algs.begin(); it!=algs.end(); ) {
+            AST::AlgorithmPtr alg = *it;
             bool typeMatch = alg->header.returnType==baseType;
             if (accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn) {
                 // It is possible to cast int->real and char->string
@@ -921,13 +927,16 @@ SyntaxAnalizer::suggestValueAutoComplete(
             if (!typeIsKnown)
                 typeMatch = alg->header.returnType.kind != AST::TypeNone;
 
-            return !typeMatch;
-        });
+            if (!typeMatch) {
+                it = algs.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
 
         // Filter algs list by access type
-        std::remove_if(algs.begin(), algs.end(),
-                       [typeIsKnown,baseType,accessType](AST::AlgorithmPtr alg)->bool
-        {
+        for (QList<AST::AlgorithmPtr>::iterator it=algs.begin(); it!=algs.end(); ) {
             bool accessMatch = false;
                 // Can pass an algorithm here
             if (typeIsKnown && baseType.kind==AST::TypeNone) {
@@ -939,19 +948,29 @@ SyntaxAnalizer::suggestValueAutoComplete(
                 accessMatch = accessType==AST::AccessRegular || accessType==AST::AccessArgumentIn;
             }
 
-            return !accessMatch;
-        });
+            if (!accessMatch) {
+                it = algs.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
 
         // Filter algs list by name
         const bool allowTeacherAlgorithms =
                 AST::ModTypeTeacher==currentModule->header.type ||
                 AST::ModTypeTeacherMain==currentModule->header.type;
-        std::remove_if(algs.begin(), algs.end(),
-                       [allowTeacherAlgorithms](AST::AlgorithmPtr alg)->bool
-        {
+
+        for (QList<AST::AlgorithmPtr>::iterator it=algs.begin(); it!=algs.end(); ) {
+            AST::AlgorithmPtr alg = *it;
             const QString & name = alg->header.name;
-            return name.isEmpty() || ( name.startsWith("@") && !allowTeacherAlgorithms );
-        });
+            if (name.isEmpty() || ( name.startsWith("@") && !allowTeacherAlgorithms ) ) {
+                it = algs.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
 
         // Create suggestions list
         std::transform(algs.begin(), algs.end(), std::back_inserter(result),
