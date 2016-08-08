@@ -22,6 +22,7 @@ case 148: return 8221; break;
 case 149: return 8226; break; 
 case 150: return 8211; break; 
 case 151: return 8212; break; 
+case 152: return 152; break; // not-existing, but allows back-coding
 case 153: return 8482; break; 
 case 154: return 1113; break; 
 case 155: return 8250; break; 
