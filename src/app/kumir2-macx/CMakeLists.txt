@@ -4,7 +4,7 @@ include (${QT_USE_FILE})
 set(CMAKE_MACOSX_RPATH 1)
 
 set(CONFIGURATION_TEMPLATE
-    "CourseManager,Editor,Browser,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
+    "CourseManager,Editor,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
 )
 
 set(SPLASHSCREEN

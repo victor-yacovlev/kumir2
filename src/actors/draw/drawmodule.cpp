@@ -1217,7 +1217,7 @@ void DrawModule::drawNet()
 //        mPen->scale(0.5,0.5);
 //        mPen->scale(0.5,0.5);
 //        mPen->scale(0.5,0.5);
-        mPen->setScale((0.05)*mPen->scale());
+        mPen->setScale((0.025)*mPen->scale());
         mPen->setZValue(100);
         
         
@@ -1229,6 +1229,7 @@ void DrawModule::drawNet()
         setAutoNet(value);
         getCurView()->setNet();
         drawNet();
+        redraw();
     }
     void DrawModule::netStepChange(double value)
     {
