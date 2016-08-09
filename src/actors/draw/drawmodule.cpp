@@ -93,11 +93,13 @@ namespace ActorDraw {
                 qDebug()<<"Bott"<<boundRect.bottom()<<"Top:"<<boundRect.top()<<"line p1y:"<<lines.at(i)->line().p1().y()<<"line p2y:"<<lines.at(i)->line().p2().y();
                 if(lines.at(i)->line().p2().y()<boundRect.top())
                 {
-                    boundRect.setTop(-lines.at(i)->line().p2().y()); 
+                    boundRect.setTop(lines.at(i)->line().p2().y());
+                    deb=-lines.at(i)->line().p2().y();
                 } 
                 if(lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
                 {
-                    boundRect.setBottom(lines.at(i)->line().p1().y()); 
+                    boundRect.setBottom(lines.at(i)->line().p1().y());
+                    deb=lines.at(i)->line().p1().y();
                     
                 }
             }
@@ -1150,7 +1152,6 @@ void DrawModule::drawNet()
        //                              QPointF(sceneInfoRect.x()+1000*(1/zoom()),sceneInfoRect.y()+1000*(1/zoom()))));
         
         QPointF cnt=sceneInfoRect.center();
-        cnt.setY(-cnt.y());
         qreal width2=sceneInfoRect.width();
         qreal size2=qMax(sceneInfoRect.height(),sceneInfoRect.width());
         qreal oldZoom=CurView->zoom();
