@@ -1160,6 +1160,7 @@ class Settings:
         :return:                C++ code for settings page creation
         """
         result = "QMap<QString,Widgets::DeclarativeSettingsPage::Entry> entries;\n"
+        self._entries.sort(key=lambda entry: entry._key)
         for entry in self._entries:
             assert isinstance(entry, SettingsEntry)
             result += entry.get_entry_cpp_implementation("entries")
