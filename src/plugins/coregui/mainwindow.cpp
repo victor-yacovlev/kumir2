@@ -1127,6 +1127,13 @@ void MainWindow::saveNativeExecutable()
     worker->deleteLater();
 }
 
+void MainWindow::ensureBottomVisible()
+{
+    qDebug() << "Ensure bottom visible";
+    ui->actionShow_Console_Pane->setChecked(true);
+    setConsoleVisible(true);
+}
+
 bool MainWindow::saveCurrentFileAs()
 {
     using namespace ExtensionSystem;
@@ -1628,7 +1635,9 @@ void MainWindow::loadSettings(const QStringList & keys)
                 sizes[0] = height() - sizes[1];
             }
             ui->splitter->setSizes(sizes);
-            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+            bool showConsole = settings_->value(Plugin::MainWindowShowConsoleKey, false).toBool();
+//            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+            ui->actionShow_Console_Pane->setChecked(showConsole);
         }
     }
     menubarContextMenu_->loadSettings();
@@ -1711,6 +1720,7 @@ void MainWindow::saveSettings()
     settings_->setValue(Plugin::MainWindowSplitterStateKey+"0", sizes[0]);
     settings_->setValue(Plugin::MainWindowSplitterStateKey+"1", sizes[1]);
     settings_->setValue("SavedBottomSize", prevBottomSize_);
+    settings_->setValue(Plugin::MainWindowShowConsoleKey, ui->actionShow_Console_Pane->isChecked());
     centralSide_->save();
     secondarySide_->save();
     menubarContextMenu_->saveSettings();

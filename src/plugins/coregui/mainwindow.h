@@ -118,6 +118,7 @@ public slots:
     void updateStartPageTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
     void makeNativeExecutable();
     void saveNativeExecutable();
+    void ensureBottomVisible();
 
 private slots:
     void setFirstTimeWindowLayout();
