@@ -13,7 +13,13 @@ DebuggerView::DebuggerView(Shared::RunInterface * runner, QWidget *parent)
 
 QSize DebuggerView::minimumSizeHint() const
 {
-    return QSize(200, 300);
+    const int PreferredMinWidth = 150;
+    const int PreferredMinHeight = 70;
+    const QSize currentSize = sizeHint();
+//    const QSize minimumSizeHint(qMax(PreferredMinWidth, currentSize.width()),
+//                                qMax(PreferredMinHeight, currentSize.height()));
+    const QSize minimumSizeHint(PreferredMinWidth, PreferredMinHeight);
+    return minimumSizeHint;
 }
 
 QSize DebuggerView::sizeHint() const
@@ -22,8 +28,7 @@ QSize DebuggerView::sizeHint() const
     if (debuggerEnabled_ && model()) {
         content = sizeHintForIndex(rootIndex());
     }
-    return QSize(qMax(content.width(), minimumSizeHint().width()),
-                 qMax(content.height(), minimumSizeHint().height()));
+    return QSize(content.width(), content.height());
 }
 
 void DebuggerView::setDebuggerEnabled(bool enabled)
