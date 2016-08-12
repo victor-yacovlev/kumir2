@@ -221,10 +221,10 @@ QSize StatusBar::messageItemSize() const
 QFont StatusBar::statusBarFont() const
 {
     QFont fnt = font();
-#ifdef Q_OS_LINUX
-    fnt.setPointSize(9);
-#else
-    fnt.setPointSize(12);
+#ifndef Q_OS_LINUX
+    int MinPointSize = 12;
+    int SystemPointSize = fnt.pointSize();
+    fnt.setPointSize(qMax(MinPontSize, SystemPointSize));
 #endif
     return fnt;
 }
