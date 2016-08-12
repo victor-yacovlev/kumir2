@@ -81,12 +81,15 @@ namespace ActorDraw {
     {
     public:
         DrawScene ( QObject * parent = 0 ){};
-        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net);
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
         void setDraw(DrawModule* draw){DRAW=draw;};
-        void addDrawLine(QLineF lineF,QColor color)
+        void addDrawLine(QLineF lineF,QColor color,qreal width)
         {
             QGraphicsLineItem* line=addLine(lineF);
-            line->setPen(QPen(QColor(color)));
+            QPen mp=QPen(QColor(color));
+            mp.setWidthF(width);
+            mp.setCosmetic(true);
+            line->setPen(mp);
             line->setZValue(90);
             lines.append(line); 
             
@@ -103,7 +106,7 @@ namespace ActorDraw {
             
         }
         void DestroyNet();
-        void drawOnlyAxis(double startx ,double endx,double starty,double endy);
+        void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
@@ -133,6 +136,8 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    // static DrawModule * self;
+   // static ExtensionSystem::SettingsPtr MySettings();
     bool isAutoNet() const
     {
         return autoNet;
