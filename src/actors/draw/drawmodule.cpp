@@ -180,10 +180,12 @@ namespace ActorDraw {
         Netlines.clear();
         
     }
-    void DrawScene::drawOnlyAxis(double startx ,double endx,double starty,double endy)
+    void DrawScene::drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw)
     {
         
         QPen axisPen=QPen(DRAW->axisColor());
+        axisPen.setWidthF(aw);
+        axisPen.setCosmetic(true);
         Netlines.append(addLine(startx-qAbs(startx-endx),0  , endx+qAbs(startx-endx), 0 ));
         Netlines.last()->setPen(axisPen);
         Netlines.last()->setZValue(1);
@@ -196,16 +198,19 @@ namespace ActorDraw {
     
     
     
-    void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY,bool net)
+    void DrawScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY,bool net,qreal nw,qreal aw)
     {
         
         QPointF pos,tail;    
         QColor AxisColor=DRAW->axisColor();
+        auto lp=QPen(color);
+        lp.setWidthF(nw);
+        lp.setCosmetic(true);
         
         DestroyNet();
         if(!net)
         {
-            drawOnlyAxis(startx,endx,starty,endy);
+            drawOnlyAxis(startx,endx,starty,endy,aw);
             return;
         }
         int lines=qRound(startx/stepX);
@@ -222,16 +227,18 @@ namespace ActorDraw {
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
-			Netlines.last()->setPen(QPen(color));
+			Netlines.last()->setPen(lp);
             if(fx1>0-1/DRAW->zoom() && fx1<0+1/DRAW->zoom())
             {
                 QPen axisPen=QPen(AxisColor);
+                axisPen.setWidthF(aw);
+                axisPen.setCosmetic(true);
                // axisPen.setWidth(3/DRAW->zoom());
                 Netlines.last()->setPen(axisPen); 
                 Netlines.last()->setZValue(1);
-                Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
-                Netlines.last()->setZValue(1);
-                Netlines.last()->setPen(axisPen); 
+              //  Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
+              //  Netlines.last()->setZValue(1);
+              //  Netlines.last()->setPen(axisPen);
             }
 		}
       //  Netlines.append(addLine(-1, -1 , 1, 1 ));
@@ -249,17 +256,17 @@ namespace ActorDraw {
             
             Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
-			Netlines.last()->setPen(QPen(color));
+			Netlines.last()->setPen(lp);
             if(fy1>0-1/DRAW->zoom() && fy1<0+1/DRAW->zoom())
             {
                 QPen axisPen=QPen(AxisColor);
-               // axisPen.setWidth(6/(DRAW->zoom()*2));
-               // qDebug()<<"Width"<<6/(DRAW->zoom()*2);
+                axisPen.setWidthF(aw);
+                axisPen.setCosmetic(true);
                 Netlines.last()->setPen(axisPen);
                 Netlines.last()->setZValue(1);
-                Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
-                Netlines.last()->setZValue(1);
-                Netlines.last()->setPen(axisPen);  
+               //Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
+                //Netlines.last()->setZValue(1);
+               // Netlines.last()->setPen(axisPen);
             }
             
 		}
@@ -1034,7 +1041,7 @@ void DrawModule::showNavigator(bool state)
     mPen->setPos(x, -y);
     if(penIsDrawing)
     {
-        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
+        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",1).toFloat());
     }
     CurView->resetCachedContent();
     CurView->update();
@@ -1051,7 +1058,7 @@ void DrawModule::showNavigator(bool state)
     mPen->moveBy(dX, -dY);
     if(penIsDrawing)
         {
-            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
+            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",1).toFloat());
         }
     CurView->update();
      if(animate)redrawPicture();
@@ -1092,7 +1099,8 @@ void DrawModule::drawNet()
                                      QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
         QPointF start=CurView->sceneRect().topLeft();
         QPointF end=CurView->sceneRect().bottomRight();
-        CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet());
+        CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet(),
+                                mySettings()->value("NetWidth",1).toFloat(),mySettings()->value("AxisWidth",2).toFloat());
      
        // CurView->centerOn(center);
         mutex.unlock();

@@ -85,7 +85,22 @@
                         "type": "color",
                         "default": "#C8C800",
                         "title": {"ascii": "Axis color", "ru_RU": "Цвет осей"}
+                },
+                "AxisWidth": {
+                    "type": "int",
+                    "default": "2",
+                    "title": {"ascii": "Axis width", "ru_RU": "Толщина осей"}
+                },
+                "NetWidth": {
+                    "type": "int",
+                    "default": "1",
+                    "title": {"ascii": "Net width", "ru_RU": "Толщина сетки"}
+                },
+                "LineWidth": {
+                    "type": "int",
+                    "default": "1",
+                    "title": {"ascii": "Line width", "ru_RU": "Толщина линий"}
                 }
 
-        }  
+        }
 }

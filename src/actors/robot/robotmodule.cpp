@@ -35,9 +35,7 @@ namespace ActorRobot {
     ExtensionSystem::SettingsPtr RobotModule::robotSettings()
     {
         return RobotModule::self->mySettings();
-//        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
-//        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
-//        return pluginManager->settingsByObject(plugin);
+
     }
 
     FieldItm::FieldItm( QGraphicsItem* par ,QGraphicsScene *scene)
