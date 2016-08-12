@@ -723,7 +723,7 @@ void Plugin::updateAppFontSize(const int pointSize) {
     QFont f = qApp->font();
     f.setPointSize(pointSize);
     qApp->setFont(f);
-    mainWindow_->tabWidget_->tabBar()->setFont(f);
+    mainWindow_->tabWidget_->setFont(f);
     QEvent *e = new QEvent(QEvent::ApplicationFontChange);
     Q_FOREACH(Widgets::SecondaryWindow * sw, secondaryWindows_) {
         // Secondary windows are QObject, but not QWidget class instances,

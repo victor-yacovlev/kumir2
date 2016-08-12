@@ -17,6 +17,7 @@ public:
     explicit TabWidget(QWidget *parent = 0);
     void disableTabs();
     QSize minimumSizeHint() const /*override*/;
+    void setFont(const QFont &font);
 protected:
     void paintEvent(QPaintEvent *);
     void customizeStyle();
