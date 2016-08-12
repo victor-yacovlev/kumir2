@@ -65,6 +65,9 @@ public:
     static QString DockFloatingKey;
     static QString DockGeometryKey;
     static QString DockSideKey;
+    static QString UseSystemFontSizeKey;
+    static bool UseSystemFontSizeDefaultValue;
+    static QString OverrideFontSizeKey;
 
     QObject * mainWindowObject();
     QObject * pluginObject();
@@ -94,6 +97,7 @@ protected slots:
     void prepareKumirProgramToRun();
     void handleExternalProcessCommand(const QString & command);
     void updateSettings(const QStringList & keys);
+    void updateAppFontSize(const int pointSize);
     void showActorWindow(const QByteArray &asciiName);
 
 

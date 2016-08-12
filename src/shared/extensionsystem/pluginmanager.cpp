@@ -357,6 +357,11 @@ QString PluginManager::commandLineHelp() const
     return result;
 }
 
+QFont PluginManager::initialApplicationFont() const
+{
+    return pImpl_->initialApplicationFont;
+}
+
 QString PluginManager::initializePlugins()
 {
     Q_ASSERT(pImpl_->specs.size()==pImpl_->objects.size());

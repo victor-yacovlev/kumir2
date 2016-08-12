@@ -71,6 +71,9 @@ QString Plugin::DockVisibleKey = "DockWindow/Visible";
 QString Plugin::DockFloatingKey = "DockWindow/Floating";
 QString Plugin::DockGeometryKey = "DockWindow/Geometry";
 QString Plugin::DockSideKey = "DockWindow/Side";
+QString Plugin::UseSystemFontSizeKey = "Application/UseSystemFontSize";
+bool Plugin::UseSystemFontSizeDefaultValue = true;
+QString Plugin::OverrideFontSizeKey = "Application/OverideFontSize";
 
 Plugin* Plugin::instance_ = 0;
 
@@ -716,9 +719,41 @@ void Plugin::timerEvent(QTimerEvent *e)
 }
 #endif
 
+void Plugin::updateAppFontSize(const int pointSize) {
+    QFont f = qApp->font();
+    f.setPointSize(pointSize);
+    qApp->setFont(f);
+    mainWindow_->tabWidget_->tabBar()->setFont(f);
+    QEvent *e = new QEvent(QEvent::ApplicationFontChange);
+    Q_FOREACH(Widgets::SecondaryWindow * sw, secondaryWindows_) {
+        // Secondary windows are QObject, but not QWidget class instances,
+        // so they are not notified by qApp->setFont(...).
+        // The should be notified manually
+        qApp->sendEvent(sw, e);
+    }
+    delete e;
+}
 
 void Plugin::updateSettings(const QStringList & keys)
 {
+    if (mySettings()) {
+        bool overrideFontSize = ! mySettings()->value(UseSystemFontSizeKey, UseSystemFontSizeDefaultValue).toBool();
+        if (overrideFontSize) {
+            int currentFontSize = qApp->font().pointSize();
+            int customFontSize = mySettings()->value(OverrideFontSizeKey,
+                    PluginManager::instance()->initialApplicationFont().pointSize()).toInt();
+            if (currentFontSize!=customFontSize) {
+                updateAppFontSize(customFontSize);
+            }
+        }
+        else {
+            int currentFontSize = qApp->font().pointSize();
+            int initialFontSize = PluginManager::instance()->initialApplicationFont().pointSize();
+            if (currentFontSize!=initialFontSize) {
+                updateAppFontSize(initialFontSize);
+            }
+        }
+    }
     foreach (Widgets::SecondaryWindow * window, secondaryWindows_) {
         const QString prefix = window->settingsKey() + "/";
         bool hasPrefix = false;

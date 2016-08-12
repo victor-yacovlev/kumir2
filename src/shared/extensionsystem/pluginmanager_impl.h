@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QFont>
 
 namespace ExtensionSystem {
 
@@ -41,6 +42,8 @@ struct PluginManagerImpl {
 
     std::list<QString> namedProgramArguments;
     std::list<QString> unnamedProgramArguments;
+
+    QFont initialApplicationFont;
 };
 
 } // namespace ExtensionSystem

@@ -87,6 +87,8 @@ public:
 
     QString commandLineHelp() const;
 
+    QFont initialApplicationFont() const;
+
     template <class PluginInterface>
     PluginInterface* findPlugin() {
         QList<KPlugin*> plugins = loadedPlugins();

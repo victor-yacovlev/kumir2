@@ -43,7 +43,7 @@ public slots:
     virtual void activate(const QPoint &ps, const QSize & sz);    
     void handleResizeRequest(const QSize & sz);
 
-private /*event handlers*/:
+protected /*event handlers*/:
     bool event(QEvent * evt);
 
 protected /*methods*/:

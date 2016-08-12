@@ -239,4 +239,15 @@ void SecondaryWindow::restoreState()
     }
 }
 
+bool SecondaryWindow::event(QEvent *evt)
+{
+    if (QEvent::ApplicationFontChange == evt->type()) {
+        if (dockContainer()) {
+            QObject *dockTarget = dockContainer()->toWidget();
+            qApp->sendEvent(dockTarget, evt);
+        }
+    }
+    return QObject::event(evt);
+}
+
 } // namespace Widgets

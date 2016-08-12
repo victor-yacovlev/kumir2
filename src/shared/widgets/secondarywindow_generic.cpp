@@ -519,6 +519,13 @@ bool SecondaryWindowGenericImplementation::event(QEvent *evt)
             setTitle(centralWidget_->windowTitle());
         }
     }
+    else if (evt->type() == QEvent::ApplicationFontChange) {
+        QFont newFont = qApp->font();
+        QFont titleFont = windowTitle_->font();
+        titleFont.setPointSize(newFont.pointSize());
+        windowTitle_->setFont(titleFont);
+        windowTitle_->setText(windowTitle_->text());
+    }
     return QWidget::event(evt);
 }
 

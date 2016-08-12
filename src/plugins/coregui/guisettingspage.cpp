@@ -9,12 +9,14 @@
 #include "interfaces/actorinterface.h"
 
 #include "widgets/iconprovider.h"
+#include <QApplication>
 
 namespace CoreGUI {
 
 const QString GUISettingsPage::LayoutKey = "MainWindowLayout";
 const QString GUISettingsPage::RowsFirstValue = "RowsFirst";
 const QString GUISettingsPage::ColumnsFirstValue = "ColumnsFirst";
+
 
 GUISettingsPage::GUISettingsPage(ExtensionSystem::SettingsPtr settings, QWidget *parent)
     : QWidget(parent)
@@ -233,6 +235,13 @@ void GUISettingsPage::createVisibleIconsGrid()
 
 void GUISettingsPage::init()
 {
+    ui->userSystemFontSize->setChecked(
+                settings_->value(Plugin::UseSystemFontSizeKey, Plugin::UseSystemFontSizeDefaultValue)
+                .toBool()
+                );
+    int overrideFontSize = settings_->value(Plugin::OverrideFontSizeKey,
+                                             PluginManager::instance()->initialApplicationFont().pointSize()).toInt();
+    ui->overrideFontSize->setValue(overrideFontSize);
     const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (layoutValue == ColumnsFirstValue) {
         ui->btnColumnsFirst->setChecked(true);
@@ -259,6 +268,9 @@ void GUISettingsPage::init()
 
 void GUISettingsPage::accept()
 {
+    settings_->setValue(Plugin::UseSystemFontSizeKey, ui->userSystemFontSize->isChecked());
+    settings_->setValue(Plugin::OverrideFontSizeKey, ui->overrideFontSize->value());
+
     const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (ui->btnColumnsFirst->isChecked()) {
         settings_->setValue(LayoutKey, ColumnsFirstValue);
