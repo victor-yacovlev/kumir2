@@ -5,15 +5,15 @@
     <name>KumirCodeRun::KumVariablesModel</name>
     <message>
         <source>Globals</source>
-        <translation>Глобальные величины</translation>
+        <translation>Глобальные</translation>
     </message>
     <message>
         <source>Main algorithm locals</source>
-        <translation>Величины главного алгоритма</translation>
+        <translation>Главный Алг</translation>
     </message>
     <message>
         <source>Algorithm &apos;%1&apos; locals</source>
-        <translation>Величины алгоритма &quot;%1&quot;</translation>
+        <translation>Алг &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
