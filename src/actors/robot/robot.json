@@ -238,19 +238,19 @@
             "order": 7,
 			"type": "int",
 			"default": "0",
-			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг символов вверх/вниз"}
+            "title": {"ascii": "Letters Shift", "ru_RU": "Сдвиг символов вверх/вниз"}
 		},		
 		"MarkShift": {
             "order": 8,
 			"type": "int",
 			"default": "0",
-			"title": {"ascii": "Marks Shift", "ru_RU": "Здвиг точки вверх/вниз"}
+            "title": {"ascii": "Marks Shift", "ru_RU": "Сдвиг точки вверх/вниз"}
 		},
 		"MarkShiftLeft": {
             "order": 9,
 			"type": "int",
 			"default": "0",
-			"title": {"ascii": "Letters Shift", "ru_RU": "Здвиг точки право/лево"}
+            "title": {"ascii": "Letters Shift", "ru_RU": "Сдвиг точки право/лево"}
 		},
 			"ImageSize": {
             "order": 10,
