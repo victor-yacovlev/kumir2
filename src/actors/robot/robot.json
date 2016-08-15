@@ -256,7 +256,27 @@
             "order": 10,
             "type": "double",
 			"default": "50",
+            "maximum": "5000",
 			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
+		},
+        "BortW": {
+            "order": 11,
+			"type": "int",
+			"default": "4",
+            "title": {"ascii": "BortW", "ru_RU": "Толщина борта"}
+		},
+        "StW": {
+            "order": 12,
+			"type": "int",
+			"default": "2",
+            "title": {"ascii": "BortW", "ru_RU": "Толщина линий"}
+		},
+        "WallW": {
+            "order": 13,
+			"type": "int",
+			"default": "3",
+            "title": {"ascii": "BortW", "ru_RU": "Толщина стен"}
 		}
+        
 	}
 }

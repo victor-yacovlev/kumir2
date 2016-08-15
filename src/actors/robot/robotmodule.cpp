@@ -1066,8 +1066,12 @@ namespace ActorRobot {
         drawNet();
         
         BortLine = QPen(WallColor,4);
+        BortLine.setWidth(sett->value("BortW","4").toInt());
+                
         StLine=QPen(gridColor,3);
+        StLine.setWidth(sett->value("StW","2").toInt());
         WallLine=QPen(WallColor,3);
+        WallLine.setWidth(sett->value("WallW","2").toInt());
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -1584,6 +1588,7 @@ namespace ActorRobot {
         
         
         Pen = QPen(LineColor,1);
+        Pen.setWidth(sett->value("StW","2").toInt());
         PenError = QPen(LineColor,1);
         infin = 5*BORT+10;
  

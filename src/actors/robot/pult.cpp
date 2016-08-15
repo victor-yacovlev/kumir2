@@ -35,6 +35,7 @@ RoboPult::RoboPult ( QWidget* parent, Qt::WindowFlags fl )
         buttUp->move(90,170);
         buttUp->setQPos(QPoint(buttUp->size().width()/2-2,20));
     
+    
         DownB->hide();
         buttDown=new MainButton(ActorRobot::RobotModule::self->myResourcesDir(),this);
         buttDown->move(DownB->pos());
