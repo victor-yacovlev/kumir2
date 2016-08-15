@@ -394,11 +394,11 @@ namespace ActorRobot {
         }
     }
     
-    void FieldItm::setColorRect(QGraphicsRectItem *Rect)
+    void FieldItm::setColorRect(QGraphicsRectItem *Rect,QColor color)
     {
         ColorRect = Rect;
-        ColorRect->setPen(QPen("gray"));
-        ColorRect->setBrush(QBrush(QColor("gray")));
+        ColorRect->setPen(color);
+        ColorRect->setBrush(QBrush(color));
         
         Scene->addItem(Rect);
         
@@ -1155,11 +1155,12 @@ namespace ActorRobot {
                 };
                 if(row->at(j)->isColored())
                 {
+                    
                     row->at(j)->setColorRect(
                                              new QGraphicsRectItem(upLeftCorner(i,j).x(),
                                                                    upLeftCorner(i,j).y(),
                                                                    fieldSize,
-                                                                   fieldSize));
+                                                                   fieldSize),QColor(sett->value("FillColor","gray").toString()));
                     
                 };
               
@@ -1519,7 +1520,7 @@ namespace ActorRobot {
                                                 new QGraphicsRectItem(upLeftCorner(row,col).x(),
                                                                       upLeftCorner(row,col).y(),
                                                                       fieldSize,
-                                                                      fieldSize));
+                                                                      fieldSize),QColor(sett->value("FillColor","gray").toString()));
         };
         if(mode!=NORMAL_MODE)wasEdit=true;
     }

@@ -276,6 +276,12 @@
 			"type": "int",
 			"default": "3",
             "title": {"ascii": "BortW", "ru_RU": "Толщина стен"}
+		},
+        "FillColor": {
+            "order": 6,
+			"type": "color",
+			"default": "gray",
+			"title": {"ascii": "FillColor", "ru_RU": "Цвет закрашивания"}
 		}
         
 	}

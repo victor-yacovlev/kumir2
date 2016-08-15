@@ -151,7 +151,7 @@ namespace ActorRobot {
         
         void showMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         
-        void setColorRect(QGraphicsRectItem* Rect);
+        void setColorRect(QGraphicsRectItem* Rect,QColor color);
         void setDownLine(QGraphicsLineItem* Line,QPen pen);
         void setLeftLine(QGraphicsLineItem* Line,QPen pen);
         void setRightLine(QGraphicsLineItem* Line,QPen pen);
