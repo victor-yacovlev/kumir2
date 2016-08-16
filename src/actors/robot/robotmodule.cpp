@@ -1344,7 +1344,7 @@ namespace ActorRobot {
     
     void RoboField::reverseUpWall(int row, int col)
     {
-        
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasUpSep()){
             return;qDebug("!UpSep");
         }
@@ -1363,6 +1363,7 @@ namespace ActorRobot {
     
     void RoboField::reverseDownWall(int row, int col)
     {
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasDownSep()) {
             return;
         }
@@ -1381,6 +1382,7 @@ namespace ActorRobot {
     
     void RoboField::reverseLeftWall(int row, int col)
     {
+                StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasLeftSep())
             return;
         if(!getFieldItem(row,col)->canLeft())
@@ -1398,6 +1400,7 @@ namespace ActorRobot {
     
     void RoboField::reverseRightWall(int row, int col)
     {
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasRightSep())
             return;
         if(!getFieldItem(row,col)->canRight())
@@ -1431,7 +1434,7 @@ namespace ActorRobot {
                                                                    upLeftCorner(row,col).y(),
                                                                    upLeftCorner(row,col).x()+fieldSize,
                                                                    upLeftCorner(row,col).y());
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
 
@@ -1453,7 +1456,7 @@ namespace ActorRobot {
                                                                      upLeftCorner(row,col).y()+fieldSize,
                                                                      upLeftCorner(row,col).x()+fieldSize,
                                                                      upLeftCorner(row,col).y()+fieldSize);
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
@@ -1468,6 +1471,9 @@ namespace ActorRobot {
         if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
+          
+            showLine.setWidth(sett->value("WallW","2").toInt());
+            showWall->setPen(showLine);
             this->addItem(showWall);
             return;
         };
@@ -1476,7 +1482,7 @@ namespace ActorRobot {
                                                                      upLeftCorner(row,col).x(),
                                                                      upLeftCorner(row,col).y()+fieldSize);
       
-       
+       showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
@@ -1491,7 +1497,10 @@ namespace ActorRobot {
         if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
+            showLine.setWidth(sett->value("WallW","2").toInt());
+            showWall->setPen(showLine);
             this->addItem(showWall);
+            
             return;
             
         };
@@ -1499,7 +1508,7 @@ namespace ActorRobot {
                                                                       upLeftCorner(row,col).y(),
                                                                       upLeftCorner(row,col).x()+fieldSize,
                                                                       upLeftCorner(row,col).y()+fieldSize);
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
