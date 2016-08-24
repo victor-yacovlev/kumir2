@@ -65,7 +65,7 @@ void ConsoleMessageOutput(QtMsgType type, const char *msg)
 void showErrorMessage(const QString & text)
 {
     bool gui = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     gui = gui && getenv("DISPLAY")!=0;
 #endif
 

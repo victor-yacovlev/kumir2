@@ -922,6 +922,10 @@ class Gui:
         if "menus" in json_node:
             for menu in json_node["menus"]:
                 self.menus.append(MenuItem(menu))
+        if "optional" in json_node:
+            self.optional = json_node["optional"]
+        else:
+            self.optional = False
 
     def get_icon_name(self, role):
         """
@@ -1507,6 +1511,8 @@ private:
         """
         if self._module.gui:
             guiRequired = "true"
+            if self._module.gui.optional:
+                guiRequired = "false"
         else:
             guiRequired = "false"
         return """
