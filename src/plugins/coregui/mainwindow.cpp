@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <QSharedPointer>
+#include <QMenuBar>
 #include <QMessageBox>
 
 namespace CoreGUI {
@@ -34,8 +35,33 @@ MainWindow::MainWindow(Plugin * p) :
 {   
 
     debuggerWindow_ = 0;
+    _presentationModeContext.enabled = false;
+    _presentationModeContext.clockTimerId = 0;
 
-    ui->setupUi(this);    
+
+    ui->setupUi(this);
+
+    _presentationModeContext.topRightCorner = new QWidget(this);
+    _presentationModeContext.clockWidget = new QLabel(_presentationModeContext.topRightCorner);
+    _presentationModeContext.clockWidget->setText("HH:mm");
+    _presentationModeContext.leavePresentationModeButton = new QToolButton(_presentationModeContext.topRightCorner);
+    _presentationModeContext.leavePresentationModeButton->setCheckable(true);
+    QHBoxLayout *l = new QHBoxLayout(_presentationModeContext.topRightCorner);
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(4);
+    _presentationModeContext.topRightCorner->setLayout(l);
+    _presentationModeContext.leavePresentationModeButton->setIcon(Widgets::IconProvider::self()->iconForName("fullscreen-exit"));
+    _presentationModeContext.leavePresentationModeButton->setToolTip(tr("Exit presentation mode"));
+    _presentationModeContext.clockWidget->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+    _presentationModeContext.clockWidget->setMinimumWidth(50);
+    _presentationModeContext.topRightCorner->setMinimumSize(80, 24);
+    connect(_presentationModeContext.leavePresentationModeButton, SIGNAL(clicked(bool)), this, SLOT(leavePresentationMode()));
+    l->addWidget(_presentationModeContext.clockWidget);
+    l->addWidget(_presentationModeContext.leavePresentationModeButton);
+    ui->menubar->setCornerWidget(_presentationModeContext.topRightCorner);
+    _presentationModeContext.topRightCorner->setVisible(false);
+
+
     ui->menuEdit->setProperty("menuRole", "edit");
     ui->menuInsert->setProperty("menuRole", "insert");
 
@@ -773,6 +799,11 @@ void MainWindow::timerEvent(QTimerEvent *e)
         afterShowTimerId3_ = 0;
         setFirstTimeWindowLayout_stage3();
     }
+    if (isPresentationMode() && _presentationModeContext.clockTimerId==e->timerId()) {
+        const QTime dt = QDateTime::currentDateTime().time();
+        const QString time = dt.toString("HH:mm");
+        _presentationModeContext.clockWidget->setText(time);
+    }
     checkCounterValue();
 }
 
@@ -1132,6 +1163,63 @@ void MainWindow::ensureBottomVisible()
     qDebug() << "Ensure bottom visible";
     ui->actionShow_Console_Pane->setChecked(true);
     setConsoleVisible(true);
+}
+
+void MainWindow::addPresentationModeItemToMenu()
+{
+    ui->menuWindow->addSeparator();
+    _presentationModeContext.togglePresentationMode = new QAction(this);
+    _presentationModeContext.togglePresentationMode->setCheckable(true);
+    _presentationModeContext.togglePresentationMode->setText(tr("Presentation mode"));
+    _presentationModeContext.togglePresentationMode->setShortcut(QKeySequence("F11"));
+    _presentationModeContext.togglePresentationMode->setShortcutContext(Qt::ApplicationShortcut);
+    connect(_presentationModeContext.togglePresentationMode, SIGNAL(triggered(bool)), this, SLOT(togglePresentationMode()));
+    ui->menuWindow->addAction(_presentationModeContext.togglePresentationMode);
+}
+
+void MainWindow::enterPresentationMode()
+{
+    if (isPresentationMode())
+        return;
+    _presentationModeContext.togglePresentationMode->setChecked(true);
+    _presentationModeContext.leavePresentationModeButton->setChecked(true);
+    _presentationModeContext.clockTimerId = startTimer(300);
+    _presentationModeContext.enabled = true;
+    setWindowState(windowState() | Qt::WindowFullScreen);
+    _presentationModeContext.topRightCorner->setVisible(true);
+    if (m_plugin->mySettings()) {
+        int mainFontSize = m_plugin->mySettings()->value(Plugin::PresentationModeMainFontSizeKey,
+                                                         Plugin::PresentationModeMainFontSizeDefaultValue).toInt();
+        m_plugin->updateAppFontSize(mainFontSize);
+    }
+}
+
+void MainWindow::leavePresentationMode()
+{
+    if (!isPresentationMode())
+        return;
+    _presentationModeContext.togglePresentationMode->setChecked(false);
+    _presentationModeContext.leavePresentationModeButton->setChecked(false);
+    killTimer(_presentationModeContext.clockTimerId);
+    _presentationModeContext.enabled = false;
+    setWindowState(windowState() &~ Qt::WindowFullScreen);
+    _presentationModeContext.topRightCorner->setVisible(false);
+    m_plugin->updateSettings(QStringList());  // Restore old font size from settings
+}
+
+void MainWindow::togglePresentationMode()
+{
+    if (!isPresentationMode()) {
+        enterPresentationMode();
+    }
+    else {
+        leavePresentationMode();
+    }
+}
+
+bool MainWindow::isPresentationMode() const
+{
+    return _presentationModeContext.enabled;
 }
 
 bool MainWindow::saveCurrentFileAs()

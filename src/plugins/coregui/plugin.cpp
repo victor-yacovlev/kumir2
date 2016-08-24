@@ -74,6 +74,10 @@ QString Plugin::DockSideKey = "DockWindow/Side";
 QString Plugin::UseSystemFontSizeKey = "Application/UseSystemFontSize";
 bool Plugin::UseSystemFontSizeDefaultValue = true;
 QString Plugin::OverrideFontSizeKey = "Application/OverideFontSize";
+QString Plugin::PresentationModeMainFontSizeKey = "Presentation/MainFontSize";
+QString Plugin::PresentationModeEditorFontSizeKey = "Presentation/EditorFontSize";
+int Plugin::PresentationModeMainFontSizeDefaultValue = 14;
+int Plugin::PresentationModeEditorFontSizeDefaultValue = 20;
 
 Plugin* Plugin::instance_ = 0;
 
@@ -656,8 +660,10 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     }
 #endif
 
+    mainWindow_->addPresentationModeItemToMenu();  // the last button in "Window" menu, after actor's windows
+
     return "";
-}
+} // End initialize
 
 void Plugin::handleExternalProcessCommand(const QString &command)
 {
@@ -732,26 +738,30 @@ void Plugin::updateAppFontSize(const int pointSize) {
         // The should be notified manually
         qApp->sendEvent(sw, e);
     }
+    KPlugin *editorPlugin = myDependency("Editor");
+    editorPlugin->updateSettings(QStringList());
     delete e;
 }
 
 void Plugin::updateSettings(const QStringList & keys)
 {
     if (mySettings()) {
-        bool overrideFontSize = ! mySettings()->value(UseSystemFontSizeKey, UseSystemFontSizeDefaultValue).toBool();
-        if (overrideFontSize) {
-            int currentFontSize = qApp->font().pointSize();
-            int customFontSize = mySettings()->value(OverrideFontSizeKey,
-                    PluginManager::instance()->initialApplicationFont().pointSize()).toInt();
-            if (currentFontSize!=customFontSize) {
-                updateAppFontSize(customFontSize);
+        if ( ! mainWindow_ || ! mainWindow_->isPresentationMode()) {
+            bool overrideFontSize = ! mySettings()->value(UseSystemFontSizeKey, UseSystemFontSizeDefaultValue).toBool();
+            if (overrideFontSize) {
+                int currentFontSize = qApp->font().pointSize();
+                int customFontSize = mySettings()->value(OverrideFontSizeKey,
+                        PluginManager::instance()->initialApplicationFont().pointSize()).toInt();
+                if (currentFontSize!=customFontSize) {
+                    updateAppFontSize(customFontSize);
+                }
             }
-        }
-        else {
-            int currentFontSize = qApp->font().pointSize();
-            int initialFontSize = PluginManager::instance()->initialApplicationFont().pointSize();
-            if (currentFontSize!=initialFontSize) {
-                updateAppFontSize(initialFontSize);
+            else {
+                int currentFontSize = qApp->font().pointSize();
+                int initialFontSize = PluginManager::instance()->initialApplicationFont().pointSize();
+                if (currentFontSize!=initialFontSize) {
+                    updateAppFontSize(initialFontSize);
+                }
             }
         }
     }
@@ -915,6 +925,8 @@ void Plugin::stop()
 
 void Plugin::saveSession() const
 {
+    if (mainWindow_->isPresentationMode())
+        mainWindow_->leavePresentationMode();
     mainWindow_->saveSession();
     mainWindow_->saveSettings();
     foreach (Widgets::SecondaryWindow * secWindow, secondaryWindows_)
@@ -1083,6 +1095,7 @@ Plugin::~Plugin()
 
 }
 
+
 QObject *Plugin::mainWindowObject()
 {
     return mainWindow_;
@@ -1159,6 +1172,17 @@ void Plugin::showHelpWindowFromQuickReference(const int topicType, const QString
 QStringList Plugin::helpList() const
 {
     return helpViewer_ ? helpViewer_->booksList() : QStringList();
+}
+
+int Plugin::overridenEditorFontSize() const
+{
+    if (mainWindow_ && mainWindow_->isPresentationMode() && mySettings()) {
+        return mySettings()->value(PresentationModeEditorFontSizeKey,
+                                   PresentationModeEditorFontSizeDefaultValue).toInt();
+    }
+    else {
+        return 0;
+    }
 }
 
 QString Plugin::wsName() const
