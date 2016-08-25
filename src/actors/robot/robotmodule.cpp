@@ -3705,7 +3705,11 @@ void RobotModule::reset()
 	*/
     //delete field;
     qDebug()<<"Reset!!";
-    if(!DISPLAY)return; //console mode
+    if(!DISPLAY)//console mode
+    {
+      qDebug()<<"Reset::console mode";
+      return;
+    }
         
     field->destroyRobot();
     field->deleteLater();
@@ -3894,11 +3898,11 @@ void RobotModule::runGoDown()
 
 void RobotModule::runGoLeft()
 {
-	/* TODO implement me */
+
     qDebug() << "Robot left";
     
     if(!DISPLAY)
-    {
+    {qDebug() << "Robot left:impement me!";
         return;
     }
     
