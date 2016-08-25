@@ -3775,7 +3775,10 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     pe=QProcessEnvironment::systemEnvironment();
    // qDebug()<<"PE"<<pe.toStringList();
     qDebug()<<"Display"<<pe.value("DISPLAY");
-    
+    if(!pe.keys().indexOf("DISPLAY")>0) //NO DISPLAY
+    {
+        return "No display";
+    }
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         ExtensionSystem::SettingsPtr sett;
