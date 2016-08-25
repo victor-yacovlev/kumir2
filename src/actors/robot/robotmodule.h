@@ -561,6 +561,7 @@ namespace ActorRobot {
         QMenu * rescentMenu;
         void prepareNewWindow();
         int CurCellSize;
+        bool DISPLAY;
         ExtensionSystem::SettingsPtr curSettings;
         
     signals:

@@ -3777,8 +3777,12 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     qDebug()<<"Display"<<pe.value("DISPLAY");
     if(!pe.keys().indexOf("DISPLAY")>0) //NO DISPLAY
     {
+        qDebug()<<"Robot:NO DISPLAY!";
+        DISPLAY=false;
         return "No display";
     }
+    qDebug()<<"Robot:GuiMode";
+    DISPLAY=true;
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         ExtensionSystem::SettingsPtr sett;
@@ -3855,6 +3859,12 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
+    
+    if(!DISPLAY)
+    {
+        return;
+    }
+    
     QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
