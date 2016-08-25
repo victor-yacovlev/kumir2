@@ -1500,7 +1500,8 @@ private:
     QObject::connect(
         this, SIGNAL(asyncRun(quint32,QVariantList)),
         this, SLOT(asyncEvaluate(quint32,QVariantList)),
-        hasGuiThread? Qt::QueuedConnection : Qt::DirectConnection
+        //hasGuiThread? Qt::QueuedConnection :
+        Qt::DirectConnection
     );
 }
         """ % (self.class_name, self.class_name)
