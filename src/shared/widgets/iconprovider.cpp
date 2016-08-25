@@ -36,7 +36,7 @@ void IconProvider::loadToCache(const QString &name) const
     QIcon icon;
 
     static const QList<QSize> Sizes = QList<QSize>()
-            << QSize(16, 16) << QSize(22, 22) << QSize(32, 32);
+            << QSize(16, 16) << QSize(22, 22) << QSize(24, 24) << QSize(32, 32);
 
     static const QString BaseDir =
             QApplication::instance()->property("sharePath").toString()

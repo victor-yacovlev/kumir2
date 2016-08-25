@@ -28,6 +28,7 @@ public slots:
     virtual QObject * mainWindowObject() = 0;
     virtual void setProgramSource(const ProgramSourceText &source) = 0;
     virtual ProgramSourceText programSource() const = 0;
+    virtual int overridenEditorFontSize() const = 0;
 
     virtual void startTesting() = 0;
 

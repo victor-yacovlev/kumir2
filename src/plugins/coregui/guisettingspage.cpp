@@ -242,6 +242,14 @@ void GUISettingsPage::init()
     int overrideFontSize = settings_->value(Plugin::OverrideFontSizeKey,
                                              PluginManager::instance()->initialApplicationFont().pointSize()).toInt();
     ui->overrideFontSize->setValue(overrideFontSize);
+
+    int presentationMainSize = settings_->value(Plugin::PresentationModeMainFontSizeKey,
+                                                Plugin::PresentationModeEditorFontSizeDefaultValue).toInt();
+    int presentationEditorSize = settings_->value(Plugin::PresentationModeEditorFontSizeKey,
+                                                  Plugin::PresentationModeEditorFontSizeDefaultValue).toInt();
+    ui->presentationModeMainFontSize->setValue(presentationMainSize);
+    ui->presentationModeEditorFontSize->setValue(presentationEditorSize);
+
     const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (layoutValue == ColumnsFirstValue) {
         ui->btnColumnsFirst->setChecked(true);
@@ -270,6 +278,8 @@ void GUISettingsPage::accept()
 {
     settings_->setValue(Plugin::UseSystemFontSizeKey, ui->userSystemFontSize->isChecked());
     settings_->setValue(Plugin::OverrideFontSizeKey, ui->overrideFontSize->value());
+    settings_->setValue(Plugin::PresentationModeMainFontSizeKey, ui->presentationModeMainFontSize->value());
+    settings_->setValue(Plugin::PresentationModeEditorFontSizeKey, ui->presentationModeEditorFontSize->value());
 
     const QString layoutValue = settings_->value(LayoutKey, ColumnsFirstValue).toString();
     if (ui->btnColumnsFirst->isChecked()) {

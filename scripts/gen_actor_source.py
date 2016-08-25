@@ -1166,7 +1166,7 @@ class Settings:
             result += entry.get_entry_cpp_implementation("entries")
         result += """
 bool guiAvailable = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 guiAvailable = 0 != getenv("DISPLAY");
 #endif
 if (guiAvailable) {
@@ -2656,7 +2656,7 @@ class ModuleBaseCppClass(CppClassBase):
     : QObject(parent)
 {
     bool hasGui = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     hasGui = getenv("DISPLAY")!=0;
 #endif
     if (hasGui) {
@@ -2739,7 +2739,7 @@ class ModuleBaseCppClass(CppClassBase):
 /* public */ QList<QMenu*> %s::moduleMenus() const
 {
     bool hasGui = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     hasGui = getenv("DISPLAY")!=0;
 #endif
     if (hasGui) {

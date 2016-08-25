@@ -68,6 +68,11 @@ public:
     static QString UseSystemFontSizeKey;
     static bool UseSystemFontSizeDefaultValue;
     static QString OverrideFontSizeKey;
+    static QString PresentationModeMainFontSizeKey;
+    static QString PresentationModeEditorFontSizeKey;
+    static int PresentationModeMainFontSizeDefaultValue;
+    static int PresentationModeEditorFontSizeDefaultValue;
+
 
     QObject * mainWindowObject();
     QObject * pluginObject();
@@ -92,6 +97,7 @@ public slots:
     void showHelpWindow(int index);
     void showHelpWindowFromQuickReference(const int topicType, const QString &name);
     QStringList helpList() const;
+    int overridenEditorFontSize() const;
 
 protected slots:
     void prepareKumirProgramToRun();

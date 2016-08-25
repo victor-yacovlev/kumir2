@@ -201,7 +201,7 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     if ( moduleName.length()>0 )
         moduleName[0] = moduleName[0].toUpper();
 
-    QString libraryFileName = moduleName;
+    QString libraryFileName = moduleName.replace(" ", "");
 #if defined(Q_OS_WIN32)
     libraryFileName += ".dll";
 #elif defined(Q_OS_MACX)
@@ -210,11 +210,19 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     libraryFileName = "lib"+libraryFileName+".so";
 #endif
     QString fullPath;
-    if (QFile::exists(pImpl_->path+"/"+libraryFileName))
-        fullPath = pImpl_->path + "/" + libraryFileName;
-    else if (QFile::exists(QDir::currentPath()+"/"+libraryFileName))
-        fullPath = QDir::currentPath()+ "/" + libraryFileName;
-    else {
+    QString check;
+    check = pImpl_->path + "/" + libraryFileName;
+    if (QFile::exists(check)) {
+        fullPath = check;
+    }
+    if (fullPath.isEmpty()) {
+        check = QDir::currentPath()+"/"+libraryFileName;
+        if (QFile::exists(check)) {
+            fullPath = check;
+        }
+    }
+
+    if (fullPath.isEmpty()) {
         const QString errorMessage = tr("Can't load module %1: file not found")
                 .arg(libraryFileName);
         return errorMessage;
