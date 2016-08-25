@@ -78,6 +78,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     }
 
     if (actor->evaluate(qAlgKey, arguments)==Shared::ES_Async) {
+        qApp->processEvents();
         // Wait for actor thread to finish
         forever {
             bool done = false;

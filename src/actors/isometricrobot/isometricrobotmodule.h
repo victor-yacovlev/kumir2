@@ -14,6 +14,7 @@ You should change it corresponding to functionality.
 #include "extensionsystem/kplugin.h"
 #include "isometricrobotmodulebase.h"
 #include "robot25dwindow.h"
+#include "robotmodel.h"
 
 namespace ActorIsometricRobot {
 
@@ -59,16 +60,20 @@ public slots:
 public:
     // GUI access methods
     QWidget* mainWidget() const;
-    inline QWidget* pultWidget() const { return remoteControlWidget_; }
+    inline QWidget* pultWidget() const { return _remoteControlWidget; }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
 
 private:
     void createGui();
-    Robot25DWindow * window_;
-    Robot25D::RobotView * robotView_;
-    ExtensionSystem::KPlugin* parentObject_;
-    SvgRemoteControl * remoteControl_;
-    QWidget* remoteControlWidget_;
+    QString loadEnvironmentFromFile(const QString & fileName);
+    void loadDefaultEnvironment();
+
+    Robot25D::RobotModel * _model;
+    Robot25DWindow * _window;
+    Robot25D::RobotView * _robotView;
+    ExtensionSystem::KPlugin* _parentObject;
+    SvgRemoteControl * _remoteControl;
+    QWidget* _remoteControlWidget;
 
 
 }; // IsometricRobotModule

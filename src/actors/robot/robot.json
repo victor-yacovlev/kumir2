@@ -128,7 +128,7 @@
 		
 	],
 	"gui": {
-        "optional":true,
+        "optional": true,
 		"windows": [
 			{ "role": "main", "icon": "robot" },
 			{ "role": "pult", "icon": "robot-pult" }

@@ -1493,10 +1493,15 @@ private:
     , asyncRunThread_(nullptr)
     , settingsPage_(nullptr)
 {
+    bool hasGuiThread = true;
+#ifdef Q_OS_LINUX
+    hasGuiThread = getenv("DISPLAY") != 0;
+#endif
     QObject::connect(
         this, SIGNAL(asyncRun(quint32,QVariantList)),
         this, SLOT(asyncEvaluate(quint32,QVariantList)),
-        Qt::QueuedConnection
+        //hasGuiThread? Qt::QueuedConnection :
+        Qt::DirectConnection
     );
 }
         """ % (self.class_name, self.class_name)
