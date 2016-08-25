@@ -12,6 +12,7 @@ You should change it corresponding to functionality.
 #include <qmessagebox.h>
 #include <algorithm>
 #include "robotmodule.h"
+#include <QProcessEnvironment>
 #include "extensionsystem/pluginmanager.h"
  //#include <iostream> 
 
@@ -3550,9 +3551,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     : RobotModuleBase(parent)
 {
     self = this;
-	/* TODO 
-	implement class Constructor
-	*/
+
     inDock=false;
     animation=true;
     pressed=false;
@@ -3772,6 +3771,18 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
 {
+    QProcessEnvironment pe;
+    pe=QProcessEnvironment::systemEnvironment();
+   // qDebug()<<"PE"<<pe.toStringList();
+    qDebug()<<"Display"<<pe.value("DISPLAY");
+    if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
+    {
+        qDebug()<<"Robot:Console mode";
+        DISPLAY=false;
+        return "";
+    }
+    qDebug()<<"Robot:GuiMode";
+    DISPLAY=true;
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         ExtensionSystem::SettingsPtr sett;
@@ -3848,6 +3859,12 @@ void RobotModule::runGoLeft()
 {
 	/* TODO implement me */
     qDebug() << "Robot left";
+    
+    if(!DISPLAY)
+    {
+        return;
+    }
+    
     QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
