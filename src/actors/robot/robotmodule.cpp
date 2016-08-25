@@ -3463,10 +3463,10 @@ namespace ActorRobot {
             for(int col=0;col<c;col++)
             {
                 CFieldItem* cItem;
-                if(row==0)cItem->upWall==true;
-                if(row==r-1)cItem->downWall==true;
-                if(col==0)cItem->leftWall==true;
-                if(col==c-1)cItem->rightWall==true;
+                if(row==0)cItem->upWall=true;
+                if(row==r-1)cItem->downWall=true;
+                if(col==0)cItem->leftWall=true;
+                if(col==c-1)cItem->rightWall=true;
                 curRow.append(cItem);
             }
             rows.append(curRow);
