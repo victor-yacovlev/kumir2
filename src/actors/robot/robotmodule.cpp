@@ -12,6 +12,7 @@ You should change it corresponding to functionality.
 #include <qmessagebox.h>
 #include <algorithm>
 #include "robotmodule.h"
+#include <QProcessEnvironment>
 #include "extensionsystem/pluginmanager.h"
  //#include <iostream> 
 
@@ -3550,9 +3551,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     : RobotModuleBase(parent)
 {
     self = this;
-	/* TODO 
-	implement class Constructor
-	*/
+
     inDock=false;
     animation=true;
     pressed=false;
@@ -3772,6 +3771,11 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
 {
+    QProcessEnvironment pe;
+    pe=QProcessEnvironment::systemEnvironment();
+   // qDebug()<<"PE"<<pe.toStringList();
+    qDebug()<<"Display"<<pe.value("DISPLAY");
+    
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         ExtensionSystem::SettingsPtr sett;

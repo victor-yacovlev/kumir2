@@ -586,7 +586,7 @@ void KumirRunPlugin::prepareGuiRun()
 {
     if (! common_)
         prepareCommonRun();
-
+    qDebug()<<"Prepare gui run";
     gui_ = new GuiFunctors;
 
     gui_->input.setRunnerInstance(pRun_);
