@@ -70,7 +70,36 @@ namespace ActorRobot {
     
     class EditLine;
     class RobotModule;
-
+    class  CFieldItem
+    {
+     public:
+        CFieldItem();
+        void setWalls(int wallByte);
+        
+        
+        bool IsColored;
+        float radiation;
+        float temperature;
+        QChar upChar;
+        QChar downChar;
+        bool mark;
+        bool upWall;
+        bool downWall;
+        bool rightWall;
+        bool leftWall;
+        
+    };
+    
+    class ConsoleField
+    {
+     public:
+        ConsoleField(int w,int h);
+        
+    private:
+        QList<QList<CFieldItem*>> rows;
+        int roboRow;
+        int roboCol;
+    };
     
     class SimpleRobot:
     public QGraphicsObject
@@ -563,6 +592,7 @@ namespace ActorRobot {
         int CurCellSize;
         bool DISPLAY;
         ExtensionSystem::SettingsPtr curSettings;
+        ConsoleField* curConsoleField;
         
     signals:
         void sendToPultLog(const QVariant &);

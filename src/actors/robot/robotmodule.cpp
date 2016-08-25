@@ -31,7 +31,7 @@ namespace ActorRobot {
         QWidget * pult_;
     };
 
-    
+
     
     ExtensionSystem::SettingsPtr RobotModule::robotSettings()
     {
@@ -3440,6 +3440,42 @@ namespace ActorRobot {
         //     qreal adjust = 0.5;
         return QRectF(0,0,FIELD_SIZE_SMALL/4,FIELD_SIZE_SMALL/4);
     };
+    //++++++++++Console Field
+    CFieldItem::CFieldItem()
+    {
+       IsColored=false;
+       radiation=0;
+       temperature=0;
+       upChar=QChar(' ');
+       downChar=QChar(' ');
+       mark=false;
+       upWall=false;
+       downWall=false;
+       rightWall=false;
+       leftWall=false;
+    }
+    
+    ConsoleField::ConsoleField(int r,int c)
+    {
+        for(int row=0;row<r;row++)
+        {
+            QList<CFieldItem*> curRow;
+            for(int col=0;col<c;col++)
+            {
+                CFieldItem* cItem;
+                if(row==0)cItem->upWall==true;
+                if(row==r-1)cItem->downWall==true;
+                if(col==0)cItem->leftWall==true;
+                if(col==c-1)cItem->rightWall==true;
+                curRow.append(cItem);
+            }
+            rows.append(curRow);
+        }
+        roboRow=0;
+        roboCol=0;
+    };
+    
+    
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
     {
@@ -3669,7 +3705,11 @@ void RobotModule::reset()
 	*/
     //delete field;
     qDebug()<<"Reset!!";
-
+    if(!DISPLAY)//console mode
+    {
+      qDebug()<<"Reset::console mode";
+      return;
+    }
         
     field->destroyRobot();
     field->deleteLater();
@@ -3778,6 +3818,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
     {
         qDebug()<<"Robot:Console mode";
+        curConsoleField=new ConsoleField(10,15);
         DISPLAY=false;
         return "";
     }
@@ -3857,11 +3898,11 @@ void RobotModule::runGoDown()
 
 void RobotModule::runGoLeft()
 {
-	/* TODO implement me */
+
     qDebug() << "Robot left";
     
     if(!DISPLAY)
-    {
+    {qDebug() << "Robot left:impement me!";
         return;
     }
     
