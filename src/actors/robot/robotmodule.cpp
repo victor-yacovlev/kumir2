@@ -3477,6 +3477,12 @@ namespace ActorRobot {
     
     CFieldItem* ConsoleField::getItem(int row,int col)
     {
+        if(row>rows.count()-1  || col>rows.at(row).count()-1)
+        {
+            qDebug()<<"ERROR!!! NO ITEM!!"<<row<<" "<<col<<" rows: "<<rows.count();
+       
+            return NULL;
+        }
         return rows.at(row).at(col);
     }
     
