@@ -100,10 +100,10 @@ namespace ActorRobot {
         bool goRight();
         bool goUp();
         bool goDown();
-        int  const Columns(){return roboCol;}
-        int  const Rows(){return roboRow;}
-        int const robotRow(){return roboRow;}
-        int const robotCol(){return roboCol;}
+        int  Columns(){return roboCol;}
+        int  Rows(){return roboRow;}
+        int  robotRow(){return roboRow;}
+        int  robotCol(){return roboCol;}
     
     private:
         QList<QList<CFieldItem*>> rows;
