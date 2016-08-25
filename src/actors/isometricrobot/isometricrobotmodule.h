@@ -65,6 +65,9 @@ public:
 
 private:
     void createGui();
+    QString loadEnvironmentFromFile(const QString & fileName);
+    void loadDefaultEnvironment();
+
     Robot25D::RobotModel * _model;
     Robot25DWindow * _window;
     Robot25D::RobotView * _robotView;

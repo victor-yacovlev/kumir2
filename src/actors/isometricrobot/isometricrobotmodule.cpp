@@ -11,6 +11,7 @@ You should change it corresponding to functionality.
 #include <iostream>
 #include "isometricrobotmodule.h"
 #include "sch_environment.h"
+#include "sch_game.h"
 #include "remotecontrol.h"
 
 namespace ActorIsometricRobot {
@@ -44,7 +45,51 @@ void IsometricRobotModule::createGui()
 
 }
 
-QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+QString IsometricRobotModule::loadEnvironmentFromFile(const QString &fileName)
+{
+    QString message;
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString script = "a = ";
+        script += QString::fromUtf8(f.readAll());
+        f.close();
+        Schema::Environment env;
+        QScriptEngine engine;
+        QScriptValue v = engine.evaluate(script);
+        if (Schema::parceJSON(v, env)) {
+            _model->loadEnvironment(env);
+        }
+        else {
+            message = QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName());
+        }
+    }
+    else {
+        message = QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName());
+    }
+    return message;
+}
+
+void IsometricRobotModule::loadDefaultEnvironment()
+{
+    static const QString DefaultGameFileName = myResourcesDir().absoluteFilePath("default.pm.json");
+    QFile f(DefaultGameFileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString script = "a = ";
+        script += QString::fromUtf8(f.readAll());
+        f.close();
+        Schema::Game g;
+        QScriptEngine engine;
+        QScriptValue v = engine.evaluate(script);
+        if (Schema::parceJSON(v, g)) {
+            Schema::Environment env = g.tasks.first().environment;
+            _model->loadEnvironment(env);
+        }
+    }
+}
+
+
+
+QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &cmdLine)
 {
     if (!configurationParameters.contains("tablesOnly")) {
         _model = new Robot25D::RobotModel;
@@ -54,6 +99,15 @@ QString IsometricRobotModule::initialize(const QStringList &configurationParamet
 #endif
         if (hasGui) {
             createGui();
+        }
+        else {
+            const QString envFileName = cmdLine.value('e').toString();
+            if (envFileName.isEmpty()) {
+                loadDefaultEnvironment();
+            }
+            else {
+                loadEnvironmentFromFile(envFileName);
+            }
         }
     }
     return "";

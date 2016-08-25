@@ -131,26 +131,10 @@ void Robot25DWindow::loadGame(const QString &fileName)
         if (Schema::parceJSON(v, g)) {
             _game = g;
             setTaskIndex(g.index);
-        }
-        else {
-
-//            statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: это не ПиктоМир-игра").arg(QFileInfo(fileName).fileName()));
-        }
-    }
-    else {
-//        statusBar()->showMessage(QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName()));
+        }        
     }
 }
 
-//QSize Robot25DWindow::minimumSizeHint() const
-//{
-//    return QSize(100, 100);
-//}
-
-//QSize Robot25DWindow::sizeHint() const
-//{
-//    return sizeHint() + QSize(30, 30);
-//}
 
 void Robot25DWindow::loadEnvironment(const QString &fileName)
 {
