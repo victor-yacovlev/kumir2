@@ -3475,6 +3475,41 @@ namespace ActorRobot {
         roboCol=0;
     };
     
+    CFieldItem* ConsoleField::getItem(int row,int col)
+    {
+        return rows.at(row).at(col);
+    }
+    
+     CFieldItem* ConsoleField::getCurItem()
+    {
+        return getItem(roboRow, roboCol);
+    }
+   
+    bool ConsoleField::goLeft()
+    {
+        if(getItem(roboRow, roboCol)->leftWall)return false;
+        roboCol--;
+        return true;
+    }
+    bool ConsoleField::goRight()
+    {
+        if(getItem(roboRow, roboCol)->rightWall)return false;
+        roboCol++;
+        return true;
+    }
+    bool ConsoleField::goUp()
+    {
+        if(getItem(roboRow, roboCol)->upWall)return false;
+        roboRow--;
+        return true;
+    }
+    
+    bool ConsoleField::goDown()
+    {
+        if(getItem(roboRow, roboCol)->downWall)return false;
+        roboRow++;
+        return true;
+    }
     
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
@@ -3856,7 +3891,12 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
 
 void RobotModule::runGoUp()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+        if(!curConsoleField->goUp())setError(trUtf8("Робот разбился: сверху стена!"));
+        return;
+    }
+    
     qDebug() << "Robot up";
     QString status = "OK";
      if(!field->stepUp())
@@ -3876,7 +3916,12 @@ if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх
 
 void RobotModule::runGoDown()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+        if(!curConsoleField->goDown())setError(trUtf8("Робот разбился: снизу стена!"));
+        return;
+    }
+    
     qDebug() << "Robot down";
     QString status = "OK";
      if(!field->stepDown())
@@ -3902,7 +3947,8 @@ void RobotModule::runGoLeft()
     qDebug() << "Robot left";
     
     if(!DISPLAY)
-    {qDebug() << "Robot left:impement me!";
+    {
+        if(!curConsoleField->goLeft())setError(trUtf8("Робот разбился: слева стена!"));
         return;
     }
     
@@ -3927,17 +3973,19 @@ void RobotModule::runGoLeft()
 
 void RobotModule::runGoRight()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+        if(!curConsoleField->goRight())setError(trUtf8("Робот разбился: справа стена!"));
+        return;
+    }
     qDebug() << "Robot right";
     QString status = "OK";
     if(!field->stepRight()){
         field->robot->setCrash(RIGHT_CRASH);  
         status = trUtf8("Отказ");
         
-    setError(trUtf8("Робот разбился: справа стена!"));}
-//    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//        emit sendToPultLog(status);
-//    }
+        setError(trUtf8("Робот разбился: справа стена!"));}
+
    if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
      if(animation)
      {
@@ -3950,6 +3998,13 @@ void RobotModule::runGoRight()
 
 void RobotModule::runDoPaint()
 {
+    
+    if(!DISPLAY)
+    {
+        curConsoleField->getCurItem()->IsColored=true;
+        return;
+    }
+    
 	if(!field->currentCell()->IsColored)field->reverseColorCurrent();
     QString status = "OK";
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3967,6 +4022,12 @@ void RobotModule::runDoPaint()
 
 bool RobotModule::runIsWallAtTop()
 {
+    
+    if(!DISPLAY)
+    {
+      return curConsoleField->getCurItem()->upWall;
+    }
+    
     bool result = !field->currentCell()->canUp();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3980,6 +4041,12 @@ bool RobotModule::runIsWallAtTop()
 
 bool RobotModule::runIsWallAtBottom()
 {
+    
+    if(!DISPLAY)
+    {
+        return curConsoleField->getCurItem()->downWall;
+    }
+    
     bool result = !field->currentCell()->canDown();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3994,6 +4061,11 @@ bool RobotModule::runIsWallAtBottom()
 
 bool RobotModule::runIsWallAtLeft()
 {
+    if(!DISPLAY)
+    {
+        return curConsoleField->getCurItem()->leftWall;
+    }
+    
     bool result = !field->currentCell()->canLeft();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4008,6 +4080,11 @@ bool RobotModule::runIsWallAtLeft()
 
 bool RobotModule::runIsWallAtRight()
 {
+    
+    if(!DISPLAY)
+    {
+        return curConsoleField->getCurItem()->rightWall;
+    }
     bool result = !field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4023,6 +4100,11 @@ bool RobotModule::runIsWallAtRight()
 
 bool RobotModule::runIsFreeAtTop()
 {
+    if(!DISPLAY)
+    {
+        return !curConsoleField->getCurItem()->upWall;
+    }
+    
     bool result = field->currentCell()->canUp();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4036,6 +4118,12 @@ bool RobotModule::runIsFreeAtTop()
     
 bool RobotModule::runIsFreeAtBottom()
 {
+    
+    if(!DISPLAY)
+    {
+        return !curConsoleField->getCurItem()->downWall;
+    }
+    
     bool result = field->currentCell()->canDown();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4049,6 +4137,11 @@ bool RobotModule::runIsFreeAtBottom()
     
 bool RobotModule::runIsFreeAtLeft()
 {
+    if(!DISPLAY)
+    {
+        return !curConsoleField->getCurItem()->leftWall;
+    }
+    
     bool result = field->currentCell()->canLeft();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4062,6 +4155,11 @@ bool RobotModule::runIsFreeAtLeft()
     
 bool RobotModule::runIsFreeAtRight()
 {
+    
+    if(!DISPLAY)
+    {
+        return !curConsoleField->getCurItem()->rightWall;
+    }
     bool result = field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
    // QObject *sendr=sender();
@@ -4077,18 +4175,28 @@ bool RobotModule::runIsFreeAtRight()
 
 bool RobotModule::runIsColor()
     {
-     bool result = field->currentCell()->isColored();
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->IsColored;
+        }
+        
+        bool result = field->currentCell()->isColored();
         QString status = result? trUtf8("Да") : trUtf8("Нет");
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
+
       if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка закрашена: \',клетка закрашена,нс"),
                            QString::fromUtf8("клетка закрашена"),status);
         return result;
         
     };
+    
+    
     bool RobotModule::runIsClear()
     {
+        if(!DISPLAY)
+        {
+            return !curConsoleField->getCurItem()->IsColored;
+        }
+        
         bool result = !field->currentCell()->isColored();
         QString status = result? trUtf8("да") : trUtf8("нет");
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4098,32 +4206,64 @@ bool RobotModule::runIsColor()
                            QString::fromUtf8("клетка чистая"),status);
         return result;
     };
-    qreal RobotModule::runRadiation(){    
+    
+    
+    qreal RobotModule::runRadiation()
+    {
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->radiation;
+        }
+        
         double result = field->currentCell()->radiation;
         QString status = QString::number(result);
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
-       if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
+
+        
+        if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
                                          QString::fromUtf8("радиация"),status);
         return result;
     };
-    int RobotModule::runTemperature(){       
+    int RobotModule::runTemperature(){
+        
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->temperature;
+        }
+        
         int result = field->currentCell()->temperature;
         QString status = QString::number(result);
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
+
       if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Температура: \',температура,нс"),
                                          QString::fromUtf8("температура"),status);
         return result;};
+
+    
     void RobotModule::runFieldSize(int& rows, int& cols)
     {
+        if(!DISPLAY)
+        {
+            rows=curConsoleField->Rows();
+            cols=curConsoleField->Columns();
+            return;
+        }
+        
         rows=field->rows();
         cols=field->columns();
     };
     bool RobotModule::runMark(const int row, const int col)
     {
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                 setError(trUtf8("Нет какой клетки!"));
+                return false;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->mark;
+        }
+        
         int rws=field->rows();
         int clmns=field->columns();
         if(row-1>=field->rows() ||col-1>=field->columns()|| row-1<0 || col-1<0)
@@ -4137,6 +4277,19 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runColored(const int row, const int col)
     {
+        
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return false;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->IsColored;
+        }
+        
         int rows=field->rows();
         
         if(row-1>=field->rows() ||col-1>=field->columns())
@@ -4150,6 +4303,13 @@ bool RobotModule::runIsColor()
     };
     void RobotModule::runRobotPos(int& row, int& col)
     {
+        if(!DISPLAY)
+        {
+            row=curConsoleField->robotRow()+1;
+            col=curConsoleField->robotCol()+1;
+            return;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4163,6 +4323,20 @@ bool RobotModule::runIsColor()
     
     QChar RobotModule::runUpChar(const int row, const int col)
     {
+        
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return ' ';
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->upChar;
+        }
+        
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
            
@@ -4175,6 +4349,19 @@ bool RobotModule::runIsColor()
     };
     int RobotModule::runCellTemp(const int row, const int col)
     {
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return 0;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->temperature;
+        }
+        
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4187,6 +4374,18 @@ bool RobotModule::runIsColor()
     };
     qreal RobotModule::runCellRad(const int row, const int col)
     {
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return 0;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->radiation;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4200,6 +4399,19 @@ bool RobotModule::runIsColor()
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {
+        
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return ' ';
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->downChar;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
             {
         

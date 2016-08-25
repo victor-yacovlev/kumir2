@@ -94,7 +94,17 @@ namespace ActorRobot {
     {
      public:
         ConsoleField(int w,int h);
-        
+        CFieldItem* getItem(int row,int col);
+        CFieldItem* getCurItem(); //Item with robot
+        bool goLeft();
+        bool goRight();
+        bool goUp();
+        bool goDown();
+        int  const Columns(){return roboCol;}
+        int  const Rows(){return roboRow;}
+        int const robotRow(){return roboRow;}
+        int const robotCol(){return roboCol;}
+    
     private:
         QList<QList<CFieldItem*>> rows;
         int roboRow;
