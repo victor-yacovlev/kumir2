@@ -3775,7 +3775,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     pe=QProcessEnvironment::systemEnvironment();
    // qDebug()<<"PE"<<pe.toStringList();
     qDebug()<<"Display"<<pe.value("DISPLAY");
-    if(!pe.keys().indexOf("DISPLAY")>0) //NO DISPLAY
+    if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
     {
         qDebug()<<"Robot:NO DISPLAY!";
         DISPLAY=false;
