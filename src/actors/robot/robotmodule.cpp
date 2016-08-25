@@ -3777,9 +3777,9 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     qDebug()<<"Display"<<pe.value("DISPLAY");
     if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
     {
-        qDebug()<<"Robot:NO DISPLAY!";
+        qDebug()<<"Robot:Console mode";
         DISPLAY=false;
-        return "No display";
+        return "";
     }
     qDebug()<<"Robot:GuiMode";
     DISPLAY=true;
