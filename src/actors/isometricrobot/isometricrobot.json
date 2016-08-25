@@ -73,6 +73,7 @@
     ],
     
     "gui": {
+        "optional": true,
         "windows": [
             { "role": "main", "icon": "robot25d" }
         ],

@@ -21,8 +21,8 @@ SvgRemoteControl::SvgRemoteControl(ExtensionSystem::KPlugin * plugin,
     : QSvgWidget(rcFileName, parent)
     , plugin_(plugin)
     , module_(module)
-    , linkEnabled_(true)
-    , loggerOffset_(0)
+    , _linkEnabled(true)
+    , _loggerOffset(0)
 {
     setupButtons();
     setupLabels();
@@ -46,26 +46,26 @@ void SvgRemoteControl::handleSvgButtonPressed(const QString &svgId)
     }
     else if ("btn_scroll_up" == svgId) {
         if (btnScrollUpEnabled()) {
-            loggerOffset_ --;
+            _loggerOffset --;
             update();
         }
     }
     else if ("btn_scroll_down" == svgId) {
         if (btnScrollDownEnabled()) {
-            loggerOffset_ ++;
+            _loggerOffset ++;
             update();
         }
     }
     else if ("btn_clear" == svgId) {
-        loggerOffset_ = 0;
-        loggerText_.clear();
+        _loggerOffset = 0;
+        _loggerText.clear();
         module_->reset();
         update();
     }
     else if ("btn_copy" == svgId) {
         QStringList text;
-        for (int i=0; i<loggerText_.size(); i++) {
-            text.append(loggerText_[i].first);
+        for (int i=0; i<_loggerText.size(); i++) {
+            text.append(_loggerText[i].first);
         }
         QClipboard * clp = QApplication::clipboard();
         clp->setText(text.join("\n"));
@@ -105,9 +105,9 @@ void SvgRemoteControl::appendCommandToLog(const QString &svgId)
 {
     TextLine line;
     line.first = commandNameBySvgId(svgId);
-    loggerText_.append(line);
+    _loggerText.append(line);
     if (btnScrollDownEnabled()) {
-        loggerOffset_ ++;
+        _loggerOffset ++;
     }
 }
 
@@ -117,7 +117,7 @@ void SvgRemoteControl::appendStatusToLog()
     ActorInterface * actor = qobject_cast<ActorInterface*>(plugin_);
     bool error = actor->errorText().length() > 0;
     const QString status = error? tr("Error") : tr("OK");
-    loggerText_.last().second = status;
+    _loggerText.last().second = status;
     update();
 }
 
@@ -141,7 +141,7 @@ void SvgRemoteControl::appendResultToLog(bool result)
         msg = result ? QString::fromUtf8("да") : QString::fromUtf8("нет");
     }
 
-    loggerText_.last().second = msg;
+    _loggerText.last().second = msg;
 }
 
 QString SvgRemoteControl::commandNameBySvgId(const QString &svgId) const
@@ -201,7 +201,7 @@ void SvgRemoteControl::setupButtons()
     foreach (const QString & id, Names) {
         if (renderer()->elementExists(id)) {
             const QRectF rect = renderer()->boundsOnElement(id);
-            buttons_[rect] = id;
+            _buttons[rect] = id;
         }
         else {
             qWarning() << "No element " << id << " in SVG file!";
@@ -212,10 +212,10 @@ void SvgRemoteControl::setupButtons()
 void SvgRemoteControl::setupLabels()
 {
     if (renderer()->elementExists("label_haslink")) {
-        linkOnRect_ = renderer()->boundsOnElement("label_haslink");
+        _linkOnRect = renderer()->boundsOnElement("label_haslink");
     }
     if (renderer()->elementExists("label_nolink")) {
-        linkOffRect_ = renderer()->boundsOnElement("label_nolink");
+        _linkOffRect = renderer()->boundsOnElement("label_nolink");
     }
 }
 
@@ -235,45 +235,45 @@ QRect SvgRemoteControl::scaleToPixels(const QRectF &points) const
 
 void SvgRemoteControl::mousePressEvent(QMouseEvent *event)
 {
-    const QString prev = buttonPressId_;
-    if (buttonHoverId_.length() > 0) {
-        buttonPressId_ = buttonHoverId_;
+    const QString prev = _buttonPressId;
+    if (_buttonHoverId.length() > 0) {
+        _buttonPressId = _buttonHoverId;
         event->accept();
     }
     else {
         event->ignore();
     }
-    if (prev != buttonPressId_) {
+    if (prev != _buttonPressId) {
         update();
     }
 }
 
 void SvgRemoteControl::mouseReleaseEvent(QMouseEvent *event)
 {
-    const QString prev = buttonPressId_;
-    buttonPressId_ = "";
+    const QString prev = _buttonPressId;
+    _buttonPressId = "";
     event->accept();
-    if (prev != buttonPressId_) {
+    if (prev != _buttonPressId) {
         update();
     }
-    if (prev.length() > 0 && buttonHoverId_.length() > 0) {
+    if (prev.length() > 0 && _buttonHoverId.length() > 0) {
         emit buttonPressed(prev);
     }
 }
 
 void SvgRemoteControl::mouseMoveEvent(QMouseEvent *event)
 {
-    const QString prev = buttonHoverId_;
+    const QString prev = _buttonHoverId;
     const QPoint where = event->pos();
-    buttonHoverId_ = "";
-    foreach (const QRectF & rectPoints, buttons_.keys()) {
+    _buttonHoverId = "";
+    foreach (const QRectF & rectPoints, _buttons.keys()) {
         const QRect rectPixels = scaleToPixels(rectPoints);
         if (rectPixels.contains(where)) {
-            buttonHoverId_ = buttons_[rectPoints];
+            _buttonHoverId = _buttons[rectPoints];
             break;
         }
     }
-    if (prev != buttonHoverId_) {
+    if (prev != _buttonHoverId) {
         update();
     }
     event->accept();
@@ -282,20 +282,20 @@ void SvgRemoteControl::mouseMoveEvent(QMouseEvent *event)
 void SvgRemoteControl::paintEvent(QPaintEvent *event)
 {
     QSvgWidget::paintEvent(event);
-    if (buttonHoverId_.length()) {
+    if (_buttonHoverId.length()) {
         QRectF where;
-        foreach (const QRectF rect, buttons_.keys()) {
-            if (buttons_[rect] == buttonHoverId_) {
+        foreach (const QRectF rect, _buttons.keys()) {
+            if (_buttons[rect] == _buttonHoverId) {
                 where = rect;
                 break;
             }
         }
         bool ignore = false;
-        if ("btn_scroll_up" == buttonHoverId_ && !btnScrollUpEnabled())
+        if ("btn_scroll_up" == _buttonHoverId && !btnScrollUpEnabled())
             ignore = true;
-        if ("btn_scroll_down" == buttonHoverId_ && !btnScrollDownEnabled())
+        if ("btn_scroll_down" == _buttonHoverId && !btnScrollDownEnabled())
             ignore = true;
-        const QString hoverId = buttonHoverId_ + "_hover";
+        const QString hoverId = _buttonHoverId + "_hover";
         if (renderer()->elementExists(hoverId)) {
             if (!ignore) {
                 QPainter painter(this);
@@ -306,15 +306,15 @@ void SvgRemoteControl::paintEvent(QPaintEvent *event)
             qWarning() << "Element not exists in SVG: " << hoverId;
         }
     }
-    if (buttonPressId_.length()) {
+    if (_buttonPressId.length()) {
         QRectF where;
-        foreach (const QRectF rect, buttons_.keys()) {
-            if (buttons_[rect] == buttonPressId_) {
+        foreach (const QRectF rect, _buttons.keys()) {
+            if (_buttons[rect] == _buttonPressId) {
                 where = rect;
                 break;
             }
         }
-        const QString pressId = buttonPressId_ + "_press";
+        const QString pressId = _buttonPressId + "_press";
         if (renderer()->elementExists(pressId)) {
             QPainter painter(this);
             renderer()->render(&painter, pressId, scaleToPixels(where));
@@ -324,13 +324,13 @@ void SvgRemoteControl::paintEvent(QPaintEvent *event)
         }
     }
     if (renderer()->elementExists("label_haslink") && renderer()->elementExists("label_nolink")) {
-        if (linkEnabled_ && renderer()->elementExists("label_haslink_active")) {
+        if (_linkEnabled && renderer()->elementExists("label_haslink_active")) {
             QPainter painter(this);
-            renderer()->render(&painter, "label_haslink_active", scaleToPixels(linkOnRect_));
+            renderer()->render(&painter, "label_haslink_active", scaleToPixels(_linkOnRect));
         }
         else if (renderer()->elementExists("label_nolink_active")) {
             QPainter painter(this);
-            renderer()->render(&painter, "label_nolink_active", scaleToPixels(linkOffRect_));
+            renderer()->render(&painter, "label_nolink_active", scaleToPixels(_linkOffRect));
         }
     }
     if (renderer()->elementExists("widget_logger")) {
@@ -349,11 +349,11 @@ void SvgRemoteControl::paintLogger(QPainter *painter, const QRect &rect)
     const int lineHeight = fm.lineSpacing();
     const int visibleLinesCount = visibleLoggerLinesCount();
     for (int visLineNo = 0; visLineNo < visibleLinesCount; visLineNo ++) {
-        const int realLineNo = visLineNo + loggerOffset_;
-        if (0 <= realLineNo && realLineNo < loggerText_.size()) {
+        const int realLineNo = visLineNo + _loggerOffset;
+        if (0 <= realLineNo && realLineNo < _loggerText.size()) {
             const int x1 = rect.left() + LoggerPadding;
             const int y = rect.top() + (1 + visLineNo) * lineHeight + LoggerPadding;
-            const TextLine & line = loggerText_.at(realLineNo);
+            const TextLine & line = _loggerText.at(realLineNo);
             const QString & commandText = line.first;
             const QString & statusText = line.second;
             painter->drawText(x1, y, commandText);
@@ -377,13 +377,13 @@ int SvgRemoteControl::visibleLoggerLinesCount() const
 
 bool SvgRemoteControl::btnScrollUpEnabled() const
 {
-    return loggerOffset_ > 0;
+    return _loggerOffset > 0;
 }
 
 bool SvgRemoteControl::btnScrollDownEnabled() const
 {
     const int visibleLinesCount = visibleLoggerLinesCount();
-    return loggerText_.size() > (visibleLinesCount + loggerOffset_);
+    return _loggerText.size() > (visibleLinesCount + _loggerOffset);
 }
 
 

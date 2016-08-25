@@ -7,79 +7,74 @@
 
 namespace Robot25D {
 
-RobotItem::RobotItem(const QDir & imagesDir, RobotView *view)
+RobotItem::RobotItem(Robot25D::RobotModel * model, const QDir & imagesDir, RobotView *view)
     : QThread(NULL)
-    , m_view(view)
-    , i_timerId(0)
+    , _view(view)
+    , _timerId(0)
 {
-    e_animationType = NoAnimation;
-    r_pulse = 0.0;
-    i_currentStep = 0;
-    b_animated = false;
-    b_broken = false;
+    _model = model;
+    connect(_model, SIGNAL(robotMoved()), this, SLOT(handleModelRobotMoved()));
+    connect(_model, SIGNAL(robotCrashed()), this, SLOT(handleModelRobotCrashed()));
+    connect(_model, SIGNAL(robotTurnedLeft()), this, SLOT(handleModelRobotTurnedLeft()));
+    connect(_model, SIGNAL(robotTurnedRight()), this, SLOT(handleModelRobotTurnedRight()));
+    connect(_model, SIGNAL(cellPainted(int,int)), this, SLOT(handleModelCellPainted(int,int)));
+
+    _animationType = NoAnimation;
+    _pulse = 0.0;
+    _currentStep = 0;
+    _animated = false;
+
     const QString imagesRoot = imagesDir.absolutePath() + "/";
-    i_framesPerTurn = 4;
-    qint16 framesCount = i_framesPerTurn * 4;
+    _framesPerTurn = 4;
+    qint16 framesCount = _framesPerTurn * 4;
     for ( int i=1; i<=framesCount; i++ ) {
         Q_ASSERT ( QFile::exists(imagesRoot+""+QString::number(i)+".png") );
         QImage frame(imagesRoot+""+QString::number(i)+".png");
-        m_movie.append(frame);
+        _movie.append(frame);
     }
     Q_ASSERT ( QFile::exists(imagesRoot+"broken_north.png") );
     Q_ASSERT ( QFile::exists(imagesRoot+"broken_south.png") );
     Q_ASSERT ( QFile::exists(imagesRoot+"broken_east.png") );
     Q_ASSERT ( QFile::exists(imagesRoot+"broken_west.png") );
-    m_brokenPixmaps[North] = QImage(imagesRoot+"broken_north.png");
-    m_brokenPixmaps[South] = QImage(imagesRoot+"broken_south.png");
-    m_brokenPixmaps[East] = QImage(imagesRoot+"broken_east.png");
-    m_brokenPixmaps[West] = QImage(imagesRoot+"broken_west.png");
+    _brokenPixmaps[North] = QImage(imagesRoot+"broken_north.png");
+    _brokenPixmaps[South] = QImage(imagesRoot+"broken_south.png");
+    _brokenPixmaps[East] = QImage(imagesRoot+"broken_east.png");
+    _brokenPixmaps[West] = QImage(imagesRoot+"broken_west.png");
 
-    i_currentFrame = 0;
-    e_direction = South;
+    _currentFrame = 0;
 
-    m_scenePosition.x = 0;
-    m_scenePosition.y = 0;
-
-    //    an_animation = new QPropertyAnimation(this, "pulse", NULL);
-    //    an_animation->setDuration(250);
-    //    an_animation->setStartValue(0.0);
-    //    an_animation->setEndValue(1.0);
-    r_pulse = 0.0;
-    e_animationType = NoAnimation;
+    _pulse = 0.0;
+    _animationType = NoAnimation;
     setSpeed(50);
-    //    connect (an_animation, SIGNAL(finished()), this, SLOT(handleAnimationFinished()));
-    //    connect (this, SIGNAL(startAnimationRequest()), an_animation, SLOT(start()));
 
 
-    g_currentView = new GraphicsImageItem();
-    g_targetView = new GraphicsImageItem();
-    //    m_view->scene()->addItem(g_currentView);
-    //    m_view->scene()->addItem(g_targetView);
-    g_currentView->setParentItem(view);
-    g_targetView->setParentItem(view);
-    g_currentView->setVisible(true);
-    g_targetView->setVisible(false);
+    _currentView = new GraphicsImageItem();
+    _targetView = new GraphicsImageItem();
+    _currentView->setParentItem(view);
+    _targetView->setParentItem(view);
+    _currentView->setVisible(true);
+    _targetView->setVisible(false);
 
-    mutex_image = new QMutex;
-    mutex_animation = new QMutex;
+    _mutex_image = new QMutex;
+    _mutex_animation = new QMutex;
 
+    reset();
 }
 
 void RobotItem::setSpeed(int msec)
 {
-//    qDebug() << "Set speed: " << msec;
-    i_duration = msec;
-    if (i_timerId)
-        killTimer(i_timerId);
-    i_timerId = startTimer(msec);
+    _duration = msec;
+    if (_timerId)
+        killTimer(_timerId);
+    _timerId = startTimer(msec);
 }
 
 void RobotItem::waitForAnimated()
 {
     forever {
-        mutex_animation->lock();
-        AnimationType anim = e_animationType;
-        mutex_animation->unlock();
+        _mutex_animation->lock();
+        AnimationType anim = _animationType;
+        _mutex_animation->unlock();
         if (anim==NoAnimation)
             break;
         QApplication::processEvents();
@@ -89,14 +84,35 @@ void RobotItem::waitForAnimated()
 
 void RobotItem::handleAnimationFinished()
 {
-//    qDebug() << "Animation finished";
-    if (e_animationType==SetPosition) {
-        g_currentView->setVisible(false);
-        GraphicsImageItem *tmp = g_currentView;
-        g_currentView = g_targetView;
-        g_targetView = tmp;
+    if (_animationType==SetPosition) {
+        _currentView->setVisible(false);
+        GraphicsImageItem *tmp = _currentView;
+        _currentView = _targetView;
+        _targetView = tmp;
     }
     emit evaluationFinished();
+}
+
+void RobotItem::handleModelRobotMoved()
+{
+    Point2Di point = _model->scenePosition();
+    Point3Dr target = calculateRobotPosition(point);
+    if (_animated) {
+        _mutex_animation->lock();
+        _animationType = SetPosition;
+        _moveTargetPoint = target;
+        _mutex_animation->unlock();
+    }
+    else {
+        setPosition(target);
+        emit evaluationFinished();
+    }
+}
+
+void RobotItem::handleModelRobotCrashed()
+{
+    setFrameNo(frameNo());
+    _currentView->update();
 }
 
 Point3Dr RobotItem::calculateRobotPosition(const Point2Di point) const
@@ -119,21 +135,21 @@ Point3Dr RobotItem::calculateRobotPosition(const Point2Di point) const
     Point3Dr r;
     r.x = xx;
     r.y = yy;
-    r.z = m_view->baseZOrder(point.x, point.y);
+    r.z = _view->baseZOrder(point.x, point.y);
     return r;
 }
 
 QImage RobotItem::currentImage() const
 {
     QImage img;
-    mutex_image->lock();
-    if (b_broken) {
-        img = m_brokenPixmaps[e_direction];
+    _mutex_image->lock();
+    if (_model->isBroken()) {
+        img = _brokenPixmaps[_model->direction()];
     }
     else {
-        img = m_movie[i_currentFrame];
+        img = _movie[_currentFrame];
     }
-    mutex_image->unlock();
+    _mutex_image->unlock();
     return img;
 }
 
@@ -141,276 +157,167 @@ QImage RobotItem::currentImage() const
 Point3Dr RobotItem::position() const
 {
     Point3Dr p;
-    p.x = g_currentView->x();
-    p.y = g_currentView->y();
-    p.z = g_currentView->zValue();
+    p.x = _currentView->x();
+    p.y = _currentView->y();
+    p.z = _currentView->zValue();
     return p;
 }
 
-Point2Di RobotItem::scenePosition() const
-{
-    return m_scenePosition;
-}
-
-bool RobotItem::broken() const
-{
-    bool result = false;
-    mutex_image->lock();
-    result = b_broken;
-    mutex_image->unlock();
-    return result;
-}
 
 qint16 RobotItem::frameNo() const
 {
     qint16 result = 0;
-    mutex_image->lock();
-    result = i_currentFrame;
-    mutex_image->unlock();
+    _mutex_image->lock();
+    result = _currentFrame;
+    _mutex_image->unlock();
     return result;
 }
 
-bool RobotItem::animated() const
+bool RobotItem::isAnimated() const
 {
-    return b_animated;
+    return _animated;
 }
 
-RobotItem::Direction RobotItem::direction() const
-{
-    return e_direction;
-}
-
-void RobotItem::setDirection(Direction v)
-{
-    e_direction = v;
-    if (e_direction==South) {
-        setFrameNo(0);
-    }
-    else if (e_direction==East) {
-        setFrameNo(4);
-    }
-    else if (e_direction==North) {
-        setFrameNo(8);
-    }
-    else if (e_direction==West) {
-        setFrameNo(12);
-    }
-    else {
-        qFatal("Unknown direction!");
-    }
-}
 
 void RobotItem::setPosition(const Point3Dr &point)
 {
-    g_currentView->setPos(point.x+m_view->p_offset.x(), point.y+m_view->p_offset.y());
-    g_currentView->setZValue(point.z);
+    _currentView->setPos(point.x+_view->_offset.x(), point.y+_view->_offset.y());
+    _currentView->setZValue(point.z);
 }
 
-void RobotItem::setScenePosition(const Point2Di &point)
-{
-    m_scenePosition = point;
-    Point3Dr p = calculateRobotPosition(point);
-    setPosition(p);
-}
 
-void RobotItem::moveTo(const Point2Di &point)
+void RobotItem::handleModelRobotTurnedLeft()
 {
-    //    Q_ASSERT(frameNo() % 4 == 0);
-    Point3Dr target = calculateRobotPosition(point);
-    m_scenePosition = point;
-    if (b_animated) {
-        mutex_animation->lock();
-        e_animationType = SetPosition;
-        m_moveTargetPoint = target;
-        mutex_animation->unlock();
-        //        emit startAnimationRequest();
-    }
+    _startFrame = frameNo();
+    _endFrame = frameNo() + _framesPerTurn;
+
+    if (_animated) {
+        _mutex_animation->lock();
+        _animationType = ChangeFrameNo;
+        _mutex_animation->unlock();
+     }
     else {
-        setPosition(target);
-//        qDebug() << "Emit command finished";
+        setFrameNo(_endFrame);
         emit evaluationFinished();
     }
 }
 
-void RobotItem::turnLeft()
-{
-    i_startFrame = frameNo();
-    i_endFrame = frameNo() + i_framesPerTurn;
-
-    if (e_direction==North)
-        e_direction = West;
-    else if (e_direction==West) {
-        e_direction = South;
-    }
-    else if (e_direction==South) {
-        e_direction = East;
-    }
-    else if (e_direction==East) {
-        e_direction = North;
-    }
-    else {
-        qFatal("Unknown direction!");
-    }
-    if (b_animated) {
-        mutex_animation->lock();
-        e_animationType = ChangeFrameNo;
-        mutex_animation->unlock();
-        //        emit startAnimationRequest();
-    }
-    else {
-        setFrameNo(i_endFrame);
-//        qDebug() << "Emit command finished";
-        emit evaluationFinished();
-    }
-}
-
-void RobotItem::turnRight()
+void RobotItem::handleModelRobotTurnedRight()
 {
     int start = frameNo();
-    int end = start - i_framesPerTurn;
-    //    i_startFrame = frameNo();
-    //    i_endFrame = frameNo() - i_framesPerTurn;
+    int end = start - _framesPerTurn;
 
-    i_startFrame = start;
-    i_endFrame = end;
-    if (e_direction==North)
-        e_direction = East;
-    else if (e_direction==East) {
-        e_direction = South;
-    }
-    else if (e_direction==South) {
-        e_direction = West;
-    }
-    else if (e_direction==West) {
-        e_direction = North;
+    _startFrame = start;
+    _endFrame = end;
+
+    if (_animated) {
+        _mutex_animation->lock();
+        _animationType = ChangeFrameNo;
+        _mutex_animation->unlock();
     }
     else {
-        qFatal("Unknown direction!");
-    }
-    if (b_animated) {
-        mutex_animation->lock();
-        e_animationType = ChangeFrameNo;
-        mutex_animation->unlock();
-        //        emit startAnimationRequest();
-    }
-    else {
-        setFrameNo(i_endFrame);
-//        qDebug() << "Emit command finished";
+        setFrameNo(_endFrame);
         emit evaluationFinished();
     }
 }
 
-void RobotItem::doPaint()
+void RobotItem::handleModelCellPainted(int x, int y)
 {
-    Point2Di pnt = m_scenePosition;
-    m_view->m_field[pnt.y][pnt.x].painted = true;
-    if (b_animated) {
-        mutex_animation->lock();
-        e_animationType = DoPaint;
-        mutex_animation->unlock();
-        //        emit startAnimationRequest();
+    if (_animated) {
+        _mutex_animation->lock();
+        _animationType = DoPaint;
+        _animatedCellPosition.x = x;
+        _animatedCellPosition.y = y;
+        _mutex_animation->unlock();
     }
     else {
-        m_view->m_field[pnt.y][pnt.x].paintState = m_view->lbr_grass.size()-1;
-        CellGraphicsItem *item = m_view->m_field[pnt.y][pnt.x].cellItem;
-        item->setBrush(m_view->lbr_grass[m_view->m_field[pnt.y][pnt.x].paintState]);
+        _model->cellAt(x, y).paintState = _view->_grass.size()-1;
+        CellGraphicsItem *item = _model->cellAt(x, y).cellItem;
+        item->setBrush(_view->_grass[_model->cellAt(x, y).paintState]);
         item->update();
-        //        QGraphicsPolygonItem *item = m_view->m_field[pnt.y][pnt.x].cellItem;
-        //        item->setBrush(m_view->lbr_grass.last());
-//        qDebug() << "Emit command finished";
         emit evaluationFinished();
     }
 }
 
-void RobotItem::setBroken(bool v)
-{
-    mutex_image->lock();
-    b_broken = v;
-    mutex_image->unlock();
-    setFrameNo(frameNo());
-    g_currentView->update();
-}
 
 void RobotItem::setFrameNo(qint16 no)
 {
-    //    qDebug() << "Set frame no" << no;
-    mutex_image->lock();
-    qint16 prevNo = i_currentFrame;
-    i_currentFrame = no;
-    while (i_currentFrame<0) {
-        i_currentFrame += i_framesPerTurn * 4;
+    _mutex_image->lock();
+    qint16 prevNo = _currentFrame;
+    _currentFrame = no;
+    while (_currentFrame<0) {
+        _currentFrame += _framesPerTurn * 4;
     }
-    while (i_currentFrame >= (i_framesPerTurn*4)) {
-        i_currentFrame -= i_framesPerTurn * 4;
+    while (_currentFrame >= (_framesPerTurn*4)) {
+        _currentFrame -= _framesPerTurn * 4;
     }
-    mutex_image->unlock();
-    g_currentView->setImage(currentImage());
-    if (i_currentFrame!=prevNo)
-        g_currentView->update();
+    _mutex_image->unlock();
+    _currentView->setImage(currentImage());
+    if (_currentFrame!=prevNo)
+        _currentView->update();
 }
 
 void RobotItem::setAnimated(bool v)
 {
-    mutex_animation->lock();
-    e_animationType = NoAnimation;
+    _mutex_animation->lock();
+    _animationType = NoAnimation;
     //    an_animation->stop();
-    r_pulse = 0.0;
-    b_animated = v;
-    mutex_animation->unlock();
+    _pulse = 0.0;
+    _animated = v;
+    _mutex_animation->unlock();
 }
 
 qreal RobotItem::pulse() const
 {
-    return r_pulse;
+    return _pulse;
 }
 
 void RobotItem::timerEvent(QTimerEvent *event) {
-    mutex_animation->lock();
-    if (e_animationType==NoAnimation) {
+    _mutex_animation->lock();
+    if (_animationType==NoAnimation) {
         event->ignore();
     }
     else {
         event->accept();
-        setPulse(qreal(i_currentStep) / qreal(i_duration));
-        i_currentStep += 8;
-        if (i_currentStep>=i_duration)
+        setPulse(qreal(_currentStep) / qreal(_duration));
+        _currentStep += 8;
+        if (_currentStep>=_duration)
         {
             handleAnimationFinished();
-            e_animationType = NoAnimation;
-            r_pulse = 0.0;
-            i_currentStep = 0;
+            _animationType = NoAnimation;
+            _pulse = 0.0;
+            _currentStep = 0;
         }
     }
-    mutex_animation->unlock();
+    _mutex_animation->unlock();
 }
 
 void RobotItem::setPulse(qreal v)
 {
-//    std::cerr << "Set pulse: " << v;
-    r_pulse = v;
-    if (e_animationType==ChangeFrameNo) {
-        qreal start = i_startFrame;
-        qreal end = i_endFrame;
+    _pulse = v;
+    if (_animationType==ChangeFrameNo) {
+        qreal start = _startFrame;
+        qreal end = _endFrame;
         qreal distance = end - start;
         qreal distanceDone = distance * v;
         qreal currentValue = start + distanceDone;
         qint16 val = distance>=0.0? qCeil(currentValue) : qFloor(currentValue);
         setFrameNo(val);
     }
-    else if (e_animationType==SetPosition) {
-        if (r_pulse==0) {
+    else if (_animationType==SetPosition) {
+        if (_pulse==0) {
             QImage cleanImage(currentImage().size(), QImage::Format_ARGB32);
             cleanImage.fill(0);
-            g_targetView->setImage(cleanImage);
-            g_targetView->setVisible(true);
-            g_targetView->setPos(m_moveTargetPoint.x+m_view->p_offset.x(), m_moveTargetPoint.y+m_view->p_offset.y());
-            g_targetView->setZValue(m_moveTargetPoint.z);
+            _targetView->setImage(cleanImage);
+            _targetView->setVisible(true);
+            _targetView->setPos(_moveTargetPoint.x+_view->_offset.x(), _moveTargetPoint.y+_view->_offset.y());
+            _targetView->setZValue(_moveTargetPoint.z);
         }
         QImage pix = currentImage();
         QImage pix1;
         QImage pix2;
-        QPoint sourceGPos = g_currentView->pos().toPoint();
-        QPoint targetGPos = g_targetView->pos().toPoint();
+        QPoint sourceGPos = _currentView->pos().toPoint();
+        QPoint targetGPos = _targetView->pos().toPoint();
 
         QRect sourceRect(sourceGPos.x(),
                          sourceGPos.y(),
@@ -426,19 +333,19 @@ void RobotItem::setPulse(qreal v)
                                                     v);
         pix1 = pixmaps.first;
         pix2 = pixmaps.second;
-        g_currentView->setImage(pix1);
-        g_targetView->setImage(pix2);
-        g_currentView->update();
-        g_targetView->update();
+        _currentView->setImage(pix1);
+        _targetView->setImage(pix2);
+        _currentView->update();
+        _targetView->update();
     }
-    else if (e_animationType==DoPaint) {
-        Point2Di pnt = m_scenePosition;
-        quint8 curState = m_view->m_field[pnt.y][pnt.x].paintState;
-        quint8 maxState = m_view->lbr_grass.size()-1;
+    else if (_animationType==DoPaint) {
+        Point2Di pnt = _animatedCellPosition;
+        quint8 curState = _model->cellAt(pnt.x, pnt.y).paintState;
+        quint8 maxState = _view->_grass.size()-1;
         quint8 newState = qCeil(v * maxState);
         if (curState!=newState) {
-            CellGraphicsItem *item = m_view->m_field[pnt.y][pnt.x].cellItem;
-            item->setBrush(m_view->lbr_grass[newState]);
+            CellGraphicsItem *item = _model->cellAt(pnt.x, pnt.y).cellItem;
+            item->setBrush(_view->_grass[newState]);
             item->update();
         }
     }
@@ -446,21 +353,27 @@ void RobotItem::setPulse(qreal v)
 
 void RobotItem::prepareForDelete()
 {
-    if (m_view->scene()) {
-        m_view->scene()->removeItem(g_currentView);
-        m_view->scene()->removeItem(g_targetView);
+    if (_view->scene()) {
+        _view->scene()->removeItem(_currentView);
+        _view->scene()->removeItem(_targetView);
     }
-    killTimer(i_timerId);
+    killTimer(_timerId);
 
 }
 
 RobotItem::~RobotItem()
 {
-    delete g_currentView;
-    delete g_targetView;
-    delete mutex_image;
-    delete mutex_animation;
+    delete _currentView;
+    delete _targetView;
+    delete _mutex_image;
+    delete _mutex_animation;
 
+}
+
+void RobotItem::reset()
+{
+    setPosition(calculateRobotPosition(_model->scenePosition()));
+    setFrameNo(0);
 }
 
 }

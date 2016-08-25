@@ -13,11 +13,11 @@ class Robot25DWindow :
     Q_OBJECT
 
 public:
-    explicit Robot25DWindow(const QDir & imagesDir, QWidget *parent = 0);
+    explicit Robot25DWindow(Robot25D::RobotModel * model, const QDir & imagesDir, QWidget *parent = 0);
     ~Robot25DWindow();
-    inline Robot25D::RobotView * robotView() { return m_robotView; }
-    inline void lock() { group_lockedActionsDuringEvaluate->setEnabled(false); }
-    inline void unlock() { group_lockedActionsDuringEvaluate->setEnabled(true); }
+    inline Robot25D::RobotView * robotView() { return _robotView; }
+    inline void lock() { _groupLockedActionsDuringEvaluate->setEnabled(false); }
+    inline void unlock() { _groupLockedActionsDuringEvaluate->setEnabled(true); }
 
     QSize sizeHint() const;
 
@@ -41,11 +41,12 @@ private slots:
     void setTaskIndex(int index);
 
 private:
-    Schema::Game m_game;
-    QActionGroup * group_lockedActionsDuringEvaluate;
-    Robot25D::RobotView * m_robotView;
+    Schema::Game _game;
+    QActionGroup * _groupLockedActionsDuringEvaluate;
+    Robot25D::RobotView * _robotView;
 
-    QPoint mousePressPosition_;
+    QPoint _mousePressPosition;
+    Robot25D::RobotModel *_model;
 
 };
 

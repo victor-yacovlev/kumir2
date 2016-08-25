@@ -2,26 +2,25 @@
 
 #include <QtScript>
 
-Robot25DWindow::Robot25DWindow(const QDir & imagesDir, QWidget *parent) :
+Robot25DWindow::Robot25DWindow(Robot25D::RobotModel * model, const QDir & imagesDir, QWidget *parent) :
     QGraphicsView(parent)
 {
+    _model = model;
     setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
-    mousePressPosition_ = QPoint(-1, -1);
+    _mousePressPosition = QPoint(-1, -1);
     setScene(new QGraphicsScene);
     const QString resPath = imagesDir.absolutePath();
     QImage bgImg = QImage(resPath+"/grass_0.png");
     QBrush bgBrush = QBrush(bgImg);
-//    QBrush bgBrush = QBrush(QColor(Qt::black));
     setBackgroundBrush(bgBrush);
     setRenderHints(QPainter::Antialiasing|QPainter::TextAntialiasing);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_robotView = new Robot25D::RobotView(imagesDir, false, true, false, QSize(400,300));
-    scene()->addItem(m_robotView);
+    _robotView = new Robot25D::RobotView(_model, imagesDir);
+    scene()->addItem(_robotView);
 
-    loadGame(resPath+"/default.pm.json");
-//    m_robotView->setAnimated(true);    
+    loadGame(resPath+"/default.pm.json"); 
     setWindowTitle(tr("Isometric Robot"));
 }
 
@@ -39,7 +38,7 @@ void Robot25DWindow::mousePressEvent(QMouseEvent *event)
     if (scrollable) {
         if (event->button() == Qt::LeftButton) {
             setCursor(Qt::ClosedHandCursor);
-            mousePressPosition_ = event->pos();
+            _mousePressPosition = event->pos();
         }
         else {
             setCursor(Qt::OpenHandCursor);
@@ -58,7 +57,7 @@ void Robot25DWindow::mouseReleaseEvent(QMouseEvent *event)
     const QScrollBar * horiz = horizontalScrollBar();
     bool scrollable = vert->maximum() + horiz->maximum() > 0;
     if (scrollable) {
-        mousePressPosition_ = QPoint(-1, -1);
+        _mousePressPosition = QPoint(-1, -1);
         setCursor(Qt::OpenHandCursor);
         event->accept();
     }
@@ -74,9 +73,9 @@ void Robot25DWindow::mouseMoveEvent(QMouseEvent *event)
     QScrollBar * horiz = horizontalScrollBar();
     bool scrollable = vert->maximum() + horiz->maximum() > 0;
     if (scrollable) {
-        if (mousePressPosition_ != QPoint(-1, -1)) {
+        if (_mousePressPosition != QPoint(-1, -1)) {
             setCursor(Qt::ClosedHandCursor);
-            const QPoint diff = event->pos() - mousePressPosition_;
+            const QPoint diff = event->pos() - _mousePressPosition;
             const int dx = diff.x();
             const int dy = diff.y();
             if (dx != 0) {
@@ -85,7 +84,7 @@ void Robot25DWindow::mouseMoveEvent(QMouseEvent *event)
             if (dy != 0) {
                 vert->setValue(vert->value() - dy);
             }
-            mousePressPosition_ = event->pos();
+            _mousePressPosition = event->pos();
         }
         event->accept();
     }
@@ -130,7 +129,7 @@ void Robot25DWindow::loadGame(const QString &fileName)
         QScriptEngine engine;
         QScriptValue v = engine.evaluate(script);
         if (Schema::parceJSON(v, g)) {
-            m_game = g;
+            _game = g;
             setTaskIndex(g.index);
         }
         else {
@@ -163,7 +162,7 @@ void Robot25DWindow::loadEnvironment(const QString &fileName)
         Schema::Task oneTask;
         if (Schema::parceJSON(content, oneTask.environment)) {
             g.tasks.append(oneTask);
-            m_game = g;
+            _game = g;
             setTaskIndex(0);
         }
         else {
@@ -198,17 +197,17 @@ void Robot25DWindow::handleLoadAction()
 
 void Robot25DWindow::handleNextAction()
 {
-    setTaskIndex(m_game.index+1);
+    setTaskIndex(_game.index+1);
 }
 
 void Robot25DWindow::handlePrevAction()
 {
-    setTaskIndex(m_game.index-1);
+    setTaskIndex(_game.index-1);
 }
 
 void Robot25DWindow::setTaskIndex(int index)
 {
-    index = qMax(0, qMin(m_game.tasks.size()-1, index));
-    m_robotView->loadEnvironment(m_game.tasks[index].environment);
-    m_game.index = index;
+    index = qMax(0, qMin(_game.tasks.size()-1, index));
+    _model->loadEnvironment(_game.tasks[index].environment);
+    _game.index = index;
 }

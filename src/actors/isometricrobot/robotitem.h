@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include "robotmodel.h"
 
 namespace Robot25D {
 
@@ -11,53 +12,32 @@ struct Point3Dr {
     qreal y;
     qreal z;
 };
-struct Point2Di {
-    qint16 x;
-    qint16 y;
-};
+
 
 class GraphicsImageItem;
 
 
-class RobotItem :
-        public QThread
+class RobotItem
+        : public QThread
 {
-    Q_OBJECT;
-    Q_ENUMS(Direction);
-    Q_PROPERTY(Point3Dr position READ position WRITE setPosition);
-    Q_PROPERTY(qint16 frameNo READ frameNo WRITE setFrameNo);
-    Q_PROPERTY(bool broken READ broken WRITE setBroken);
-    Q_PROPERTY(bool animated READ animated WRITE setAnimated);
-    Q_PROPERTY(Direction direction READ direction WRITE setDirection);
-    Q_PROPERTY(Point2Di scenePosition READ scenePosition WRITE setScenePosition);
-    Q_PROPERTY(qreal pulse READ pulse WRITE setPulse);
-    Q_PROPERTY(int speed READ speed WRITE setSpeed);
+    Q_OBJECT
 public:
-    RobotItem(const QDir & imagesDir, class RobotView *view);
-    enum Direction { South, North, West, East };
-    Point3Dr position() const;
-    Point2Di scenePosition() const;
-    bool broken() const;
+    RobotItem(RobotModel * model, const QDir & imagesDir, class RobotView *view);
+    Point3Dr position() const;    
     qint16 frameNo() const;
-    bool animated() const;
-    Direction direction() const;
+    bool isAnimated() const;
     qreal pulse() const;
-    inline int speed() const { return i_duration; }
+    inline int speed() const { return _duration; }
     void prepareForDelete();
     void waitForAnimated();
+    Point3Dr calculateRobotPosition(const Point2Di point) const;
     ~RobotItem();
 public slots:
+    void reset();
     void setSpeed(int msec);
     void setPosition(const Point3Dr &point);
-    void setScenePosition(const Point2Di &point);
-    void moveTo(const Point2Di &point);
-    void turnLeft();
-    void turnRight();
-    void doPaint();
-    void setBroken(bool v);
     void setFrameNo(qint16 no);
     void setAnimated(bool v);
-    void setDirection(Direction v);
     void setPulse(qreal v);
 signals:
     void evaluationFinished();
@@ -67,40 +47,39 @@ protected:
     virtual void timerEvent(QTimerEvent *);
 protected slots:
     void handleAnimationFinished();
+    void handleModelRobotMoved();
+    void handleModelRobotCrashed();
+    void handleModelRobotTurnedLeft();
+    void handleModelRobotTurnedRight();
+    void handleModelCellPainted(int x, int y);
 private:
-    Direction e_direction;
-    bool b_animated;
-    bool b_broken;
-    Point3Dr calculateRobotPosition(const Point2Di point) const;
-    class RobotView *m_view;
-    QList<QImage> m_movie;
-    QMap<Direction, QImage> m_brokenPixmaps;
-    qint16 i_currentFrame;
-    qint16 i_framesPerTurn;
-	Point3Dr m_moveTargetPoint;
+    bool _animated;
+    class RobotView *_view;
+    QList<QImage> _movie;
+    QMap<Direction, QImage> _brokenPixmaps;
+    qint16 _currentFrame;
+    qint16 _framesPerTurn;
+    Point3Dr _moveTargetPoint;
 
-    quint16 i_duration;
-	quint16 i_currentStep;
-    int i_timerId;
+    quint16 _duration;
+    quint16 _currentStep;
+    int _timerId;
 
-    Point2Di m_scenePosition;
+    qreal _pulse;
+    enum AnimationType { NoAnimation, ChangeFrameNo, SetPosition, DoPaint } _animationType;
+    qint16 _startFrame, _endFrame;
+    Point2Di _animatedCellPosition;
 
-//    QPropertyAnimation *an_animation;
+    GraphicsImageItem *_currentView;
+    GraphicsImageItem *_targetView;
 
-    qreal r_pulse;
-    enum AnimationType { NoAnimation, ChangeFrameNo, SetPosition, DoPaint } e_animationType;
-    qint16 i_startFrame, i_endFrame;
+    QMutex *_mutex_image;
+    QMutex *_mutex_animation;
 
-    GraphicsImageItem *g_currentView;
-    GraphicsImageItem *g_targetView;
-
-    QMutex *mutex_image;
-    QMutex *mutex_animation;
+    RobotModel * _model;
 };
 
 }
 
-Q_DECLARE_METATYPE(Robot25D::Point3Dr);
-Q_DECLARE_METATYPE(Robot25D::Point2Di);
 
 #endif // ROBOTITEM_H
