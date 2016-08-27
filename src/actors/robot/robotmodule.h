@@ -70,6 +70,7 @@ namespace ActorRobot {
     
     class EditLine;
     class RobotModule;
+
     class  CFieldItem
     {
      public:
@@ -94,6 +95,7 @@ namespace ActorRobot {
     {
      public:
         ConsoleField(int w,int h);
+        void createField(int w,int h);
         CFieldItem* getItem(int row,int col);
         CFieldItem* getCurItem(); //Item with robot
         bool goLeft();
@@ -104,9 +106,10 @@ namespace ActorRobot {
         int  Rows(){return roboRow;}
         int  robotRow(){return roboRow;}
         int  robotCol(){return roboCol;}
+        int loadFromFile(QString filename);
     
     private:
-        QList<QList<CFieldItem*>> rows;
+        QList< QList<CFieldItem*> > rows;
         int roboRow;
         int roboCol;
     };

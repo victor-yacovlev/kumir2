@@ -3454,9 +3454,25 @@ namespace ActorRobot {
        rightWall=false;
        leftWall=false;
     }
+    void CFieldItem::setWalls(int wallByte)
+    {
+        if((wallByte & UP_WALL) == UP_WALL)upWall=true;else upWall=false;
+        if((wallByte & DOWN_WALL) == DOWN_WALL)downWall=true; else
+            downWall=false;
+        if((wallByte & LEFT_WALL) == LEFT_WALL)leftWall=true; else leftWall=false;
+        if((wallByte & RIGHT_WALL) == RIGHT_WALL)rightWall=true; else rightWall=false;
+    }
     
     ConsoleField::ConsoleField(int r,int c)
     {
+        createField(r,c);
+        roboRow=0;
+        roboCol=0;
+    };
+    
+    void  ConsoleField::createField(int r,int c)
+    {
+        rows.clear();
         for(int row=0;row<r;row++)
         {
             QList<CFieldItem*> curRow;
@@ -3471,10 +3487,7 @@ namespace ActorRobot {
             }
             rows.append(curRow);
         }
-        roboRow=0;
-        roboCol=0;
     };
-    
     CFieldItem* ConsoleField::getItem(int row,int col)
     {
         if(row>rows.count()-1  || col>rows.at(row).count()-1)
@@ -3516,6 +3529,513 @@ namespace ActorRobot {
         roboRow++;
         return true;
     }
+    
+    int ConsoleField::loadFromFile(QString fileName)
+    {
+        
+        QFileInfo fi(fileName);
+        QString name = fi.fileName();
+  
+        
+        
+        QString tmp = "";
+        QString ctmp;
+        
+        
+        QFile l_File(fileName);
+        
+        
+        
+        
+        int NStrok;
+        NStrok = 0;
+        QString l_String;
+        //	long l_Err;
+        int CurX,CurY;
+        int SizeX, SizeY;
+        
+        // Тестовый прогон
+        
+        if  (!l_File.open(QIODevice::ReadOnly))
+        {
+            
+            return 1;
+        }
+        
+        
+        
+        // 1 stroka - razmery polya
+        tmp = l_File.readLine();
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        
+        if (tmp.isNull()||tmp.isEmpty())
+        {
+            l_File.close();
+            
+            return 2;
+        }
+        
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                return 1;
+            }
+        }
+        tmp = tmp.simplified();
+        QStringList l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+            l_File.close();
+            
+            
+            return 3;
+        }
+        
+        SizeX = (l_List[0]).toInt();
+        SizeY = (l_List[1]).toInt();
+        
+        if ( (SizeX<= 0) || (SizeY <= 0) )
+        {
+            return 4;
+        }
+        //            field.destroyField();
+        // field.createField(l_List[0].toInt(),l_List[1].toInt());
+        
+        // Вторая строка - положение робота
+        
+        tmp = l_File.readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 5;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 5;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        // proverka
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+            
+            l_File.close();return 6;
+        }
+        
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        {
+            
+            l_File.close(); return 6;
+        }
+        
+        
+        //	m_DefaultSett = l_Sett;
+        
+        while (!l_File.atEnd())
+        {
+            //l_Err = l_File.readLine(l_String, 255);
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                return 5;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9 )
+            {
+                
+                l_File.close();
+                return -NStrok;
+            }
+            if(l_List.count()<6)
+            {
+                l_File.close();
+                qDebug("N Lexem<6");
+                return -NStrok;
+            };
+            bool ok;
+            CurX = l_List[0].toInt(&ok);
+            if(!ok)
+            {
+                l_File.close();
+                qDebug("Bad cur X<6");
+                return -NStrok;
+            };
+            
+            CurY = l_List[1].toInt(&ok);
+            
+            if(!ok){
+                l_File.close();
+                qDebug("Bad curY <6");
+                return -NStrok;
+            };
+            
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                
+                
+            }
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    l_File.close(); return -NStrok;
+                }
+                
+                
+            }
+            
+        }
+        l_File.close();
+        rows.clear();
+        //реальный прогон
+        //destroyField();
+        
+        if  (!l_File.open(QIODevice::ReadOnly))
+        {
+            
+            return 10;
+        }
+        
+        
+        
+        // 1 stroka - razmery polya
+        tmp = l_File.readLine();
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 10;
+        }
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+            l_File.close();
+            
+            return -NStrok;
+        }
+        
+        SizeX = (l_List[0]).toInt();
+        SizeY = (l_List[1]).toInt();
+        // 	 //NEW ROBO CODE
+        createField(SizeY,SizeX);
+        
+        //END
+        if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
+        {
+            
+            l_File.close();
+            return - NStrok;
+        }
+        
+        
+        // Вторая строка - положение робота
+        
+        tmp = l_File.readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+            l_File.close();
+            
+            return 10;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = l_File.readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                l_File.close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+            l_File.close();return - NStrok;
+        }
+        
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        {
+            
+            l_File.close(); return - NStrok;
+        }
+        
+        roboCol = (l_List[0]).toInt();
+        roboRow = (l_List[1]).toInt();
+        
+        //InitialX = m_x;
+        //InitialY = m_y;
+        
+        
+        
+        
+        //	delete []m_FieldDubl;
+        
+        
+        
+        while (!l_File.atEnd())
+        {
+            tmp = QString::fromUtf8(l_File.readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                l_File.close();
+                return 10;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9)
+            {
+                
+                l_File.close();
+                return -NStrok;
+            }
+            CurX = l_List[0].toInt();
+            CurY = l_List[1].toInt();
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            // TODO STENI
+            if (getItem(CurY, CurX)) getItem(CurY,CurX)->setWalls((l_List[2]).toInt());
+            
+            //		int ix = (l_List[0]).toInt();
+            //		int iy = (l_List[1]).toInt();
+            
+            if (!((l_List[3]).toInt() == 0))
+            {
+                getItem(CurY,CurX)->IsColored = true;
+                // //QMessageBox::information( 0, "","test1" , 0,0,0);
+            }
+            else {
+                if (getItem(CurY,CurX))
+                    getItem(CurY,CurX)->IsColored = false;
+            }
+            qreal radiation = (l_List[4].replace(",",".")).toDouble();
+            if (getItem(CurY,CurX))
+                getItem(CurY,CurX)->radiation=radiation;
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            qreal temperature = (l_List[5].replace(",",".")).toDouble();
+            if (getItem(CurY,CurX))
+                getItem(CurY,CurX)->temperature=temperature;
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                l_File.close(); return -NStrok;
+            }
+            
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Up:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->upChar = tmp1[0];
+                }
+                else {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->upChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getItem(CurY,CurX))
+                    getItem(CurY,CurX)->upChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Down:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->downChar = tmp1[0];
+                }
+                else {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->downChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getItem(CurY,CurX))
+                    getItem(CurY,CurX)->downChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 9)
+            {
+                
+                QString tmp1 = l_List[8];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    l_File.close(); return -NStrok;
+                }
+                if(tmp1[0]=='1') {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->mark = true;
+                }
+                else {
+                    if (getItem(CurY,CurX))
+                        getItem(CurY,CurX)->mark = false ;
+                }
+            }
+            else
+            {
+                if (getItem(CurY,CurX))
+                    getItem(CurY,CurX)->mark = false ;
+            }
+            
+            
+            
+            
+            
+            
+        }
+        
+        l_File.close();
+        
+        
+        
+        qDebug() << "File " << fileName ;
+     
+        
+        
+        //robot->setZValue(100);
+        return(0);
+
+    };
+    
+    
     
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
@@ -3861,6 +4381,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         qDebug()<<"Robot:Console mode";
         curConsoleField=new ConsoleField(10,15);
         DISPLAY=false;
+        if (runtimeParameters.value('f').isValid())curConsoleField->loadFromFile(runtimeParameters.value('f').toString());
         return "";
     }
     qDebug()<<"Robot:GuiMode";
