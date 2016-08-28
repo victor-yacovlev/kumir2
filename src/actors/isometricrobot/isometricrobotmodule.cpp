@@ -94,8 +94,9 @@ QString IsometricRobotModule::initialize(const QStringList &configurationParamet
     if (!configurationParameters.contains("tablesOnly")) {
         _model = new Robot25D::RobotModel;
 
+        bool hasGui=true;
 #ifdef Q_OS_LINUX
-        bool hasGui = 0 != getenv("DISPLAY");
+        hasGui = 0 != getenv("DISPLAY");
 #endif
         if (hasGui) {
             createGui();
