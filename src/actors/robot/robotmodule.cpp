@@ -3901,7 +3901,14 @@ namespace ActorRobot {
             }
             // TODO STENI
             qDebug()<<"Before Walls";
-            if (getItem(CurX, CurY)) getItem(CurX, CurY)->setWalls((l_List[2]).toInt());
+            if (getItem(CurX, CurY))
+                {
+                    getItem(CurX, CurY)->setWalls((l_List[2]).toInt());
+                    if(CurX==0)getItem(CurX, CurY)->upWall=true;
+                    if(CurX==SizeX-1)getItem(CurX, CurY)->downWall=true;
+                    if(CurY==0)getItem(CurX, CurY)->leftWall=true;
+                    if(CurY==SizeY-1)getItem(CurX, CurY)->rightWall=true;
+                }
             
             qDebug()<<"After Walls";
             
