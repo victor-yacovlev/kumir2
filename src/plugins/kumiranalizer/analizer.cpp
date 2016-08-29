@@ -622,11 +622,15 @@ QList<Shared::Analizer::LineProp> Analizer::lineProperties() const
                     value = value | errorMask;
                 }
                 const int lineNo = lx->lineNo;
-                const bool validLineNo = lineNo>=0 && lineNo < result.size();
-                const int lineLength = validLineNo? result[lineNo].size() : 0;
-                const bool validLexemPos = lx->linePos >= 0 && lx->linePos < lineLength;
-                if (validLineNo && validLexemPos) {
-                    result[lineNo][j] = LexemType(value);
+                const bool validLineNo = lineNo>=0 && lineNo < result.size();                                
+                if (validLineNo) {
+                    Shared::Analizer::LineProp & currentLineProp = result[lineNo];
+                    const int lineLength = currentLineProp.size();
+                    const int linePos = j;
+                    const bool validLexemPos = linePos >= 0 && linePos < lineLength;
+                    if (validLexemPos) {
+                        currentLineProp[j] = LexemType(value);
+                    }
                 }
             }
         }
