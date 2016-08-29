@@ -3798,10 +3798,11 @@ namespace ActorRobot {
         
         SizeX = (l_List[0]).toInt();
         SizeY = (l_List[1]).toInt();
-        // 	 //NEW ROBO CODE
+        // 	 //NEW ROBO Field
         createField(SizeY,SizeX);
+        qDebug()<<"FIELD SIZE ROW"<<SizeX<<" COL:"<<SizeY;
         
-        //END
+        
         if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
         {
             
@@ -3855,7 +3856,7 @@ namespace ActorRobot {
         
         roboCol = (l_List[0]).toInt();
         roboRow = (l_List[1]).toInt();
-        
+        qDebug()<<"ROBOT POS ROW"<<roboRow<<" COL:"<<roboCol;
         //InitialX = m_x;
         //InitialY = m_y;
         
