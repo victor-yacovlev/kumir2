@@ -4382,7 +4382,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         qDebug()<<"Robot:Console mode";
         curConsoleField=new ConsoleField(10,15);
         DISPLAY=false;
-        if (runtimeParameters.value('f').isValid())curConsoleField->loadFromFile(runtimeParameters.value('f').toString());
+        if (runtimeParameters.value('f').isValid())qDebug()<<"LOAD FIELD ERR CODE:"<<curConsoleField->loadFromFile(runtimeParameters.value('f').toString());
         return "";
     }
     qDebug()<<"Robot:GuiMode";
@@ -4414,6 +4414,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         }
         // setWindowSize();
     }
+    if (runtimeParameters.value('f').isValid())qDebug()<<"LOAD FIELD ERR CODE:"<<field->loadFromFile(runtimeParameters.value('f').toString());
     return "";
 }
 
