@@ -3891,31 +3891,31 @@ namespace ActorRobot {
                 l_File.close();
                 return -NStrok;
             }
-            CurY = l_List[0].toInt();
-            CurX = l_List[1].toInt();
+            CurX = l_List[0].toInt();
+            CurY = l_List[1].toInt();
             if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
             {
-                
+                qDebug()<<"Out of field";
                 l_File.close(); return -NStrok;
             }
             // TODO STENI
             qDebug()<<"Before Walls";
-            if (getItem(CurY, CurX)) getItem(CurY,CurX)->setWalls((l_List[2]).toInt());
+            if (getItem(CurX, CurY)) getItem(CurX, CurY)->setWalls((l_List[2]).toInt());
             
             qDebug()<<"After Walls";
             
             if (!((l_List[3]).toInt() == 0))
             {
-                getItem(CurY,CurX)->IsColored = true;
+                getItem(CurX, CurY)->IsColored = true;
                 // //QMessageBox::information( 0, "","test1" , 0,0,0);
             }
             else {
-                if (getItem(CurY,CurX))
-                    getItem(CurY,CurX)->IsColored = false;
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->IsColored = false;
             }
             qreal radiation = (l_List[4].replace(",",".")).toDouble();
-            if (getItem(CurY,CurX))
-                getItem(CurY,CurX)->radiation=radiation;
+            if (getItem(CurX, CurY))
+                getItem(CurX, CurY)->radiation=radiation;
             
             if (l_List[4].toFloat() < 0)
             {
@@ -3923,8 +3923,8 @@ namespace ActorRobot {
                 l_File.close(); return -NStrok;
             }
             qreal temperature = (l_List[5].replace(",",".")).toDouble();
-            if (getItem(CurY,CurX))
-                getItem(CurY,CurX)->temperature=temperature;
+            if (getItem(CurX, CurY))
+                getItem(CurX, CurY)->temperature=temperature;
             
             if (l_List[5].toFloat() < MIN_TEMP)
             {
@@ -3946,18 +3946,18 @@ namespace ActorRobot {
                 }
                 //qDebug()<<QString::fromUtf8("Тест Up:")<<tmp1[0];
                 if(tmp1[0]!='$') {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->upChar = tmp1[0];
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->upChar = tmp1[0];
                 }
                 else {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->upChar = ' ' ;
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->upChar = ' ' ;
                 }
             }
             else
             {
-                if (getItem(CurY,CurX))
-                    getItem(CurY,CurX)->upChar = ' ' ;
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->upChar = ' ' ;
             }
             
             
@@ -3975,18 +3975,18 @@ namespace ActorRobot {
                 }
                 //qDebug()<<QString::fromUtf8("Тест Down:")<<tmp1[0];
                 if(tmp1[0]!='$') {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->downChar = tmp1[0];
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->downChar = tmp1[0];
                 }
                 else {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->downChar = ' ' ;
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->downChar = ' ' ;
                 }
             }
             else
             {
-                if (getItem(CurY,CurX))
-                    getItem(CurY,CurX)->downChar = ' ' ;
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->downChar = ' ' ;
             }
             
             
@@ -4002,18 +4002,18 @@ namespace ActorRobot {
                     l_File.close(); return -NStrok;
                 }
                 if(tmp1[0]=='1') {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->mark = true;
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->mark = true;
                 }
                 else {
-                    if (getItem(CurY,CurX))
-                        getItem(CurY,CurX)->mark = false ;
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->mark = false ;
                 }
             }
             else
             {
-                if (getItem(CurY,CurX))
-                    getItem(CurY,CurX)->mark = false ;
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->mark = false ;
             }
             
             
