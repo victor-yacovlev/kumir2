@@ -3796,8 +3796,8 @@ namespace ActorRobot {
             return -NStrok;
         }
         
-        SizeX = (l_List[0]).toInt();
-        SizeY = (l_List[1]).toInt();
+        SizeY = (l_List[0]).toInt();
+        SizeX = (l_List[1]).toInt();
         // 	 //NEW ROBO Field
         createField(SizeY,SizeX);
         qDebug()<<"FIELD SIZE ROW"<<SizeX<<" COL:"<<SizeY;
