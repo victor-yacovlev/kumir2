@@ -3796,11 +3796,11 @@ namespace ActorRobot {
             return -NStrok;
         }
         
-        SizeY = (l_List[0]).toInt();
-        SizeX = (l_List[1]).toInt();
+        SizeX = (l_List[0]).toInt();
+        SizeY= (l_List[1]).toInt();
         // 	 //NEW ROBO Field
-        createField(SizeY,SizeX);
-        qDebug()<<"FIELD SIZE ROW"<<SizeX<<" COL:"<<SizeY;
+        createField(SizeX,SizeY);
+        qDebug()<<"FIELD SIZE ROW"<<SizeY<<" COL:"<<SizeX;
         
         
         if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
@@ -3848,7 +3848,7 @@ namespace ActorRobot {
             l_File.close();return - NStrok;
         }
         
-        if ((l_List[0]).toInt() > SizeY || (l_List[1]).toInt() > SizeX )
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
         {
             
             l_File.close(); return - NStrok;
