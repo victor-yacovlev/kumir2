@@ -3899,10 +3899,10 @@ namespace ActorRobot {
                 l_File.close(); return -NStrok;
             }
             // TODO STENI
+            qDebug()<<"Before Walls";
             if (getItem(CurY, CurX)) getItem(CurY,CurX)->setWalls((l_List[2]).toInt());
             
-            //		int ix = (l_List[0]).toInt();
-            //		int iy = (l_List[1]).toInt();
+            qDebug()<<"After Walls";
             
             if (!((l_List[3]).toInt() == 0))
             {
