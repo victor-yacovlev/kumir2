@@ -102,8 +102,8 @@ namespace ActorRobot {
         bool goRight();
         bool goUp();
         bool goDown();
-        int  Columns(){return roboCol;}
-        int  Rows(){return roboRow;}
+        int  Columns(){return rows.at(0).count();}
+        int  Rows(){return rows.count();}
         int  robotRow(){return roboRow;}
         int  robotCol(){return roboCol;}
         int loadFromFile(QString filename);

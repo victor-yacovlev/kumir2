@@ -4937,7 +4937,7 @@ bool RobotModule::runIsColor()
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {
-        qDebug()<<"Get DC R:"<<row<<" C:"<<col;
+        qDebug()<<"Get DC R:"<<row<<" C:"<<col<<" ROWS"<<curConsoleField->Rows();
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
