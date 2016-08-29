@@ -4815,7 +4815,7 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runColored(const int row, const int col)
     {
-        
+        qDebug()<<"Get Col R:"<<row<<" C:"<<col;
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
