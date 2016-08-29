@@ -3848,7 +3848,7 @@ namespace ActorRobot {
             l_File.close();return - NStrok;
         }
         
-        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        if ((l_List[0]).toInt() > SizeY || (l_List[1]).toInt() > SizeX )
         {
             
             l_File.close(); return - NStrok;
