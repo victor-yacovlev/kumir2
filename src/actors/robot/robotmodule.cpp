@@ -3891,8 +3891,8 @@ namespace ActorRobot {
                 l_File.close();
                 return -NStrok;
             }
-            CurX = l_List[0].toInt();
-            CurY = l_List[1].toInt();
+            CurY = l_List[0].toInt();
+            CurX = l_List[1].toInt();
             if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
             {
                 
