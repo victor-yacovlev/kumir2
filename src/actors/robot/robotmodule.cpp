@@ -3492,7 +3492,7 @@ namespace ActorRobot {
     {
         if(row>rows.count()-1  || col>rows.at(row).count()-1)
         {
-            qDebug()<<"ERROR!!! NO ITEM!!"<<row<<" "<<col<<" rows: "<<rows.count();
+            qDebug()<<"ERROR!!! NO ITEM!!"<<row<<" "<<col<<" rows: "<<rows.count()<<" cols"<<rows.at(row).count();
        
             return NULL;
         }
@@ -3501,6 +3501,7 @@ namespace ActorRobot {
     
      CFieldItem* ConsoleField::getCurItem()
     {
+        qDebug()<<"R"<<roboRow<<" C"<<roboCol;
         return getItem(roboRow, roboCol);
     }
    
