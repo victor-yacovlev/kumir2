@@ -3534,6 +3534,26 @@ namespace ActorRobot {
         return true;
     }
     
+    bool ConsoleField::isUpWall()
+    {
+        if(roboRow==0)return true;
+        return getItem(roboRow, roboCol)->upWall ||getItem(roboRow-1, roboCol)->downWall;
+    }
+    bool ConsoleField::isDownWall()
+    {
+        if(roboRow==rows.count()-1)return true;
+        return getItem(roboRow, roboCol)->downWall ||getItem(roboRow+1, roboCol)->upWall;
+    }
+    bool ConsoleField::isLeftWall()    {
+        if(roboCol==0)return true;
+        return getItem(roboRow, roboCol)->leftWall ||getItem(roboRow, roboCol-1)->rightWall;
+    }
+    bool ConsoleField::isRightWall()
+    {
+        if(roboCol==rows.at(roboRow).count()-1)return true;
+        return getItem(roboRow, roboCol)->rightWall ||getItem(roboRow, roboCol+1)->leftWall;
+    }
+    
     int ConsoleField::loadFromFile(QString fileName)
     {
         
@@ -4567,7 +4587,7 @@ bool RobotModule::runIsWallAtTop()
     
     if(!DISPLAY)
     {
-      return curConsoleField->getCurItem()->upWall;
+      return curConsoleField->isUpWall();
     }
     
     bool result = !field->currentCell()->canUp();
@@ -4586,7 +4606,7 @@ bool RobotModule::runIsWallAtBottom()
     
     if(!DISPLAY)
     {
-        return curConsoleField->getCurItem()->downWall;
+        return curConsoleField->isDownWall();
     }
     
     bool result = !field->currentCell()->canDown();
@@ -4605,7 +4625,7 @@ bool RobotModule::runIsWallAtLeft()
 {
     if(!DISPLAY)
     {
-        return curConsoleField->getCurItem()->leftWall;
+        return curConsoleField->isLeftWall();
     }
     
     bool result = !field->currentCell()->canLeft();
@@ -4625,7 +4645,7 @@ bool RobotModule::runIsWallAtRight()
     
     if(!DISPLAY)
     {
-        return curConsoleField->getCurItem()->rightWall;
+        return curConsoleField->isRightWall();
     }
     bool result = !field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
@@ -4644,8 +4664,8 @@ bool RobotModule::runIsFreeAtTop()
 {
     if(!DISPLAY)
     {
-        qDebug()<<"Is free U:"<<!curConsoleField->getCurItem()->upWall;
-        return !curConsoleField->getCurItem()->upWall;
+        qDebug()<<"Is free U:"<<!curConsoleField->isUpWall();
+        return !curConsoleField->isUpWall();
     }
     
     bool result = field->currentCell()->canUp();
@@ -4664,8 +4684,8 @@ bool RobotModule::runIsFreeAtBottom()
     
     if(!DISPLAY)
     {
-        qDebug()<<"Is free D:"<<!curConsoleField->getCurItem()->downWall;
-        return !curConsoleField->getCurItem()->downWall;
+        qDebug()<<"Is free D:"<<!curConsoleField->isDownWall();
+        return !curConsoleField->isDownWall();
     }
     
     bool result = field->currentCell()->canDown();
@@ -4683,7 +4703,7 @@ bool RobotModule::runIsFreeAtLeft()
 {
     if(!DISPLAY)
     {
-        return !curConsoleField->getCurItem()->leftWall;
+        return !curConsoleField->isLeftWall();
     }
     
     bool result = field->currentCell()->canLeft();
@@ -4702,7 +4722,7 @@ bool RobotModule::runIsFreeAtRight()
     
     if(!DISPLAY)
     {
-        return !curConsoleField->getCurItem()->rightWall;
+        return !curConsoleField->isRightWall();
     }
     bool result = field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");

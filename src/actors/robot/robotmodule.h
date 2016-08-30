@@ -102,6 +102,11 @@ namespace ActorRobot {
         bool goRight();
         bool goUp();
         bool goDown();
+        bool isUpWall();
+        bool isDownWall();
+        bool isLeftWall();
+        bool isRightWall();
+        
         int  Columns(){return rows.at(0).count();}
         int  Rows(){return rows.count();}
         int  robotRow(){return roboRow;}
