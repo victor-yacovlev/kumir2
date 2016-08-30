@@ -3501,7 +3501,7 @@ namespace ActorRobot {
     
      CFieldItem* ConsoleField::getCurItem()
     {
-        qDebug()<<"R"<<roboRow<<" C"<<roboCol;
+       // qDebug()<<"R"<<roboRow<<" C"<<roboCol;
         return getItem(roboRow, roboCol);
     }
    
@@ -3513,12 +3513,14 @@ namespace ActorRobot {
     }
     bool ConsoleField::goRight()
     {
+         qDebug()<<"RIGHT BEFORE ROW"<<roboRow<<" Col"<<roboCol;
         if(getItem(roboRow, roboCol)->rightWall)return false;
         roboCol++;
         return true;
     }
     bool ConsoleField::goUp()
     {
+        qDebug()<<"ROW"<<roboRow<<" Col"<<roboCol;
         if(getItem(roboRow, roboCol)->upWall)return false;
         roboRow--;
         return true;
@@ -3526,6 +3528,7 @@ namespace ActorRobot {
     
     bool ConsoleField::goDown()
     {
+                qDebug()<<"ROW"<<roboRow<<" Col"<<roboCol;
         if(getItem(roboRow, roboCol)->downWall)return false;
         roboRow++;
         return true;
