@@ -3900,7 +3900,7 @@ namespace ActorRobot {
                 l_File.close(); return -NStrok;
             }
             // TODO STENI
-            qDebug()<<"Before Walls";
+           // qDebug()<<"Before Walls";
             if (getItem(CurX, CurY))
                 {
                     getItem(CurX, CurY)->setWalls((l_List[2]).toInt());
@@ -3910,7 +3910,7 @@ namespace ActorRobot {
                     if(CurY==SizeY-1)getItem(CurX, CurY)->rightWall=true;
                 }
             
-            qDebug()<<"After Walls";
+         //   qDebug()<<"After Walls";
             
             if (!((l_List[3]).toInt() == 0))
             {
