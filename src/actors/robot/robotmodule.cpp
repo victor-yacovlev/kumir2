@@ -4430,6 +4430,7 @@ void RobotModule::runGoUp()
 {
     if(!DISPLAY)
     {
+       qDebug()<<"Go up";
         if(!curConsoleField->goUp())setError(trUtf8("Робот разбился: сверху стена!"));
         return;
     }
@@ -4455,6 +4456,7 @@ void RobotModule::runGoDown()
 {
     if(!DISPLAY)
     {
+        qDebug()<<"Go down";
         if(!curConsoleField->goDown())setError(trUtf8("Робот разбился: снизу стена!"));
         return;
     }
@@ -4639,6 +4641,7 @@ bool RobotModule::runIsFreeAtTop()
 {
     if(!DISPLAY)
     {
+        qDebug()<<"Is free U:"<<!curConsoleField->getCurItem()->upWall;
         return !curConsoleField->getCurItem()->upWall;
     }
     
@@ -4658,6 +4661,7 @@ bool RobotModule::runIsFreeAtBottom()
     
     if(!DISPLAY)
     {
+        qDebug()<<"Is free D:"<<!curConsoleField->getCurItem()->downWall;
         return !curConsoleField->getCurItem()->downWall;
     }
     
