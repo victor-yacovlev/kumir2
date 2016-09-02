@@ -31,11 +31,11 @@ cursFile="";
      connect(ui->loadCurs,SIGNAL(triggered()),this,SLOT(loadCourse()));
      connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(saveCourse()));
      connect(ui->treeView,SIGNAL(clicked(QModelIndex)),this,SLOT(showText(QModelIndex)));
-       connect(ui->do_task,SIGNAL(triggered()),this,SLOT(startTask()));
-       qDebug()<<"Check Connect tttttttttttttttttt";
-       connect(ui->checkTask,SIGNAL(triggered()),this,SLOT(checkTask()));
-      connect(ui->actionReset,SIGNAL(triggered()),this,SLOT(resetTask()));
-        connect(ui->actionClose,SIGNAL(triggered()),this,SLOT(Close()));
+     connect(ui->do_task,SIGNAL(triggered()),this,SLOT(startTask()));
+     qDebug()<<"Check Connect tttttttttttttttttt";
+     connect(ui->checkTask,SIGNAL(triggered()),this,SLOT(checkTask()));
+     connect(ui->actionReset,SIGNAL(triggered()),this,SLOT(resetTask()));
+     connect(ui->actionClose,SIGNAL(triggered()),this,SLOT(Close()));
            connect(ui->actionTested,SIGNAL(triggered()),this,SLOT(returnTested()));
            connect(ui->treeView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(customContextMenuRequested(QPoint)));
 

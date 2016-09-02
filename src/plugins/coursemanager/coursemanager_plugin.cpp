@@ -59,6 +59,9 @@ void Plugin::rebuildRescentMenu()
  rescentMenu->setEnabled(hasAnyItem);
         
     };
+    
+
+    
 QString Plugin::getText()
 {
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
