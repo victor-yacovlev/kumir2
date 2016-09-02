@@ -85,6 +85,7 @@ namespace ActorDraw {
         void setDraw(DrawModule* draw){DRAW=draw;};
         void addDrawLine(QLineF lineF,QColor color,qreal width)
         {
+            if(lineF.length()==0)return;
             QGraphicsLineItem* line=addLine(lineF);
             QPen mp=QPen(QColor(color));
             mp.setWidthF(width);
