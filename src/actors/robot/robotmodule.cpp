@@ -4404,6 +4404,7 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
 {
+#ifdef Q_OS_LINUX
     QProcessEnvironment pe;
     pe=QProcessEnvironment::systemEnvironment();
    // qDebug()<<"PE"<<pe.toStringList();
@@ -4417,6 +4418,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         return "";
     }
     qDebug()<<"Robot:GuiMode";
+#endif
     DISPLAY=true;
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
