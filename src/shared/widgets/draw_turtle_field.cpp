@@ -70,7 +70,7 @@ DrawNavigator::DrawNavigator( QWidget * parent ){
     zoomFullDraw->move(zoomUp->pos().x(),zoomDown->pos().y()+zoomDown->height() );
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    
+     if(isAutonet->isChecked())netStepXS->setEnabled(false);
     
 };
 
@@ -98,6 +98,9 @@ void DrawNavigator::YvalueChange(double value)
 
 void DrawNavigator::autoNet(int state)
 {
+    if(isAutonet->isChecked())netStepXS->setEnabled(false);
+    else netStepXS->setEnabled(true);
+    
     emit autoNetChange(isAutonet->isChecked());
 
 }

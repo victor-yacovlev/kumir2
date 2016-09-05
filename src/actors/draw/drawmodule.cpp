@@ -632,14 +632,12 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         {
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
-            //if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
-            //if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
+
+            
             QPointF center = mapToScene(viewport()->rect().center());
             //QPointF center = sceneRect().center();
              qDebug()<<"CenterOn"<<center;
-           // center.setX(center.x()+(mapToScene(press_pos).x()-mapToScene(event->pos()).x()));
-           // center.setY(center.y()+(mapToScene(press_pos).y()-mapToScene(event->pos()).y()));
-         //   scrollContentsBy(press_pos.x()-event->pos().x(), 10);
+
             verticalScrollBar()->setValue(verticalScrollBar()->value()+(press_pos.y()-event->pos().y()));
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +(press_pos.x()-event->pos().x()));
             // centerOn(center);
