@@ -689,14 +689,17 @@ void DrawView::resizeEvent ( QResizeEvent * event )
             }
             if(pixel_per_cell<15)
             {
-                stepX=DRAW->NetStepX()*2;
-                 stepY=DRAW->NetStepX()*2;
-                //if(stepX>5)stepX=(int)(stepX-0.5);
-                //if(stepY>5)stepY=(int)(stepY-0.5);
+                while(pixel_per_cell<15){
+                  pixel_per_cell=stepX/(1/c_scale);
+                
+                 stepX=stepX*1.5;
+                 stepY=stepY*1.5;
+                    }
+        
                 DRAW->setNetStepX(stepX);
                 DRAW->setNetStepY(stepY);
                 DRAW->drawNet();
-                //DRAW->scalePen(1.2);
+             
                
             }
             DRAW->setNetStepX(stepX);
@@ -708,7 +711,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         else
         {
            double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-            if(!net)pixel_per_cell=lastStep/(1/c_scale);
+            //if(!net)pixel_per_cell=lastStep/(1/c_scale);
             if(pixel_per_cell<15) //Net step too short
             {
              net=false;
@@ -720,8 +723,8 @@ void DrawView::resizeEvent ( QResizeEvent * event )
                 {
                  net=true;
                     smallNetLabel->hide();
-                    DRAW->setNetStepX(lastStep);
-                    DRAW->setNetStepY(lastStep);
+                   // DRAW->setNetStepX(lastStep);
+                   // DRAW->setNetStepY(lastStep);
                 }
                 if(pixel_per_cell>this->width()*2)
                 {
@@ -1128,15 +1131,19 @@ void DrawModule::drawNet()
        
    
         CurView->setZoom(50);
-        CurView->setNet();
+      
         mPen->setScale(0.05);
-        setNetStepX(1);
-        setNetStepY(1);
-       
         CurView->centerOn(3,-3);
+        if(isAutoNet())
+        {
+         setNetStepX(1);
+         setNetStepY(1);
+         
+        navigator->updateSelf(1,1);
+        }
         CurView->setNet();
         drawNet();
-        navigator->updateSelf(1,1);
+        
     };
     
      void DrawModule::zoomFullDraw()
@@ -1241,9 +1248,15 @@ void DrawModule::drawNet()
     void DrawModule::netStepChange(double value)
     {
         double oldValue=NetStepY();
+        
         setNetStepY(value);
         setNetStepX(value);
-        if(oldValue!=value && value>navigator->netStepYS->minimum() )drawNet();
+        
+        if(oldValue!=value && value!=0)
+        {
+            getCurView()->setNet();
+            drawNet();
+        }
     }
 void DrawModule::redraw()
     {

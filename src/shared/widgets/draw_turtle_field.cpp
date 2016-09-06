@@ -77,12 +77,12 @@ DrawNavigator::DrawNavigator( QWidget * parent ){
 
 void DrawNavigator::XvalueChange(double value)
 {
-    emit netStepChange(value);
+    
     netStepYS->setSingleStep(value/10);
      netStepXS->setSingleStep(Zoom/500);
     qDebug()<<"Zoom"<<Zoom<<" Step"<<netStepXS->singleStep();
     netStepYS->setValue(value);
-    
+    emit netStepChange(value);
     
 }
 void DrawNavigator::YvalueChange(double value)
