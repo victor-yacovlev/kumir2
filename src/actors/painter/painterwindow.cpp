@@ -204,7 +204,7 @@ void PainterWindow::newImage()
         s_templateName = m_newImageDialog->templateFileName();
         static const QString resourcesRoot = m_module->myResourcesDir().absolutePath();
         if (m_newImageDialog->isTemplate()) {
-            m_module->runLoadPage(resourcesRoot+s_templateName);
+            m_module->runLoadPage(resourcesRoot+"/"+s_templateName);
         }
         else {
             Color c = colorFromCss(m_newImageDialog->color());
