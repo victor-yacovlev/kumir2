@@ -95,6 +95,11 @@ void PainterWindow::setCanvasSize(const QSize &size)
 
 }
 
+void PainterWindow::setCanvasName(const QString &name)
+{
+    setWindowTitle(tr("Painter [%1]").arg(name));
+}
+
 PainterView * PainterWindow::view()
 {
     return ui->view;

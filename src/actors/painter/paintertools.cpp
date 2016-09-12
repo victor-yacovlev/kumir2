@@ -256,4 +256,41 @@ extern QString CSS_RGB_toString(const QString &cssRgb)
     return result;
 }
 
+const QStringList & standardRussianColorNames()
+{
+    static QStringList validValues;
+    if (validValues.isEmpty()) {
+        validValues << QString::fromUtf8("прозрачный");
+        validValues << QString::fromUtf8("белый");
+        validValues << QString::fromUtf8("черный");
+        validValues << QString::fromUtf8("чёрный");
+        validValues << QString::fromUtf8("серый");
+        validValues << QString::fromUtf8("фиолетовый");
+        validValues << QString::fromUtf8("синий");
+        validValues << QString::fromUtf8("голубой");
+        validValues << QString::fromUtf8("зелёный");
+        validValues << QString::fromUtf8("зеленый");
+        validValues << QString::fromUtf8("жёлтый");
+        validValues << QString::fromUtf8("желтый");
+        validValues << QString::fromUtf8("оранжевый");
+        validValues << QString::fromUtf8("красный");
+    }
+    return validValues;
+}
+
+QString findColorName(const Actor_Colorer::Color &color)
+{
+    const QStringList & validValues = standardRussianColorNames();
+    Q_FOREACH(const QString & name, validValues) {
+        const QColor test = parseColor(name).toRgb();
+        bool r = test.red() == color.r;
+        bool g = test.green() == color.g;
+        bool b = test.blue() == color.b;
+        if (r && g && b) {
+            return name;
+        }
+    }
+    return QString("rgb(%1,%2,%3)").arg(color.r).arg(color.g).arg(color.b);
+}
+
 }
