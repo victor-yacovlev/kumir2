@@ -4198,6 +4198,7 @@ void RobotModule::createGui()
     field->setRoboPos(0,0);
       field->createRobot();
     view=new RobotView(field);
+    view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
     m_mainWidget = view;
     const QUrl rcUrl = QUrl::fromLocalFile(
                 myResourcesDir().absoluteFilePath("rc.qml")
