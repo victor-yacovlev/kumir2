@@ -31,6 +31,28 @@ _ColorerModule::_ColorerModule(ExtensionSystem::KPlugin * parent)
     return QList<ExtensionSystem::CommandLineParameter>();
 }
 
+const QStringList & _ColorerModule::standardRussianColorNames()
+{
+    static QStringList validValues;
+    if (validValues.isEmpty()) {
+        validValues << QString::fromUtf8("прозрачный");
+        validValues << QString::fromUtf8("белый");
+        validValues << QString::fromUtf8("черный");
+        validValues << QString::fromUtf8("чёрный");
+        validValues << QString::fromUtf8("серый");
+        validValues << QString::fromUtf8("фиолетовый");
+        validValues << QString::fromUtf8("синий");
+        validValues << QString::fromUtf8("голубой");
+        validValues << QString::fromUtf8("зелёный");
+        validValues << QString::fromUtf8("зеленый");
+        validValues << QString::fromUtf8("жёлтый");
+        validValues << QString::fromUtf8("желтый");
+        validValues << QString::fromUtf8("оранжевый");
+        validValues << QString::fromUtf8("красный");
+    }
+    return validValues;
+}
+
 /* public slot */ void _ColorerModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current)
 {
     // Called when changed kumir state. The states are defined as enum ExtensionSystem::GlobalState:
@@ -163,21 +185,8 @@ static QColor parseColor(const QString &css)
 /* public slot */ Color _ColorerModule::runOperatorINPUT(const QString& x, bool& ok)
 {
     /* алг цвет ввод(лит x, рез лог ok) */
-    QStringList validValues;
-    validValues << QString::fromUtf8("прозрачный");
-    validValues << QString::fromUtf8("белый");
-    validValues << QString::fromUtf8("черный");
-    validValues << QString::fromUtf8("чёрный");
-    validValues << QString::fromUtf8("серый");
-    validValues << QString::fromUtf8("фиолетовый");
-    validValues << QString::fromUtf8("синий");
-    validValues << QString::fromUtf8("голубой");
-    validValues << QString::fromUtf8("зелёный");
-    validValues << QString::fromUtf8("зеленый");
-    validValues << QString::fromUtf8("жёлтый");
-    validValues << QString::fromUtf8("желтый");
-    validValues << QString::fromUtf8("оранжевый");
-    validValues << QString::fromUtf8("красный");
+    const QStringList & validValues = standardRussianColorNames();
+
     ok = validValues.contains(x.trimmed());
     Color result; result.r = result.g = result.b = result.a = 0;
     if (ok) {

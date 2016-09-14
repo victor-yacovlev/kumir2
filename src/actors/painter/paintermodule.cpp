@@ -180,8 +180,10 @@ void PainterModule::runLoadPage(const QString& fileName)
         setError(tr("File not exists: %s").arg(fileName));
     }
     canvas.reset(new QImage(fileName));
-    if (m_window)
+    if (m_window) {
         m_window->setCanvasSize(canvas->size());
+        m_window->setCanvasName(QFile(fileName).fileName());
+    }
     markViewDirty();
 }
 
@@ -287,6 +289,11 @@ void PainterModule::runNewPage(const int width, const int height, const Color& b
     canvas.reset(new QImage(width,height,QImage::Format_RGB32));
     canvas->fill(clr.rgb());
     m_window->setCanvasSize(canvas->size());
+    QString colorName = findColorName(backgroundColor);
+    if (colorName.length() > 0 && ! colorName.contains("(") ) {
+        colorName[0] = colorName[0].toUpper();
+    }
+    m_window->setCanvasName(QString("%1 %2x%3").arg(colorName).arg(width).arg(height));
     markViewDirty();
 }
 

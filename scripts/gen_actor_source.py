@@ -900,6 +900,9 @@ class MenuItem:
         else:
             self.icon = None
 
+    def __repr__(self):
+        return self.title.get_ascii_value()
+
 
 class Gui:
     """
