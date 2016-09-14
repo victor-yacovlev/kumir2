@@ -779,7 +779,7 @@ void DrawModule::createGui()
     netStepX=1;
     netStepY=1;
     autoNet=true;
-    netColor=QColor("gray");
+    netColor=QColor("999999");
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
     navigator=new DrawNavigator(CurView);
@@ -789,14 +789,13 @@ void DrawModule::createGui()
 
 
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
-
+    showToolsBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("menu-24x24-black.png")));
     connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
     connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
     connect(navigator,SIGNAL(redrawNet()),this,SLOT(drawNet()));
     connect(navigator,SIGNAL(autoNetChange(bool)),this,SLOT(autoNetChange(bool)));
      connect(navigator,SIGNAL(netStepChange(double)),this,SLOT(netStepChange(double)));
     
-   // navigator->setDraw(this);
     connect(navigator->zoomUp,SIGNAL(pressed()),this,SLOT(zoomIn()));
     connect(navigator->zoomDown,SIGNAL(pressed()),this,SLOT(zoomOut()));
     connect(navigator->zoomNormal,SIGNAL(pressed()),this,SLOT(zoomNorm()));
