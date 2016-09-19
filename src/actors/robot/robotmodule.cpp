@@ -343,7 +343,7 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            float lettShift=sett->value("LettShift","1").toFloat();
+            float lettShift=sett->value("LettShift","2").toFloat();
             upCharItm->setPos(upLeftCornerX,upLeftCornerY-2-lettShift);
             upCharItm->setZValue(1);
         }
@@ -382,8 +382,8 @@ namespace ActorRobot {
                 delete markItm;
                 markItm = NULL;
             }
-            float xshift=sett->value("MarkShiftLeft","1").toFloat();
-             float yshift=sett->value("MarkShift","1").toFloat();
+            float xshift=sett->value("MarkShiftLeft","6").toFloat();
+             float yshift=sett->value("MarkShift","3").toFloat();
           //  markItm=Scene->addText(QChar(9787),font);
             markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
@@ -772,7 +772,7 @@ namespace ActorRobot {
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
-        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        EditColor=QColor(sett->value("EditColor","#6496ff").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         showLine=QPen(QColor(0,255,0,125));
         showLine.setWidth(3);
@@ -1067,12 +1067,12 @@ namespace ActorRobot {
         drawNet();
         
         BortLine = QPen(WallColor,4);
-        BortLine.setWidth(sett->value("BortW","4").toInt());
+        BortLine.setWidth(sett->value("BortW","6").toInt());
                 
         StLine=QPen(gridColor,3);
-        StLine.setWidth(sett->value("StW","2").toInt());
+        StLine.setWidth(sett->value("StW","1").toInt());
         WallLine=QPen(WallColor,3);
-        WallLine.setWidth(sett->value("WallW","2").toInt());
+        WallLine.setWidth(sett->value("WallW","4").toInt());
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam

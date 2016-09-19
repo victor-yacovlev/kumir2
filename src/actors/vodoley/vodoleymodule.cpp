@@ -182,69 +182,82 @@ private:
 {
     /* алг вылей A */
     // TODO implement me
+  
+     mutex.lock();
     MainWindow->MoveFromTo(0,3);//Move water from A to ....
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runEmptyB()
 {
     /* алг вылей B */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(1,3);
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runEmptyC()
 {
     /* алг вылей C */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(1,3);
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToB()
 {
     /* алг перелей из A в B */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(0,1);
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToC()
 {
     /* алг перелей из A в C */
     // TODO implement me
+    mutex.lock();
     MainWindow->MoveFromTo(0,2);
+    mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromBToA()
 {
     /* алг перелей из B в A */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(1,0);
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromBToC()
 {
     /* алг перелей из B в C */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(1,2);
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromCToB()
 {
     /* алг перелей из C в B */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(2,1);
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromCToA()
 {
     /* алг перелей из C в A */
     // TODO implement me
+     mutex.lock();
     MainWindow->MoveFromTo(2,0);
-    
+     mutex.unlock();
 }
 
 /* public slot */ bool VodoleyModule::runTaskComplited()

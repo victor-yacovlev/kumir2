@@ -203,7 +203,7 @@
             "order": 1,
 			"type": "color",
 			"default": "#FFFFFF",
-			"title": {"ascii": "Text color", "ru_RU": "Цвет смиволов"}
+			"title": {"ascii": "Text color", "ru_RU": "Цвет символов"}
 		},
 		"LineColor": {
             "order": 2,
@@ -232,50 +232,50 @@
 		"EditColor": {
             "order": 6,
 			"type": "color",
-			"default": "#00008C",
+			"default": "#6496ff",
 			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
 		},
 		"LettShift": {
             "order": 7,
 			"type": "int",
-			"default": "0",
+			"default": "2",
             "title": {"ascii": "Letters Shift", "ru_RU": "Сдвиг символов вверх/вниз"}
 		},		
 		"MarkShift": {
             "order": 8,
 			"type": "int",
-			"default": "0",
+			"default": "3",
             "title": {"ascii": "Marks Shift", "ru_RU": "Сдвиг точки вверх/вниз"}
 		},
 		"MarkShiftLeft": {
             "order": 9,
 			"type": "int",
-			"default": "0",
+			"default": "6",
             "title": {"ascii": "Letters Shift", "ru_RU": "Сдвиг точки право/лево"}
 		},
 			"ImageSize": {
             "order": 10,
             "type": "double",
-			"default": "50",
+			"default": "100",
             "maximum": "5000",
 			"title": {"ascii": "ImageSize", "ru_RU": "Пикселей/клетку при сохранении картинки"}
 		},
         "BortW": {
             "order": 11,
 			"type": "int",
-			"default": "4",
+			"default": "6",
             "title": {"ascii": "BortW", "ru_RU": "Толщина борта"}
 		},
         "StW": {
             "order": 12,
 			"type": "int",
-			"default": "2",
+			"default": "1",
             "title": {"ascii": "BortW", "ru_RU": "Толщина линий"}
 		},
         "WallW": {
             "order": 13,
 			"type": "int",
-			"default": "3",
+			"default": "4",
             "title": {"ascii": "BortW", "ru_RU": "Толщина стен"}
 		},
         "FillColor": {

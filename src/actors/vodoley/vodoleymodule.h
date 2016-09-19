@@ -66,6 +66,7 @@ public slots:
 
 private:
     void createGui();
+    QMutex mutex;
     void createRescentMenu();
     Vodoley *MainWindow;
     ExtensionSystem::SettingsPtr my_settings;
