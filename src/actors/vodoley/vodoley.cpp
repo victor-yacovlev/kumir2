@@ -374,7 +374,7 @@ void Vodoley::MoveFromTo(uint from,uint to)
         Curfill[from]=Curfill[from]-svobodno;
     mutex.unlock();
     updateMenzur();
- 
+    QApplication::processEvents();
 };
 
 
