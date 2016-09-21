@@ -74,7 +74,7 @@ public slots:
     void handleUndoChanged(bool v);
     void handleRedoChanged(bool v);
     void startRecordMacro();
-    Macro* endRecordMacro();
+    QSharedPointer<Macro> endRecordMacro();
 
 
 signals:
@@ -107,7 +107,7 @@ protected:
     bool teacherModeFlag_;
 
     QRect selectionRect_;
-    Macro * recordingMacro_;
+    QSharedPointer<Macro> recordingMacro_;
 
 };
 

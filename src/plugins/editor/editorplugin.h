@@ -80,11 +80,11 @@ protected:
     inline void changeCurrentDirectory(const QString & path) {
         currentDirectory_ = path;
         updateSettings(QStringList());
-        updateUserMacros(QString(), QList<Macro>(), false);
+        updateUserMacros(QString(), QList<QSharedPointer<Macro> >(), false);
     }
     void start();
     void stop();
-    void updateUserMacros(const QString & analizerName, const QList<Macro> & macros, bool rewrite);
+    void updateUserMacros(const QString & analizerName, const QList<QSharedPointer<Macro> > & macros, bool rewrite);
 private:
     struct Ed {
         inline Ed() { e = 0; a=0; id =-1; }

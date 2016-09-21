@@ -28,8 +28,8 @@ void MacroListEditor::handleItemChanged(QListWidgetItem *current, QListWidgetIte
     ui->btnEdit->setEnabled(current != nullptr);
 }
 
-void MacroListEditor::initialize(const QList<Macro> &macros,
-                                 const QList<Macro> &systemMacros)
+void MacroListEditor::initialize(const QList<QSharedPointer<Macro> > &macros,
+                                 const QList<QSharedPointer<Macro> > &systemMacros)
 {
     ui->btnRemove->setEnabled(false);
     ui->btnEdit->setEnabled(false);
@@ -37,11 +37,11 @@ void MacroListEditor::initialize(const QList<Macro> &macros,
     macros_ = macros;
     systemMacros_ = systemMacros;
     for (int i=0; i<macros_.size(); i++) {
-        Macro & macro = macros_[i];
+        QSharedPointer<Macro> macro = macros_[i];
         QListWidgetItem * item = new QListWidgetItem;
-        QString text = macro.title.trimmed();
-        if (!macro.key.isNull()) {
-            text += QString(" (Esc, ") + macro.key + ")";
+        QString text = macro->title.trimmed();
+        if (!macro->key.isNull()) {
+            text += QString(" (Esc, ") + macro->key + ")";
         }
         item->setText(text);
         ui->listWidget->addItem(item);
@@ -69,26 +69,26 @@ void MacroListEditor::editMacro()
     QListWidgetItem * item = ui->listWidget->currentItem();
     int index = ui->listWidget->currentRow();
 
-    Macro macro = macros_[index];
+    QSharedPointer<Macro> macro = macros_[index];
 
     MacroEditor * editor = new MacroEditor(this);
     editor->setWindowTitle(tr("Edit recorded keyboard sequence..."));
-    QList<Macro> allMacros = systemMacros_ + macros_;
+    QList<QSharedPointer<Macro> > allMacros = systemMacros_ + macros_;
     QString usedLetters;
     QStringList usedNames;
-    foreach(Macro m, allMacros) {
-        if (!m.key.isNull()) {
-            usedLetters.push_back(m.key);
-            usedNames.push_back(m.title);
+    foreach(QSharedPointer<Macro> m, allMacros) {
+        if (!m->key.isNull()) {
+            usedLetters.push_back(m->key);
+            usedNames.push_back(m->title);
         }
     }
     editor->setUsedSymbols(usedLetters, usedNames);
-    editor->setMacro(&macro);
+    editor->setMacro(macro);
 
     if (editor->exec() == QDialog::Accepted) {
-        QString text = macro.title.trimmed();
-        if (!macro.key.isNull()) {
-            text += " (" + prefix_ + macro.key + ")";
+        QString text = macro->title.trimmed();
+        if (!macro->key.isNull()) {
+            text += " (" + prefix_ + macro->key + ")";
         }
         item->setText(text);
         macros_[index] = macro;
@@ -96,7 +96,7 @@ void MacroListEditor::editMacro()
 }
 
 
-QList<Macro> MacroListEditor::result() const
+QList<QSharedPointer<Macro> > MacroListEditor::result() const
 {
     return macros_;
 }

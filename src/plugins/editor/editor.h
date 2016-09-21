@@ -195,8 +195,8 @@ private /* fields */:
     QAction * separatorAction_;
     mutable QAction * toggleBreakpoint_;
 
-    QList<Macro> systemMacros_;
-    QList<Macro> userMacros_;
+    QList<QSharedPointer<Macro>> systemMacros_;
+    QList<QSharedPointer<Macro>> userMacros_;
 
     int timerId_;
     int autoScrollTimerId_;

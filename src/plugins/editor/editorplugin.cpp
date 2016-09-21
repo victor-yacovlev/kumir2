@@ -244,7 +244,7 @@ void EditorPlugin::connectGlobalSignalsToEditor(EditorInstance *editor)
 }
 
 
-void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Macro> &macros, bool rewrite)
+void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<QSharedPointer<Macro> > &macros, bool rewrite)
 {
     if (rewrite) {
         QString fileName = analizerName.length() > 0

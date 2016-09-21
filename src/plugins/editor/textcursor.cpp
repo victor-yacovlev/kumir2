@@ -210,13 +210,13 @@ bool TextCursor::isFreeCursorMovement() const
 
 void TextCursor::startRecordMacro()
 {
-    recordingMacro_ = new Macro;
+    recordingMacro_ = QSharedPointer<Macro>(new Macro);
 }
 
-Macro* TextCursor::endRecordMacro()
+QSharedPointer<Macro> TextCursor::endRecordMacro()
 {
-    Macro * result = recordingMacro_;
-    recordingMacro_ = nullptr;
+    QSharedPointer<Macro> result = recordingMacro_;
+    recordingMacro_.clear();
     return result;
 }
 
