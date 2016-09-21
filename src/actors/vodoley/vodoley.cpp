@@ -671,7 +671,7 @@ void Vodoley::updateMenzur()
 
 void Vodoley::updateNeedBirka()
 {
-
+mutex.lock();
     if(needFrame)
 	{
 		if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR)){needFrame->setPalette(QPalette(QColor(50,90,50),QColor(100,190,100)));}
@@ -681,6 +681,7 @@ void Vodoley::updateNeedBirka()
 
 	needLabel->setText(" "+QString::number(AfillR));
 	qDebug()<<"NEED:"<<QString::number(AfillR);
+    mutex.unlock();
 };
 void Vodoley::mousePressEvent(QMouseEvent *event)
 {
