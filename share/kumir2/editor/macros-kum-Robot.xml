@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <macros>
-    <macro title="использовать Робот" key="1">
+    <macro title="использовать Робот" key="1" last="true">
 	<command name="InsertImport" text="Робот" />
     </macro>
     <macro title="вверх" key="Up">

@@ -140,8 +140,11 @@ def cmake_disabled_modules():
 
 def _split_into_branch_and_hash(s):
     assert isinstance(s, str)
-    index = s.rindex("-")
-    return s[:index], s[index+1:]
+    index = s.rfind("-")
+    if -1==index:
+        return s, "unknown"
+    else:
+        return s[:index], s[index+1:]
 
 def cmake_version_info():
     version_name = get_version_information(os.getcwd())
