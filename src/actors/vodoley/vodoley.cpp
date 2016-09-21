@@ -331,8 +331,9 @@ void Vodoley::resizeEvent ( QResizeEvent * event )
 
 void Vodoley::reset()
 {
-
+    mutex.tryLock(30);
     setBaseFill(Afill,Bfill,Cfill);
+    mutex.unlock();
     updateMenzur();
 };
 
@@ -632,7 +633,8 @@ void Vodoley::saveZ()
 void Vodoley::updateMenzur()
 {
     float literSize = MAX_SIZE/maxSize();
-    qDebug()<<"Liter size"<<literSize;
+    //qDebug()<<"Liter size"<<literSize;
+    mutex.lock();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
     Amen->setSize(Asize());
@@ -659,6 +661,7 @@ void Vodoley::updateMenzur()
 	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
+    mutex.unlock();
   	view->update();
 	scene->update();
 	updateNeedBirka();
