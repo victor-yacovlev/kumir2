@@ -471,6 +471,12 @@ void KumirRunPlugin::terminateAndWaitForStopped()
         terminate();
     }
     pRun_->wait();
+#ifdef Q_OS_LINUX
+    bool gui = getenv("DISPLAY")!=0;
+    if (gui) {
+        usleep(50000);
+    }
+#endif
 }
 
 
@@ -802,6 +808,7 @@ void KumirRunPlugin::start()
             pRun_->start();
             pRun_->wait();
             checkForErrorInConsole();
+            stop();
         }
         else {
             startTimer(0); // start thread after event loop started
