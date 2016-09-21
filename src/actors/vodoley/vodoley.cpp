@@ -27,7 +27,7 @@
 
         static const double Pi = 3.14159265358979323846264338327950288419717;
 
-Menzurka::Menzurka(int x,int y,uint size,float lsize)
+Menzurka::Menzurka(int x,int y,uint size,float lsize,QMutex* mutex)
 {
     SizeInLiters=size;
     literSize=lsize;
@@ -37,6 +37,7 @@ Menzurka::Menzurka(int x,int y,uint size,float lsize)
     GpY=4;
     curFil=1;
     needFill=-1;
+    M=mutex;
 
 };
 
@@ -45,7 +46,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 {
 
 	Q_UNUSED(option); Q_UNUSED(widget);
-	
+	M->lock();
 	//qDebug()<<"Repaint menzurka "<<Gp<<" curFil"<<curFil;
  	QBrush black(Qt::black);
     float size=(literSize*SizeInLiters);
@@ -128,6 +129,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 
 	//painter->drawLine(offsetX+1, offsetY+size-literSize*curFil,offsetX+X_SIZE-2,offsetY+size);
+    M->unlock();
 };
 
 Vodoley::Vodoley()
@@ -260,9 +262,9 @@ void Vodoley::CreateVodoley(void)
 {
     float literSize = MAX_SIZE/maxSize();
     qDebug()<<"Liter Size:"<<literSize;
-    Amen=new Menzurka(30,30+(maxSize()-Asize())*literSize,Asize(),literSize);
-    Bmen=new Menzurka(140,30+(maxSize()-Bsize())*literSize,Bsize(),literSize);
-    Cmen=new Menzurka(250,30+(maxSize()-Csize())*literSize,Csize(),literSize);
+    Amen=new Menzurka(30,30+(maxSize()-Asize())*literSize,Asize(),literSize,&mutex);
+    Bmen=new Menzurka(140,30+(maxSize()-Bsize())*literSize,Bsize(),literSize,&mutex);
+    Cmen=new Menzurka(250,30+(maxSize()-Csize())*literSize,Csize(),literSize,&mutex);
 
     Amen->setCurFill(CurA());
     Bmen->setCurFill(CurB());
@@ -353,7 +355,8 @@ void Vodoley::FillC()
 
 void Vodoley::MoveFromTo(uint from,uint to)
 {
-    if(to>2){Curfill[from]=0;updateMenzur();return;};//Выливаем
+    mutex.lock();
+    if(to>2){Curfill[from]=0;mutex.unlock();updateMenzur();return;};//Выливаем
     int svobodno=Maxfill[to]-Curfill[to];
     Curfill[to]=Curfill[to]+Curfill[from];
     if(Curfill[to]>Maxfill[to])Curfill[to]=Maxfill[to];
@@ -363,7 +366,9 @@ void Vodoley::MoveFromTo(uint from,uint to)
         Curfill[from]=0;
     else
         Curfill[from]=Curfill[from]-svobodno;
+    mutex.unlock();
     updateMenzur();
+ 
 };
 
 

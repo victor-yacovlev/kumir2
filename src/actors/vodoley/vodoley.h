@@ -37,7 +37,7 @@ class Menzurka:public QGraphicsItem
 {
 
 public:
-    Menzurka(int x,int y,uint size,float lsize);
+    Menzurka(int x,int y,uint size,float lsize,QMutex* mutex);
     ~Menzurka(){};
 
     QRectF boundingRect() const
@@ -91,7 +91,7 @@ private:
     int offsetX;
     int offsetY;
     int Gp,GpY;
-
+    QMutex* M;
 
 };
 class NewDialog:public QDialog
@@ -136,15 +136,15 @@ public:
                 show();
 		setVisible(true);
 	}
-	uint CurA()
+	uint CurA() const
 	{
 		return Curfill[0];
 	};
-	uint CurB()
+	uint CurB() const
 	{
 		return Curfill[1];
 	};
-	uint CurC()
+	uint CurC() const
 	{
 		return Curfill[2];
 	};
@@ -251,6 +251,7 @@ private:
     Menzurka* Amen;
     Menzurka* Bmen;
     Menzurka* Cmen;
+    QMutex mutex;
     QString curDir;
     bool autoClose;
 //    WHeader* vodHeader;
