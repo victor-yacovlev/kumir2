@@ -339,17 +339,22 @@ void Vodoley::reset()
 
 void Vodoley::FillA()
 {
+    mutex.lock();
     Curfill[0]=Asize();
+    mutex.unlock();
     updateMenzur();
 };
 void Vodoley::FillB()
-{
+{    mutex.lock();
     Curfill[1]=Bsize();
+    mutex.unlock();
     updateMenzur();
 };
 void Vodoley::FillC()
 {
+    mutex.unlock();
     Curfill[2]=Csize();
+    mutex.unlock();
     updateMenzur();
 };
 
