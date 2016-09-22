@@ -201,7 +201,7 @@ public slots:
     void FillC();
     
     void MoveFromTo(uint from,uint to);
-    
+    void redraw();
 
 signals:
     void Otkaz(QString msg);

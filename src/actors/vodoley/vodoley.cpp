@@ -661,8 +661,7 @@ void Vodoley::updateMenzur()
 	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
-  	view->update();
-	scene->update();
+
     mutex.unlock();
     
 
@@ -670,6 +669,13 @@ void Vodoley::updateMenzur()
 
 	if(Csize()<1)emit CNull();else emit CNotNull();
 };
+void Vodoley::redraw()
+{
+    mutex.lock();
+    view->update();
+	scene->update();
+    mutex.unlock();
+}
 
 void Vodoley::updateNeedBirka()
 {

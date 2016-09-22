@@ -71,6 +71,7 @@ private:
     Vodoley *MainWindow;
     ExtensionSystem::SettingsPtr my_settings;
     QMenu * rescentMenu;
+    QTimer *redrawTimer;
 
 
 };
