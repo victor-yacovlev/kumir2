@@ -662,8 +662,8 @@ void Vodoley::updateMenzur()
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
     mutex.unlock();
-  	view->update();
-	scene->update();
+  	//view->update();
+	//scene->update();
 	updateNeedBirka();
 
 	if(Csize()<1)emit CNull();else emit CNotNull();
