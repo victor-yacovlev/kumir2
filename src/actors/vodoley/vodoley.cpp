@@ -634,7 +634,7 @@ void Vodoley::updateMenzur()
 {
     float literSize = MAX_SIZE/maxSize();
     //qDebug()<<"Liter size"<<literSize;
-    mutex.tryLock(50);
+    mutex.lock();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
     Amen->setSize(Asize());
