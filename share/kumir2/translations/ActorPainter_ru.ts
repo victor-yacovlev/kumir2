@@ -127,7 +127,7 @@
     </message>
     <message>
         <source>Painter [new page]</source>
-        <translation>Рисователь [новый лист]</translation>
+        <translation type="obsolete">Рисователь [новый лист]</translation>
     </message>
     <message>
         <source>Load image...</source>
@@ -148,6 +148,10 @@
     <message>
         <source>%2 - Painter [%1]</source>
         <translation>%2 - Рисователь [%1]</translation>
+    </message>
+    <message>
+        <source>Painter</source>
+        <translation>Рисователь</translation>
     </message>
 </context>
 </TS>

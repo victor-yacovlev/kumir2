@@ -43,6 +43,7 @@ private slots:
     void reset();
     void changeZoom(int factor);
     void setZoom(qreal scale);
+    void updateWindowTitle(const QString &fileName, const QString &documentName);
 
 private:
 

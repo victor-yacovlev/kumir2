@@ -75,9 +75,7 @@ PainterWindow::PainterWindow(PainterModule * module, QWidget *parent) :
     QSettings templates(QDir(resourcesRoot).absoluteFilePath("templates.ini"), QSettings::IniFormat);
     templates.setIniCodec("UTF-8");
     const QString defName = templates.value("Names/default.png", "new page").toString();
-    setWindowTitle(tr("Painter [%1]").arg(defName));
-
-
+    updateWindowTitle("", defName);
 }
 
 //void PainterWindow::setCanvas(QImage * canvas, QMutex *locker)
@@ -97,7 +95,7 @@ void PainterWindow::setCanvasSize(const QSize &size)
 
 void PainterWindow::setCanvasName(const QString &name)
 {
-    setWindowTitle(tr("Painter [%1]").arg(name));
+    updateWindowTitle("", name);
 }
 
 PainterView * PainterWindow::view()
@@ -211,10 +209,10 @@ void PainterWindow::newImage()
             m_module->runNewPage(w, h, c);
         }
         if (m_newImageDialog->isTemplate()) {
-            setWindowTitle(tr("Painter [%1]").arg(m_newImageDialog->templateName()));
+            updateWindowTitle("", m_newImageDialog->templateName());
         }
         else {
-            setWindowTitle(tr("Painter [new page]"));
+            updateWindowTitle("", "");
         }
     }
 }
@@ -232,7 +230,7 @@ void PainterWindow::loadImage()
         m_module->runLoadPage(fn);
         s_templateName = fn;
         s->setValue("LastDir", QFileInfo(fn).dir().absolutePath());
-        setWindowTitle(tr("Painter [%1]").arg(QFileInfo(fn).fileName()));
+        updateWindowTitle(fn, "");
     }
 }
 
@@ -252,12 +250,7 @@ void PainterWindow::saveImageAs()
     if (!fileName.isEmpty()) {
         saveImageToFile(fileName);
         s_fileName = fileName;
-        if (s_templateName.isEmpty()) {
-            setWindowTitle(tr("%1 - Painter").arg(QFileInfo(fileName).fileName()));
-        }
-        else {
-            setWindowTitle(tr("%2 - Painter [%1]").arg(QFileInfo(s_templateName).fileName()).arg(QFileInfo(fileName).fileName()));
-        }
+        updateWindowTitle(fileName, QFileInfo(s_templateName).fileName());
         s->setValue("LastDir", QFileInfo(fileName).dir().absolutePath());
     }
 }
@@ -305,6 +298,29 @@ void PainterWindow::setZoom(qreal scale)
     ui->verticalRuler->setZoom(scale);
     ui->horizontalRuler->setZoom(scale);
     ui->zoomLabel->setText(QString::number(int(ui->view->zoom()*100))+"%");
+}
+
+void PainterWindow::updateWindowTitle(const QString &fileName, const QString &templateName)
+{
+    setWindowTitle(tr("Painter"));
+    return;
+
+
+    // The code below is confusing to AGK, so keep it for newer versions, but do not execute
+
+    if (fileName.isEmpty() && !templateName.isEmpty()) {
+        setWindowTitle(tr("Painter [%1]").arg(templateName));
+    }
+    else if (!fileName.isEmpty() && templateName.isEmpty()) {
+        setWindowTitle(tr("%1 - Painter").arg(QFileInfo(fileName).fileName()));
+    }
+    else if (!fileName.isEmpty() && !templateName.isEmpty()) {
+        setWindowTitle(tr("%2 - Painter [%1]").arg(templateName).arg(QFileInfo(fileName).fileName()));
+    }
+    else {
+        // fileName.isEmpty() && templateName.isEmpty()
+        setWindowTitle(tr("Painter"));
+    }
 }
 
 void PainterWindow::changeZoom(int factor)
