@@ -4,9 +4,9 @@
 namespace CoreGUI {
 
 const char*   IOSettingsEditorPage::UseFixedWidthKey = "TerminalFixedWidth";
-const bool    IOSettingsEditorPage::UseFixedWidthDefaultValue = false;
+const bool    IOSettingsEditorPage::UseFixedWidthDefaultValue = true;
 const char*   IOSettingsEditorPage::WidthSizeKey = "TermnalWidth";
-const quint16 IOSettingsEditorPage::WidthSizeDefaultValue = 80u;
+const quint16 IOSettingsEditorPage::WidthSizeDefaultValue = 64u;
 
 IOSettingsEditorPage::IOSettingsEditorPage(ExtensionSystem::SettingsPtr settings, QWidget *parent)
     : QWidget(parent)
