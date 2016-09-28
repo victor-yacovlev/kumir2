@@ -187,11 +187,13 @@ def nsis_include_file():
         data += "OutFile \"kumir2-"+version_name+"-install.exe\"\r\n"
         data += "Name \"Кумир "+version_name+"\"\r\n"
         data += "InstallDir \"$PROGRAMFILES\\Kumir-"+version_name+"\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + version_name + "\"\r\n"
     else:
         branch, ghash = _split_into_branch_and_hash(version_name)
         data += "OutFile \"kumir2-" + branch + "-" + ghash + "-install.exe\"\r\n"
-        data += "Name \"Кумир2-" + version_name + "\"\r\n"
+        data += "Name \"Кумир 2.x-" + branch + "\"\r\n"
         data += "InstallDir \"$PROGRAMFILES\\Kumir2x-" + branch + "\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + branch + "\"\r\n"
     if sys.stdout==OUT_FILE:
         OUT_FILE.write(data)
     else:
