@@ -7,5 +7,5 @@
     <xi:include href="language/index-classic.xml"/>
     <xi:include href="system/index-classic.xml"/>
     <xi:include href="language/ActorStringUtils.xml"/>
-    <xi:include href="language/ActorFiles.xml"/>
+<!--    <xi:include href="language/ActorFiles.xml"/> -->
 </set>
