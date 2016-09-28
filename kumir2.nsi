@@ -1,12 +1,13 @@
 !include MUI2.nsh
  
 # This include is used only by build system
-# For manual build change this line to something line:
+# For manual build change these lines to set variables OutFile, Name, and InstallDir:
 #  OutFile "kumir2-...exe"
-!include outfilename.nsh
+#  Name "Кумир-2.x"
+#  InstallDir "$PROGRAMFILES\Kumir2x"
+!include nsis_version_info.nsh
 
-Name "Кумир-2.x"
-InstallDir "$PROGRAMFILES\Kumir2x"
+
 RequestExecutionLevel admin
 
 
@@ -86,7 +87,7 @@ function un.onInit
 	SetShellVarContext all
  
 	#Verify the uninstaller - last chance to back out
-	MessageBox MB_OKCANCEL "Удалить Кумир 2.1?" IDOK next
+        MessageBox MB_OKCANCEL "Удалить Кумир2?" IDOK next
 		Abort
 	next:
 	
