@@ -124,7 +124,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         if(curFil==(uint)needFill)waterGradient.setColorAt(1, W2);else waterGradient.setColorAt(0.3, W2);
         painter->setBrush(waterGradient);
         painter->setOpacity(0.5);
-        painter->drawRoundedRect(offsetX, offsetY+size-literSize*curFil,X_SIZE-1,literSize*curFil, 2, 2);
+        painter->drawRoundedRect(offsetX, offsetY+size-literSize*curFil,X_SIZE,literSize*curFil, 2, 2);
     };
 
 
