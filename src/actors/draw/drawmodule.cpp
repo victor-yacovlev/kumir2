@@ -779,7 +779,7 @@ void DrawModule::createGui()
     netStepX=1;
     netStepY=1;
     autoNet=true;
-    netColor=QColor("999999");
+    netColor=QColor("#669966");
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
     navigator=new DrawNavigator(CurView);
@@ -826,7 +826,7 @@ void DrawModule::createGui()
 
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","lightgreen").toString()));
+    QBrush curBackground=QBrush(QColor(DrawSettings()->value("Draw/BackColor","#99FF99").toString()));
 
     CurScene->setBackgroundBrush (curBackground);
     Color Black;
@@ -962,10 +962,10 @@ void DrawModule::showNavigator(bool state)
     // Updates setting on module load, workspace change or appliyng settings dialog.
     // If @param keys is empty -- should reload all settings, otherwise load only setting specified by @param keys
     // TODO implement me
-    QBrush curBackground=QBrush(QColor(settings->value("BackColor","lightgreen").toString()));
+    QBrush curBackground=QBrush(QColor(settings->value("BackColor","#99FF99").toString()));
     
     CurScene->setBackgroundBrush (curBackground);
-    netColor=QColor(settings->value("LineColor","gray").toString());
+    netColor=QColor(settings->value("LineColor","#669966").toString());
     drawNet();
     Q_UNUSED(keys);
 }
@@ -1041,7 +1041,7 @@ void DrawModule::showNavigator(bool state)
     mPen->setPos(x, -y);
     if(penIsDrawing)
     {
-        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",1).toFloat());
+        CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     }
     CurView->resetCachedContent();
     CurView->update();
@@ -1058,7 +1058,7 @@ void DrawModule::showNavigator(bool state)
     mPen->moveBy(dX, -dY);
     if(penIsDrawing)
         {
-            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",1).toFloat());
+            CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
         }
     CurView->update();
      if(animate)redrawPicture();

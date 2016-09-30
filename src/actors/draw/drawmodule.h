@@ -186,7 +186,7 @@ public /* methods */:
     static ExtensionSystem::SettingsPtr DrawSettings();
     QColor axisColor()
     {
-        return QColor(DrawSettings()->value("AxisColor","blue").toString());
+        return QColor(DrawSettings()->value("AxisColor","#999900").toString());
     }
     void redrawPicture()
     {
