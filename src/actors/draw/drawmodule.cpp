@@ -836,6 +836,8 @@ void DrawModule::createGui()
        Black.r=0;Black.g=0;Black.b=0;Black.a=255;
     
     penColor=Black;
+   mPen->setBrush(QBrush(QColor("white")));
+    //zoomFullDraw();
 }
 
 QString DrawModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
