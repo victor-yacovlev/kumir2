@@ -137,6 +137,7 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    void handleGuiReady();
     // static DrawModule * self;
    // static ExtensionSystem::SettingsPtr MySettings();
     bool isAutoNet() const

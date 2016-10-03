@@ -772,7 +772,10 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {         
     CurView = 0;
 }
-
+ void DrawModule::handleGuiReady()
+    {
+        zoomFullDraw();
+    };
 void DrawModule::createGui()
 {
     CurView=new DrawView();
