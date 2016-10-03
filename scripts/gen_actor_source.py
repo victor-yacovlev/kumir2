@@ -1531,6 +1531,18 @@ private:
         """ % (self.class_name, guiRequired)
 
     # noinspection PyPep8Naming
+    def notifyGuiReadyCppImplementation(self):
+        if self._module.gui:
+            return """
+/* public */ void %s::notifyGuiReady()
+{
+    module_->handleGuiReady();
+}
+            """ % (self.class_name)
+        else:
+            return "\n"
+
+    # noinspection PyPep8Naming
     def asciiModuleNameCppImplementation(self):
         return """
 /* public */ QByteArray %s::asciiModuleName() const
@@ -2735,6 +2747,14 @@ class ModuleBaseCppClass(CppClassBase):
     return nullptr;
 }
             """ % self.class_name
+
+    # noinspection PyPep8Naming
+    def handleGuiReadyCppImplementation(self):
+        return """
+/* public virtual */ void %s::handleGuiReady()
+{
+}
+        """ % self.class_name
 
     # noinspection PyPep8Naming
     def moduleMenusCppImplementation(self):
