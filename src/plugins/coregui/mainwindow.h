@@ -224,6 +224,7 @@ private:
 
     int afterShowTimerId2_;
     int afterShowTimerId3_;
+    int afterShowTimerId4_;
 
     struct PresentationModeContext {
         bool enabled;

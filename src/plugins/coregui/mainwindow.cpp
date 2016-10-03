@@ -31,7 +31,8 @@ MainWindow::MainWindow(Plugin * p) :
     prevBottomSize_(DefaultConsoleHeight),
     menubarContextMenu_(0),
     afterShowTimerId2_(0),
-    afterShowTimerId3_(0)
+    afterShowTimerId3_(0),
+    afterShowTimerId4_(0)
 {   
 
     debuggerWindow_ = 0;
@@ -786,6 +787,15 @@ void MainWindow::setFocusOnCentralWidget()
         twe->component->setFocus();
 }
 
+static void notifyAllActorsGuiReady()
+{
+    QList<Shared::ActorInterface*> actors =
+            PluginManager::instance()->findPlugins<Shared::ActorInterface>();
+    Q_FOREACH(Shared::ActorInterface* actor, actors) {
+        actor->notifyGuiReady();
+    }
+}
+
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     e->accept();
@@ -798,6 +808,11 @@ void MainWindow::timerEvent(QTimerEvent *e)
         killTimer(afterShowTimerId3_);
         afterShowTimerId3_ = 0;
         setFirstTimeWindowLayout_stage3();
+        afterShowTimerId4_ = startTimer(100);
+    }
+    if (afterShowTimerId4_ == e->timerId()) {
+        killTimer(afterShowTimerId4_);
+        notifyAllActorsGuiReady();
     }
     if (isPresentationMode() && _presentationModeContext.clockTimerId==e->timerId()) {
         const QTime dt = QDateTime::currentDateTime().time();
@@ -1727,6 +1742,8 @@ void MainWindow::loadSettings(const QStringList & keys)
 //            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
             ui->actionShow_Console_Pane->setChecked(showConsole);
         }
+        // notify GUI ready
+        afterShowTimerId4_ = startTimer(300);
     }
     menubarContextMenu_->loadSettings();
 }

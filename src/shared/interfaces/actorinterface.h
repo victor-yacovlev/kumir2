@@ -136,6 +136,8 @@ public /*methods*/:
         Q_UNUSED(receiver); Q_UNUSED(method);
     }
 
+    inline virtual void notifyGuiReady() { }
+
     /* === Actor utilities === */
 
     /** Converts custom-type scalar value to string representation */
