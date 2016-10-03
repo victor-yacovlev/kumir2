@@ -771,6 +771,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
     : DrawModuleBase(parent)
 {         
     CurView = 0;
+    firstShow=true;
 }
  void DrawModule::handleGuiReady()
     {

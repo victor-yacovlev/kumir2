@@ -242,6 +242,7 @@ private:
     QColor netColor;
     bool autoNet;
     bool penIsDrawing;
+    bool firstShow;
     Color penColor;
     QMutex mutex;
     DrawNavigator* navigator;
