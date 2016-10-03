@@ -75,7 +75,8 @@
     "gui": {
         "optional": true,
         "windows": [
-            { "role": "main", "icon": "robot25d" }
+            { "role": "main", "icon": "robot25d" },
+            { "role": "pult", "icon": "robot25d-pult" }
         ],
         "menus": [
             {
