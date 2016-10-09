@@ -1056,8 +1056,9 @@ void DrawModule::showNavigator(bool state)
     //CurView->resetCachedContent();
     //CurView->update();
    // if(animate)redrawPicture();
-    msleep(3);
+    
     mutex.unlock();
+    msleep(10);
 }
 
 /* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
@@ -1073,8 +1074,9 @@ void DrawModule::showNavigator(bool state)
         }
     //CurView->update();
      //if(animate)redrawPicture();
-    msleep(3);
+    
     mutex.unlock();
+    msleep(10);
 }
 
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
