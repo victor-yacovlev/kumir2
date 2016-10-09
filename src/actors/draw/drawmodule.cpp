@@ -1051,7 +1051,7 @@ void DrawModule::showNavigator(bool state)
     }
     //CurView->resetCachedContent();
     //CurView->update();
-    if(animate)redrawPicture();
+   // if(animate)redrawPicture();
     mutex.unlock();
 }
 
