@@ -1056,6 +1056,7 @@ void DrawModule::showNavigator(bool state)
     //CurView->resetCachedContent();
     //CurView->update();
    // if(animate)redrawPicture();
+    msleep(3);
     mutex.unlock();
 }
 
@@ -1072,6 +1073,7 @@ void DrawModule::showNavigator(bool state)
         }
     //CurView->update();
      //if(animate)redrawPicture();
+    msleep(3);
     mutex.unlock();
 }
 
@@ -1271,7 +1273,7 @@ void DrawModule::redraw()
     {
          mutex.lock();
         redrawPicture();
-        usleep(50);
+        msleep(5);
          mutex.unlock();
         
     }
