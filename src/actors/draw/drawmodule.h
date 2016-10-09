@@ -195,7 +195,7 @@ public /* methods */:
             CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
             CurView->forceRedraw();
             CurScene->update(CurScene->sceneRect());
-            CurView->repaint();
+           // CurView->repaint();
             CurView->viewport()->update();
             CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
        
