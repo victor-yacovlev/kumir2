@@ -1010,8 +1010,12 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг опустить перо */
     // TODO implement me
+    mutex.lock();
+
      mPen->setBrush(QBrush(QColor(penColor.r, penColor.g, penColor.b, penColor.a)));
     penIsDrawing=true;
+    mutex.unlock();
+
 }
 
 /* public slot */ void DrawModule::runReleasePen()
@@ -1267,6 +1271,7 @@ void DrawModule::redraw()
     {
          mutex.lock();
         redrawPicture();
+        usleep(50);
          mutex.unlock();
         
     }
