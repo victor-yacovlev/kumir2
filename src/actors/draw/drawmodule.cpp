@@ -1049,8 +1049,8 @@ void DrawModule::showNavigator(bool state)
     {
         CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     }
-    CurView->resetCachedContent();
-    CurView->update();
+    //CurView->resetCachedContent();
+    //CurView->update();
     if(animate)redrawPicture();
     mutex.unlock();
 }
@@ -1066,8 +1066,8 @@ void DrawModule::showNavigator(bool state)
         {
             CurScene->addDrawLine(QLineF(start,mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
         }
-    CurView->update();
-     if(animate)redrawPicture();
+    //CurView->update();
+     //if(animate)redrawPicture();
     mutex.unlock();
 }
 
