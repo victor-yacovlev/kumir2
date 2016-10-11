@@ -2171,7 +2171,7 @@ private:
         """
         body = "module_ = new %s(this);\n" % self._module.get_module_cpp_class_name()
         methods = self._module.methods
-        async_methods = filter(lambda method: method.async, methods)
+        async_methods = list(filter(lambda method: method.async, methods))
         if self._module.settings:
             body += self._module.settings.get_settings_page_creation("settingsPage_").strip() + "\n\n"
         if async_methods:
@@ -2225,9 +2225,9 @@ private:
         return """
 /* protected */ void %s::msleep(unsigned long secs)
 {
-    if (QThread::currentThread()==asyncRunThread_) {
+    //if (QThread::currentThread()==asyncRunThread_) {
         asyncRunThread_->amsleep(secs);
-    }
+    //}
 }
         """ % self.class_name
 
