@@ -38,7 +38,7 @@ namespace ActorDraw {
     public:
         DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
-        void setDraw(DrawModule* draw){DRAW=draw;};
+        void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
         double zoom()const
         {return c_scale;};
         void setZoom(double zoom);
@@ -64,7 +64,9 @@ namespace ActorDraw {
         void wheelEvent ( QWheelEvent * event );
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
-        void mouseMoveEvent ( QMouseEvent * event ); 
+        void mouseMoveEvent ( QMouseEvent * event );
+        void paintEvent(QPaintEvent *event);
+
     private:
        DrawModule* DRAW;
         double c_scale;
@@ -73,6 +75,7 @@ namespace ActorDraw {
         QPoint press_pos;
         bool firstResize;
         double lastStep;
+        QMutex* dr_mutex;
         QLabel* smallNetLabel;
  
     };    
@@ -80,22 +83,10 @@ namespace ActorDraw {
     : public QGraphicsScene
     {
     public:
-        DrawScene ( QObject * parent = 0 ){};
+        DrawScene ( QObject * parent = 0 ){installEventFilter(this);};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
-        void setDraw(DrawModule* draw){DRAW=draw;};
-        void addDrawLine(QLineF lineF,QColor color,qreal width)
-        {
-            if(lineF.length()==0)return;
-            QGraphicsLineItem* line=addLine(lineF);
-            QPen mp=QPen(QColor(color));
-            mp.setWidthF(width);
-            mp.setCosmetic(true);
-            line->setPen(mp);
-            line->setZValue(90);
-            lines.append(line); 
-            
-            
-        }
+        void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
+        void addDrawLine(QLineF lineF,QColor color,qreal width);
         void reset()
         {
             for(int i=0;i<lines.count();i++)
@@ -115,6 +106,8 @@ namespace ActorDraw {
         int loadFromFile(const QString& p_FileName);
     protected:
        // void resizeEvent ( QResizeEvent * event );
+        bool eventFilter(QObject *object, QEvent *event);
+        bool event(QEvent * event);
     private:
         bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
@@ -122,6 +115,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
+        QMutex* dr_mutex;
         
         
        
@@ -201,6 +195,7 @@ public /* methods */:
        
     }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
+    QMutex mutex;
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -244,7 +239,7 @@ private:
     bool penIsDrawing;
     bool firstShow;
     Color penColor;
-    QMutex mutex;
+  
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
     QDir curDir;

@@ -19,6 +19,7 @@
         },
         {
             "name": {"ascii": "move to", "ru_RU": "сместиться в точку"},
+            "async": false,
             "arguments": [
                 {"baseType": "double", "name": "x"},
                 {"baseType": "double", "name": "y"}
@@ -26,6 +27,7 @@
         },
         {
             "name": {"ascii": "move by", "ru_RU": "сместиться на вектор"},
+            "async": false,
             "arguments": [
                 {"baseType": "double", "name": "dX"},
                 {"baseType": "double", "name": "dY"}

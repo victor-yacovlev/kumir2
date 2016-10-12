@@ -169,6 +169,20 @@ namespace ActorDraw {
         texts.last()->setZValue(90);
         return widthChar;
     };
+    void DrawScene::addDrawLine(QLineF lineF,QColor color,qreal width)
+    {
+        if(lineF.length()==0)return;
+        QGraphicsLineItem* line=addLine(lineF);
+        QPen mp=QPen(QColor(color));
+        mp.setWidthF(width);
+        mp.setCosmetic(true);
+        line->setPen(mp);
+        line->setZValue(90);
+        lines.append(line);
+        
+        
+        
+    }
     void DrawScene::DestroyNet()
     {
       //  qDebug()<<Netlines.count();
@@ -272,7 +286,22 @@ namespace ActorDraw {
 		}
     }
     
-int   DrawScene::loadFromFile(const QString& p_FileName)
+bool DrawScene::event(QEvent * event)
+    {
+      //  qDebug()<<"ET"<<event->type();
+        
+        
+        dr_mutex->lock();
+        QGraphicsScene::event(event);
+        dr_mutex->unlock();
+     
+    }
+    bool DrawScene::eventFilter(QObject *object, QEvent *event)
+    {
+         
+        return true;
+    }
+    int   DrawScene::loadFromFile(const QString& p_FileName)
     {
         QFileInfo fi(p_FileName);
         QString name = fi.fileName();                        
@@ -595,7 +624,18 @@ int DrawScene::saveToFile(const QString& p_FileName)
         return 0;
         
         
-    };    
+    };
+void DrawView::paintEvent(QPaintEvent *event)
+    {
+        if(!dr_mutex->tryLock())
+        {
+            return;
+        }else
+        {
+            QGraphicsView::paintEvent(event);
+            dr_mutex->unlock();
+        }
+    }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
@@ -812,11 +852,11 @@ void DrawModule::createGui()
     navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
     navigator->hide();
 
-    CurScene->setDraw(this);
+    CurScene->setDraw(this,&mutex);
     CurView->setScene(CurScene);
     penColor.r = penColor.g = penColor.b = 0;
     penColor.a = 255;
-    CurView->setDraw(this);
+    CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
     CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
     drawNet();
@@ -1058,7 +1098,7 @@ void DrawModule::showNavigator(bool state)
    // if(animate)redrawPicture();
     
     mutex.unlock();
-    msleep(10);
+// msleep(10);
 }
 
 /* public slot */ void DrawModule::runMoveBy(const qreal dX, const qreal dY)
@@ -1076,7 +1116,8 @@ void DrawModule::showNavigator(bool state)
      //if(animate)redrawPicture();
     
     mutex.unlock();
-    msleep(10);
+    msleep(1);
+    
 }
 
 /* public slot */ void DrawModule::runAddCaption(const qreal width, const QString& text)
@@ -1223,7 +1264,7 @@ void DrawModule::drawNet()
         navigator->updateSelf(NetStepX(),NetStepY());
         CurView->update();
         CurView->forceRedraw();
-        redrawPicture();
+        redraw();
     };
     void DrawModule::CreatePen(void)
     {
@@ -1276,6 +1317,7 @@ void DrawModule::redraw()
          mutex.lock();
         redrawPicture();
         msleep(5);
+       // qApp->processEvents();
          mutex.unlock();
         
     }
