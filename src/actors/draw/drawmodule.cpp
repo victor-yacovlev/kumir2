@@ -294,6 +294,7 @@ bool DrawScene::event(QEvent * event)
         dr_mutex->lock();
         QGraphicsScene::event(event);
         dr_mutex->unlock();
+        return true;
      
     }
     bool DrawScene::eventFilter(QObject *object, QEvent *event)
@@ -664,12 +665,14 @@ void DrawView::resizeEvent ( QResizeEvent * event )
     void DrawView::mouseReleaseEvent ( QMouseEvent * event )
     {
         pressed=false;
+       
         DRAW->drawNet();
     };
     void DrawView::mouseMoveEvent ( QMouseEvent * event )
     {
         if(pressed)
         {
+            dr_mutex->lock();
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
 
@@ -688,6 +691,8 @@ void DrawView::resizeEvent ( QResizeEvent * event )
             press_pos=event->pos();
             qDebug()<<"Ppos"<<press_pos;
             update();
+            setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+            dr_mutex->unlock();
         }
     }; 
     void DrawView::setZoom(double zoom)
