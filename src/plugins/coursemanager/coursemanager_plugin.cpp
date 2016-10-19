@@ -55,10 +55,15 @@ QList<QMenu*>  Plugin::menus()const
     return MenuList; 
 };
     
- void Plugin::start()
+int  Plugin::loadCourseFromConsole(QString fname)
     {
-        qDebug()<<"Starts with coursemanager";
-    };
+        
+    }
+
+void Plugin::start()
+{
+      qDebug()<<"Starts with coursemanager";
+};
 void Plugin::rebuildRescentMenu()
     {
         rescentMenu->clear();
@@ -376,6 +381,12 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
 QString Plugin::initialize(const QStringList &configurationArguments,
                            const ExtensionSystem::CommandLine & runtimeArguments)
 {
+    
+    if(!DISPLAY)
+    {
+        if (runtimeArguments.value('w').isValid())qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString());
+        return "";
+    }
     QList<QAction*> actions;
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)

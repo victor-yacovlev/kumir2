@@ -76,6 +76,7 @@ private /*methods*/:
 
 private /*fields*/:
     void loadCource(QString file);
+    int loadCourseFromConsole(QString fname);
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
