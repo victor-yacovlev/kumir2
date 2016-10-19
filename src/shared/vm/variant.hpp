@@ -548,7 +548,7 @@ String Variable::toString() const
             result = Kumir::Core::fromUtf8("нет");
         break;
     case VT_real:
-        result = Kumir::Converter::sprintfReal(value().toReal(), '.', false, 0,0,0);
+        result = Kumir::Converter::sprintfReal(value().toReal(), '.', false, 0,-1,0);
         break;
     case VT_int:
         result = Kumir::Converter::sprintfInt(value().toInt(), 10, 0, 0);
@@ -577,7 +577,7 @@ String Variable::toString(int indeces[4]) const
             result = Kumir::Core::fromUtf8("нет");
         break;
     case VT_real:
-        result = Kumir::Converter::sprintfReal(value(indeces).toReal(), '.', false, 0,0,0);
+        result = Kumir::Converter::sprintfReal(value(indeces).toReal(), '.', false, 0,-1,0);
         break;
     case VT_int:
         result = Kumir::Converter::sprintfInt(value(indeces).toInt(), 10, 0, 0);
