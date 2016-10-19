@@ -57,6 +57,7 @@ QList<QMenu*>  Plugin::menus()const
     
 int  Plugin::loadCourseFromConsole(QString fname)
     {
+        return 0;
         
     }
 
