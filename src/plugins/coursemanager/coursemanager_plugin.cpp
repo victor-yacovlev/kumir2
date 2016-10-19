@@ -3,6 +3,9 @@
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
+#ifdef Q_OS_LINUX
+#include <iostream>
+#endif
 namespace CourseManager {
 
    
@@ -57,6 +60,7 @@ QList<QMenu*>  Plugin::menus()const
     
 int  Plugin::loadCourseFromConsole(QString fname)
     {
+        fprintf(stdout, "TODO: Load from file");
         return 0;
         
     }
