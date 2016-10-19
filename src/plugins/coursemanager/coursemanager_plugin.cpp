@@ -419,6 +419,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
 
 void Plugin::updateSettings(const QStringList & keys)
 {
+    if(!DISPLAY)return;
+    
+
+    
     if (settingsEditorPage_) {
         settingsEditorPage_->setSettingsObject(mySettings());
     }
