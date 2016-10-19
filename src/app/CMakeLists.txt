@@ -47,6 +47,7 @@ if(NOT APPLE)
     add_opt_subdirectory(kumir2-highgrade)
     add_opt_subdirectory(kumir2-ide)
     add_opt_subdirectory(kumir2-teacher)
+    add_opt_subdirectory(kumir2-checkcourse)
 
     # Check if Python present in this git branch and Python3 libraries found
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-python")

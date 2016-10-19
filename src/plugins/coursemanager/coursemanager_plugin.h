@@ -57,6 +57,7 @@ public:
      }
     void rebuildRescentMenu();
     bool isSafeToQuit();
+    void start();
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -90,6 +91,7 @@ private /*fields*/:
     int isp_no,field_no;
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
+    bool DISPLAY;
 
 };
 
