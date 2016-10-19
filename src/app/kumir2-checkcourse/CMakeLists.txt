@@ -1,4 +1,4 @@
-project(kumir2-bc)
+project(kumir2-checkcourse)
 cmake_minimum_required(VERSION 2.8.3)
 
 if(NOT DEFINED USE_QT)
