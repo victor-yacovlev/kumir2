@@ -25,7 +25,7 @@ set(
 
 set(SRC ../main.cpp)
 
-add_executable(kumir2-bc ${SRC})
+add_executable(kumir2-checkcourse ${SRC})
 target_link_libraries(kumir2-bc ${QT_LIBRARIES} ExtensionSystem ${STDCXX_LIB})
 set_property(TARGET kumir2-bc APPEND PROPERTY COMPILE_DEFINITIONS CONFIGURATION_TEMPLATE="${CONFIGURATION_TEMPLATE}")
 if (XCODE OR MSVC_IDE)
