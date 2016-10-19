@@ -386,7 +386,7 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
 QString Plugin::initialize(const QStringList &configurationArguments,
                            const ExtensionSystem::CommandLine & runtimeArguments)
 {
-    
+    qDebug()<<"DIPLSY"<<DISPLAY;
     if(!DISPLAY)
     {
         if (runtimeArguments.value('w').isValid())qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString());
