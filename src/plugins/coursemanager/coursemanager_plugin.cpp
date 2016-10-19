@@ -26,7 +26,7 @@ Plugin::Plugin()
 
         DISPLAY=false;
         field_no=0;
-        return "";
+        return;
     }
     qDebug()<<"CourseManager:Console Mode";
 #endif
