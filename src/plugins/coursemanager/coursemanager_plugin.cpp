@@ -99,7 +99,7 @@ int Plugin::loadWorkBook(QString wbfilename,QString cbname)
             int mark=marksElList.at(i).toElement().attribute("mark").toInt();
             qDebug()<<"task:"<<taskId<<" mark:"<<mark;
             course->setMark(taskId,mark);
-            fprintf(stdout, "%s %d %d",cbname.toAscii().data(),taskId,mark);
+            fprintf(stdout, "%s %d %d \n",cbname.toAscii().data(),taskId,mark);
         };
         
         //qDebug()<<"Loading user prgs...";
@@ -147,7 +147,7 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
    
         int tasks=course->loadCourse(cbname);
         qDebug()<<"Tasks "<<tasks<<" loaded";
-        int wb_error=loadWorkBook(wbname,cbname);
+        int wb_error=loadWorkBook(wbname,fi.fileName());
 
         QString cText=course->courceDescr();
         
