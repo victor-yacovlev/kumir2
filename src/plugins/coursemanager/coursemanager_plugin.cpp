@@ -57,22 +57,92 @@ QList<QMenu*>  Plugin::menus()const
     
     return MenuList; 
 };
-    
+int Plugin::loadWorkBook(QString wbfilename)
+    {
+        QDomDocument workXml;
+        QFile f(wbfilename);
+        
+
+
+        if(f.atEnd())
+        {
+           
+            return 3;
+        };
+   
+        QString error;
+        int str,pos;
+        workXml.setContent(f.readAll(),true,&error,&str,&pos);
+        qDebug()<<"File parce:"<<error<<"str"<<str<<" pos"<<pos;
+        
+        QDomElement root=workXml.documentElement ();
+        if(root.tagName()!="COURSE")
+        {
+       
+            return 4;
+        };
+        QDomElement fileEl=root.firstChildElement("FILE");
+        QString krsFile=fileEl.attribute("fileName");
+               
+        QString fileN=fileEl.attribute("fileName");
+     
+        QDomNodeList marksElList=root.elementsByTagName("MARK"); //Оценки
+        //qDebug()<<"Loading marks "<<marksElList.count();
+        for(int i=0;i<marksElList.count();i++)
+        {
+            int taskId=marksElList.at(i).toElement().attribute("testId").toInt();
+            int mark=marksElList.at(i).toElement().attribute("mark").toInt();
+            qDebug()<<"task:"<<taskId<<" mark:"<<mark;
+            course->setMark(taskId,mark);
+      
+        };
+        
+        //qDebug()<<"Loading user prgs...";
+        QDomNodeList prgElList=root.elementsByTagName("USER_PRG");//Программы
+        for(int i=0;i<prgElList.count();i++)
+        {
+            int taskId=prgElList.at(i).toElement().attribute("testId").toInt();
+            qDebug()<<"Tassk id"<<taskId;
+            QString prg =prgElList.at(i).toElement().attribute("prg");
+            QModelIndex tIdx=course->getIndexById(taskId);
+            
+      
+            course->setUserText(taskId,prg);
+            
+        };
+        
+        QDomNodeList prgElListT=root.elementsByTagName("TESTED_PRG");//Программы тестированные
+        for(int i=0;i<prgElListT.count();i++)
+        {
+            int taskId=prgElListT.at(i).toElement().attribute("testId").toInt();
+            QString prg =prgElListT.at(i).toElement().attribute("prg");
+            
+            course->setUserTestedText(taskId,prg);
+            
+        };
+        return 0;
+    }
 int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
     {
         
-        QFileInfo fi(wbname);
+        QFileInfo fi(cbname);
         if(!fi.exists())
         {
             
             return 1;
         };
-        
+        QFileInfo fi2(wbname);
+        if(!fi2.exists())
+        {
+            
+            return 2;
+        };
  
         course=new courseModel();
    
         int tasks=course->loadCourse(cbname);
-
+        qDebug()<<"Tasks "<<tasks<<" loaded";
+        int wb_error=loadWorkBook(wbname);
    //     if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
    //     {
    //         loadMarks(fileName);
@@ -86,7 +156,7 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
  
 
         fprintf(stdout, "TODO: Load from file");
-        return 0;
+        return wb_error;
         
     }
 

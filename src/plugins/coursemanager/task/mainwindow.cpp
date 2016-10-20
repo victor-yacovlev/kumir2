@@ -211,28 +211,28 @@ void MainWindowTask::loadMarks(const QString fileName)
         isReadOnly=true;
     }else
      isReadOnly=false;   
-if(f.atEnd())
+    if(f.atEnd())
     {
     QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла ,файл пуст: ") + fileName, 0,0,0);
     return;
     };
-cursWorkFile.setFileName(f.fileName());
-QString error;
-int str,pos;
-workXml.setContent(f.readAll(),true,&error,&str,&pos);
-qDebug()<<"File parce:"<<error<<"str"<<str<<" pos"<<pos;
+    cursWorkFile.setFileName(f.fileName());
+    QString error;
+    int str,pos;
+    workXml.setContent(f.readAll(),true,&error,&str,&pos);
+    qDebug()<<"File parce:"<<error<<"str"<<str<<" pos"<<pos;
 
-QDomElement root=workXml.documentElement ();
-if(root.tagName()!="COURSE")
-  {
+    QDomElement root=workXml.documentElement ();
+    if(root.tagName()!="COURSE")
+    {
         QMessageBox::information( 0, "", trUtf8("Ошибка загрузки файла: ") + fileName, 0,0,0);
         return;
-  };
-QDomElement fileEl=root.firstChildElement("FILE");
-QString krsFile=fileEl.attribute("fileName");
-loadCourseData(krsFile);//Gruzim kurs
+    };
+    QDomElement fileEl=root.firstChildElement("FILE");
+    QString krsFile=fileEl.attribute("fileName");
+    loadCourseData(krsFile);//Gruzim kurs
 
-if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
+    if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
     QFileInfo finf(fileEl.attribute("fileName"));
     QFileInfo cfi(cursWorkFile);
     qDebug()<<"PATH"<<cfi.dir().canonicalPath()+"/"+finf.fileName();
@@ -242,11 +242,11 @@ if(cursFile!=krsFile){//Esli ne udalos po puti - ishem v toyje direktorii
     if(krsFi.isReadable())
     loadCourseData(krsFile);
 
-}
+    }
 
-QString fileN=fileEl.attribute("fileName");
+    QString fileN=fileEl.attribute("fileName");
 //qDebug()<<"KURS ZAGRUZILI";
-if(cursFile!=krsFile){
+    if(cursFile!=krsFile){
     QMessageBox::information( 0, "", trUtf8("Не найден файл курса:") + fileEl.attribute("fileName"), 0,0,0);
     fileN=getFileName(krsFile);
     loadCourseData(fileN);
