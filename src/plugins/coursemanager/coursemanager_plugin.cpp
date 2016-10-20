@@ -58,8 +58,33 @@ QList<QMenu*>  Plugin::menus()const
     return MenuList; 
 };
     
-int  Plugin::loadCourseFromConsole(QString fname)
+int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
     {
+        
+        QFileInfo fi(wbname);
+        if(!fi.exists())
+        {
+            
+            return 1;
+        };
+        
+ 
+        course=new courseModel();
+   
+        int tasks=course->loadCourse(cbname);
+
+   //     if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
+   //     {
+   //         loadMarks(fileName);
+   //         this->show();
+   //         return;
+    //    }else
+   //         cursWorkFile.setFileName("");
+   //     loadCourseData(fileName);
+        QString cText=course->courceDescr();
+        
+ 
+
         fprintf(stdout, "TODO: Load from file");
         return 0;
         
@@ -389,7 +414,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
     qDebug()<<"DIPLSY"<<DISPLAY;
     if(!DISPLAY)
     {
-        if (runtimeArguments.value('w').isValid())qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString());
+        if(!runtimeArguments.value('w').isValid())return trUtf8("Нет тетради");
+        if(!runtimeArguments.value('c').isValid())return trUtf8("Нет учебника");
+        
+        qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString(),runtimeArguments.value('c').toString());
         return "";
     }
     QList<QAction*> actions;

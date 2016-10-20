@@ -10,6 +10,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "shared/interfaces/guiinterface.h"
 #include "shared/interfaces/actorinterface.h"
+#include "course_model.h"
 typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;
 //#include "task/mainwindow.h"
@@ -76,7 +77,7 @@ private /*methods*/:
 
 private /*fields*/:
     void loadCource(QString file);
-    int loadCourseFromConsole(QString fname);
+    int loadCourseFromConsole(QString wbname,QString cbname);
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
@@ -93,6 +94,7 @@ private /*fields*/:
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
     bool DISPLAY;
+    courseModel* course;
 
 };
 
