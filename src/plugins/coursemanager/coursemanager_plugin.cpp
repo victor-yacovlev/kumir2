@@ -57,7 +57,7 @@ QList<QMenu*>  Plugin::menus()const
     
     return MenuList; 
 };
-int Plugin::loadWorkBook(QString wbfilename)
+int Plugin::loadWorkBook(QString wbfilename,QString cbname)
     {
         QDomDocument workXml;
         QFile f(wbfilename);
@@ -99,7 +99,7 @@ int Plugin::loadWorkBook(QString wbfilename)
             int mark=marksElList.at(i).toElement().attribute("mark").toInt();
             qDebug()<<"task:"<<taskId<<" mark:"<<mark;
             course->setMark(taskId,mark);
-      
+            fprintf(stdout, "%s %d %d",cbname.toAscii().data(),taskId,mark);
         };
         
         //qDebug()<<"Loading user prgs...";
@@ -147,20 +147,13 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
    
         int tasks=course->loadCourse(cbname);
         qDebug()<<"Tasks "<<tasks<<" loaded";
-        int wb_error=loadWorkBook(wbname);
-   //     if(fileName.right(9)==".work.xml")//Загрузка оценок и программ
-   //     {
-   //         loadMarks(fileName);
-   //         this->show();
-   //         return;
-    //    }else
-   //         cursWorkFile.setFileName("");
-   //     loadCourseData(fileName);
+        int wb_error=loadWorkBook(wbname,cbname);
+
         QString cText=course->courceDescr();
         
  
 
-        fprintf(stdout, "TODO: Load from file");
+    //    fprintf(stdout, "TODO: Load from file");
         return wb_error;
         
     }
@@ -168,6 +161,7 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
 void Plugin::start()
 {
       qDebug()<<"Starts with coursemanager";
+    
 };
 void Plugin::rebuildRescentMenu()
     {
