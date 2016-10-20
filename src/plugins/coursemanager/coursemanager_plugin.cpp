@@ -62,7 +62,12 @@ int Plugin::loadWorkBook(QString wbfilename)
         QDomDocument workXml;
         QFile f(wbfilename);
         
-
+        if  (!f.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + wbfilename, 0,0,0);
+            return 5;
+            
+        };
 
         if(f.atEnd())
         {
