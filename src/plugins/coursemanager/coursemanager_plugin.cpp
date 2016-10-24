@@ -101,7 +101,7 @@ int Plugin::loadWorkBook(QString wbfilename,QString cbname)
             int mark=marksElList.at(i).toElement().attribute("mark").toInt();
             qDebug()<<"task:"<<taskId<<" mark:"<<mark;
             course->setMark(taskId,mark);
-            fprintf(stdout, "%s %d %d \n",cbname.toAscii().data(),taskId,mark);
+            fprintf(stdout, "%s %d %d \n",cbname.toLatin1().data(),taskId,mark);
         };
         
         //qDebug()<<"Loading user prgs...";
