@@ -136,38 +136,38 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
         return error;
 
     bool console = false;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     console = getenv("DISPLAY")==0;
 #endif
     //    console = true; // !!! was here for debug purposes
-    if (console) {
-        // Remove GUI plugins
-        QList<PluginSpec>::iterator it;
-        for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
-            PluginSpec spec = (*it);
-            bool forceLoad = false;
-            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
-                forceLoad = true;
-            }
-            if (spec.gui && !forceLoad) {
-                names.removeAll(spec.name);
-                QList<PluginRequest>::iterator rit;
-                for (rit=requests.begin(); rit!=requests.end(); ) {
-                    PluginRequest r = *(rit);
-                    if (r.name==spec.name) {
-                        rit = requests.erase(rit);
-                    }
-                    else {
-                        rit ++;
-                    }
-                }
-                it = pImpl_->specs.erase(it);
-            }
-            else {
-                it++;
-            }
-        }
-    }
+//    if (console) {
+//        // Remove GUI plugins
+//        QList<PluginSpec>::iterator it;
+//        for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
+//            PluginSpec spec = (*it);
+//            bool forceLoad = false;
+//            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
+//                forceLoad = true;
+//            }
+//            if (spec.gui && !forceLoad) {
+//                names.removeAll(spec.name);
+//                QList<PluginRequest>::iterator rit;
+//                for (rit=requests.begin(); rit!=requests.end(); ) {
+//                    PluginRequest r = *(rit);
+//                    if (r.name==spec.name) {
+//                        rit = requests.erase(rit);
+//                    }
+//                    else {
+//                        rit ++;
+//                    }
+//                }
+//                it = pImpl_->specs.erase(it);
+//            }
+//            else {
+//                it++;
+//            }
+//        }
+//    }
 
     // orderedList will contain names in order of load and initialization
     QStringList orderedList;
