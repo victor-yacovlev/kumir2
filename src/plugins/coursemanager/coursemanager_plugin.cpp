@@ -225,7 +225,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         for(int i=0;i<task.fields.count();i++)
         {
         field_no=i;
-        selectNext(cur_task);
+        selectNext(&task);
         runner->runTesting();
         }
         return 0;    //QVariant valueStackTopItem()
