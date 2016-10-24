@@ -695,11 +695,14 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
     qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
+    if (configurationArguments.contains("console")) {
+        prepareConsoleRun();
+    }
+    else {
+        prepareGuiRun();
+    }
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
-
-        prepareConsoleRun();
-
         if (runtimeArguments.hasFlag(QChar('p'))) {
             console_->returnMainValue.setQuietMode(true);
             console_->getMainArgument.setQuietMode(true);
@@ -756,9 +759,6 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
                 pRun_->setEntryPointToTest();
             }
         }
-    }
-    else {
-        prepareGuiRun();
     }
 
     return "";
