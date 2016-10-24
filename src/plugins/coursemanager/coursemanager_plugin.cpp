@@ -201,7 +201,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         QList<Shared::Analizer::Error> errors = analizer_i->errors();
         for (int i=0; i<errors.size(); i++) {
             Shared::Analizer::Error e = errors[i];
-            QString errorMessage = tr("Error: task  ") +
+            QString errorMessage = tr("Error: ") +
             task.name+
             ":" + QString::number(e.line+1) +
             ":" + QString::number(e.start+1) + "-" + QString::number(e.start+e.len) +
@@ -209,6 +209,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
             std::cerr << errorMessage.toLocal8Bit().data();
             std::cerr << std::endl;
         }
+        if(errors.size()>0)return 2;
        AST::DataPtr ast = analizer_i->compiler()->abstractSyntaxTree();
        Shared::GeneratorInterface * generator_ = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::GeneratorInterface>();
        QString suffix;
@@ -224,6 +225,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         for(int i=0;i<task.fields.count();i++)
         {
         field_no=i;
+        selectNext(cur_task);
         runner->runTesting();
         }
         return 0;    //QVariant valueStackTopItem()
