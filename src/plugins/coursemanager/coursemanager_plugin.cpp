@@ -190,7 +190,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
            
             kumFile = analizer->sourceFileHandler()->fromString(course->getUserText(taskID));
         }
-        else return 0;
+        else return 1;
         Shared::Analizer::InstanceInterface * analizer_i =
         analizer->createInstance();
         
@@ -226,7 +226,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         field_no=i;
         runner->runTesting();
         }
-            //QVariant valueStackTopItem()
+        return 0;    //QVariant valueStackTopItem()
      
     }
 void Plugin::start()
