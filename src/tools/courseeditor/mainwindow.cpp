@@ -128,36 +128,36 @@ void MainWindowTask::loadCourseData(const QString fileName)
 
 
 
-course=new courseModel();
-connect(course,SIGNAL(dataChanged (QModelIndex ,QModelIndex )),ui->treeView,SLOT(dataChanged(QModelIndex,QModelIndex)));
-int tasks=course->loadCourse(fileName);
+    course=new courseModel();
+    connect(course,SIGNAL(dataChanged (QModelIndex ,QModelIndex )),ui->treeView,SLOT(dataChanged(QModelIndex,QModelIndex)));
+    int tasks=course->loadCourse(fileName);
 
-lockKursFile(fileName);
+    lockKursFile(fileName);
 
 
 
-course->setTeacher(isTeacher);
-if(tasks==-1)
-{
-QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
-return;
-};
-ui->treeView->setModel(course);
-ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
-ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    course->setTeacher(isTeacher);
+    if(tasks==-1)
+    {
+        QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + fileName, 0,0,0);
+        return;
+    };
+    ui->treeView->setModel(course);
+    ui->treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->treeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-curTaskIdx=QModelIndex();
-onTask=false;
-ui->actionSave->setEnabled(true);
+    curTaskIdx=QModelIndex();
+    onTask=false;
+    ui->actionSave->setEnabled(true);
 
-changes.cleanChanges();
-cursFile=fileName;
-setEditTaskEnabled(true);
-ui->menuMove->setEnabled(true);
-if(lastFiles.indexOf(fileName)==-1)lastFiles.prepend(fileName);
+    changes.cleanChanges();
+    cursFile=fileName;
+    setEditTaskEnabled(true);
+    ui->menuMove->setEnabled(true);
+    if(lastFiles.indexOf(fileName)==-1)lastFiles.prepend(fileName);
 
-if(lastFiles.count()>10)lastFiles.takeLast();
-createRescentMenu();
+    if(lastFiles.count()>10)lastFiles.takeLast();
+    createRescentMenu();
 };
 void MainWindowTask::loadMarks(const QString fileName)
 {

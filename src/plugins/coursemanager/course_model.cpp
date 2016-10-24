@@ -18,7 +18,11 @@ int courseModel::loadCourse(QString file)
     };
 if(f.atEnd())return -1;
 QString error;
-if(!courceXml.setContent(f.readAll(),true,&error))QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);;
+    if(!courceXml.setContent(f.readAll(),true,&error)){
+        qDebug()<<"ERROR LOADING CB:",error;
+        QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);
+        
+    }
 f.close();
 
 

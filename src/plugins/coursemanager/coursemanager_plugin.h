@@ -10,6 +10,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "shared/interfaces/guiinterface.h"
 #include "shared/interfaces/actorinterface.h"
+#include "course_model.h"
 typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;
 //#include "task/mainwindow.h"
@@ -57,6 +58,7 @@ public:
      }
     void rebuildRescentMenu();
     bool isSafeToQuit();
+    void start();
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -75,6 +77,8 @@ private /*methods*/:
 
 private /*fields*/:
     void loadCource(QString file);
+    int loadCourseFromConsole(QString wbname,QString cbname);
+    int loadWorkBook(QString wbfilename,QString cbname);
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
@@ -90,6 +94,8 @@ private /*fields*/:
     int isp_no,field_no;
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
+    bool DISPLAY;
+    courseModel* course;
 
 };
 

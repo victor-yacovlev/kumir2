@@ -1,3 +1,3 @@
 name    = CourseManager
-gui     = true
-requires= CoreGUI
+gui     = false
+

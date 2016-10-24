@@ -3,6 +3,9 @@
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
+#ifdef Q_OS_LINUX
+#include <iostream>
+#endif
 namespace CourseManager {
 
    
@@ -14,6 +17,23 @@ Plugin::Plugin()
     , settingsEditorPage_(nullptr)
     , cur_task(nullptr)
 {
+    
+#ifdef Q_OS_LINUX
+    QProcessEnvironment pe;
+    pe=QProcessEnvironment::systemEnvironment();
+    // qDebug()<<"PE"<<pe.toStringList();
+    qDebug()<<"Display"<<pe.value("DISPLAY");
+    if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
+    {
+        qDebug()<<"CourseManager:Console mode";
+
+        DISPLAY=false;
+        field_no=0;
+        return;
+    }
+    qDebug()<<"CourseManager:Console Mode";
+#endif
+    DISPLAY=true;
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
     rescentMenu=new QMenu(trUtf8("Недавние тетради/курсы..."));
@@ -36,7 +56,113 @@ QList<QMenu*>  Plugin::menus()const
 {
     
     return MenuList; 
-}; 
+};
+int Plugin::loadWorkBook(QString wbfilename,QString cbname)
+    {
+        QDomDocument workXml;
+        QFile f(wbfilename);
+        
+        if  (!f.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + wbfilename, 0,0,0);
+            return 5;
+            
+        };
+
+        if(f.atEnd())
+        {
+           
+            return 3;
+        };
+   
+        QString error;
+        int str,pos;
+        workXml.setContent(f.readAll(),true,&error,&str,&pos);
+        qDebug()<<"File parce:"<<error<<"str"<<str<<" pos"<<pos;
+        
+        QDomElement root=workXml.documentElement ();
+        if(root.tagName()!="COURSE")
+        {
+       
+            return 4;
+        };
+        QDomElement fileEl=root.firstChildElement("FILE");
+        QString krsFile=fileEl.attribute("fileName");
+               
+        QString fileN=fileEl.attribute("fileName");
+     
+        QDomNodeList marksElList=root.elementsByTagName("MARK"); //Оценки
+        //qDebug()<<"Loading marks "<<marksElList.count();
+        for(int i=0;i<marksElList.count();i++)
+        {
+            int taskId=marksElList.at(i).toElement().attribute("testId").toInt();
+            int mark=marksElList.at(i).toElement().attribute("mark").toInt();
+            qDebug()<<"task:"<<taskId<<" mark:"<<mark;
+            course->setMark(taskId,mark);
+            fprintf(stdout, "%s %d %d \n",cbname.toAscii().data(),taskId,mark);
+        };
+        
+        //qDebug()<<"Loading user prgs...";
+        QDomNodeList prgElList=root.elementsByTagName("USER_PRG");//Программы
+        for(int i=0;i<prgElList.count();i++)
+        {
+            int taskId=prgElList.at(i).toElement().attribute("testId").toInt();
+            qDebug()<<"Tassk id"<<taskId;
+            QString prg =prgElList.at(i).toElement().attribute("prg");
+            QModelIndex tIdx=course->getIndexById(taskId);
+            
+      
+            course->setUserText(taskId,prg);
+            
+        };
+        
+        QDomNodeList prgElListT=root.elementsByTagName("TESTED_PRG");//Программы тестированные
+        for(int i=0;i<prgElListT.count();i++)
+        {
+            int taskId=prgElListT.at(i).toElement().attribute("testId").toInt();
+            QString prg =prgElListT.at(i).toElement().attribute("prg");
+            
+            course->setUserTestedText(taskId,prg);
+            
+        };
+        return 0;
+    }
+int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
+    {
+        
+        QFileInfo fi(cbname);
+        if(!fi.exists())
+        {
+            
+            return 1;
+        };
+        QFileInfo fi2(wbname);
+        if(!fi2.exists())
+        {
+            
+            return 2;
+        };
+ 
+        course=new courseModel();
+   
+        int tasks=course->loadCourse(cbname);
+        qDebug()<<"Tasks "<<tasks<<" loaded";
+        int wb_error=loadWorkBook(wbname,fi.fileName());
+
+        QString cText=course->courceDescr();
+        
+ 
+
+    //    fprintf(stdout, "TODO: Load from file");
+        return wb_error;
+        
+    }
+
+void Plugin::start()
+{
+      qDebug()<<"Starts with coursemanager";
+    
+};
 void Plugin::rebuildRescentMenu()
     {
         rescentMenu->clear();
@@ -354,6 +480,15 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
 QString Plugin::initialize(const QStringList &configurationArguments,
                            const ExtensionSystem::CommandLine & runtimeArguments)
 {
+    qDebug()<<"DIPLSY"<<DISPLAY;
+    if(!DISPLAY)
+    {
+        if(!runtimeArguments.value('w').isValid())return trUtf8("Нет тетради");
+        if(!runtimeArguments.value('c').isValid())return trUtf8("Нет учебника");
+        
+        qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString(),runtimeArguments.value('c').toString());
+        return "";
+    }
     QList<QAction*> actions;
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)
@@ -386,6 +521,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
 
 void Plugin::updateSettings(const QStringList & keys)
 {
+    if(!DISPLAY)return;
+    
+
+    
     if (settingsEditorPage_) {
         settingsEditorPage_->setSettingsObject(mySettings());
     }
