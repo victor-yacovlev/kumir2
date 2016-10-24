@@ -114,30 +114,36 @@ public:
 //         QUrl::fromLocalFile(qApp->property("sharePath").toString()+
 //                                            "/coursemanager/out_stand.svg"
 //                                            );     // WTF?
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("out_stand.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("1.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("2.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("3.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("4.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("5.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("6.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("7.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("8.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("9.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("10.png")));
-           markIcons.append(QIcon(":/m.png"));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_close.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_1.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_2.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_3.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_4.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_5.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_6.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_7.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_8.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_9.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_10.png")));
-           markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_open.png")));
+           bool hasX11 = true;
+#ifdef Q_OS_LINUX
+           hasX11 = 0!=getenv("DISPLAY");
+#endif
+           if (hasX11) {
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("out_stand.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("1.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("2.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("3.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("4.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("5.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("6.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("7.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("8.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("9.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("10.png")));
+               markIcons.append(QIcon(":/m.png"));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_close.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_1.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_2.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_3.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_4.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_5.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_6.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_7.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_8.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_9.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_10.png")));
+               markIcons.append(QIcon(resourcesRoot.absoluteFilePath("folder_open.png")));
+           }
            isTeacher=false;
 
 
