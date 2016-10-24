@@ -77,7 +77,8 @@ private /*methods*/:
 
 private /*fields*/:
     void loadCource(QString file);
-    int loadCourseFromConsole(QString wbname,QString cbname);
+    int loadCourseFromConsole(QString wbname ,QString cbname);
+    int checkTaskFromConsole(const int taskID);
     int loadWorkBook(QString wbfilename,QString cbname);
     AI * getActor(QString name);
     QWidget* mainWindow_;
@@ -96,6 +97,7 @@ private /*fields*/:
     KumZadanie* cur_task;
     bool DISPLAY;
     courseModel* course;
+    void showError(QString err);
 
 };
 
