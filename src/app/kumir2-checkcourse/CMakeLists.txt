@@ -20,7 +20,7 @@ endif()
 
 set(
     CONFIGURATION_TEMPLATE
-    "ActorRobot,!CourseManager,KumirCodeGenerator,KumirCodeRun,KumirAnalizer\(teacher,preload=Files,preload=Strings\)"
+    "ActorRobot,!CourseManager,KumirCodeGenerator,KumirCodeRun\(console\),KumirAnalizer\(teacher,preload=Files,preload=Strings\)"
 )
 
 set(SRC ../main.cpp)

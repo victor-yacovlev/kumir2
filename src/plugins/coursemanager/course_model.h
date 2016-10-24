@@ -413,6 +413,18 @@ public:
 
             return max+10;
          }
+         QList<int> getIDs() const
+        {
+            QList<int> ids;
+            QDomNodeList list=courceXml.elementsByTagName("T");
+            for(int i=0;i<list.count();i++)
+            {
+                
+                ids.append(list.at(i).toElement().attribute("id","").toInt());
+            }
+            
+            return ids;
+        }
          int setChildsId(QDomNode par,int first_id)
          {
             QDomNodeList Childs=par.childNodes();

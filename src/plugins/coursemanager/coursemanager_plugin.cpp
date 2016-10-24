@@ -3,9 +3,11 @@
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
-#ifdef Q_OS_LINUX
-#include <iostream>
-#endif
+#include "interfaces/generatorinterface.h"
+#include "interfaces/runinterface.h"
+    #include <fstream>
+    #include <iostream>
+
 namespace CourseManager {
 
    
@@ -99,7 +101,7 @@ int Plugin::loadWorkBook(QString wbfilename,QString cbname)
             int mark=marksElList.at(i).toElement().attribute("mark").toInt();
             qDebug()<<"task:"<<taskId<<" mark:"<<mark;
             course->setMark(taskId,mark);
-            fprintf(stdout, "%s %d %d \n",cbname.toAscii().data(),taskId,mark);
+            fprintf(stdout, "%s %d %d \n",cbname.toLatin1().data(),taskId,mark);
         };
         
         //qDebug()<<"Loading user prgs...";
@@ -157,12 +159,89 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
         return wb_error;
         
     }
-
-void Plugin::start()
-{
-      qDebug()<<"Starts with coursemanager";
+int Plugin::checkTaskFromConsole(const int taskID)
+    {
+        KumZadanie task;
+        QString curDir=".";
+        QFileInfo ioDir(curDir+'/'+course->progFile(taskID));
+        qDebug()<<"PRG FILE"<<course->progFile(taskID);
+        if(ioDir.isFile())
+        {
+            qDebug()<<"TODO: IO FILE";
+        };
+        task.isps=course->Modules(taskID);
+        task.fields.clear();
+        task.name=course->getTitle(taskID);
+        for(int i=0;i<task.isps.count();i++)
+        {
+            QStringList t_fields=course->Fields(taskID,task.isps[i]);
+            for(int j=0;j<t_fields.count();j++)
+            {
     
-};
+                task.fields.insertMulti(task.isps[i],curDir+'/'+t_fields[j]);
+                
+            };
+
+        }
+        Shared::AnalizerInterface* analizer = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+         Shared::Analizer::SourceFileInterface::Data kumFile;
+        if(course->getUserText(taskID)!="")
+        {
+           
+            kumFile = analizer->sourceFileHandler()->fromString(course->getUserText(taskID));
+        }
+        else return 1;
+        Shared::Analizer::InstanceInterface * analizer_i =
+        analizer->createInstance();
+        
+        QString dirname = curDir;
+        analizer_i->setSourceDirName(dirname);
+        analizer_i->setSourceText(kumFile.visibleText + "\n" + kumFile.hiddenText);
+        
+        QList<Shared::Analizer::Error> errors = analizer_i->errors();
+        for (int i=0; i<errors.size(); i++) {
+            Shared::Analizer::Error e = errors[i];
+            QString errorMessage = tr("Error: task  ") +
+            task.name+
+            ":" + QString::number(e.line+1) +
+            ":" + QString::number(e.start+1) + "-" + QString::number(e.start+e.len) +
+            ": " + e.message;
+            std::cerr << errorMessage.toLocal8Bit().data();
+            std::cerr << std::endl;
+        }
+       AST::DataPtr ast = analizer_i->compiler()->abstractSyntaxTree();
+       Shared::GeneratorInterface * generator_ = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::GeneratorInterface>();
+       QString suffix;
+       QString mimeType;
+       QByteArray outData;
+       generator_->generateExecutable(ast, outData, mimeType, suffix);
+       QDir::setCurrent(curDir);
+       Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+        Shared::RunInterface::RunnableProgram program;
+        program.executableData = outData;
+        program.executableFileName = "";
+        runner->loadProgram(program);
+        for(int i=0;i<task.fields.count();i++)
+        {
+        field_no=i;
+        runner->runTesting();
+        }
+        return 0;    //QVariant valueStackTopItem()
+     
+    }
+void Plugin::start()
+    {
+      qDebug()<<"Starts with coursemanager";
+        QList<int> taskIds=course->getIDs();
+        for(int i=0;i<taskIds.count();i++)
+        {
+            field_no=0;
+            int res=checkTaskFromConsole(taskIds[i]);
+            qDebug()<<"Test result "<<res<<" taskId"<<taskIds[i];
+        }
+            
+    
+    };
 void Plugin::rebuildRescentMenu()
     {
         rescentMenu->clear();
@@ -320,6 +399,15 @@ AI * Plugin::getActor(QString name)
     
     return NULL;
 }
+void Plugin::showError(QString err)
+    {
+     if(DISPLAY)
+     {
+            QMessageBox::information( NULL, "", err, 0,0,0);
+     }
+    else std::cerr << err.toLocal8Bit().data();
+        
+    }
 void Plugin::selectNext(KumZadanie* task)
     {
        
@@ -340,13 +428,13 @@ void Plugin::selectNext(KumZadanie* task)
             AI* actor=getActor(task->isps.at(i));
             if(!actor)
             {
-                QMessageBox::information( NULL, "", QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i), 0,0,0); 
+                showError(QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i));
                 return;
             }
             //TODO LOAD FIELDS;
             QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
             if(!field_data->open(QIODevice::ReadOnly)){
-                QMessageBox::information( NULL, "", QString::fromUtf8("Ошибка открытия обстановки!"), 0,0,0); 
+               showError(QString::fromUtf8("Ошибка открытия обстановки!"));
                 return;   
             }
             actor->loadActorData(field_data);
