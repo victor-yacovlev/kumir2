@@ -19,7 +19,7 @@ endif()
 
 set(
     CONFIGURATION_TEMPLATE
-    "!KumirCodeRun(console)"
+    "!KumirCodeRun\(console\)"
 )
 
 set(SRC ../main.cpp)
