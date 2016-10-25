@@ -649,6 +649,21 @@ void KumirRunPlugin::setStdOutTextStream(QTextStream *stream)
     }
 }
 
+void KumirRunPlugin::runProgramInCurrentThread(bool useTestingEntryPoint)
+{
+    if (useTestingEntryPoint) {
+        pRun_->setEntryPointToTest();
+    }
+    else {
+        pRun_->setEntryPointToMain();
+    }
+    pRun_->vm->setConsoleInputBuffer(simulatedInputBuffer_? simulatedInputBuffer_ : defaultInputBuffer_);
+    pRun_->vm->setConsoleOutputBuffer(simulatedOutputBuffer_? simulatedOutputBuffer_ : defaultOutputBuffer_);
+    pRun_->reset();
+    pRun_->runInCurrentThread();
+    checkForErrorInConsole();
+}
+
 QList<ExtensionSystem::CommandLineParameter>
 KumirRunPlugin::acceptableCommandLineParameters() const
 {

@@ -221,16 +221,16 @@ int Plugin::checkTaskFromConsole(const int taskID)
         Shared::RunInterface::RunnableProgram program;
         program.executableData = outData;
         program.executableFileName = "";
+        runner->loadProgram(program);
         
         for(int i=0;i<task.fields.count();i++)
         {
-        runner->loadProgram(program);
             QString testMessage = tr("++++++ ") +task.name+tr(" field no: ")+QString::number(i);
             std::cout << testMessage.toLocal8Bit().data();
             std::cout << std::endl;
         field_no=i;
         selectNext(&task);
-        runner->runTesting();
+        runner->runProgramInCurrentThread(true);
         }
         return 0;    //QVariant valueStackTopItem()
      

@@ -122,6 +122,17 @@ void Run::runContinuous()
     start();
 }
 
+void Run::runInCurrentThread()
+{
+    stoppingFlag_ = false;
+    breakHitFlag_ = false;
+    ignoreLineChangeFlag_ = false;
+    _runMode = Shared::RunInterface::RM_ToEnd;
+    vm->setDebugOff(true);
+    vm->setNextCallToEnd();
+    run();
+}
+
 
 void Run::debuggerReset()
 {
