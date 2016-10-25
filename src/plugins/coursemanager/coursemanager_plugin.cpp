@@ -435,6 +435,7 @@ void Plugin::selectNext(KumZadanie* task)
             }
            
             QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+            qDebug()<<"Loadfield"<<task->field(task->isps.at(i),field_no);
             if(!field_data->open(QIODevice::ReadOnly)){
                showError(QString::fromUtf8("Ошибка открытия обстановки!"));
                 return;   
