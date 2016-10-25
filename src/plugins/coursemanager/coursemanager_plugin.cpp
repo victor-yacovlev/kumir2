@@ -433,15 +433,17 @@ void Plugin::selectNext(KumZadanie* task)
                 showError(QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i));
                 return;
             }
-            //TODO LOAD FIELDS;
+           
             QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
             if(!field_data->open(QIODevice::ReadOnly)){
                showError(QString::fromUtf8("Ошибка открытия обстановки!"));
                 return;   
             }
-            actor->loadActorData(field_data);
-            field_data->close();
-        }   
+          
+                actor->loadActorData(field_data);
+                field_data->close();
+           
+        }
     }
 
 void Plugin::checkNext(KumZadanie* task)

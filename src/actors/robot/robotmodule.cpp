@@ -3553,12 +3553,21 @@ namespace ActorRobot {
         if(roboCol==rows.at(roboRow).count()-1)return true;
         return getItem(roboRow, roboCol)->rightWall ||getItem(roboRow, roboCol+1)->leftWall;
     }
-    
     int ConsoleField::loadFromFile(QString fileName)
     {
+        QFile* field_data=new QFile(fileName);
+        if(!field_data->open(QIODevice::ReadOnly)){
+           qDebug()<<QString::fromUtf8("Ошибка открытия обстановки!");
+            return 1;
+        }
+        return consoleLoadFromDataStream(field_data);
         
-        QFileInfo fi(fileName);
-        QString name = fi.fileName();
+    }
+    int ConsoleField::consoleLoadFromDataStream(QIODevice *stream)
+    {
+        
+      
+      //  QString name = fi.fileName();
   
         
         
@@ -3566,7 +3575,7 @@ namespace ActorRobot {
         QString ctmp;
         
         
-        QFile l_File(fileName);
+
         
         
         
@@ -3578,24 +3587,17 @@ namespace ActorRobot {
         int CurX,CurY;
         int SizeX, SizeY;
         
-        // Тестовый прогон
-        
-        if  (!l_File.open(QIODevice::ReadOnly))
-        {
-            
-            return 1;
-        }
-        
+
         
         
         // 1 stroka - razmery polya
-        tmp = l_File.readLine();
+        tmp = stream->readLine();
         //QMessageBox::information( 0, "", tmp, 0,0,0);
         
         
         if (tmp.isNull()||tmp.isEmpty())
         {
-            l_File.close();
+            stream->close();
             
             return 2;
         }
@@ -3604,7 +3606,7 @@ namespace ActorRobot {
         
         while (tmp.left(1) == ";" || tmp == "")
         {
-            tmp = l_File.readLine();
+            tmp = stream->readLine();
             NStrok++;
             if (tmp.isNull())
             {
@@ -3616,7 +3618,7 @@ namespace ActorRobot {
         
         if (l_List.count() != 2)
         {
-            l_File.close();
+           stream->close();
             
             
             return 3;
@@ -3634,13 +3636,13 @@ namespace ActorRobot {
         
         // Вторая строка - положение робота
         
-        tmp = l_File.readLine();
+        tmp = stream->readLine();
         
         
         
         if (tmp.isNull())
         {
-            l_File.close();
+           stream->close();
             
             return 5;
         }
@@ -3649,11 +3651,11 @@ namespace ActorRobot {
         
         while (tmp.left(1) == ";" || tmp == "")
         {
-            tmp = l_File.readLine();
+            tmp =stream->readLine();
             NStrok++;
             if (tmp.isNull())
             {
-                l_File.close();
+                stream->close();
                 
                 return 5;
             }
@@ -3667,22 +3669,22 @@ namespace ActorRobot {
         {
             
             
-            l_File.close();return 6;
+            stream->close();return 6;
         }
         
         if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
         {
             
-            l_File.close(); return 6;
+            stream->close(); return 6;
         }
         
         
         //	m_DefaultSett = l_Sett;
         
-        while (!l_File.atEnd())
+        while (!stream->atEnd())
         {
             //l_Err = l_File.readLine(l_String, 255);
-            tmp = QString::fromUtf8(l_File.readLine());
+            tmp = QString::fromUtf8(stream->readLine());
             NStrok++;
             if (tmp.isNull())
             {
@@ -3700,28 +3702,28 @@ namespace ActorRobot {
             if (l_List.count() > 9 )
             {
                 
-                l_File.close();
+                stream->close();
                 return -NStrok;
             }
             if(l_List.count()<6)
             {
-                l_File.close();
-                qDebug("N Lexem<6");
+                stream->close();
+            //    qDebug("N Lexem<6");
                 return -NStrok;
             };
             bool ok;
             CurX = l_List[0].toInt(&ok);
             if(!ok)
             {
-                l_File.close();
-                qDebug("Bad cur X<6");
+                stream->close();
+              // qDebug("Bad cur X<6");
                 return -NStrok;
             };
             
             CurY = l_List[1].toInt(&ok);
             
             if(!ok){
-                l_File.close();
+                stream->close();
                 qDebug("Bad curY <6");
                 return -NStrok;
             };
@@ -3729,20 +3731,20 @@ namespace ActorRobot {
             if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
             {
                 
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             
             if (l_List[4].toFloat() < 0)
             {
                 
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             
             
             if (l_List[5].toFloat() < MIN_TEMP)
             {
                 
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             
             
@@ -3754,7 +3756,7 @@ namespace ActorRobot {
                 if (!(tmp1.length() == 1))
                 {
                     
-                    l_File.close(); return -NStrok;
+                   stream->close(); return -NStrok;
                 }
                 
                 
@@ -3768,19 +3770,19 @@ namespace ActorRobot {
                 //dlina lexemy dolzna ravnyatsa 1
                 if (!(tmp1.length() == 1))
                 {
-                    l_File.close(); return -NStrok;
+                    stream->close(); return -NStrok;
                 }
                 
                 
             }
             
         }
-        l_File.close();
+        stream->close();
         rows.clear();
         //реальный прогон
         //destroyField();
         
-        if  (!l_File.open(QIODevice::ReadOnly))
+        if  (!stream->open(QIODevice::ReadOnly))
         {
             
             return 10;
@@ -3789,11 +3791,11 @@ namespace ActorRobot {
         
         
         // 1 stroka - razmery polya
-        tmp = l_File.readLine();
+        tmp =stream->readLine();
         
         if (tmp.isNull())
         {
-            l_File.close();
+            stream->close();
             
             return 10;
         }
@@ -3801,11 +3803,11 @@ namespace ActorRobot {
         
         while (tmp.left(1) == ";" || tmp == "")
         {
-            tmp = QString::fromUtf8(l_File.readLine());
+            tmp = QString::fromUtf8(stream->readLine());
             NStrok++;
             if (tmp.isNull())
             {
-                l_File.close();
+                stream->close();
                 
                 return 10;
             }
@@ -3815,7 +3817,7 @@ namespace ActorRobot {
         
         if (l_List.count() != 2)
         {
-            l_File.close();
+           stream->close();
             
             return -NStrok;
         }
@@ -3830,20 +3832,20 @@ namespace ActorRobot {
         if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
         {
             
-            l_File.close();
+            stream->close();
             return - NStrok;
         }
         
         
         // Вторая строка - положение робота
         
-        tmp = l_File.readLine();
+        tmp = stream->readLine();
         
         
         
         if (tmp.isNull())
         {
-            l_File.close();
+            stream->close();
             
             return 10;
         }
@@ -3852,11 +3854,11 @@ namespace ActorRobot {
         
         while (tmp.left(1) == ";" || tmp == "")
         {
-            tmp = l_File.readLine();
+            tmp = stream->readLine();
             NStrok++;
             if (tmp.isNull())
             {
-                l_File.close();
+               stream->close();
                 
                 return 10;
             }
@@ -3869,13 +3871,13 @@ namespace ActorRobot {
         if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
         {
             
-            l_File.close();return - NStrok;
+           stream->close();return - NStrok;
         }
         
         if ((l_List[0]).toInt() > SizeY || (l_List[1]).toInt() > SizeX )
         {
             
-            l_File.close(); return - NStrok;
+            stream->close(); return - NStrok;
         }
         
         roboCol = (l_List[0]).toInt();
@@ -3891,14 +3893,14 @@ namespace ActorRobot {
         
         
         
-        while (!l_File.atEnd())
+        while (!stream->atEnd())
         {
-            tmp = QString::fromUtf8(l_File.readLine());
+            tmp = QString::fromUtf8(stream->readLine());
             NStrok++;
             if (tmp.isNull())
             {
                 
-                l_File.close();
+                stream->close();
                 return 10;
             }
             if (tmp.left(1) == ";" || tmp == "")
@@ -3912,7 +3914,7 @@ namespace ActorRobot {
             if (l_List.count() > 9)
             {
                 
-                l_File.close();
+                stream->close();
                 return -NStrok;
             }
             CurX = l_List[1].toInt();
@@ -3920,7 +3922,7 @@ namespace ActorRobot {
             if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
             {
                 qDebug()<<"Out of field";
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             // TODO STENI
            // qDebug()<<"Before Walls";
@@ -3951,7 +3953,7 @@ namespace ActorRobot {
             if (l_List[4].toFloat() < 0)
             {
                 
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             qreal temperature = (l_List[5].replace(",",".")).toDouble();
             if (getItem(CurX, CurY))
@@ -3960,7 +3962,7 @@ namespace ActorRobot {
             if (l_List[5].toFloat() < MIN_TEMP)
             {
                 
-                l_File.close(); return -NStrok;
+                stream->close(); return -NStrok;
             }
             
             
@@ -3973,7 +3975,7 @@ namespace ActorRobot {
                 if (!(tmp1.length() == 1))
                 {
                     
-                    l_File.close(); return -NStrok;
+                    stream->close(); return -NStrok;
                 }
                 //qDebug()<<QString::fromUtf8("Тест Up:")<<tmp1[0];
                 if(tmp1[0]!='$') {
@@ -4002,7 +4004,7 @@ namespace ActorRobot {
                 if (!(tmp1.length() == 1))
                 {
                     
-                    l_File.close(); return -NStrok;
+                    stream->close(); return -NStrok;
                 }
                 //qDebug()<<QString::fromUtf8("Тест Down:")<<tmp1[0];
                 if(tmp1[0]!='$') {
@@ -4030,7 +4032,7 @@ namespace ActorRobot {
                 if (!(tmp1.length() == 1))
                 {
                     
-                    l_File.close(); return -NStrok;
+                   stream->close(); return -NStrok;
                 }
                 if(tmp1[0]=='1') {
                     if (getItem(CurX, CurY))
@@ -4054,11 +4056,11 @@ namespace ActorRobot {
             
         }
         
-        l_File.close();
+        stream->close();
         
         
         
-        qDebug() << "File " << fileName ;
+       // qDebug() << "File " << fileName ;
      
         
         
@@ -4263,6 +4265,15 @@ void RobotModule::copyFromPult(QString log)
 {
     // Set actor specific data (like environment)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
+    if(!DISPLAY)//console mode
+    {
+        curConsoleField=new ConsoleField(10,15);
+        if(curConsoleField->consoleLoadFromDataStream(source)!=0)
+        {
+         qDebug()<<"ERROR LOADING FIELD FROM STREAM ";
+        }
+        return;
+    }
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
     m_pultWidget->Logger->ClearLog();

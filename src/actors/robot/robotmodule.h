@@ -112,6 +112,7 @@ namespace ActorRobot {
         int  robotRow(){return roboRow;}
         int  robotCol(){return roboCol;}
         int loadFromFile(QString filename);
+        int consoleLoadFromDataStream(QIODevice *stream);
     
     private:
         QList< QList<CFieldItem*> > rows;
