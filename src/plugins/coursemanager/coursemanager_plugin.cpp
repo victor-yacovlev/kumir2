@@ -224,6 +224,9 @@ int Plugin::checkTaskFromConsole(const int taskID)
         runner->loadProgram(program);
         for(int i=0;i<task.fields.count();i++)
         {
+            QString testMessage = tr("++++++ ") +task.name+tr(" field no: ")+QString::number(i);
+            std::cout << testMessage.toLocal8Bit().data();
+            std::cout << std::endl;
         field_no=i;
         selectNext(&task);
         runner->runTesting();
