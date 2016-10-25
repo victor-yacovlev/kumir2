@@ -98,6 +98,7 @@ private /*fields*/:
     bool DISPLAY;
     courseModel* course;
     void showError(QString err);
+    QFileInfo cur_courseFileInfo;
 
 };
 
