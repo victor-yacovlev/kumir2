@@ -666,7 +666,7 @@ void Vodoley::updateMenzur()
     
 
 	updateNeedBirka();
-
+    redraw();
 	if(Csize()<1)emit CNull();else emit CNotNull();
 };
 void Vodoley::redraw()

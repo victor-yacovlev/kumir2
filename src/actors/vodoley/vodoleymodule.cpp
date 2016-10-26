@@ -211,7 +211,7 @@ private:
     /* алг вылей C */
     // TODO implement me
    //  mutex.lock();
-    MainWindow->MoveFromTo(1,3);
+    MainWindow->MoveFromTo(2,3);
   //   mutex.unlock();
 }
 
