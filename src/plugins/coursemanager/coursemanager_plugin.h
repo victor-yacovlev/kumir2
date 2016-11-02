@@ -40,6 +40,7 @@ public:
         QList<ExtensionSystem::CommandLineParameter> params;
         params.append(ExtensionSystem::CommandLineParameter(true,'w',"work",tr("Work book file"),QVariant::String,false));
         params.append(ExtensionSystem::CommandLineParameter(true,'c',"classbook",tr("Classbook file"),QVariant::String,false));
+        params.append(ExtensionSystem::CommandLineParameter(true,'o',"output",tr("Output file"),QVariant::String,false));
         return params;
     };
     void setParam(QString paramname,QString param){};
@@ -99,6 +100,7 @@ private /*fields*/:
     courseModel* course;
     void showError(QString err);
     QFileInfo cur_courseFileInfo;
+    QTextStream  resultStream;
 
 };
 

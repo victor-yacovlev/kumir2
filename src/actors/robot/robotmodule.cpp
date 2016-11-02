@@ -15,7 +15,7 @@ You should change it corresponding to functionality.
 #include <QProcessEnvironment>
 #include "extensionsystem/pluginmanager.h"
  //#include <iostream> 
-
+#define ANIMTIME 100
 namespace ActorRobot {
 
     
@@ -4484,7 +4484,7 @@ void RobotModule::runGoUp()
 //         emit sendToPultLog(status);
 //     }
 if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
-    if(animation)msleep(250);
+    if(animation)msleep(ANIMTIME);
 	return;
 }
 
@@ -4511,7 +4511,7 @@ void RobotModule::runGoDown()
   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
     if(animation){
         view->update();
-     msleep(250);   
+     msleep(ANIMTIME);   
     }
 	return;
 }
@@ -4541,7 +4541,7 @@ void RobotModule::runGoLeft()
     if(animation)
     {
         view->update();
-        msleep(250);
+        msleep(ANIMTIME);
     }
 	return;
 }
@@ -4566,7 +4566,7 @@ void RobotModule::runGoRight()
      if(animation)
      {
          view->update();
-     msleep(250);
+     msleep(ANIMTIME);
      }
 	return;
 }
@@ -4590,7 +4590,7 @@ void RobotModule::runDoPaint()
     if(animation)
     {
         view->update();
-        msleep(250);
+        msleep(ANIMTIME);
     }
 	return;
 }

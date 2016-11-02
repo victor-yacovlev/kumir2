@@ -222,7 +222,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         program.executableData = outData;
         program.executableFileName = "";
         runner->loadProgram(program);
-        
+        int mark=0;
         for(int i=0;i<task.fields.count();i++)
         {
             QString testMessage = tr("++++++ ") +task.name+tr(" field no: ")+QString::number(i);
@@ -231,8 +231,18 @@ int Plugin::checkTaskFromConsole(const int taskID)
         field_no=i;
         selectNext(&task);
         runner->runProgramInCurrentThread(true);
+          int testRes=runner->valueStackTopItem().toInt();//Get mark
+          if(mark>0)mark=qMin(mark,testRes);
+            else
+                mark=testRes;
+            
         }
-        return 0;    //QVariant valueStackTopItem()
+        if(resultStream.status()==QTextStream::Ok)//If we can - we writes marks to file
+        {
+            resultStream<<task.name+trUtf8(" Оценка:")+QString::number(mark)<<"\n";
+            
+        }
+        return 0;   
      
     }
 void Plugin::start()
@@ -586,6 +596,13 @@ QString Plugin::initialize(const QStringList &configurationArguments,
         if(!runtimeArguments.value('c').isValid())return trUtf8("Нет учебника");
         
         qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString(),runtimeArguments.value('c').toString());
+        if(runtimeArguments.value('o').isValid())
+        {
+            QFile outFile(runtimeArguments.value('o').toString());
+            if (outFile.open(QFile::WriteOnly)) {
+                 resultStream.setDevice(&outFile);
+                 }
+        }
         return "";
     }
     QList<QAction*> actions;
