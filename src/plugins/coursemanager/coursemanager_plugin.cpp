@@ -601,7 +601,7 @@ QString Plugin::initialize(const QStringList &configurationArguments,
              outFile.setFileName(runtimeArguments.value('o').toString());
             if (outFile.open(QFile::WriteOnly)) {
                  resultStream.setDevice(&outFile);
-                qDebug(()<<"Stream status"<<resultStream.status();
+                qDebug()<<"Stream status"<<resultStream.status();
                  }
         }
         return "";
