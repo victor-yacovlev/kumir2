@@ -155,7 +155,7 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
         
  
 
-    //    fprintf(stdout, "TODO: Load from file");
+  
         return wb_error;
         
     }
@@ -602,7 +602,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
             if (outFile.open(QFile::WriteOnly)) {
                  resultStream.setDevice(&outFile);
                 qDebug()<<"Stream status"<<resultStream.status();
-                 }
+            }else {
+                resultStream.setStatus(QTextStream::WriteFailed);
+                std::cout <<"Cant open output file:" << runtimeArguments.value('o').toString().toLocal8Bit().data()<<endl;
+            }
         }
         return "";
     }
