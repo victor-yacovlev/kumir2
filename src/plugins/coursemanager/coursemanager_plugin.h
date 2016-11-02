@@ -101,6 +101,7 @@ private /*fields*/:
     void showError(QString err);
     QFileInfo cur_courseFileInfo;
     QTextStream  resultStream;
+    QFile outFile;
 
 };
 

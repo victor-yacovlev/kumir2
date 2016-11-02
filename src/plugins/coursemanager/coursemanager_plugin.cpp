@@ -598,9 +598,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
         qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString(),runtimeArguments.value('c').toString());
         if(runtimeArguments.value('o').isValid())
         {
-            QFile outFile(runtimeArguments.value('o').toString());
+             outFile.setFileName(runtimeArguments.value('o').toString());
             if (outFile.open(QFile::WriteOnly)) {
                  resultStream.setDevice(&outFile);
+                qDebug(()<<"Stream status"<<resultStream.status();
                  }
         }
         return "";
