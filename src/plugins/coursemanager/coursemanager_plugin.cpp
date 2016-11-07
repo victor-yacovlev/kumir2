@@ -223,6 +223,7 @@ int Plugin::checkTaskFromConsole(const int taskID)
         program.executableFileName = "";
         runner->loadProgram(program);
         int mark=0;
+        QString error="";
         for(int i=0;i<task.fields.count();i++)
         {
             QString testMessage = tr("++++++ ") +task.name+tr(" field no: ")+QString::number(i);
@@ -231,15 +232,19 @@ int Plugin::checkTaskFromConsole(const int taskID)
         field_no=i;
         selectNext(&task);
         runner->runProgramInCurrentThread(true);
+          if(error=="")error=runner->error();
           int testRes=runner->valueStackTopItem().toInt();//Get mark
           if(mark>0)mark=qMin(mark,testRes);
             else
                 mark=testRes;
+           
             
         }
         if(resultStream.status()==QTextStream::Ok)//If we can - we writes marks to file
         {
-            resultStream<<task.name+trUtf8(" Оценка:")+QString::number(mark)<<"\n";
+            resultStream<<task.name+trUtf8(" Оценка:")+QString::number(mark);
+            if(error!="")resultStream<<" Err:"<<error;
+            resultStream<<"\n";
             
         }
         return 0;   
