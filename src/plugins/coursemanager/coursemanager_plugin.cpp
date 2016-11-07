@@ -209,7 +209,10 @@ int Plugin::checkTaskFromConsole(const int taskID)
             std::cerr << errorMessage.toLocal8Bit().data();
             std::cerr << std::endl;
         }
-        if(errors.size()>0)return 2;
+       // if(errors.size()>0)
+       // {
+            
+      //  }
        AST::DataPtr ast = analizer_i->compiler()->abstractSyntaxTree();
        Shared::GeneratorInterface * generator_ = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::GeneratorInterface>();
        QString suffix;
