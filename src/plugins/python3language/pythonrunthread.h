@@ -7,13 +7,15 @@ extern "C" {
 #include <frameobject.h>
 }
 
-#include "runmode.h"
+#include <interfaces/runinterface.h>
 
 namespace Python3Language {
 
 class InterpreterCallback;
 class ActorsHandler;
 class VariablesModel;
+
+using Shared::RunInterface;
 
 typedef QPair<QString,quint32> BreakpointLocation;
 struct BreakpointData {
@@ -50,6 +52,8 @@ public /*methods*/:
     void addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data);
     void removeBreakpoint(const BreakpointLocation &location);
 
+    RunInterface::RunMode currentRunMode() const;
+
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
     void outputRequest(const QString & output);
@@ -76,7 +80,7 @@ public Q_SLOTS:
         postTestSource_ = postTestSource;
     }
 
-    void startOrContinue(const RunMode runMode);
+    void startOrContinue(const RunInterface::RunMode runMode);
     void terminate();
     void setInputResult(const QVariantList &results);
 
@@ -96,7 +100,7 @@ private /*methods*/:
 
 private /*fields*/:
     static PythonRunThread* self;
-    QStack<RunMode> runMode_;
+    QStack<RunInterface::RunMode> runMode_;
     InterpreterCallback * callback_;
     ActorsHandler* actorsHandler_;
     QString pythonPath_;

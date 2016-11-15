@@ -173,6 +173,11 @@ void Python3LanguagePlugin::setStartPageTitleChangeHandler(const QObject *, cons
 
 }
 
+RunInterface::RunMode Python3LanguagePlugin::currentRunMode() const
+{
+    return runner_->currentRunMode();
+}
+
 
 bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {
@@ -269,33 +274,33 @@ QAbstractItemModel * Python3LanguagePlugin::debuggerVariablesViewModel() const
 
 void Python3LanguagePlugin::runBlind()
 {
-    runner_->startOrContinue(RM_Blind);
+    runner_->startOrContinue(RunInterface::RM_Blind);
 }
 
 void Python3LanguagePlugin::runContinuous()
 {
-    runner_->startOrContinue(RM_Regular);
+    runner_->startOrContinue(RunInterface::RM_Regular);
 }
 
 void Python3LanguagePlugin::runStepOver()
 {
-    runner_->startOrContinue(RM_StepOver);
+    runner_->startOrContinue(RunInterface::RM_StepOver);
 }
 
 void Python3LanguagePlugin::runStepInto()
 {
-    runner_->startOrContinue(RM_StepIn); // TODO implement me
+    runner_->startOrContinue(RunInterface::RM_StepIn); // TODO implement me
 }
 
 void Python3LanguagePlugin::runToEnd()
 {
-    runner_->startOrContinue(RM_StepOut); // TODO implement me
+    runner_->startOrContinue(RunInterface::RM_StepOut); // TODO implement me
 }
 
 void Python3LanguagePlugin::runTesting()
 {
     runner_->setTestingMode(true);
-    runner_->startOrContinue(RM_Blind);
+    runner_->startOrContinue(RunInterface::RM_Blind);
 }
 
 void Python3LanguagePlugin::terminate()

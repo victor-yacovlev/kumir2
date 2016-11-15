@@ -24,7 +24,7 @@ public:
     };
 
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
-    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn };
+    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn, RM_Idle, RM_Regular, RM_Blind };
 
     inline virtual bool hasBreakpointsSupport() const { return false; }
     inline virtual void setBreakpoint(
