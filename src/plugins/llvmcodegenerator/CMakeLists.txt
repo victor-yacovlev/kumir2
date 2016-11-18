@@ -60,6 +60,7 @@ copySpecFile(LLVMCodeGenerator)
 add_library(LLVMCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
 #handleTranslation(LLVMCodeGenerator)
 target_link_libraries(LLVMCodeGenerator
+    ${Llvm_LD_FLAGS}
     ${Llvm_LIBRARIES}
     ${DEP_LIBS}
     ${QT_LIBRARIES}
@@ -134,6 +135,7 @@ else()
             -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
             ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
     )
+    add_custom_target(llvm-stdlib ALL DEPENDS ${SHARE_PATH}/llvmcodegenerator/stdlib.bc)
     if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_custom_command(
         OUTPUT ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o
@@ -143,6 +145,7 @@ else()
             -o ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o
             ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
     )
+    add_custom_target(llvm-stdlib-debug ALL DEPENDS ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o)
     endif()
 endif(WIN32)
 

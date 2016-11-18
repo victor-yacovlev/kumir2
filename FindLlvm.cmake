@@ -13,6 +13,8 @@
 #  Llvm_INCLUDE_DIR
 #  Llvm_LIBRARIES
 #  Llvm_DEFINITIONS
+#  Llvm_VERSION
+#  Llvm_API_VERSION
 # This module relies on following variable to search
 #  LLVM_ROOT
 
@@ -21,6 +23,13 @@ find_program(Llvm_CONFIG_EXECUTABLE NAMES llvm-config PATHS ${LLVM_ROOT} ${LLVM_
 
 if(Llvm_CONFIG_EXECUTABLE)
     exec_program(${Llvm_CONFIG_EXECUTABLE} ARGS "--version" OUTPUT_VARIABLE Llvm_VERSION)
+
+    string(REPLACE "." ";" Llvm_VERSION_LIST ${Llvm_VERSION})
+    list(GET Llvm_VERSION_LIST 0 Llvm_VERSION_MAJOR)
+    list(GET Llvm_VERSION_LIST 1 Llvm_VERSION_MINOR)
+    list(GET Llvm_VERSION_LIST 2 Llvm_VERSION_PATCH)
+    set(Llvm_API_VERSION "${Llvm_VERSION_MAJOR}.${Llvm_VERSION_MINOR}")
+
     if(EXISTS /usr/${LIB_BASENAME}/llvm/libLLVM-${Llvm_VERSION}.so)
         # Fedora-specific .so-version
         set(Llvm_LIBRARIES "-L/usr/${LIB_BASENAME}/llvm -lLLVM-${Llvm_VERSION}")
@@ -40,6 +49,8 @@ if(Llvm_CONFIG_EXECUTABLE)
                 set(Llvm_REQUEST_STRING "${LLVM_REQUEST_STRING} ${component}")
             endforeach()
         endif()
+        exec_program(${Llvm_CONFIG_EXECUTABLE} ARGS "--ldflags" OUTPUT_VARIABLE Llvm_LD_FLAGS_1)
+        string(STRIP ${Llvm_LD_FLAGS_1} Llvm_LD_FLAGS)
         exec_program(${Llvm_CONFIG_EXECUTABLE} ARGS "--libs ${Llvm_REQUEST_STRING}" OUTPUT_VARIABLE Llvm_LIBRARIES_STRING)
         string(REPLACE " " ";" Llvm_LIBS_LIST ${Llvm_LIBRARIES_STRING})
         foreach(_lib ${Llvm_LIBS_LIST})
@@ -51,7 +62,7 @@ if(Llvm_CONFIG_EXECUTABLE)
             set(Llvm_LIBRARIES "${Llvm_LIBRARIES};${_lib}")
         endforeach()
         if(NOT WIN32)
-            set(Llvm_LIBRARIES "${Llvm_LIBRARIES};dl;m")
+            set(Llvm_LIBRARIES "${Llvm_LIBRARIES};dl;m;tinfo")
         endif(NOT WIN32)
         if(WIN32)
             link_directories("${LLVM_ROOT}/lib")
@@ -66,6 +77,7 @@ if(Llvm_CONFIG_EXECUTABLE)
     endif()
 endif()
 
+
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LLVM Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR)
-mark_as_advanced(Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR)
+find_package_handle_standard_args(LLVM Llvm_LIBRARIES Llvm_LD_FLAGS Llvm_DEFINITIONS Llvm_INCLUDE_DIR)
+mark_as_advanced(Llvm_LIBRARIES Llvm_DEFINITIONS Llvm_INCLUDE_DIR Llvm_VERSION Llvm_API_VERSION)
