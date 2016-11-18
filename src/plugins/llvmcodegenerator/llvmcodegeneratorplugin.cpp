@@ -8,35 +8,24 @@
 #endif
 
 #include <llvm/Config/llvm-config.h>
-#if LLVM_VERSION_MINOR >= 3
+
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
-#else
-#include <llvm/Module.h>
-#include <llvm/LLVMContext.h>
-#endif
+
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/FormattedStream.h>
-#if LLVM_VERSION_MINOR >= 5
 #include <llvm/Linker/Linker.h>
 #include <llvm/AsmParser/Parser.h>
-#else
-#include <llvm/Linker.h>
-#include <llvm/Assembly/Parser.h>
-#endif
 #include <llvm/Support/SourceMgr.h>
 
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
-#if LLVM_VERSION_MINOR >= 7
+
 #include <llvm/IR/PassManager.h>
-#else
-#include <llvm/PassManager.h>
-#include <llvm/Target/TargetLibraryInfo.h>
-#endif
+
 
 #include <iostream>
 
@@ -128,11 +117,7 @@ void LLVMCodeGeneratorPlugin::generateExecutable(
 
     const QList<AST::ModulePtr> & modules = tree->modules;
     QList<AST::ModulePtr> kmodules;
-#if LLVM_VERSION_MINOR < 7
-    QList<llvm::Module*> usedUnits;
-#else
-    std::vector<std::unique_ptr<llvm::Module>> usedUnits;
-#endif
+    std::deque<LLVM::ModuleRef> usedUnits;
 
     foreach (const AST::ModulePtr & kmod, modules) {
         if (kmod->header.type == AST::ModTypeCached)
@@ -157,46 +142,14 @@ void LLVMCodeGeneratorPlugin::generateExecutable(
             }
             const QByteArray unitBytes = unitFile.readAll();
             unitFile.close();
-            const std::string unitStrData(unitBytes.constData(),
-                                          unitBytes.size());
 
-            // LLVM changes it's API too frequently :-(
-            // Several implementations below...
+            LLVM::ModuleRef unitModule = std::move(
+                    LLVM::ModuleRef::fromBinaryRepresentation(
+                        unitBytes,
+                        bcFileName,
+                        d->context_
+                        ));
 
-#if LLVM_VERSION_MINOR <= 4
-            llvm::MemoryBuffer * unitBuffer =
-                    llvm::MemoryBuffer::getMemBufferCopy(
-                        unitStrData,
-                        std::string(bcFileName.toUtf8().constData())
-                        );
-            llvm::Module * unitModule = 0;
-            unitModule = llvm::ParseBitcodeFile(unitBuffer, llvm::getGlobalContext(), 0);
-#elif LLVM_VERSION_MINOR <7
-            llvm::MemoryBuffer * unitBuffer =
-                    llvm::MemoryBuffer::getMemBufferCopy(
-                        unitStrData,
-                        std::string(bcFileName.toUtf8().constData())
-                        );
-            llvm::Module * unitModule = 0;
-            llvm::ErrorOr<llvm::Module*> errorOrUnitModule =
-                    llvm::parseBitcodeFile(unitBuffer, llvm::getGlobalContext());
-            if (errorOrUnitModule) {
-                unitModule = errorOrUnitModule.get();
-            }
-#else
-            std::unique_ptr<llvm::MemoryBuffer> unitBuffer =
-                    llvm::MemoryBuffer::getMemBufferCopy(
-                        unitStrData,
-                        std::string(bcFileName.toUtf8().constData())
-                        );
-            std::unique_ptr<llvm::Module> unitModule;
-            llvm::ErrorOr<std::unique_ptr<llvm::Module>> errorOrUnitModule =
-                    llvm::parseBitcodeFile(unitBuffer->getMemBufferRef(),
-                                           llvm::getGlobalContext());
-            if (errorOrUnitModule) {
-                unitModule = std::move(errorOrUnitModule.get());
-            }
-#endif
             if (!unitModule)
             {
                 const QString message = QString::fromUtf8(
@@ -207,12 +160,8 @@ void LLVMCodeGeneratorPlugin::generateExecutable(
                 qApp->quit();
                 return;
             }
-            d->createExternsTable(unitModule.get(), CString("__kumir_function_"));
-#if LLVM_VERSION_MINOR < 7
-            usedUnits.push_back(unitModule);
-#else
+            d->createExternsTable(unitModule, "__kumir_function_");
             usedUnits.push_back(std::move(unitModule));
-#endif
         }
     }
 
@@ -252,96 +201,35 @@ void LLVMCodeGeneratorPlugin::generateExecutable(
         d->createKumirModuleImplementation(kmod);
     }
 
-    llvm::Module * lmainModule = d->getResult();
-    std::string buf;
-    llvm::raw_string_ostream ostream(buf);
+    LLVM::ModuleRef & lmainModule = d->getResult();
+    QByteArray bufData = lmainModule.textRepresentation();
 
-//    llvm::raw_os_ostream debug(std::cerr);
-//    lmainModule->print(debug, 0);
-    lmainModule->print(ostream, 0);
-    buf = ostream.str();
-    QByteArray bufData(buf.c_str(), buf.size());
     fixMultipleTypeDeclarations(bufData);
 
-    llvm::SMDiagnostic lerr;
-    llvm::LLVMContext &lctx = llvm::getGlobalContext();
-#if LLVM_VERSION_MINOR < 7
-    llvm::Module * reparsedModule = llvm::ParseAssemblyString(bufData.constData(),
-                                                              0,
-                                                              lerr, lctx);
-#else
-    std::unique_ptr<llvm::Module> reparsedModule =
-            llvm::parseAssemblyString(bufData.constData(),
-                                      lerr,
-                                      lctx);
-#endif
+    LLVM::ModuleRef reparsedModule =
+            LLVM::ModuleRef::fromTextRepresentation(
+                bufData, d->context_);
 
-    if (reparsedModule == 0) {
-#if LLVM_VERSION_MINOR >= 2
-        lerr.print("kumir2-llvmc", llvm::errs());
-#else
-        std::cerr << "Something wrong in LLVM code" << std::endl;
-#endif
-        qApp->setProperty("returnCode", 5);
-        qApp->quit();
-        return;
-    }
-    buf.clear();
 
     if (linkAllUnits_) {
         for (int i=0; i<usedUnits.size(); i++) {
-            std::string localErr;
-#if LLVM_VERSION_MINOR < 7
-            llvm::Linker::LinkModules(reparsedModule, usedUnits[i], 0, &localErr);
-#else
-            llvm::Linker::LinkModules(reparsedModule.get(), usedUnits[i].get());
-#endif
-            if (localErr.length() > 0) {
-                std::cerr << localErr << std::endl;
-                qApp->setProperty("returnCode", 5);
-                qApp->quit();
-                return;
-            }
+            usedUnits[i].linkInto(reparsedModule);
         }
     }
 
     if (linkStdLib_) {
-        std::string localErr;
-#if LLVM_VERSION_MINOR < 7
-        llvm::Linker::LinkModules(reparsedModule, d->getStdLibModule(), 0, &localErr);
-#else
-        llvm::Linker::LinkModules(reparsedModule.get(), d->getStdLibModule());
-#endif
-        if (localErr.length() > 0) {
-            std::cerr << localErr << std::endl;
-            qApp->setProperty("returnCode", 5);
-            qApp->quit();
-            return;
-        }
+        d->getStdLibModule().linkInto(reparsedModule);
     }
 
     if (textForm_) {
-        std::string tbuf;
-        llvm::raw_string_ostream tstream(tbuf);
-        reparsedModule->print(tstream, 0);
-        tbuf = tstream.str();
-        QByteArray tBufData(tbuf.c_str(), tbuf.size());
-        out = tBufData;
+        out = reparsedModule.textRepresentation();
         mimeType = "text/llvm";
         fileSuffix = ".ll";
         return;
     }
 
-    buf.clear();
-    llvm::raw_string_ostream bstream(buf);
-#if LLVM_VERSION_MINOR < 7
-    llvm::WriteBitcodeToFile(reparsedModule, bstream);
-#else
-    llvm::WriteBitcodeToFile(reparsedModule.get(), bstream);
-#endif
-    bstream.flush();
-    buf = bstream.str();
-    const QByteArray binBufData(buf.c_str(), buf.size());
+    const QByteArray binBufData = reparsedModule.binaryRepresentation();
+
     if (!runToolChain_) {
         out = binBufData;
         mimeType = "binary/llvm";
