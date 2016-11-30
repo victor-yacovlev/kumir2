@@ -246,6 +246,8 @@ int Plugin::checkTaskFromConsole(const int taskID)
         }
         if(task.fields.count()==0)
         {
+            qDebug()<<"Check wo isps";
+            selectNext(&task);
             runner->runProgramInCurrentThread(true);
             if(error=="")error=runner->error();
             mark=runner->valueStackTopItem().toInt();
