@@ -16,8 +16,9 @@ PRIMARY_KWD = ("def", "for", "class", "import", "from", "with", "global", "None"
 color_marks = [[]]
 line_ranks = [0]
 
-def set_color_marks_and_ranks(source_code_str):
-    run_static_analisys(source_code_str)
+def set_color_marks_and_ranks(source_code_str, syntax_only = False):
+    if not syntax_only:
+        run_static_analisys(source_code_str)
     global color_marks
     global line_ranks
     color_marks = [[]]

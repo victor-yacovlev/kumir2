@@ -53,6 +53,12 @@ class Visitor(ast.NodeVisitor):
         except CompileError as error:
             self.errors.append(error)
 
+    def visit_Call(self, node):
+        try:
+            self.resolve_expression_type(node)
+        except CompileError as error:
+            self.errors.append(error)
+
     def visit_If(self, node):
         ## Mark all children as conditional
         for item in node.body:
@@ -83,7 +89,8 @@ class Visitor(ast.NodeVisitor):
             symbol.typedef = self.typetable.lookup_by_name("module")
             symbol.lineno = node.lineno
             symbol.col_offset = node.col_offset
-            module_symbol_table = build_symbol_table_for_module(self.path, target_name, entry.name,  self.typetable, self.functable)
+            ns = target_name if not self.namespace else self.namespace + "." + target_name
+            module_symbol_table = build_symbol_table_for_module(self.path, ns, entry.name,  self.typetable, self.functable)
             if module_symbol_table:
                 setattr(symbol, "module_symbol_table", module_symbol_table)
 
@@ -410,10 +417,16 @@ class Visitor(ast.NodeVisitor):
                 if not instance_type:
                     return None
                 assert isinstance(instance_type, TypeDef)
+
+                def resolve_fq_name(n):
+                    if isinstance(n, ast.Attribute):
+                        return resolve_fq_name(n.value) + "." + n.attr
+                    elif isinstance(n, ast.Name):
+                        return n.id
+
                 if isinstance(instance_type, ModuleTypeDef):
                     ## module function
-                    namespace = node.func.value.id
-                    fully_qualified_name = namespace + "." + node.func.attr
+                    fully_qualified_name = resolve_fq_name(node.func)
                     methods = self.functable.lookup_functions_by_name(fully_qualified_name)
                 else:
                     ## class method

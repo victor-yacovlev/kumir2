@@ -275,7 +275,7 @@ LineProp PythonAnalizerInstance::lineProp(int lineNo, const QString &text) const
 {
     LineProp fake(text.length());
     fake.fill((LexemType)0);
-    return fake;
+//    return fake;
     if (!py_) {
         return fake;
     }
