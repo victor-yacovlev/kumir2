@@ -39,8 +39,8 @@ SystemOpenFileSettings::SystemOpenFileSettings(QWidget *parent) :
 
 void SystemOpenFileSettings::init()
 {
-    const bool skipDialog = sett_->value("SkipOpenDialog", false).toBool();
-    const QString lastKey = sett_->value("LastSelected", "").toString();
+    const bool skipDialog = sett_->value("SkipOpenDialog", true).toBool();
+    const QString lastKey = sett_->value("LastSelected", "kumir2-classic").toString();
     QRadioButton * btn = chooseAtRunOption_;
     if (skipDialog && lastKey.length() > 0) {
         foreach (const Application & app, applications_) {

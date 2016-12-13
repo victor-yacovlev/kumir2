@@ -36,7 +36,7 @@ public:
 signals:
 
 public slots:
-    inline void setLinkEnabled(bool on) { linkEnabled_ = on; }
+    inline void setLinkEnabled(bool on) { _linkEnabled = on; }
 
 private slots:
     void handleSvgButtonPressed(const QString & svgId);
@@ -66,15 +66,15 @@ private:
     bool btnScrollUpEnabled() const;
     bool btnScrollDownEnabled() const;
 
-    QMap<QRectF, QString> buttons_;
-    QString buttonHoverId_;
-    QString buttonPressId_;
-    bool linkEnabled_;
-    QRectF linkOnRect_;
-    QRectF linkOffRect_;
+    QMap<QRectF, QString> _buttons;
+    QString _buttonHoverId;
+    QString _buttonPressId;
+    bool _linkEnabled;
+    QRectF _linkOnRect;
+    QRectF _linkOffRect;
 
-    LineList loggerText_;
-    int loggerOffset_;
+    LineList _loggerText;
+    int _loggerOffset;
 
 signals:
     void buttonPressed(const QString & svgId);

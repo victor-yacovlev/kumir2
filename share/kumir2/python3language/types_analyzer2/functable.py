@@ -1,8 +1,8 @@
 import copy
 
 from types_analyzer2.typechecks import type_can_be_matched
-from . import basic_type_check
-from . import typetable
+# from . import basic_type_check
+# from . import typetable
 from .type_analizer_errors import *
 from .typedefs import *
 from .funcdefs import *

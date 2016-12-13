@@ -21,6 +21,12 @@ QSize TabWidget::minimumSizeHint() const
     return result;
 }
 
+void TabWidget::setFont(const QFont &font)
+{
+    QTabWidget::setFont(font);
+    tabBar()->setFont(font);
+}
+
 void TabWidget::disableTabs()
 {
     tabBar()->setEnabled(false);

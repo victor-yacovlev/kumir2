@@ -174,6 +174,11 @@ void Python3LanguagePlugin::setStartPageTitleChangeHandler(const QObject *, cons
 
 }
 
+RunInterface::RunMode Python3LanguagePlugin::currentRunMode() const
+{
+    return runner_->currentRunMode();
+}
+
 
 bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {
@@ -355,10 +360,7 @@ void Python3LanguagePlugin::removeBreakpoint(const QString &fileName, quint32 li
 
 } // namespace Python3Language
 
-Shared::RunInterface::RunMode Python3Language::Python3LanguagePlugin::currentRunMode() const
-{
-    return runner_->currentRunMode();
-}
+
 
 #if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(Python3Language::Python3LanguagePlugin)

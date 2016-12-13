@@ -3,12 +3,15 @@
 
 #include <QDialog>
 #include <QTableWidgetItem>
+#include <QSharedPointer>
+#include "macro.h"
 
 namespace Editor {
 
 namespace Ui {
 class MacroEditor;
 }
+
 
 class MacroEditor : public QDialog
 {
@@ -18,7 +21,7 @@ public:
     explicit MacroEditor(QWidget *parent = 0);
     ~MacroEditor();
     void setUsedSymbols(const QString &symbols, const QStringList & names);
-    void setMacro(class Macro * macro);
+    void setMacro(QSharedPointer<Macro> macro);
 
 private slots:
     void checkMacroTitle(const QString & title);
@@ -26,7 +29,7 @@ private slots:
     
 private:
     Ui::MacroEditor *ui;
-    class Macro * macro_;
+    QSharedPointer<Macro> macro_;
 };
 
 

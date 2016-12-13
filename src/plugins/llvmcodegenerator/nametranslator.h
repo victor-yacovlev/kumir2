@@ -1,14 +1,12 @@
 #ifndef LLVMCODEGENERATOR_NAMETRANSLATOR_H
 #define LLVMCODEGENERATOR_NAMETRANSLATOR_H
 
-#include <string>
+#include <QByteArray>
 #include <QString>
 #include <QMap>
 #include <QStack>
 
 namespace LLVMCodeGenerator {
-
-typedef std::string CString;
 
 class NameTranslator
 {
@@ -17,22 +15,22 @@ public:
     void reset();
     void beginNamespace();
     void endNamespace();
-    CString add(const QString & name);
-    CString addGlobal(const QString &name);
-    CString find(const QString & name) const;
+    QByteArray add(const QString & name);
+    QByteArray addGlobal(const QString &name);
+    QByteArray find(const QString & name) const;
     static QString suggestName(const QString &x);
-    static CString screenUtf8Name(const QString &x);
+    static QByteArray screenUtf8Name(const QString &x);
 private:
     typedef struct {
         QString sName;
-        CString cName;
-        QMap<CString,QString> rmap;
-        QMap<QString,CString> map;
+        QByteArray cName;
+        QMap<QByteArray,QString> rmap;
+        QMap<QString,QByteArray> map;
     } Namespace;
 
     Namespace& ns();
 
-    bool inUse(const CString &x) const;
+    bool inUse(const QByteArray &x) const;
     static bool isReservedName(const QString &x);
 
     QStack<Namespace> l_;

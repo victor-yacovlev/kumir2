@@ -19,6 +19,7 @@
         },
         {
             "name": {"ascii": "move to", "ru_RU": "сместиться в точку"},
+            "async": false,
             "arguments": [
                 {"baseType": "double", "name": "x"},
                 {"baseType": "double", "name": "y"}
@@ -26,6 +27,7 @@
         },
         {
             "name": {"ascii": "move by", "ru_RU": "сместиться на вектор"},
+            "async": false,
             "arguments": [
                 {"baseType": "double", "name": "dX"},
                 {"baseType": "double", "name": "dY"}
@@ -73,19 +75,34 @@
             "settings": {
                 "BackColor": {
                         "type": "color",
-                        "default": "#FFFFFF",
+                        "default": "#99FF99",
                         "title": {"ascii": "Background color", "ru_RU": "Цвет фона"}
                 },
                 "LineColor": {
                         "type": "color",
-                        "default": "#C8C800",
+                        "default": "#669966",
                         "title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
                 },
                 "AxisColor": {
                         "type": "color",
-                        "default": "#C8C800",
+                        "default": "#999900",
                         "title": {"ascii": "Axis color", "ru_RU": "Цвет осей"}
+                },
+                "AxisWidth": {
+                    "type": "int",
+                    "default": "2",
+                    "title": {"ascii": "Axis width", "ru_RU": "Толщина осей"}
+                },
+                "NetWidth": {
+                    "type": "int",
+                    "default": "1",
+                    "title": {"ascii": "Net width", "ru_RU": "Толщина сетки"}
+                },
+                "LineWidth": {
+                    "type": "int",
+                    "default": "4",
+                    "title": {"ascii": "Line width", "ru_RU": "Толщина линий"}
                 }
 
-        }  
+        }
 }

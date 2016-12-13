@@ -7,13 +7,16 @@ extern "C" {
 #include <frameobject.h>
 }
 
-#include "interfaces/runinterface.h"
+#include <interfaces/runinterface.h>
+
 
 namespace Python3Language {
 
 class InterpreterCallback;
 class ActorsHandler;
 class VariablesModel;
+
+using Shared::RunInterface;
 
 typedef QPair<QString,quint32> BreakpointLocation;
 struct BreakpointData {
@@ -51,6 +54,7 @@ public /*methods*/:
     void insertSingleHitBreakpoint(const BreakpointLocation &location);
     void addOrChangeBreakpoint(const BreakpointLocation &location, const BreakpointData &data);
     void removeBreakpoint(const BreakpointLocation &location);
+
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -98,7 +102,9 @@ private /*methods*/:
 
 private /*fields*/:
     static PythonRunThread* self;
+
     QStack<Shared::RunInterface::RunMode> runMode_;
+
     InterpreterCallback * callback_;
     ActorsHandler* actorsHandler_;
     QString pythonPath_;

@@ -163,8 +163,8 @@ QSize StatusBar::keyboardLayoutItemSize() const
 
 QSize StatusBar::cursorPositionItemSize() const
 {
-    static const QString text = tr("Row: ww, Col.: ww");
-    static const int textW = statusBarFontMetrics().width(text);
+    const QString text = tr("Row: ww, Col.: ww");
+    const int textW = statusBarFontMetrics().width(text);
     return QSize(textW + 2 * ItemPadding,
                  qMax(14, fontHeight()));
 }
@@ -173,7 +173,7 @@ QSize StatusBar::modeItemSize() const
 {
     static QStringList items = QStringList()
             << tr("Edit") << tr("Analisys") << tr("Run") << tr("Pause");
-    static int maxTextWidth = 0;
+    int maxTextWidth = 0;
     const int textHeight = fontHeight();
     if (0 == maxTextWidth) {
         foreach (const QString &text, items) {
@@ -192,13 +192,13 @@ QSize StatusBar::counterItemSize() const
     static const QString stepsDoneText = tr("wwwww steps done") + "wwwwww";
     const int textHeight = fontHeight();
 
-    static int maxTextWidthEdit = 0;
+    int maxTextWidthEdit = 0;
     if (0 == maxTextWidthEdit) {
         maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(errorsText));
         maxTextWidthEdit = qMax(maxTextWidthEdit, statusBarFontMetrics().width(noErrorsText));
     }
 
-    static const int textWidthOther = statusBarFontMetrics().width(stepsDoneText);
+    const int textWidthOther = statusBarFontMetrics().width(stepsDoneText);
 
     const int textWidth = state_ == PluginInterface::GS_Unlocked
             ? maxTextWidthEdit : textWidthOther;
@@ -221,10 +221,10 @@ QSize StatusBar::messageItemSize() const
 QFont StatusBar::statusBarFont() const
 {
     QFont fnt = font();
-#ifdef Q_OS_LINUX
-    fnt.setPointSize(9);
-#else
-    fnt.setPointSize(12);
+#ifndef Q_WS_X11
+    int MinPointSize = 12;
+    int SystemPointSize = fnt.pointSize();
+    fnt.setPointSize(qMax(MinPointSize, SystemPointSize));
 #endif
     return fnt;
 }
@@ -242,7 +242,7 @@ int StatusBar::fontHeight() const
      * so it is required to cache it once
      */
 
-    static int result = 0;
+    int result = 0;
     if (0 == result) {
         result = statusBarFontMetrics().height();
     }

@@ -900,6 +900,9 @@ class MenuItem:
         else:
             self.icon = None
 
+    def __repr__(self):
+        return self.title.get_ascii_value()
+
 
 class Gui:
     """
@@ -922,6 +925,10 @@ class Gui:
         if "menus" in json_node:
             for menu in json_node["menus"]:
                 self.menus.append(MenuItem(menu))
+        if "optional" in json_node:
+            self.optional = json_node["optional"]
+        else:
+            self.optional = False
 
     def get_icon_name(self, role):
         """
@@ -1160,12 +1167,13 @@ class Settings:
         :return:                C++ code for settings page creation
         """
         result = "QMap<QString,Widgets::DeclarativeSettingsPage::Entry> entries;\n"
+        self._entries.sort(key=lambda entry: entry._key)
         for entry in self._entries:
             assert isinstance(entry, SettingsEntry)
             result += entry.get_entry_cpp_implementation("entries")
         result += """
 bool guiAvailable = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
 guiAvailable = 0 != getenv("DISPLAY");
 #endif
 if (guiAvailable) {
@@ -1488,10 +1496,15 @@ private:
     , asyncRunThread_(nullptr)
     , settingsPage_(nullptr)
 {
+    bool hasGuiThread = true;
+#ifdef Q_OS_LINUX
+    hasGuiThread = getenv("DISPLAY") != 0;
+#endif
     QObject::connect(
         this, SIGNAL(asyncRun(quint32,QVariantList)),
         this, SLOT(asyncEvaluate(quint32,QVariantList)),
-        Qt::QueuedConnection
+        //hasGuiThread? Qt::QueuedConnection :
+        Qt::DirectConnection
     );
 }
         """ % (self.class_name, self.class_name)
@@ -1506,6 +1519,8 @@ private:
         """
         if self._module.gui:
             guiRequired = "true"
+            if self._module.gui.optional:
+                guiRequired = "false"
         else:
             guiRequired = "false"
         return """
@@ -1514,6 +1529,18 @@ private:
     return %s;
 }
         """ % (self.class_name, guiRequired)
+
+    # noinspection PyPep8Naming
+    def notifyGuiReadyCppImplementation(self):
+        if self._module.gui:
+            return """
+/* public */ void %s::notifyGuiReady()
+{
+    module_->handleGuiReady();
+}
+            """ % (self.class_name)
+        else:
+            return "\n"
 
     # noinspection PyPep8Naming
     def asciiModuleNameCppImplementation(self):
@@ -2144,7 +2171,7 @@ private:
         """
         body = "module_ = new %s(this);\n" % self._module.get_module_cpp_class_name()
         methods = self._module.methods
-        async_methods = filter(lambda method: method.async, methods)
+        async_methods = list(filter(lambda method: method.async, methods))
         if self._module.settings:
             body += self._module.settings.get_settings_page_creation("settingsPage_").strip() + "\n\n"
         if async_methods:
@@ -2198,9 +2225,9 @@ private:
         return """
 /* protected */ void %s::msleep(unsigned long secs)
 {
-    if (QThread::currentThread()==asyncRunThread_) {
+    //if (QThread::currentThread()==asyncRunThread_) {
         asyncRunThread_->amsleep(secs);
-    }
+    //}
 }
         """ % self.class_name
 
@@ -2655,7 +2682,7 @@ class ModuleBaseCppClass(CppClassBase):
     : QObject(parent)
 {
     bool hasGui = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     hasGui = getenv("DISPLAY")!=0;
 #endif
     if (hasGui) {
@@ -2722,6 +2749,14 @@ class ModuleBaseCppClass(CppClassBase):
             """ % self.class_name
 
     # noinspection PyPep8Naming
+    def handleGuiReadyCppImplementation(self):
+        return """
+/* public virtual */ void %s::handleGuiReady()
+{
+}
+        """ % self.class_name
+
+    # noinspection PyPep8Naming
     def moduleMenusCppImplementation(self):
         """
         Creates moduleMenus implementation
@@ -2738,7 +2773,7 @@ class ModuleBaseCppClass(CppClassBase):
 /* public */ QList<QMenu*> %s::moduleMenus() const
 {
     bool hasGui = true;
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     hasGui = getenv("DISPLAY")!=0;
 #endif
     if (hasGui) {

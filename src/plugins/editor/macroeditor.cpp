@@ -52,7 +52,7 @@ void MacroEditor::setUsedSymbols(const QString &symbols, const QStringList & nam
     }
 }
 
-void MacroEditor::setMacro(Macro *macro)
+void MacroEditor::setMacro(QSharedPointer<Macro> macro)
 {
     static const Qt::ItemFlags Enabled = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     macro_ = macro;

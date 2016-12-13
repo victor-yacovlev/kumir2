@@ -439,6 +439,7 @@ bool KumirRunPlugin::isTestingRun() const
 
 void KumirRunPlugin::terminate()
 {
+    common_->call.terminate();
     if (gui_)
         gui_->delay.stop();
     pRun_->stop();
@@ -470,6 +471,12 @@ void KumirRunPlugin::terminateAndWaitForStopped()
         terminate();
     }
     pRun_->wait();
+#ifdef Q_OS_LINUX
+    bool gui = getenv("DISPLAY")!=0;
+    if (gui) {
+        usleep(50000);
+    }
+#endif
 }
 
 
@@ -585,7 +592,7 @@ void KumirRunPlugin::prepareGuiRun()
 {
     if (! common_)
         prepareCommonRun();
-
+    qDebug()<<"Prepare gui run";
     gui_ = new GuiFunctors;
 
     gui_->input.setRunnerInstance(pRun_);
@@ -642,6 +649,21 @@ void KumirRunPlugin::setStdOutTextStream(QTextStream *stream)
     }
 }
 
+void KumirRunPlugin::runProgramInCurrentThread(bool useTestingEntryPoint)
+{
+    if (useTestingEntryPoint) {
+        pRun_->setEntryPointToTest();
+    }
+    else {
+        pRun_->setEntryPointToMain();
+    }
+    pRun_->vm->setConsoleInputBuffer(simulatedInputBuffer_? simulatedInputBuffer_ : defaultInputBuffer_);
+    pRun_->vm->setConsoleOutputBuffer(simulatedOutputBuffer_? simulatedOutputBuffer_ : defaultOutputBuffer_);
+    pRun_->reset();
+    pRun_->runInCurrentThread();
+    checkForErrorInConsole();
+}
+
 QList<ExtensionSystem::CommandLineParameter>
 KumirRunPlugin::acceptableCommandLineParameters() const
 {
@@ -688,11 +710,14 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
     qRegisterMetaType< QList<QVariant::Type> >("QList<QVariant::Type>");
     qRegisterMetaType<Shared::RunInterface::StopReason>("Shared::RunInterface::StopReason");
 
+    if (configurationArguments.contains("console")) {
+        prepareConsoleRun();
+    }
+    else {
+        prepareGuiRun();
+    }
 
     if (ExtensionSystem::PluginManager::instance()->startupModule()==this) {
-
-        prepareConsoleRun();
-
         if (runtimeArguments.hasFlag(QChar('p'))) {
             console_->returnMainValue.setQuietMode(true);
             console_->getMainArgument.setQuietMode(true);
@@ -750,9 +775,6 @@ QString KumirRunPlugin::initialize(const QStringList &configurationArguments,
             }
         }
     }
-    else {
-        prepareGuiRun();
-    }
 
     return "";
 }
@@ -801,6 +823,7 @@ void KumirRunPlugin::start()
             pRun_->start();
             pRun_->wait();
             checkForErrorInConsole();
+            stop();
         }
         else {
             startTimer(0); // start thread after event loop started

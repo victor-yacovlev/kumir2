@@ -100,6 +100,11 @@ void PythonRunThread::removeBreakpoint(const BreakpointLocation &location)
         breakpoints_.remove(location);
 }
 
+RunInterface::RunMode PythonRunThread::currentRunMode() const
+{
+    return runMode_.isEmpty() ? RunInterface::RM_Idle : runMode_.top();
+}
+
 void PythonRunThread::setStdInStream(QTextStream *stream)
 {
     callback_->setStdInStream(stream);
@@ -110,15 +115,6 @@ void PythonRunThread::setStdOutStream(QTextStream *stream)
     callback_->setStdOutStream(stream);
 }
 
-RunInterface::RunMode PythonRunThread::currentRunMode() const
-{
-    if (runMode_.isEmpty()) {
-        return RunInterface::RM_Idle;
-    }
-    else {
-        return runMode_.top();
-    }
-}
 
 void PythonRunThread::releaseSemaphores()
 {

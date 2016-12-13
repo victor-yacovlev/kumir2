@@ -280,6 +280,8 @@ void OutputFunctor::operator ()(
         }
     }
     QString data = QString::fromStdWString(os.getBuffer());
+    // Fix fake 152 symbol used by CP1251
+    data = data.replace(QChar(152), QChar(' '));
     emit requestOutput(data);
     Util::SleepFunctions::msleep(10);
 }

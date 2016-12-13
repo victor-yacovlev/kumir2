@@ -52,10 +52,14 @@ void EditorInstance::lock()
     if (toggleBreakpoint_)
         toggleBreakpoint_->setEnabled(false);
     for (int i=0; i<userMacros_.size(); i++) {
-        userMacros_[i].action->setEnabled(false);
+        QSharedPointer<Macro> macro = userMacros_[i];
+        QAction * action = macro->action;
+        action->setEnabled(false);
     }
     for (int i=0; i<systemMacros_.size(); i++) {
-        systemMacros_[i].action->setEnabled(false);
+        QSharedPointer<Macro> macro = systemMacros_[i];
+        QAction * action = macro->action;
+        action->setEnabled(false);
     }
 }
 
@@ -71,10 +75,14 @@ void EditorInstance::unlock()
     if (toggleBreakpoint_)
         toggleBreakpoint_->setEnabled(true);
     for (int i=0; i<userMacros_.size(); i++) {
-        userMacros_[i].action->setEnabled(true);
+        QSharedPointer<Macro> macro = userMacros_[i];
+        QAction * action = macro->action;
+        action->setEnabled(true);
     }
     for (int i=0; i<systemMacros_.size(); i++) {
-        systemMacros_[i].action->setEnabled(true);
+        QSharedPointer<Macro> macro = systemMacros_[i];
+        QAction * action = macro->action;
+        action->setEnabled(true);
     }
 }
 
@@ -204,21 +212,21 @@ void EditorInstance::setLineHighlighted(int lineNo, const QColor &color, quint32
 
 void EditorInstance::disableInsertActions()
 {
-    foreach (Macro m , userMacros_) {
-        m.action->setEnabled(false);
+    foreach (QSharedPointer<Macro> m , userMacros_) {
+        m->action->setEnabled(false);
     }
-    foreach (Macro m , systemMacros_) {
-        m.action->setEnabled(false);
+    foreach (QSharedPointer<Macro> m , systemMacros_) {
+        m->action->setEnabled(false);
     }
 }
 
 void EditorInstance::enableInsertActions()
 {
-    foreach (Macro m , userMacros_) {
-        m.action->setEnabled(true);
+    foreach (QSharedPointer<Macro> m , userMacros_) {
+        m->action->setEnabled(true);
     }
-    foreach (Macro m , systemMacros_) {
-        m.action->setEnabled(true);
+    foreach (QSharedPointer<Macro> m , systemMacros_) {
+        m->action->setEnabled(true);
     }
 }
 
@@ -296,12 +304,13 @@ void EditorInstance::loadMacros()
 
         foreach (const KPlugin* plugin, actorPlugins) {
             ActorInterface * actor = qobject_cast<ActorInterface*>(plugin);
-            const QString canonicalName = actorCanonicalName<QString>(actor->asciiModuleName());
+            QString canonicalName = actorCanonicalName<QString>(actor->asciiModuleName());
+            canonicalName.remove(" ");
             const QString actorMacrosFileName = plugin_->myResourcesDir().absoluteFilePath(
                         "macros-" + analizerName + "-" + canonicalName + ".xml"
                         );
             if (QFile::exists(actorMacrosFileName)) {
-                systemMacros_.push_back(Macro());
+                systemMacros_.push_back(QSharedPointer<Macro>(new Macro()));
                 systemMacros_ += loadFromFile(actorMacrosFileName);
             }
         }
@@ -356,66 +365,72 @@ ExtensionSystem::SettingsPtr EditorInstance::mySettings() const
     return plugin_->mySettings();
 }
 
+static bool operator<(QSharedPointer<Macro> a, QSharedPointer<Macro> b) {
+    return a->key.unicode() < b->key.unicode();
+}
+
 void EditorInstance::updateInsertMenu()
 {
     loadMacros();
     insertMenu_->clear();
     const QString escComa = "Esc, ";
-    for (int i=0; i<systemMacros_.size(); i++) {
-        Macro m = systemMacros_[i];
-        if (m.title.isEmpty()) {
+    QVector< QList<QSharedPointer<Macro> > > groups(2);
+    for (int i=0; i<systemMacros_.size(); ++i) {
+        QSharedPointer<Macro> m = systemMacros_[i];
+        int groupNo = m->showInLastBlock ? 1 : 0;
+        groups[groupNo].append(m);
+    }
+    qSort(groups[1]);
+    for (int z=0; z<2; ++z) {
+        QList<QSharedPointer<Macro> > group = groups[z];
+        if (1==z && groups[1].size() > 0) {
+            insertMenu_->addSeparator();
+        }
+    for (int i=0; i<group.size(); i++) {
+        QSharedPointer<Macro> m = group[i];
+        if (m->title.isEmpty()) {
             // Separator
-            systemMacros_[i].action = insertMenu_->addSeparator();
+            m->action = insertMenu_->addSeparator();
         }
         else {
-            m.action = new QAction(m.title, insertMenu_);
-            systemMacros_[i].action = m.action;
-            insertMenu_->addAction(m.action);
-            connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
-            if (!m.key.isNull()) {
-//                const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-                const QKeySequence ks2(escComa + QString(m.key));
-                m.action->setProperty("fakeShortcut", ks2.toString());
-//                if (ks == ks2) {
-//                    m.action->setShortcut(ks);
-//                }
-//                else {
-//                    const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
-//                    m.action->setShortcuts(shortcuts);
-//                }
+            m->action = new QAction(m->title, insertMenu_);
+            insertMenu_->addAction(m->action);
+            connect(m->action, SIGNAL(triggered()), this, SLOT(playMacro()));
+            if (!m->key.isNull()) {
+                const QKeySequence ks2(escComa + QString(m->key));
+                m->action->setProperty("fakeShortcut", ks2.toString());
             }
-            else if (uint(m.extKey) != 0u) {
+            else if (uint(m->extKey) != 0u) {
                 QString repr;
-                if (m.extKey == Qt::Key_Left)
+                if (m->extKey == Qt::Key_Left)
                     repr = "Left";
-                else if (m.extKey == Qt::Key_Right)
+                else if (m->extKey == Qt::Key_Right)
                     repr = "Right";
-                else if (m.extKey == Qt::Key_Up)
+                else if (m->extKey == Qt::Key_Up)
                     repr = "Up";
-                else if (m.extKey == Qt::Key_Down)
+                else if (m->extKey == Qt::Key_Down)
                     repr = "Down";
-                else if (m.extKey == Qt::Key_Space)
+                else if (m->extKey == Qt::Key_Space)
                     repr = "Space";
                 const QKeySequence ks(escComa + repr);
-                m.action->setShortcut(ks);
+                m->action->setShortcut(ks);
             }
-
         }
+    }
     }
     if (!userMacros_.isEmpty())
         insertMenu_->addSeparator();
     for (int i=0; i<userMacros_.size(); i++) {
-        Macro m = userMacros_[i];
-        m.action = new QAction(m.title, insertMenu_);
-        if (!m.key.isNull()) {
-            const QKeySequence ks(escComa+QString(Utils::latinKey(m.key)));
-            const QKeySequence ks2(escComa + QString(m.key));
+        QSharedPointer<Macro> m = userMacros_[i];
+        m->action = new QAction(m->title, insertMenu_);
+        if (!m->key.isNull()) {
+            const QKeySequence ks(escComa+QString(Utils::latinKey(m->key)));
+            const QKeySequence ks2(escComa + QString(m->key));
             const QList<QKeySequence> shortcuts = QList<QKeySequence>() << ks << ks2;
-            m.action->setShortcuts(shortcuts);
+            m->action->setShortcuts(shortcuts);
         }
-        userMacros_[i].action = m.action;
-        insertMenu_->addAction(m.action);
-        connect(m.action, SIGNAL(triggered()), this, SLOT(playMacro()));
+        insertMenu_->addAction(m->action);
+        connect(m->action, SIGNAL(triggered()), this, SLOT(playMacro()));
     }
     editMacros_->setEnabled(userMacros_.size() > 0);
     Widgets::CyrillicMenu * insMenu = qobject_cast<Widgets::CyrillicMenu*>(insertMenu_);
@@ -429,15 +444,15 @@ bool EditorInstance::tryEscKeyAction(const QString &text)
     if (text.length()!=1 && text.at(0).toLatin1()) {
         return false; // workarund required only for non-latin keys
     }
-    const QList<Macro> allMacros = systemMacros_ + userMacros_;
+    const QList<QSharedPointer<Macro> > allMacros = systemMacros_ + userMacros_;
     const QChar ch = text.at(0).toUpper();
     const QChar altCh = Utils::cyrillicKey(ch).toUpper();
-    foreach (const Macro & m, allMacros) {
-        bool keyMatch = m.key.toUpper() == ch;
-        bool altKeyMatch = m.key.toUpper() == altCh;
-        bool enabled = m.action && m.action->isEnabled();
+    foreach (QSharedPointer<Macro> m, allMacros) {
+        bool keyMatch = m->key.toUpper() == ch;
+        bool altKeyMatch = m->key.toUpper() == altCh;
+        bool enabled = m->action && m->action->isEnabled();
         if ( (keyMatch || altKeyMatch) && enabled) {
-            m.action->trigger();
+            m->action->trigger();
             return true;
         }
     }
@@ -470,18 +485,18 @@ void EditorInstance::playMacro()
 {
     QAction * a = qobject_cast<QAction*>(sender());
     Q_CHECK_PTR(a);
-    Macro m;
+    QSharedPointer<Macro> m;
     bool found = false;
-    foreach (Macro mm, systemMacros_) {
-        if (mm.action==a) {
+    foreach (QSharedPointer<Macro> mm, systemMacros_) {
+        if (mm->action==a) {
             found = true;
             m = mm;
             break;
         }
     }
     if (!found) {
-        foreach (Macro mm, userMacros_) {
-            if (mm.action==a) {
+        foreach (QSharedPointer<Macro> mm, userMacros_) {
+            if (mm->action==a) {
                 found = true;
                 m = mm;
                 break;
@@ -489,9 +504,9 @@ void EditorInstance::playMacro()
         }
     }
     if (found) {
-        document()->undoStack()->beginMacro(m.title);
-        for (int i=0; i<m.commands.size(); i++) {
-            cursor_->evaluateCommand(m.commands[i]);
+        document()->undoStack()->beginMacro(m->title);
+        for (int i=0; i<m->commands.size(); i++) {
+            cursor_->evaluateCommand(m->commands[i]);
         }
         document()->undoStack()->endMacro();
         plane_->updateScrollBars();
@@ -1061,29 +1076,27 @@ void EditorInstance::toggleRecordMacro(bool on)
         cursor_->startRecordMacro();
     }
     else {
-        Macro * macro = cursor_->endRecordMacro();
+        QSharedPointer<Macro> macro = cursor_->endRecordMacro();
         if (macro->commands.size() > 0) {
             MacroEditor * editor = new MacroEditor(this);
             editor->setWindowTitle(tr("New keyboard sequence..."));
-            QList<Macro> allMacros = systemMacros_ + userMacros_;
+            QList<QSharedPointer<Macro> > allMacros = systemMacros_ + userMacros_;
             QString usedLetters;
             QStringList usedNames;
-            foreach(Macro m, allMacros) {
-                if (!m.key.isNull()) {
-                    usedLetters.push_back(m.key);
-                    usedNames.push_back(m.title);
+            foreach(QSharedPointer<Macro> m, allMacros) {
+                if (!m->key.isNull()) {
+                    usedLetters.push_back(m->key);
+                    usedNames.push_back(m->title);
                 }
             }
             editor->setUsedSymbols(usedLetters, usedNames);
             editor->setMacro(macro);
             if (editor->exec() == QDialog::Accepted) {
-                Macro newMacro = *macro;
-                userMacros_.push_back(newMacro);
+                userMacros_.push_back(macro);
                 plugin_->updateUserMacros(analizerPlugin_ ? analizerPlugin_->defaultDocumentFileNameSuffix() : QString(), userMacros_, true);
             }
             editor->deleteLater();
-        }
-        delete macro;
+        }        
     }
     emit recordMacroChanged(on);
 }

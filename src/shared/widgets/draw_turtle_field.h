@@ -40,8 +40,8 @@ public:
     }
     void updateSelf(double netStepX,double netStepY)
     {
-        if(50/Zoom>=1)zoomText->setPlainText("1:"+QString::number(50/Zoom));
-        else zoomText->setPlainText(QString::number(Zoom/50)+":1");
+        if(50/Zoom>=1)zoomText->setPlainText("1:"+QString::number(50/Zoom,'f',2));
+        else zoomText->setPlainText(QString::number(Zoom/50,'f',2)+":1");
         qDebug()<<"Zoom"<<Zoom;
         //double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
         if(isAutonet->isChecked()){
@@ -55,6 +55,12 @@ public:
         
 
         netStepXS->setSingleStep(Zoom/500);
+        }else
+        {
+            netStepXS->setMaximum(99999);
+            netStepXS->setMinimum(0.00001);
+          //  netStepXS->setValue(netStepX);
+           // netStepYS->setValue(netStepY);
         }
         update();
     }

@@ -136,38 +136,38 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
         return error;
 
     bool console = false;
-#ifdef Q_WS_X11
+#ifdef Q_OS_UNIX
     console = getenv("DISPLAY")==0;
 #endif
     //    console = true; // !!! was here for debug purposes
-    if (console) {
-        // Remove GUI plugins
-        QList<PluginSpec>::iterator it;
-        for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
-            PluginSpec spec = (*it);
-            bool forceLoad = false;
-            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
-                forceLoad = true;
-            }
-            if (spec.gui && !forceLoad) {
-                names.removeAll(spec.name);
-                QList<PluginRequest>::iterator rit;
-                for (rit=requests.begin(); rit!=requests.end(); ) {
-                    PluginRequest r = *(rit);
-                    if (r.name==spec.name) {
-                        rit = requests.erase(rit);
-                    }
-                    else {
-                        rit ++;
-                    }
-                }
-                it = pImpl_->specs.erase(it);
-            }
-            else {
-                it++;
-            }
-        }
-    }
+//    if (console) {
+//        // Remove GUI plugins
+//        QList<PluginSpec>::iterator it;
+//        for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
+//            PluginSpec spec = (*it);
+//            bool forceLoad = false;
+//            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
+//                forceLoad = true;
+//            }
+//            if (spec.gui && !forceLoad) {
+//                names.removeAll(spec.name);
+//                QList<PluginRequest>::iterator rit;
+//                for (rit=requests.begin(); rit!=requests.end(); ) {
+//                    PluginRequest r = *(rit);
+//                    if (r.name==spec.name) {
+//                        rit = requests.erase(rit);
+//                    }
+//                    else {
+//                        rit ++;
+//                    }
+//                }
+//                it = pImpl_->specs.erase(it);
+//            }
+//            else {
+//                it++;
+//            }
+//        }
+//    }
 
     // orderedList will contain names in order of load and initialization
     QStringList orderedList;
@@ -201,7 +201,7 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     if ( moduleName.length()>0 )
         moduleName[0] = moduleName[0].toUpper();
 
-    QString libraryFileName = moduleName;
+    QString libraryFileName = moduleName.replace(" ", "");
 #if defined(Q_OS_WIN32)
     libraryFileName += ".dll";
 #elif defined(Q_OS_MACX)
@@ -210,11 +210,19 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
     libraryFileName = "lib"+libraryFileName+".so";
 #endif
     QString fullPath;
-    if (QFile::exists(pImpl_->path+"/"+libraryFileName))
-        fullPath = pImpl_->path + "/" + libraryFileName;
-    else if (QFile::exists(QDir::currentPath()+"/"+libraryFileName))
-        fullPath = QDir::currentPath()+ "/" + libraryFileName;
-    else {
+    QString check;
+    check = pImpl_->path + "/" + libraryFileName;
+    if (QFile::exists(check)) {
+        fullPath = check;
+    }
+    if (fullPath.isEmpty()) {
+        check = QDir::currentPath()+"/"+libraryFileName;
+        if (QFile::exists(check)) {
+            fullPath = check;
+        }
+    }
+
+    if (fullPath.isEmpty()) {
         const QString errorMessage = tr("Can't load module %1: file not found")
                 .arg(libraryFileName);
         return errorMessage;
@@ -228,7 +236,6 @@ QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
                 .arg(loader.errorString());
     }
     KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
-    plugin->self = plugin;
     if (!plugin) {
         return QString("Plugin is not valid (does not implement interface KPlugin)");
         loader.unload();
@@ -355,6 +362,11 @@ QString PluginManager::commandLineHelp() const
     if (details.size() > 0)
         result += "\n" + tr("Options") + ":\n" + details.join("\n") + "\n";
     return result;
+}
+
+QFont PluginManager::initialApplicationFont() const
+{
+    return pImpl_->initialApplicationFont;
 }
 
 QString PluginManager::initializePlugins()

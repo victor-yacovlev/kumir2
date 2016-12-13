@@ -38,7 +38,7 @@ namespace ActorDraw {
     public:
         DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
-        void setDraw(DrawModule* draw){DRAW=draw;};
+        void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
         double zoom()const
         {return c_scale;};
         void setZoom(double zoom);
@@ -64,7 +64,9 @@ namespace ActorDraw {
         void wheelEvent ( QWheelEvent * event );
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
-        void mouseMoveEvent ( QMouseEvent * event ); 
+        void mouseMoveEvent ( QMouseEvent * event );
+        void paintEvent(QPaintEvent *event);
+
     private:
        DrawModule* DRAW;
         double c_scale;
@@ -73,6 +75,7 @@ namespace ActorDraw {
         QPoint press_pos;
         bool firstResize;
         double lastStep;
+        QMutex* dr_mutex;
         QLabel* smallNetLabel;
  
     };    
@@ -80,18 +83,10 @@ namespace ActorDraw {
     : public QGraphicsScene
     {
     public:
-        DrawScene ( QObject * parent = 0 ){};
-        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net);
-        void setDraw(DrawModule* draw){DRAW=draw;};
-        void addDrawLine(QLineF lineF,QColor color)
-        {
-            QGraphicsLineItem* line=addLine(lineF);
-            line->setPen(QPen(QColor(color)));
-            line->setZValue(90);
-            lines.append(line); 
-            
-            
-        }
+        DrawScene ( QObject * parent = 0 ){installEventFilter(this);};
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
+        void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
+        void addDrawLine(QLineF lineF,QColor color,qreal width);
         void reset()
         {
             for(int i=0;i<lines.count();i++)
@@ -103,7 +98,7 @@ namespace ActorDraw {
             
         }
         void DestroyNet();
-        void drawOnlyAxis(double startx ,double endx,double starty,double endy);
+        void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
@@ -111,6 +106,8 @@ namespace ActorDraw {
         int loadFromFile(const QString& p_FileName);
     protected:
        // void resizeEvent ( QResizeEvent * event );
+        bool eventFilter(QObject *object, QEvent *event);
+        bool event(QEvent * event);
     private:
         bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
@@ -118,6 +115,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
+        QMutex* dr_mutex;
         
         
        
@@ -133,6 +131,9 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    void handleGuiReady();
+    // static DrawModule * self;
+   // static ExtensionSystem::SettingsPtr MySettings();
     bool isAutoNet() const
     {
         return autoNet;
@@ -180,7 +181,7 @@ public /* methods */:
     static ExtensionSystem::SettingsPtr DrawSettings();
     QColor axisColor()
     {
-        return QColor(DrawSettings()->value("AxisColor","blue").toString());
+        return QColor(DrawSettings()->value("AxisColor","#999900").toString());
     }
     void redrawPicture()
     {
@@ -188,12 +189,13 @@ public /* methods */:
             CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
             CurView->forceRedraw();
             CurScene->update(CurScene->sceneRect());
-            CurView->repaint();
+           // CurView->repaint();
             CurView->viewport()->update();
             CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
        
     }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
+    QMutex mutex;
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);
@@ -235,8 +237,9 @@ private:
     QColor netColor;
     bool autoNet;
     bool penIsDrawing;
+    bool firstShow;
     Color penColor;
-    QMutex mutex;
+  
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
     QDir curDir;

@@ -26,6 +26,7 @@ class PainterWindow : public QWidget
 public:
     explicit PainterWindow(PainterModule * module, QWidget *parent = 0);
     void setCanvasSize(const QSize & size);
+    void setCanvasName(const QString &name);
     inline QSize minimumSizeHint() const { return QSize(360, 300); }
     PainterView * view();
     ~PainterWindow();
@@ -42,6 +43,7 @@ private slots:
     void reset();
     void changeZoom(int factor);
     void setZoom(qreal scale);
+    void updateWindowTitle(const QString &fileName, const QString &documentName);
 
 private:
 

@@ -3,6 +3,11 @@
 #include "task/mainwindow.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
+#include "interfaces/generatorinterface.h"
+#include "interfaces/runinterface.h"
+    #include <fstream>
+    #include <iostream>
+
 namespace CourseManager {
 
    
@@ -14,6 +19,23 @@ Plugin::Plugin()
     , settingsEditorPage_(nullptr)
     , cur_task(nullptr)
 {
+    
+#ifdef Q_OS_LINUX
+    QProcessEnvironment pe;
+    pe=QProcessEnvironment::systemEnvironment();
+    // qDebug()<<"PE"<<pe.toStringList();
+    qDebug()<<"Display"<<pe.value("DISPLAY");
+    if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
+    {
+        qDebug()<<"CourseManager:Console mode";
+
+        DISPLAY=false;
+        field_no=0;
+        return;
+    }
+    qDebug()<<"CourseManager:Console Mode";
+#endif
+    DISPLAY=true;
     courseMenu=new QMenu(trUtf8("Практикум"));
     MenuList.append(courseMenu);
     rescentMenu=new QMenu(trUtf8("Недавние тетради/курсы..."));
@@ -36,7 +58,214 @@ QList<QMenu*>  Plugin::menus()const
 {
     
     return MenuList; 
-}; 
+};
+int Plugin::loadWorkBook(QString wbfilename,QString cbname)
+    {
+        QDomDocument workXml;
+        QFile f(wbfilename);
+        
+        if  (!f.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::information( 0, "", trUtf8("Ошибка открытия файла: ") + wbfilename, 0,0,0);
+            return 5;
+            
+        };
+
+        if(f.atEnd())
+        {
+           
+            return 3;
+        };
+   
+        QString error;
+        int str,pos;
+        workXml.setContent(f.readAll(),true,&error,&str,&pos);
+        qDebug()<<"File parce:"<<error<<"str"<<str<<" pos"<<pos;
+        
+        QDomElement root=workXml.documentElement ();
+        if(root.tagName()!="COURSE")
+        {
+       
+            return 4;
+        };
+        QDomElement fileEl=root.firstChildElement("FILE");
+        QString krsFile=fileEl.attribute("fileName");
+               
+        QString fileN=fileEl.attribute("fileName");
+     
+        QDomNodeList marksElList=root.elementsByTagName("MARK"); //Оценки
+        //qDebug()<<"Loading marks "<<marksElList.count();
+        for(int i=0;i<marksElList.count();i++)
+        {
+            int taskId=marksElList.at(i).toElement().attribute("testId").toInt();
+            int mark=marksElList.at(i).toElement().attribute("mark").toInt();
+            qDebug()<<"task:"<<taskId<<" mark:"<<mark;
+            course->setMark(taskId,mark);
+           // fprintf(stdout, "%s %d %d \n",cbname.toLatin1().data(),taskId,mark);
+        };
+        
+        //qDebug()<<"Loading user prgs...";
+        QDomNodeList prgElList=root.elementsByTagName("USER_PRG");//Программы
+        for(int i=0;i<prgElList.count();i++)
+        {
+            int taskId=prgElList.at(i).toElement().attribute("testId").toInt();
+            qDebug()<<"Tassk id"<<taskId;
+            QString prg =prgElList.at(i).toElement().attribute("prg");
+            QModelIndex tIdx=course->getIndexById(taskId);
+            
+      
+            course->setUserText(taskId,prg);
+            
+        };
+        
+        QDomNodeList prgElListT=root.elementsByTagName("TESTED_PRG");//Программы тестированные
+        for(int i=0;i<prgElListT.count();i++)
+        {
+            int taskId=prgElListT.at(i).toElement().attribute("testId").toInt();
+            QString prg =prgElListT.at(i).toElement().attribute("prg");
+            
+            course->setUserTestedText(taskId,prg);
+            
+        };
+        return 0;
+    }
+int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
+    {
+        
+        QFileInfo fi(cbname);
+        if(!fi.exists())
+        {
+            
+            return 1;
+        };
+        QFileInfo fi2(wbname);
+        if(!fi2.exists())
+        {
+            
+            return 2;
+        };
+        cur_courseFileInfo=fi;
+        course=new courseModel();
+   
+        int tasks=course->loadCourse(cbname);
+        qDebug()<<"Tasks "<<tasks<<" loaded";
+        int wb_error=loadWorkBook(wbname,fi.fileName());
+
+        QString cText=course->courceDescr();
+        
+ 
+
+  
+        return wb_error;
+        
+    }
+int Plugin::checkTaskFromConsole(const int taskID)
+    {
+        KumZadanie task;
+        QString curDir=".";
+        QFileInfo ioDir(curDir+'/'+course->progFile(taskID));
+        qDebug()<<"PRG FILE"<<course->progFile(taskID);
+        if(ioDir.isFile())
+        {
+            qDebug()<<"TODO: IO FILE";
+        };
+        task.isps=course->Modules(taskID);
+        task.fields.clear();
+        task.name=course->getTitle(taskID);
+        for(int i=0;i<task.isps.count();i++)
+        {
+            QStringList t_fields=course->Fields(taskID,task.isps[i]);
+            for(int j=0;j<t_fields.count();j++)
+            {
+    
+                task.fields.insertMulti(task.isps[i],curDir+'/'+t_fields[j]);
+                
+            };
+
+        }
+        Shared::AnalizerInterface* analizer = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::AnalizerInterface>();
+         Shared::Analizer::SourceFileInterface::Data kumFile;
+        if(course->getUserText(taskID)!="")
+        {
+           
+            kumFile = analizer->sourceFileHandler()->fromString(course->getUserText(taskID));
+        }
+        else return 1;
+        Shared::Analizer::InstanceInterface * analizer_i =
+        analizer->createInstance();
+        
+        QString dirname = curDir;
+        analizer_i->setSourceDirName(dirname);
+        analizer_i->setSourceText(kumFile.visibleText + "\n" + kumFile.hiddenText);
+        
+        QList<Shared::Analizer::Error> errors = analizer_i->errors();
+        for (int i=0; i<errors.size(); i++) {
+            Shared::Analizer::Error e = errors[i];
+            QString errorMessage = tr("Error: ") +
+            task.name+
+            ":" + QString::number(e.line+1) +
+            ":" + QString::number(e.start+1) + "-" + QString::number(e.start+e.len) +
+            ": " + e.message;
+            std::cerr << errorMessage.toLocal8Bit().data();
+            std::cerr << std::endl;
+        }
+       // if(errors.size()>0)
+       // {
+            
+      //  }
+       AST::DataPtr ast = analizer_i->compiler()->abstractSyntaxTree();
+       Shared::GeneratorInterface * generator_ = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::GeneratorInterface>();
+       QString suffix;
+       QString mimeType;
+       QByteArray outData;
+       generator_->generateExecutable(ast, outData, mimeType, suffix);
+       QDir::setCurrent(curDir);
+       Shared::RunInterface * runner = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::RunInterface>();
+        Shared::RunInterface::RunnableProgram program;
+        program.executableData = outData;
+        program.executableFileName = "";
+        runner->loadProgram(program);
+        int mark=0;
+        QString error="";
+        for(int i=0;i<task.fields.count();i++)
+        {
+            QString testMessage = tr("++++++ ") +task.name+tr(" field no: ")+QString::number(i);
+            std::cout << testMessage.toLocal8Bit().data();
+            std::cout << std::endl;
+        field_no=i;
+        selectNext(&task);
+        runner->runProgramInCurrentThread(true);
+          if(error=="")error=runner->error();
+          int testRes=runner->valueStackTopItem().toInt();//Get mark
+          if(mark>0)mark=qMin(mark,testRes);
+            else
+                mark=testRes;
+           
+            
+        }
+        if(resultStream.status()==QTextStream::Ok)//If we can - we writes marks to file
+        {
+            resultStream<<task.name+trUtf8(" Оценка:")+QString::number(mark);
+            if(error!="")resultStream<<" Err:"<<error;
+            resultStream<<"\n";
+            
+        }
+        return 0;   
+     
+    }
+void Plugin::start()
+    {
+      qDebug()<<"Starts with coursemanager";
+        QList<int> taskIds=course->getIDs();
+        for(int i=0;i<taskIds.count();i++)
+        {
+            field_no=0;
+            int res=checkTaskFromConsole(taskIds[i]);
+            qDebug()<<"Test result "<<res<<" taskId"<<taskIds[i];
+        }
+            
+    
+    };
 void Plugin::rebuildRescentMenu()
     {
         rescentMenu->clear();
@@ -59,6 +288,9 @@ void Plugin::rebuildRescentMenu()
  rescentMenu->setEnabled(hasAnyItem);
         
     };
+    
+
+    
 QString Plugin::getText()
 {
     GI * gui = ExtensionSystem::PluginManager::instance()->findPlugin<GI>();
@@ -191,9 +423,20 @@ AI * Plugin::getActor(QString name)
     
     return NULL;
 }
+void Plugin::showError(QString err)
+    {
+     if(DISPLAY)
+     {
+            QMessageBox::information( NULL, "", err, 0,0,0);
+     }
+    else std::cerr << err.toLocal8Bit().data();
+        
+    }
 void Plugin::selectNext(KumZadanie* task)
     {
-       
+       QString dirName="";
+        if(!DISPLAY)dirName=cur_courseFileInfo.absolutePath () ;
+        
         for(int i=0;i<task->isps.count();i++)
         {
             if(task->isps.at(i)==trUtf8("Файл ввода"))
@@ -211,18 +454,21 @@ void Plugin::selectNext(KumZadanie* task)
             AI* actor=getActor(task->isps.at(i));
             if(!actor)
             {
-                QMessageBox::information( NULL, "", QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i), 0,0,0); 
+                showError(QString::fromUtf8("Нет исполнтеля:")+task->isps.at(i));
                 return;
             }
-            //TODO LOAD FIELDS;
-            QFile* field_data=new QFile(task->field(task->isps.at(i), field_no));
+           
+            QFile* field_data=new QFile(dirName+"/"+task->field(task->isps.at(i), field_no));
+            qDebug()<<"Loadfield"<<dirName+"/"+task->field(task->isps.at(i),field_no);
             if(!field_data->open(QIODevice::ReadOnly)){
-                QMessageBox::information( NULL, "", QString::fromUtf8("Ошибка открытия обстановки!"), 0,0,0); 
+               showError(QString::fromUtf8("Ошибка открытия обстановки!"));
                 return;   
             }
-            actor->loadActorData(field_data);
-            field_data->close();
-        }   
+          
+                actor->loadActorData(field_data);
+                field_data->close();
+           
+        }
     }
 
 void Plugin::checkNext(KumZadanie* task)
@@ -351,6 +597,26 @@ void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
 QString Plugin::initialize(const QStringList &configurationArguments,
                            const ExtensionSystem::CommandLine & runtimeArguments)
 {
+    qDebug()<<"DIPLSY"<<DISPLAY;
+    if(!DISPLAY)
+    {
+        if(!runtimeArguments.value('w').isValid())return trUtf8("Нет тетради");
+        if(!runtimeArguments.value('c').isValid())return trUtf8("Нет учебника");
+        
+        qDebug()<<"LOAD WORK BOOK ERR CODE:"<<loadCourseFromConsole(runtimeArguments.value('w').toString(),runtimeArguments.value('c').toString());
+        if(runtimeArguments.value('o').isValid())
+        {
+             outFile.setFileName(runtimeArguments.value('o').toString());
+            if (outFile.open(QFile::WriteOnly)) {
+                 resultStream.setDevice(&outFile);
+                qDebug()<<"Stream status"<<resultStream.status();
+            }else {
+                resultStream.setStatus(QTextStream::WriteFailed);
+                std::cout <<"Cant open output file:" << runtimeArguments.value('o').toString().toLocal8Bit().data()<<endl;
+            }
+        }
+        return "";
+    }
     QList<QAction*> actions;
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)
@@ -383,6 +649,10 @@ QString Plugin::initialize(const QStringList &configurationArguments,
 
 void Plugin::updateSettings(const QStringList & keys)
 {
+    if(!DISPLAY)return;
+    
+
+    
     if (settingsEditorPage_) {
         settingsEditorPage_->setSettingsObject(mySettings());
     }

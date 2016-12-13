@@ -84,6 +84,8 @@ protected:
     void emitValueChanged(const VM::Variable & variable, const QVector<int> & indeces);
 
 private:
+    QFont mainEditorFont() const;
+
     std::shared_ptr<VM::KumirVM> _vm;
     std::shared_ptr<VM::CriticalSectionLocker> mutex_;
     QHash<QModelIndex, QModelIndex> parents_;

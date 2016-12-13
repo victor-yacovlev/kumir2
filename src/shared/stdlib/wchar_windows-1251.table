@@ -125,3 +125,4 @@ case 1100: return 252; break;
 case 1101: return 253; break;
 case 1102: return 254; break;
 case 1103: return 255; break;
+case 152: return 152; break; // not-existing, but allows back-coding

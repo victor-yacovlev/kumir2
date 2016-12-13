@@ -12,9 +12,10 @@ You should change it corresponding to functionality.
 #include <qmessagebox.h>
 #include <algorithm>
 #include "robotmodule.h"
+#include <QProcessEnvironment>
 #include "extensionsystem/pluginmanager.h"
  //#include <iostream> 
-
+#define ANIMTIME 100
 namespace ActorRobot {
 
     
@@ -30,14 +31,12 @@ namespace ActorRobot {
         QWidget * pult_;
     };
 
-    
+
     
     ExtensionSystem::SettingsPtr RobotModule::robotSettings()
     {
         return RobotModule::self->mySettings();
-//        ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
-//        ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorRobot")[0];
-//        return pluginManager->settingsByObject(plugin);
+
     }
 
     FieldItm::FieldItm( QGraphicsItem* par ,QGraphicsScene *scene)
@@ -344,7 +343,7 @@ namespace ActorRobot {
         if (upChar.isPrint() && upChar!=' ') {
             upCharItm=Scene->addText(upChar,font);
             upCharItm->setDefaultTextColor(TextColor);
-            float lettShift=sett->value("LettShift","1").toFloat();
+            float lettShift=sett->value("LettShift","2").toFloat();
             upCharItm->setPos(upLeftCornerX,upLeftCornerY-2-lettShift);
             upCharItm->setZValue(1);
         }
@@ -383,8 +382,8 @@ namespace ActorRobot {
                 delete markItm;
                 markItm = NULL;
             }
-            float xshift=sett->value("MarkShiftLeft","1").toFloat();
-             float yshift=sett->value("MarkShift","1").toFloat();
+            float xshift=sett->value("MarkShiftLeft","6").toFloat();
+             float yshift=sett->value("MarkShift","3").toFloat();
           //  markItm=Scene->addText(QChar(9787),font);
             markItm=Scene->addText(QChar(9679),font);
             markItm->setDefaultTextColor(TextColor);
@@ -396,11 +395,11 @@ namespace ActorRobot {
         }
     }
     
-    void FieldItm::setColorRect(QGraphicsRectItem *Rect)
+    void FieldItm::setColorRect(QGraphicsRectItem *Rect,QColor color)
     {
         ColorRect = Rect;
-        ColorRect->setPen(QPen("gray"));
-        ColorRect->setBrush(QBrush(QColor("gray")));
+        ColorRect->setPen(color);
+        ColorRect->setBrush(QBrush(color));
         
         Scene->addItem(Rect);
         
@@ -773,7 +772,7 @@ namespace ActorRobot {
         LineColor = QColor(sett->value("LineColor","#C8C800").toString());
         EditLineColor = QColor(sett->value("LineColorEdit","#C8C800").toString());
         WallColor=QColor(sett->value("WallColor","#C8C800").toString());
-        EditColor=QColor(sett->value("EditColor","#00008C").toString());
+        EditColor=QColor(sett->value("EditColor","#6496ff").toString());
         NormalColor=QColor(sett->value("NormalColor","#289628").toString());
         showLine=QPen(QColor(0,255,0,125));
         showLine.setWidth(3);
@@ -1068,8 +1067,12 @@ namespace ActorRobot {
         drawNet();
         
         BortLine = QPen(WallColor,4);
+        BortLine.setWidth(sett->value("BortW","6").toInt());
+                
         StLine=QPen(gridColor,3);
+        StLine.setWidth(sett->value("StW","1").toInt());
         WallLine=QPen(WallColor,3);
+        WallLine.setWidth(sett->value("WallW","4").toInt());
         qDebug()<<"Rows"<<rows()<< "Cols:"<<columns();
         //if(rows()==2)return;
         for(int i=0;i<rows();i++) //Cikl po kletkam
@@ -1153,11 +1156,12 @@ namespace ActorRobot {
                 };
                 if(row->at(j)->isColored())
                 {
+                    
                     row->at(j)->setColorRect(
                                              new QGraphicsRectItem(upLeftCorner(i,j).x(),
                                                                    upLeftCorner(i,j).y(),
                                                                    fieldSize,
-                                                                   fieldSize));
+                                                                   fieldSize),QColor(sett->value("FillColor","gray").toString()));
                     
                 };
               
@@ -1341,7 +1345,7 @@ namespace ActorRobot {
     
     void RoboField::reverseUpWall(int row, int col)
     {
-        
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasUpSep()){
             return;qDebug("!UpSep");
         }
@@ -1360,6 +1364,7 @@ namespace ActorRobot {
     
     void RoboField::reverseDownWall(int row, int col)
     {
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasDownSep()) {
             return;
         }
@@ -1378,6 +1383,7 @@ namespace ActorRobot {
     
     void RoboField::reverseLeftWall(int row, int col)
     {
+                StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasLeftSep())
             return;
         if(!getFieldItem(row,col)->canLeft())
@@ -1395,6 +1401,7 @@ namespace ActorRobot {
     
     void RoboField::reverseRightWall(int row, int col)
     {
+        StLine.setWidth(sett->value("WallW","2").toInt());
         if(!getFieldItem(row,col)->hasRightSep())
             return;
         if(!getFieldItem(row,col)->canRight())
@@ -1428,7 +1435,7 @@ namespace ActorRobot {
                                                                    upLeftCorner(row,col).y(),
                                                                    upLeftCorner(row,col).x()+fieldSize,
                                                                    upLeftCorner(row,col).y());
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
 
@@ -1450,7 +1457,7 @@ namespace ActorRobot {
                                                                      upLeftCorner(row,col).y()+fieldSize,
                                                                      upLeftCorner(row,col).x()+fieldSize,
                                                                      upLeftCorner(row,col).y()+fieldSize);
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
@@ -1465,6 +1472,9 @@ namespace ActorRobot {
         if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
+          
+            showLine.setWidth(sett->value("WallW","2").toInt());
+            showWall->setPen(showLine);
             this->addItem(showWall);
             return;
         };
@@ -1473,7 +1483,7 @@ namespace ActorRobot {
                                                                      upLeftCorner(row,col).x(),
                                                                      upLeftCorner(row,col).y()+fieldSize);
       
-       
+       showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
@@ -1488,7 +1498,10 @@ namespace ActorRobot {
         if(mode>NEDIT_MODE)
         {
             showWall=new QGraphicsLineItem(0,0,0,0);
+            showLine.setWidth(sett->value("WallW","2").toInt());
+            showWall->setPen(showLine);
             this->addItem(showWall);
+            
             return;
             
         };
@@ -1496,7 +1509,7 @@ namespace ActorRobot {
                                                                       upLeftCorner(row,col).y(),
                                                                       upLeftCorner(row,col).x()+fieldSize,
                                                                       upLeftCorner(row,col).y()+fieldSize);
-        
+        showLine.setWidth(sett->value("WallW","2").toInt());
         showWall->setPen(showLine);
         showWall->setZValue(200);
         
@@ -1517,7 +1530,7 @@ namespace ActorRobot {
                                                 new QGraphicsRectItem(upLeftCorner(row,col).x(),
                                                                       upLeftCorner(row,col).y(),
                                                                       fieldSize,
-                                                                      fieldSize));
+                                                                      fieldSize),QColor(sett->value("FillColor","gray").toString()));
         };
         if(mode!=NORMAL_MODE)wasEdit=true;
     }
@@ -1586,6 +1599,7 @@ namespace ActorRobot {
         
         
         Pen = QPen(LineColor,1);
+        Pen.setWidth(sett->value("StW","2").toInt());
         PenError = QPen(LineColor,1);
         infin = 5*BORT+10;
  
@@ -3426,6 +3440,637 @@ namespace ActorRobot {
         //     qreal adjust = 0.5;
         return QRectF(0,0,FIELD_SIZE_SMALL/4,FIELD_SIZE_SMALL/4);
     };
+    //++++++++++Console Field
+    CFieldItem::CFieldItem()
+    {
+       IsColored=false;
+       radiation=0;
+       temperature=0;
+       upChar=QChar(' ');
+       downChar=QChar(' ');
+       mark=false;
+       upWall=false;
+       downWall=false;
+       rightWall=false;
+       leftWall=false;
+    }
+    void CFieldItem::setWalls(int wallByte)
+    {
+        if((wallByte & UP_WALL) == UP_WALL)upWall=true;else upWall=false;
+        if((wallByte & DOWN_WALL) == DOWN_WALL)downWall=true; else
+            downWall=false;
+        if((wallByte & LEFT_WALL) == LEFT_WALL)leftWall=true; else leftWall=false;
+        if((wallByte & RIGHT_WALL) == RIGHT_WALL)rightWall=true; else rightWall=false;
+    }
+    
+    ConsoleField::ConsoleField(int r,int c)
+    {
+        createField(r,c);
+        roboRow=0;
+        roboCol=0;
+    };
+    
+    void  ConsoleField::createField(int r,int c)
+    {
+        rows.clear();
+        for(int row=0;row<r;row++)
+        {
+            QList<CFieldItem*> curRow;
+            for(int col=0;col<c;col++)
+            {
+                CFieldItem* cItem=new CFieldItem();
+                if(row==0)cItem->upWall=true;
+                if(row==r-1)cItem->downWall=true;
+                if(col==0)cItem->leftWall=true;
+                if(col==c-1)cItem->rightWall=true;
+                curRow.append(cItem);
+            }
+            rows.append(curRow);
+        }
+    };
+    CFieldItem* ConsoleField::getItem(int row,int col)
+    {
+        if(row>rows.count()-1  || col>rows.at(row).count()-1)
+        {
+            qDebug()<<"ERROR!!! NO ITEM!!"<<row<<" "<<col<<" rows: "<<rows.count()<<" cols"<<rows.at(row).count();
+       
+            return NULL;
+        }
+        return rows.at(row).at(col);
+    }
+    
+     CFieldItem* ConsoleField::getCurItem()
+    {
+       // qDebug()<<"R"<<roboRow<<" C"<<roboCol;
+        return getItem(roboRow, roboCol);
+    }
+   
+    bool ConsoleField::goLeft()
+    {
+        if(getItem(roboRow, roboCol)->leftWall)return false;
+        roboCol--;
+        return true;
+    }
+    bool ConsoleField::goRight()
+    {
+         qDebug()<<"RIGHT BEFORE ROW"<<roboRow<<" Col"<<roboCol;
+        if(getItem(roboRow, roboCol)->rightWall)return false;
+        roboCol++;
+        return true;
+    }
+    bool ConsoleField::goUp()
+    {
+        qDebug()<<"ROW"<<roboRow<<" Col"<<roboCol;
+        if(getItem(roboRow, roboCol)->upWall)return false;
+        roboRow--;
+        return true;
+    }
+    
+    bool ConsoleField::goDown()
+    {
+                qDebug()<<"ROW"<<roboRow<<" Col"<<roboCol;
+        if(getItem(roboRow, roboCol)->downWall)return false;
+        roboRow++;
+        return true;
+    }
+    
+    bool ConsoleField::isUpWall()
+    {
+        if(roboRow==0)return true;
+        return getItem(roboRow, roboCol)->upWall ||getItem(roboRow-1, roboCol)->downWall;
+    }
+    bool ConsoleField::isDownWall()
+    {
+        if(roboRow==rows.count()-1)return true;
+        return getItem(roboRow, roboCol)->downWall ||getItem(roboRow+1, roboCol)->upWall;
+    }
+    bool ConsoleField::isLeftWall()    {
+        if(roboCol==0)return true;
+        return getItem(roboRow, roboCol)->leftWall ||getItem(roboRow, roboCol-1)->rightWall;
+    }
+    bool ConsoleField::isRightWall()
+    {
+        if(roboCol==rows.at(roboRow).count()-1)return true;
+        return getItem(roboRow, roboCol)->rightWall ||getItem(roboRow, roboCol+1)->leftWall;
+    }
+    int ConsoleField::loadFromFile(QString fileName)
+    {
+        QFile* field_data=new QFile(fileName);
+        if(!field_data->open(QIODevice::ReadOnly)){
+           qDebug()<<QString::fromUtf8("Ошибка открытия обстановки!");
+            return 1;
+        }
+        return consoleLoadFromDataStream(field_data);
+        
+    }
+    int ConsoleField::consoleLoadFromDataStream(QIODevice *stream)
+    {
+        
+      
+      //  QString name = fi.fileName();
+  
+        
+        
+        QString tmp = "";
+        QString ctmp;
+        
+        
+
+        
+        
+        
+        
+        int NStrok;
+        NStrok = 0;
+        QString l_String;
+        //	long l_Err;
+        int CurX,CurY;
+        int SizeX, SizeY;
+        
+
+        
+        
+        // 1 stroka - razmery polya
+        tmp = stream->readLine();
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        
+        if (tmp.isNull()||tmp.isEmpty())
+        {
+            stream->close();
+            
+            return 2;
+        }
+        
+        //QMessageBox::information( 0, "", tmp, 0,0,0);
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = stream->readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                return 1;
+            }
+        }
+        tmp = tmp.simplified();
+        QStringList l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+           stream->close();
+            
+            
+            return 3;
+        }
+        
+        SizeX = (l_List[0]).toInt();
+        SizeY = (l_List[1]).toInt();
+        
+        if ( (SizeX<= 0) || (SizeY <= 0) )
+        {
+            return 4;
+        }
+        //            field.destroyField();
+        // field.createField(l_List[0].toInt(),l_List[1].toInt());
+        
+        // Вторая строка - положение робота
+        
+        tmp = stream->readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+           stream->close();
+            
+            return 5;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp =stream->readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+                stream->close();
+                
+                return 5;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        // proverka
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+            
+            stream->close();return 6;
+        }
+        
+        if ((l_List[0]).toInt() > SizeX || (l_List[1]).toInt() > SizeY )
+        {
+            
+            stream->close(); return 6;
+        }
+        
+        
+        //	m_DefaultSett = l_Sett;
+        
+        while (!stream->atEnd())
+        {
+            //l_Err = l_File.readLine(l_String, 255);
+            tmp = QString::fromUtf8(stream->readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                return 5;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9 )
+            {
+                
+                stream->close();
+                return -NStrok;
+            }
+            if(l_List.count()<6)
+            {
+                stream->close();
+            //    qDebug("N Lexem<6");
+                return -NStrok;
+            };
+            bool ok;
+            CurX = l_List[0].toInt(&ok);
+            if(!ok)
+            {
+                stream->close();
+              // qDebug("Bad cur X<6");
+                return -NStrok;
+            };
+            
+            CurY = l_List[1].toInt(&ok);
+            
+            if(!ok){
+                stream->close();
+                qDebug("Bad curY <6");
+                return -NStrok;
+            };
+            
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                
+                stream->close(); return -NStrok;
+            }
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                stream->close(); return -NStrok;
+            }
+            
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                stream->close(); return -NStrok;
+            }
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                   stream->close(); return -NStrok;
+                }
+                
+                
+            }
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    stream->close(); return -NStrok;
+                }
+                
+                
+            }
+            
+        }
+        stream->close();
+        rows.clear();
+        //реальный прогон
+        //destroyField();
+        
+        if  (!stream->open(QIODevice::ReadOnly))
+        {
+            
+            return 10;
+        }
+        
+        
+        
+        // 1 stroka - razmery polya
+        tmp =stream->readLine();
+        
+        if (tmp.isNull())
+        {
+            stream->close();
+            
+            return 10;
+        }
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = QString::fromUtf8(stream->readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                stream->close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        if (l_List.count() != 2)
+        {
+           stream->close();
+            
+            return -NStrok;
+        }
+        
+        SizeX = (l_List[1]).toInt();
+        SizeY= (l_List[0]).toInt();
+        // 	 //NEW ROBO Field
+        createField(SizeX,SizeY);
+        qDebug()<<"FIELD SIZE ROW"<<SizeX<<" COL:"<<SizeY;
+        
+        
+        if ((l_List[0]).toInt() <= 0 || (l_List[1]).toInt() <= 0)
+        {
+            
+            stream->close();
+            return - NStrok;
+        }
+        
+        
+        // Вторая строка - положение робота
+        
+        tmp = stream->readLine();
+        
+        
+        
+        if (tmp.isNull())
+        {
+            stream->close();
+            
+            return 10;
+        }
+        
+        
+        
+        while (tmp.left(1) == ";" || tmp == "")
+        {
+            tmp = stream->readLine();
+            NStrok++;
+            if (tmp.isNull())
+            {
+               stream->close();
+                
+                return 10;
+            }
+        }
+        tmp = tmp.simplified();
+        l_List = tmp.split(' ');
+        
+        // koordinaty robota
+        
+        if ((l_List[0]).toInt() < 0 || (l_List[1]).toInt() < 0)
+        {
+            
+           stream->close();return - NStrok;
+        }
+        
+        if ((l_List[0]).toInt() > SizeY || (l_List[1]).toInt() > SizeX )
+        {
+            
+            stream->close(); return - NStrok;
+        }
+        
+        roboCol = (l_List[0]).toInt();
+        roboRow = (l_List[1]).toInt();
+        qDebug()<<"ROBOT POS ROW"<<roboRow<<" COL:"<<roboCol;
+        //InitialX = m_x;
+        //InitialY = m_y;
+        
+        
+        
+        
+        //	delete []m_FieldDubl;
+        
+        
+        
+        while (!stream->atEnd())
+        {
+            tmp = QString::fromUtf8(stream->readLine());
+            NStrok++;
+            if (tmp.isNull())
+            {
+                
+                stream->close();
+                return 10;
+            }
+            if (tmp.left(1) == ";" || tmp == "")
+            {
+                continue;
+            }
+            tmp = tmp.simplified();
+            l_List = tmp.split(' ');
+            if (l_List.count() == 0)continue;
+            
+            if (l_List.count() > 9)
+            {
+                
+                stream->close();
+                return -NStrok;
+            }
+            CurX = l_List[1].toInt();
+            CurY = l_List[0].toInt();
+            if (CurX < 0 || CurX > SizeX || CurY < 0 || CurY > SizeY)
+            {
+                qDebug()<<"Out of field";
+                stream->close(); return -NStrok;
+            }
+            // TODO STENI
+           // qDebug()<<"Before Walls";
+            if (getItem(CurX, CurY))
+                {
+                    getItem(CurX, CurY)->setWalls((l_List[2]).toInt());
+                    if(CurX==0)getItem(CurX, CurY)->upWall=true;
+                    if(CurX==SizeX-1)getItem(CurX, CurY)->downWall=true;
+                    if(CurY==0)getItem(CurX, CurY)->leftWall=true;
+                    if(CurY==SizeY-1)getItem(CurX, CurY)->rightWall=true;
+                }
+            
+         //   qDebug()<<"After Walls";
+            
+            if (!((l_List[3]).toInt() == 0))
+            {
+                getItem(CurX, CurY)->IsColored = true;
+                // //QMessageBox::information( 0, "","test1" , 0,0,0);
+            }
+            else {
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->IsColored = false;
+            }
+            qreal radiation = (l_List[4].replace(",",".")).toDouble();
+            if (getItem(CurX, CurY))
+                getItem(CurX, CurY)->radiation=radiation;
+            
+            if (l_List[4].toFloat() < 0)
+            {
+                
+                stream->close(); return -NStrok;
+            }
+            qreal temperature = (l_List[5].replace(",",".")).toDouble();
+            if (getItem(CurX, CurY))
+                getItem(CurX, CurY)->temperature=temperature;
+            
+            if (l_List[5].toFloat() < MIN_TEMP)
+            {
+                
+                stream->close(); return -NStrok;
+            }
+            
+            
+            
+            if (l_List.count() >= 7)
+            {
+                
+                QString tmp1 = l_List[6];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    stream->close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Up:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->upChar = tmp1[0];
+                }
+                else {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->upChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->upChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 8)
+            {
+                
+                QString tmp1 = l_List[7];
+                
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                    stream->close(); return -NStrok;
+                }
+                //qDebug()<<QString::fromUtf8("Тест Down:")<<tmp1[0];
+                if(tmp1[0]!='$') {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->downChar = tmp1[0];
+                }
+                else {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->downChar = ' ' ;
+                }
+            }
+            else
+            {
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->downChar = ' ' ;
+            }
+            
+            
+            
+            if (l_List.count() >= 9)
+            {
+                
+                QString tmp1 = l_List[8];
+                //dlina lexemy dolzna ravnyatsa 1
+                if (!(tmp1.length() == 1))
+                {
+                    
+                   stream->close(); return -NStrok;
+                }
+                if(tmp1[0]=='1') {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->mark = true;
+                }
+                else {
+                    if (getItem(CurX, CurY))
+                        getItem(CurX, CurY)->mark = false ;
+                }
+            }
+            else
+            {
+                if (getItem(CurX, CurY))
+                    getItem(CurX, CurY)->mark = false ;
+            }
+            
+            
+            
+            
+            
+            
+        }
+        
+        stream->close();
+        
+        
+        
+       // qDebug() << "File " << fileName ;
+     
+        
+        
+        //robot->setZValue(100);
+        return(0);
+
+    };
+    
+    
+    
     //+++++++Simple Robot
     SimpleRobot::SimpleRobot(QGraphicsItem *parent )
     {
@@ -3537,9 +4182,7 @@ RobotModule::RobotModule(ExtensionSystem::KPlugin * parent)
     : RobotModuleBase(parent)
 {
     self = this;
-	/* TODO 
-	implement class Constructor
-	*/
+
     inDock=false;
     animation=true;
     pressed=false;
@@ -3557,6 +4200,7 @@ void RobotModule::createGui()
     field->setRoboPos(0,0);
       field->createRobot();
     view=new RobotView(field);
+    view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
     m_mainWidget = view;
     const QUrl rcUrl = QUrl::fromLocalFile(
                 myResourcesDir().absoluteFilePath("rc.qml")
@@ -3621,6 +4265,15 @@ void RobotModule::copyFromPult(QString log)
 {
     // Set actor specific data (like environment)
     // The source should be ready-to-read QIODevice like QBuffer or QFile
+    if(!DISPLAY)//console mode
+    {
+        curConsoleField=new ConsoleField(10,15);
+        if(curConsoleField->consoleLoadFromDataStream(source)!=0)
+        {
+         qDebug()<<"ERROR LOADING FIELD FROM STREAM ";
+        }
+        return;
+    }
        qDebug()<<"Load env";
     if(field->loadFromDataStream(source)!=0)return ;
     m_pultWidget->Logger->ClearLog();
@@ -3657,7 +4310,11 @@ void RobotModule::reset()
 	*/
     //delete field;
     qDebug()<<"Reset!!";
-
+    if(!DISPLAY)//console mode
+    {
+      qDebug()<<"Reset::console mode";
+      return;
+    }
         
     field->destroyRobot();
     field->deleteLater();
@@ -3759,6 +4416,22 @@ QList<ExtensionSystem::CommandLineParameter>  RobotModule::acceptableCommandLine
 }
 QString RobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine & runtimeParameters)
 {
+#ifdef Q_OS_LINUX
+    QProcessEnvironment pe;
+    pe=QProcessEnvironment::systemEnvironment();
+   // qDebug()<<"PE"<<pe.toStringList();
+    qDebug()<<"Display"<<pe.value("DISPLAY");
+    if(!pe.keys().indexOf("DISPLAY")>0 ||pe.value("DISPLAY").isEmpty() ) //NO DISPLAY
+    {
+        qDebug()<<"Robot:Console mode";
+        curConsoleField=new ConsoleField(10,15);
+        DISPLAY=false;
+        if (runtimeParameters.value('f').isValid())qDebug()<<"LOAD FIELD ERR CODE:"<<curConsoleField->loadFromFile(runtimeParameters.value('f').toString());
+        return "";
+    }
+    qDebug()<<"Robot:GuiMode";
+#endif
+    DISPLAY=true;
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         ExtensionSystem::SettingsPtr sett;
@@ -3786,12 +4459,19 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
         }
         // setWindowSize();
     }
+    if (runtimeParameters.value('f').isValid())qDebug()<<"LOAD FIELD ERR CODE:"<<field->loadFromFile(runtimeParameters.value('f').toString());
     return "";
 }
 
 void RobotModule::runGoUp()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+       qDebug()<<"Go up";
+        if(!curConsoleField->goUp())setError(trUtf8("Робот разбился: сверху стена!"));
+        return;
+    }
+    
     qDebug() << "Robot up";
     QString status = "OK";
      if(!field->stepUp())
@@ -3804,14 +4484,20 @@ void RobotModule::runGoUp()
 //         emit sendToPultLog(status);
 //     }
 if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
-    if(animation)msleep(250);
+    if(animation)msleep(ANIMTIME);
 	return;
 }
 
 
 void RobotModule::runGoDown()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+        qDebug()<<"Go down";
+        if(!curConsoleField->goDown())setError(trUtf8("Робот разбился: снизу стена!"));
+        return;
+    }
+    
     qDebug() << "Robot down";
     QString status = "OK";
      if(!field->stepDown())
@@ -3825,7 +4511,7 @@ void RobotModule::runGoDown()
   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
     if(animation){
         view->update();
-     msleep(250);   
+     msleep(ANIMTIME);   
     }
 	return;
 }
@@ -3833,8 +4519,15 @@ void RobotModule::runGoDown()
 
 void RobotModule::runGoLeft()
 {
-	/* TODO implement me */
+
     qDebug() << "Robot left";
+    
+    if(!DISPLAY)
+    {
+        if(!curConsoleField->goLeft())setError(trUtf8("Робот разбился: слева стена!"));
+        return;
+    }
+    
     QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
@@ -3848,7 +4541,7 @@ void RobotModule::runGoLeft()
     if(animation)
     {
         view->update();
-        msleep(250);
+        msleep(ANIMTIME);
     }
 	return;
 }
@@ -3856,22 +4549,24 @@ void RobotModule::runGoLeft()
 
 void RobotModule::runGoRight()
 {
-	/* TODO implement me */
+    if(!DISPLAY)
+    {
+        if(!curConsoleField->goRight())setError(trUtf8("Робот разбился: справа стена!"));
+        return;
+    }
     qDebug() << "Robot right";
     QString status = "OK";
     if(!field->stepRight()){
         field->robot->setCrash(RIGHT_CRASH);  
         status = trUtf8("Отказ");
         
-    setError(trUtf8("Робот разбился: справа стена!"));}
-//    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//        emit sendToPultLog(status);
-//    }
+        setError(trUtf8("Робот разбился: справа стена!"));}
+
    if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
      if(animation)
      {
          view->update();
-     msleep(250);
+     msleep(ANIMTIME);
      }
 	return;
 }
@@ -3879,6 +4574,13 @@ void RobotModule::runGoRight()
 
 void RobotModule::runDoPaint()
 {
+    
+    if(!DISPLAY)
+    {
+        curConsoleField->getCurItem()->IsColored=true;
+        return;
+    }
+    
 	if(!field->currentCell()->IsColored)field->reverseColorCurrent();
     QString status = "OK";
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3888,7 +4590,7 @@ void RobotModule::runDoPaint()
     if(animation)
     {
         view->update();
-        msleep(250);
+        msleep(ANIMTIME);
     }
 	return;
 }
@@ -3896,6 +4598,12 @@ void RobotModule::runDoPaint()
 
 bool RobotModule::runIsWallAtTop()
 {
+    
+    if(!DISPLAY)
+    {
+      return curConsoleField->isUpWall();
+    }
+    
     bool result = !field->currentCell()->canUp();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3909,6 +4617,12 @@ bool RobotModule::runIsWallAtTop()
 
 bool RobotModule::runIsWallAtBottom()
 {
+    
+    if(!DISPLAY)
+    {
+        return curConsoleField->isDownWall();
+    }
+    
     bool result = !field->currentCell()->canDown();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3923,6 +4637,11 @@ bool RobotModule::runIsWallAtBottom()
 
 bool RobotModule::runIsWallAtLeft()
 {
+    if(!DISPLAY)
+    {
+        return curConsoleField->isLeftWall();
+    }
+    
     bool result = !field->currentCell()->canLeft();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3937,6 +4656,11 @@ bool RobotModule::runIsWallAtLeft()
 
 bool RobotModule::runIsWallAtRight()
 {
+    
+    if(!DISPLAY)
+    {
+        return curConsoleField->isRightWall();
+    }
     bool result = !field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3952,6 +4676,12 @@ bool RobotModule::runIsWallAtRight()
 
 bool RobotModule::runIsFreeAtTop()
 {
+    if(!DISPLAY)
+    {
+        qDebug()<<"Is free U:"<<!curConsoleField->isUpWall();
+        return !curConsoleField->isUpWall();
+    }
+    
     bool result = field->currentCell()->canUp();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3965,6 +4695,13 @@ bool RobotModule::runIsFreeAtTop()
     
 bool RobotModule::runIsFreeAtBottom()
 {
+    
+    if(!DISPLAY)
+    {
+        qDebug()<<"Is free D:"<<!curConsoleField->isDownWall();
+        return !curConsoleField->isDownWall();
+    }
+    
     bool result = field->currentCell()->canDown();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3978,6 +4715,11 @@ bool RobotModule::runIsFreeAtBottom()
     
 bool RobotModule::runIsFreeAtLeft()
 {
+    if(!DISPLAY)
+    {
+        return !curConsoleField->isLeftWall();
+    }
+    
     bool result = field->currentCell()->canLeft();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
 //    if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -3991,6 +4733,11 @@ bool RobotModule::runIsFreeAtLeft()
     
 bool RobotModule::runIsFreeAtRight()
 {
+    
+    if(!DISPLAY)
+    {
+        return !curConsoleField->isRightWall();
+    }
     bool result = field->currentCell()->canRight();
     QString status = result? trUtf8("Да") : trUtf8("Нет");
    // QObject *sendr=sender();
@@ -4006,18 +4753,28 @@ bool RobotModule::runIsFreeAtRight()
 
 bool RobotModule::runIsColor()
     {
-     bool result = field->currentCell()->isColored();
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->IsColored;
+        }
+        
+        bool result = field->currentCell()->isColored();
         QString status = result? trUtf8("Да") : trUtf8("Нет");
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
+
       if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Клетка закрашена: \',клетка закрашена,нс"),
                            QString::fromUtf8("клетка закрашена"),status);
         return result;
         
     };
+    
+    
     bool RobotModule::runIsClear()
     {
+        if(!DISPLAY)
+        {
+            return !curConsoleField->getCurItem()->IsColored;
+        }
+        
         bool result = !field->currentCell()->isColored();
         QString status = result? trUtf8("да") : trUtf8("нет");
 //        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
@@ -4027,32 +4784,65 @@ bool RobotModule::runIsColor()
                            QString::fromUtf8("клетка чистая"),status);
         return result;
     };
-    qreal RobotModule::runRadiation(){    
+    
+    
+    qreal RobotModule::runRadiation()
+    {
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->radiation;
+        }
+        
         double result = field->currentCell()->radiation;
         QString status = QString::number(result);
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
-       if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
+
+        
+        if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Радиация: \',радиация,нс"),
                                          QString::fromUtf8("радиация"),status);
         return result;
     };
-    int RobotModule::runTemperature(){       
+    int RobotModule::runTemperature(){
+        
+        if(!DISPLAY)
+        {
+            return curConsoleField->getCurItem()->temperature;
+        }
+        
         int result = field->currentCell()->temperature;
         QString status = QString::number(result);
-//        if (sender() && qobject_cast<QDeclarativeItem*>(sender())) {
-//            emit sendToPultLog(status);
-//        }
+
       if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(QString::fromUtf8("вывод \'Температура: \',температура,нс"),
                                          QString::fromUtf8("температура"),status);
         return result;};
+
+    
     void RobotModule::runFieldSize(int& rows, int& cols)
     {
+        if(!DISPLAY)
+        {
+            rows=curConsoleField->Rows();
+            cols=curConsoleField->Columns();
+            return;
+        }
+        
         rows=field->rows();
         cols=field->columns();
     };
     bool RobotModule::runMark(const int row, const int col)
     {
+        qDebug()<<"Get M R:"<<row<<" C:"<<col;
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                 setError(trUtf8("Нет какой клетки!"));
+                return false;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->mark;
+        }
+        
         int rws=field->rows();
         int clmns=field->columns();
         if(row-1>=field->rows() ||col-1>=field->columns()|| row-1<0 || col-1<0)
@@ -4066,6 +4856,19 @@ bool RobotModule::runIsColor()
     };
     bool RobotModule::runColored(const int row, const int col)
     {
+        qDebug()<<"Get Col R:"<<row<<" C:"<<col;
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return false;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->IsColored;
+        }
+        
         int rows=field->rows();
         
         if(row-1>=field->rows() ||col-1>=field->columns())
@@ -4079,6 +4882,13 @@ bool RobotModule::runIsColor()
     };
     void RobotModule::runRobotPos(int& row, int& col)
     {
+        if(!DISPLAY)
+        {
+            row=curConsoleField->robotRow()+1;
+            col=curConsoleField->robotCol()+1;
+            return;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4092,6 +4902,20 @@ bool RobotModule::runIsColor()
     
     QChar RobotModule::runUpChar(const int row, const int col)
     {
+        
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return ' ';
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->upChar;
+        }
+        
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
            
@@ -4104,6 +4928,19 @@ bool RobotModule::runIsColor()
     };
     int RobotModule::runCellTemp(const int row, const int col)
     {
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return 0;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->temperature;
+        }
+        
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4116,6 +4953,18 @@ bool RobotModule::runIsColor()
     };
     qreal RobotModule::runCellRad(const int row, const int col)
     {
+        if(!DISPLAY)
+        {
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return 0;
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->radiation;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
         {
             
@@ -4129,6 +4978,20 @@ bool RobotModule::runIsColor()
     
 QChar RobotModule::runDownChar(const int row, const int col)
     {
+        
+        if(!DISPLAY)
+        {
+            qDebug()<<"Get DC R:"<<row<<" C:"<<col<<" ROWS"<<curConsoleField->Rows();
+            if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
+               |row-1<0 || col-1<0)
+            {
+                setError(trUtf8("Нет какой клетки!"));
+                return ' ';
+            }
+            
+            return curConsoleField->getItem(row-1, col-1)->downChar;
+        }
+        
         if(row-1>=field->rows() ||col-1>=field->columns())
             {
         

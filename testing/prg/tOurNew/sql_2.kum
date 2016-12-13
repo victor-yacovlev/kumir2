@@ -1,0 +1,22 @@
+﻿использовать Строки
+алг
+нач        
+цел ы 
+лит pofs="w2.pofs NOT REGEXP '^(be|have|not|other|do|some|many|s|endofarticle|where|several|more|same|however|most|van|der)$' and w2.pofs REGEXP 'CD|JJ|^NN|NP|NR|OD|QL|^RB|RN|UH|VB|^Z' "
+нц для ы от 1 до 10
+если ы<>0 то                                                                                                       
+вывод  '(select count(*),"',позЛит(ы) ,'" FROM avgEnt ',позЛит(ы) ,'as ent,all_pairs as p,docZscore as d,st_words as w2 WHERE w2.st_id2=p.st_id2 and '+pofs  
+вывод "   d.st_id1=p.st_id1 and d.st_id2=p.st_id2 and ent.st_id1=d.st_id1 and ent.st_id2=d.st_id2 and end.ro>0.8 and d.score",позЛит(ы),">5 and p.c",нижний регистр(позЛит(ы)),">2)UNION ALL"+нс                                                                                      
+все 
+кц
+кон
+алг лит позЛит(цел пози)
+нач
+если пози>0 то знач:="P"+цел_в_лит(пози)
+иначе 
+знач:="M"+цел_в_лит(-пози)
+все                        
+кон
+
+
+

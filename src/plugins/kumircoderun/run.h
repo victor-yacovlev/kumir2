@@ -90,6 +90,7 @@ public slots:
     void runToEnd();
     void runBlind();
     void runContinuous();
+    void runInCurrentThread();
 
     bool noticeOnLineChanged(int lineNo, uint32_t colStart, uint32_t colEnd);
     bool noticeOnFunctionReturn();

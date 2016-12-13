@@ -48,6 +48,8 @@ public slots:
     void restoreState();
 
 private /*methods*/:
+    bool event(QEvent *evt);
+
     explicit SecondaryWindow(QWidget * topLevelParent,
                              class SecondaryWindowImplementationInterface * windowContainer,
                              class SecondaryWindowImplementationInterface * dockContainer,

@@ -10,6 +10,8 @@
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
 #else
+#include <QLabel>
+#include <QToolButton>
 #include <QtGui>
 #endif
 
@@ -118,6 +120,14 @@ public slots:
     void updateStartPageTitle(const QString & title, const Shared::Browser::InstanceInterface * sender);
     void makeNativeExecutable();
     void saveNativeExecutable();
+    void ensureBottomVisible();
+
+    void addPresentationModeItemToMenu();
+    void enterPresentationMode();
+    void leavePresentationMode();
+    void togglePresentationMode();
+    bool isPresentationMode() const;
+
 
 private slots:
     void setFirstTimeWindowLayout();
@@ -214,6 +224,19 @@ private:
 
     int afterShowTimerId2_;
     int afterShowTimerId3_;
+    int afterShowTimerId4_;
+
+    struct PresentationModeContext {
+        bool enabled;
+        int savedMainFontSize;
+        QWidget * topRightCorner;
+        QLabel * clockWidget;
+        QToolButton * leavePresentationModeButton;
+        QAction * togglePresentationMode;
+        int clockTimerId;
+    } _presentationModeContext;
+
+
 };
 
 

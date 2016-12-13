@@ -11,6 +11,7 @@ You should change it corresponding to functionality.
 #include <iostream>
 #include "isometricrobotmodule.h"
 #include "sch_environment.h"
+#include "sch_game.h"
 #include "remotecontrol.h"
 
 namespace ActorIsometricRobot {
@@ -18,36 +19,97 @@ namespace ActorIsometricRobot {
 
 IsometricRobotModule::IsometricRobotModule(ExtensionSystem::KPlugin * parent)
     : IsometricRobotModuleBase(parent)
-    , window_(0)
-    , robotView_(0)
-    , parentObject_(parent)
-    , remoteControl_(0)
-    , remoteControlWidget_(0)
+    , _window(0)
+    , _robotView(0)
+    , _parentObject(parent)
+    , _remoteControl(0)
+    , _remoteControlWidget(0)
 {   
 }
 
 void IsometricRobotModule::createGui()
 {
-    window_ = new Robot25DWindow(parentObject_->myResourcesDir(), 0);
-    remoteControlWidget_ = new QWidget(0);
+    _window = new Robot25DWindow(_model, _parentObject->myResourcesDir(), 0);
+    _remoteControlWidget = new QWidget(0);
     QVBoxLayout*  rcLayout = new QVBoxLayout;
-    remoteControlWidget_->setLayout(rcLayout);
-    const QString rcFileName = parentObject_->myResourcesDir().absoluteFilePath("robot25d-rc.svg");
-    remoteControl_ = new SvgRemoteControl(parentObject_, this, rcFileName, remoteControlWidget_);
-    rcLayout->addWidget(remoteControl_);
+    _remoteControlWidget->setLayout(rcLayout);
+    const QString rcFileName = _parentObject->myResourcesDir().absoluteFilePath("robot25d-rc.svg");
+    _remoteControl = new SvgRemoteControl(_parentObject, this, rcFileName, _remoteControlWidget);
+    rcLayout->addWidget(_remoteControl);
 
-    robotView_ = window_->robotView();
+    _robotView = _window->robotView();
     connect(m_actionRobot25DLoadEnvironment, SIGNAL(triggered()),
-            window_, SLOT(handleLoadAction()));
+            _window, SLOT(handleLoadAction()));
     connect(m_actionRobot25DResetEnvironment, SIGNAL(triggered()),
             this, SLOT(reset()));
 
 }
 
-QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &)
+QString IsometricRobotModule::loadEnvironmentFromFile(const QString &fileName)
+{
+    QString message;
+    QFile f(fileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString script = "a = ";
+        script += QString::fromUtf8(f.readAll());
+        f.close();
+        Schema::Environment env;
+        QScriptEngine engine;
+        QScriptValue v = engine.evaluate(script);
+        if (Schema::parceJSON(v, env)) {
+            _model->loadEnvironment(env);
+        }
+        else {
+            message = QString::fromUtf8("Невозможно загрузить %1: это не обстановка Вертуна").arg(QFileInfo(fileName).fileName());
+        }
+    }
+    else {
+        message = QString::fromUtf8("Невозможно загрузить %1: файл не читается").arg(QFileInfo(fileName).fileName());
+    }
+    return message;
+}
+
+void IsometricRobotModule::loadDefaultEnvironment()
+{
+    static const QString DefaultGameFileName = myResourcesDir().absoluteFilePath("default.pm.json");
+    QFile f(DefaultGameFileName);
+    if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString script = "a = ";
+        script += QString::fromUtf8(f.readAll());
+        f.close();
+        Schema::Game g;
+        QScriptEngine engine;
+        QScriptValue v = engine.evaluate(script);
+        if (Schema::parceJSON(v, g)) {
+            Schema::Environment env = g.tasks.first().environment;
+            _model->loadEnvironment(env);
+        }
+    }
+}
+
+
+
+QString IsometricRobotModule::initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &cmdLine)
 {
     if (!configurationParameters.contains("tablesOnly")) {
-        createGui();
+        _model = new Robot25D::RobotModel;
+
+        bool hasGui=true;
+#ifdef Q_OS_LINUX
+        hasGui = 0 != getenv("DISPLAY");
+#endif
+        if (hasGui) {
+            createGui();
+        }
+        else {
+            const QString envFileName = cmdLine.value('e').toString();
+            if (envFileName.isEmpty()) {
+                loadDefaultEnvironment();
+            }
+            else {
+                loadEnvironmentFromFile(envFileName);
+            }
+        }
     }
     return "";
 }
@@ -59,9 +121,12 @@ QList<ExtensionSystem::CommandLineParameter> IsometricRobotModule::acceptableCom
 
 void IsometricRobotModule::reset()
 {
-    bool wasAnimated = robotView_->isAnimated();
-    robotView_->reset();
-    robotView_->setAnimated(wasAnimated);
+    _model->reset();
+    if (_robotView) {
+        bool wasAnimated = _robotView->isAnimated();
+        _robotView->reset();
+        _robotView->setAnimated(wasAnimated);
+    }
 }
 
 void IsometricRobotModule::loadActorData(QIODevice *source)
@@ -72,125 +137,131 @@ void IsometricRobotModule::loadActorData(QIODevice *source)
     const QString data = ts.readAll();
     Schema::Environment env;
     Schema::parceJSON(data, env);
-    robotView_->loadEnvironment(env);
+    _model->loadEnvironment(env);
 }
 
 void IsometricRobotModule::setAnimationEnabled(bool enabled)
 {
-    robotView_->setAnimated(enabled);
+    if (_robotView) {
+        _robotView->setAnimated(enabled);
+    }
 }
 
 
 QWidget* IsometricRobotModule::mainWidget() const
 {
-    return window_;
+    return _window;
 }
 
 void IsometricRobotModule::runGoForward()
 {
     setError("");
-//    window_->statusMessage(__FUNCTION__);
-    if (!robotView_->goForward()) {
-        setError(robotView_->lastError(QLocale::Russian));
+    if (!_model->goForward()) {
+        setError(_model->lastError(QLocale::Russian));
     }
-    robotView_->waitForAnimated();
+    if (_robotView) {
+        _robotView->waitForAnimated();
+    }
 }
 
 
 void IsometricRobotModule::runTurnRight()
 {
     setError("");
-//    window_->statusMessage(__FUNCTION__);
-    robotView_->turnRight();
-    robotView_->waitForAnimated();
+    _model->turnRight();
+    if (_robotView) {
+        _robotView->waitForAnimated();
+    }
 }
 
 
 void IsometricRobotModule::runTurnLeft()
 {
     setError("");
-//    window_->statusMessage(__FUNCTION__);
-    robotView_->turnLeft();
-    robotView_->waitForAnimated();
+    _model->turnLeft();
+    if (_robotView) {
+        _robotView->waitForAnimated();
+    }
 }
 
 
 void IsometricRobotModule::runDoPaint()
 {
     setError("");
-//    window_->statusMessage(__FUNCTION__);
-    robotView_->doPaint();
-    robotView_->waitForAnimated();
+    _model->doPaint();
+    if (_robotView) {
+        _robotView->waitForAnimated();
+    }
 }
 
 
 bool IsometricRobotModule::runIsCellPainted()
 {
     setError("");
-    return robotView_->isPainted();
+    return _model->isPainted();
 }
 
 bool IsometricRobotModule::runIsFlagged(int x, int y)
 {
     setError("");
-    return robotView_->isFlagged(x - 1, y - 1);
+    return _model->isFlagged(x - 1, y - 1);
 }
 
 
 bool IsometricRobotModule::runIsCellClean()
 {
     setError("");
-    return ! robotView_->isPainted();
+    return ! _model->isPainted();
 }
 
 
 bool IsometricRobotModule::runIsWallAhead()
 {
     setError("");
-    return robotView_->isWall();
+    return _model->isWall();
 }
 
 
 bool IsometricRobotModule::runIsFreeAhead()
 {
     setError("");
-    return ! robotView_->isWall();
+    return ! _model->isWall();
 }
 
 bool IsometricRobotModule::runIsPainted(const int x, const int y)
 {
     setError("");
-    return robotView_->isPainted(x - 1, y - 1);
+    return _model->isPainted(x - 1, y - 1);
 }
 
 bool IsometricRobotModule::runIsMarked(const int x, const int y)
 {
     setError("");
-    return robotView_->isPointed(x - 1, y - 1);
+    return _model->isPointed(x - 1, y - 1);
 }
 
 int IsometricRobotModule::runPositionX()
 {
     setError("");
-    return robotView_->positionX() + 1;
+    return _model->positionX() + 1;
 }
 
 int IsometricRobotModule::runPositionY()
 {
     setError("");
-    return robotView_->positionY() + 1;
+    return _model->positionY() + 1;
 }
 
 int IsometricRobotModule::runSizeX()
 {
     setError("");
-    return robotView_->sizeX();
+    return _model->sizeX();
 }
 
 int IsometricRobotModule::runSizeY()
 {
     setError("");
-    return robotView_->sizeY();
+    return _model->sizeY();
 }
 
     

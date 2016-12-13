@@ -410,7 +410,7 @@ void KumirProgram::stepRun()
     state_ = StepRun;
 //    stepRunAction_->setIcon(QIcon::fromTheme("debug-step-over",  QIcon(QApplication::instance()->property("sharePath").toString()+"/icons/debug-step-over.png")));
     PluginManager::instance()->switchGlobalState(PluginInterface::GS_Running);
-    setAllActorsAnimationFlag(true);
+    setAllActorsAnimationFlag(false);
     runner()->runStepOver();
 }
 

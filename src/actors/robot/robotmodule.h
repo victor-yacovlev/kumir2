@@ -71,6 +71,54 @@ namespace ActorRobot {
     class EditLine;
     class RobotModule;
 
+    class  CFieldItem
+    {
+     public:
+        CFieldItem();
+        void setWalls(int wallByte);
+        
+        
+        bool IsColored;
+        float radiation;
+        float temperature;
+        QChar upChar;
+        QChar downChar;
+        bool mark;
+        bool upWall;
+        bool downWall;
+        bool rightWall;
+        bool leftWall;
+        
+    };
+    
+    class ConsoleField
+    {
+     public:
+        ConsoleField(int w,int h);
+        void createField(int w,int h);
+        CFieldItem* getItem(int row,int col);
+        CFieldItem* getCurItem(); //Item with robot
+        bool goLeft();
+        bool goRight();
+        bool goUp();
+        bool goDown();
+        bool isUpWall();
+        bool isDownWall();
+        bool isLeftWall();
+        bool isRightWall();
+        
+        int  Columns(){return rows.at(0).count();}
+        int  Rows(){return rows.count();}
+        int  robotRow(){return roboRow;}
+        int  robotCol(){return roboCol;}
+        int loadFromFile(QString filename);
+        int consoleLoadFromDataStream(QIODevice *stream);
+    
+    private:
+        QList< QList<CFieldItem*> > rows;
+        int roboRow;
+        int roboCol;
+    };
     
     class SimpleRobot:
     public QGraphicsObject
@@ -151,7 +199,7 @@ namespace ActorRobot {
         
         void showMark(qreal upLeftCornerX,qreal upLeftCornerY,int size);
         
-        void setColorRect(QGraphicsRectItem* Rect);
+        void setColorRect(QGraphicsRectItem* Rect,QColor color);
         void setDownLine(QGraphicsLineItem* Line,QPen pen);
         void setLeftLine(QGraphicsLineItem* Line,QPen pen);
         void setRightLine(QGraphicsLineItem* Line,QPen pen);
@@ -561,7 +609,9 @@ namespace ActorRobot {
         QMenu * rescentMenu;
         void prepareNewWindow();
         int CurCellSize;
+        bool DISPLAY;
         ExtensionSystem::SettingsPtr curSettings;
+        ConsoleField* curConsoleField;
         
     signals:
         void sendToPultLog(const QVariant &);

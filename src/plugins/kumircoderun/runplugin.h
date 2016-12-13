@@ -67,6 +67,7 @@ public:
     void setStdOutTextStream(QTextStream *);
 
 public slots:
+    void runProgramInCurrentThread(bool useTestingEntryPoint = false);
     void runBlind();
     void runContinuous();
     void runStepOver();

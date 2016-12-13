@@ -1071,10 +1071,12 @@ public:
     inline static int code(Char ch) {
         unsigned char value = 0;
         EncodingError error;
-        value = KOI8RCodingTable::enc(ch, error);
+//        value = KOI8RCodingTable::enc(ch, error);
+        value = CP1251CodingTable::enc(ch, error);
         if (error) {
             if (OutOfTable == error) {
-                Core::abort(Core::fromUtf8("Символ вне кодировки КОИ-8"));
+//                Core::abort(Core::fromUtf8("Символ вне кодировки КОИ-8"));
+                Core::abort(Core::fromUtf8("Символ вне кодировки CP-1251"));
             }
             else {
                 Core::abort(Core::fromUtf8("Ошибка кодирования символа"));
@@ -1091,7 +1093,11 @@ public:
             char buf[2] = { static_cast<char>(code), '\0' };
             charptr p = reinterpret_cast<charptr>(&buf);
             EncodingError encodingError;
-            uint32_t val = KOI8RCodingTable::dec(p, encodingError);
+//            uint32_t val = KOI8RCodingTable::dec(p, encodingError);
+            uint32_t val = CP1251CodingTable::dec(p, encodingError);
+            if (OutOfTable == encodingError) {
+                Core::abort(Core::fromUtf8("Символ с таким кодом не определен в кодировке CP-1251"));
+            }
             return static_cast<wchar_t>(val);
         }
     }

@@ -21,8 +21,8 @@ public:
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 private:
-    QImage m_image;
-    QMutex *mutex_image;
+    QImage _image;
+    QMutex *_mutex_image;
 };
 
 }

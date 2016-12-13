@@ -1,6 +1,9 @@
 #ifndef LLVMGENERATOR_H
 #define LLVMGENERATOR_H
 
+#include "llvm_module.h"
+#include "llvm_function.h"
+
 #include "nametranslator.h"
 
 #include "dataformats/ast.h"
@@ -9,19 +12,10 @@
 
 #include "interfaces/generatorinterface.h"
 #include <llvm/Config/llvm-config.h>
-#if LLVM_VERSION_MINOR >= 3
+
 #include <llvm/IR/Module.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
-#else
-#include <llvm/Module.h>
-#include <llvm/LLVMContext.h>
-#if LLVM_VERSION_MINOR == 0
-#include <llvm/Support/IRBuilder.h>
-#else
-#include <llvm/IRBuilder.h>
-#endif
-#endif
 #include <llvm/Support/MemoryBuffer.h>
 
 #include <cstdint>
@@ -46,10 +40,16 @@ public:
     void reset(bool addMainEntryPoint, Shared::GeneratorInterface::DebugLevel debugLevel);
     void addKumirModule(const AST::ModulePtr kmod);
     void createKumirModuleImplementation(const AST::ModulePtr kmod);
-    llvm::Module * getResult();
-    llvm::Module * getStdLibModule();
-    void createExternsTable(const llvm::Module * const source, const CString & prefix);
-private:
+    LLVM::ModuleRef & getResult();
+    LLVM::ModuleRef & getStdLibModule();
+
+    void createExternsTable(const LLVM::ModuleRef & source, const QByteArray & prefix);
+
+/* Notice:
+ * The fields below are private, but f**king LLVM API changes each minor release,
+ * so it is convient to keep them public for #ifdef'ed access
+ */
+public:
     enum AllocaPlace {
         AsIs,
         BeforeTerminator,
@@ -59,16 +59,16 @@ private:
     typedef llvm::IRBuilder<> Builder;
     void createStdLibModule();
 
-    llvm::StructType * getScalarType();
-    llvm::StructType * getArrayType();
-    llvm::StructType * getStringRefType();
+    LLVM::TypeRef getScalarType();
+    LLVM::TypeRef getArrayType();
+    LLVM::TypeRef getStringRefType();
 
     void addGlobalVariable(llvm::IRBuilder<> & builder, const AST::VariablePtr kvar, bool constant);
     void addFunction(const AST::AlgorithmPtr kfunc, bool createBody);
     void addFunctionBody(const QList<AST::StatementPtr> & statements, const AST::AlgorithmPtr & alg);
     void createMainFunction(const AST::AlgorithmPtr & entryPoint);
 
-    void addExternsToModule(llvm::Module * const target);
+    void addExternsToModule(LLVM::ModuleRef & target);
     void readStdLibFunctions();
 
     void createVarInitialize(llvm::IRBuilder<> & builder, const AST::StatementPtr & st, bool global);
@@ -102,27 +102,20 @@ private:
 
 
 
-    llvm::AllocaInst * CreateAlloca(Builder & builder, llvm::Type * ty, const CString & name, AllocaPlace allocaPlace);
+    llvm::AllocaInst * CreateAlloca(Builder & builder, LLVM::TypeRef ty, const QByteArray & name, AllocaPlace allocaPlace);
 
-    llvm::Module* currentModule_;
+    LLVM::ModuleRef currentModule_;
+
     AST::ModulePtr currentKModule_;
-    llvm::Function* currentFunction_;
+    LLVM::FunctionRef currentFunction_;
     llvm::BasicBlock * currentFunctionEntry_;    
     llvm::BasicBlock * functionEntryPoint_;
     AST::AlgorithmPtr currentAlgorithm_;
     llvm::LLVMContext* context_;
     QScopedPointer<NameTranslator> nameTranslator_;
-#if LLVM_VERSION_MINOR < 7
-    llvm::Module* stdlibModule_;
-#else
-    std::unique_ptr<llvm::Module> stdlibModule_;
-#endif
-    QMap<AST::AlgorithmPtr, llvm::Function*> functMap_;
-#if LLVM_VERSION_MINOR < 7
-    QScopedPointer<llvm::MemoryBuffer> stdlibContents_;
-#else
-    std::unique_ptr<llvm::MemoryBuffer> stdlibContents_;
-#endif
+    LLVM::ModuleRef stdlibModule_;
+    QMap<AST::AlgorithmPtr, LLVM::FunctionRef> functMap_;
+    QByteArray stdlibContents_;
     llvm::BasicBlock* currentBlock_;
     QStack<llvm::BasicBlock*> currentLoopEnd_;
     llvm::BasicBlock* currentFunctionExit_;
@@ -130,114 +123,114 @@ private:
     uint32_t switchCaseCounter_;
     uint32_t loopCounter_;            
 
-    llvm::Function* kumirInitStdLib_;
-    llvm::Function* kumirSetMainArguments_;
-    llvm::Function* kumirCreateUndefinedScalar_;
-    llvm::Function* kumirCreateUndefinedArray_;
-    llvm::Function* kumirCreateDefinedScalar_;
-    llvm::Function* kumirLinkArray_;
-    llvm::Function* kumirCreateArray1_;
-    llvm::Function* kumirRefArray1_;
-    llvm::Function* kumirCloneArray1_;
-    llvm::Function* kumirCreateArray2_;
-    llvm::Function* kumirRefArray2_;
-    llvm::Function* kumirCloneArray2_;
-    llvm::Function* kumirCreateArray3_;
-    llvm::Function* kumirRefArray3_;
-    llvm::Function* kumirCloneArray3_;
-    llvm::Function* kumirFreeArray_;
-    llvm::Function* kumirCleanUpArrayInShape_;
+    LLVM::FunctionRef kumirInitStdLib_;
+    LLVM::FunctionRef kumirSetMainArguments_;
+    LLVM::FunctionRef kumirCreateUndefinedScalar_;
+    LLVM::FunctionRef kumirCreateUndefinedArray_;
+    LLVM::FunctionRef kumirCreateDefinedScalar_;
+    LLVM::FunctionRef kumirLinkArray_;
+    LLVM::FunctionRef kumirCreateArray1_;
+    LLVM::FunctionRef kumirRefArray1_;
+    LLVM::FunctionRef kumirCloneArray1_;
+    LLVM::FunctionRef kumirCreateArray2_;
+    LLVM::FunctionRef kumirRefArray2_;
+    LLVM::FunctionRef kumirCloneArray2_;
+    LLVM::FunctionRef kumirCreateArray3_;
+    LLVM::FunctionRef kumirRefArray3_;
+    LLVM::FunctionRef kumirCloneArray3_;
+    LLVM::FunctionRef kumirFreeArray_;
+    LLVM::FunctionRef kumirCleanUpArrayInShape_;
 
-    llvm::Function* kumirFillArrayI_;
-    llvm::Function* kumirFillArrayR_;
-    llvm::Function* kumirFillArrayB_;
-    llvm::Function* kumirFillArrayC_;
-    llvm::Function* kumirFillArrayS_;
-    llvm::Function* kumirCreateInt_;
-    llvm::Function* kumirCreateReal_;
-    llvm::Function* kumirCreateBool_;
-    llvm::Function* kumirCreateChar_;
-    llvm::Function* kumirCreateString_;
-    llvm::Function* kumirAssignScalarToScalar_;
-    llvm::Function* kumirAssignScalarToStringRef_;
-    llvm::Function* kumirAssignScalarToArrayElement_;
-    llvm::Function* kumirMoveScalar_;
-    llvm::Function* kumirFreeScalar_;
-    llvm::Function* kumirGetArray1Element_;
-    llvm::Function* kumirGetArray2Element_;
-    llvm::Function* kumirGetArray3Element_;
-    llvm::Function* kumirGetStringElement_;
-    llvm::Function* kumirGetStringSlice_;
-    llvm::Function* kumirGetStringElementRef_;
-    llvm::Function* kumirGetStringSliceRef_;
+    LLVM::FunctionRef kumirFillArrayI_;
+    LLVM::FunctionRef kumirFillArrayR_;
+    LLVM::FunctionRef kumirFillArrayB_;
+    LLVM::FunctionRef kumirFillArrayC_;
+    LLVM::FunctionRef kumirFillArrayS_;
+    LLVM::FunctionRef kumirCreateInt_;
+    LLVM::FunctionRef kumirCreateReal_;
+    LLVM::FunctionRef kumirCreateBool_;
+    LLVM::FunctionRef kumirCreateChar_;
+    LLVM::FunctionRef kumirCreateString_;
+    LLVM::FunctionRef kumirAssignScalarToScalar_;
+    LLVM::FunctionRef kumirAssignScalarToStringRef_;
+    LLVM::FunctionRef kumirAssignScalarToArrayElement_;
+    LLVM::FunctionRef kumirMoveScalar_;
+    LLVM::FunctionRef kumirFreeScalar_;
+    LLVM::FunctionRef kumirGetArray1Element_;
+    LLVM::FunctionRef kumirGetArray2Element_;
+    LLVM::FunctionRef kumirGetArray3Element_;
+    LLVM::FunctionRef kumirGetStringElement_;
+    LLVM::FunctionRef kumirGetStringSlice_;
+    LLVM::FunctionRef kumirGetStringElementRef_;
+    LLVM::FunctionRef kumirGetStringSliceRef_;
 
-    llvm::Function* kumirConvertCharToString_;
-    llvm::Function* kumirConvertIntToReal_;
+    LLVM::FunctionRef kumirConvertCharToString_;
+    LLVM::FunctionRef kumirConvertIntToReal_;
 
-    llvm::Function* kumirLoopForFromToInitCounter_;
-    llvm::Function* kumirLoopForFromToStepInitCounter_;
+    LLVM::FunctionRef kumirLoopForFromToInitCounter_;
+    LLVM::FunctionRef kumirLoopForFromToStepInitCounter_;
 
-    llvm::Function* kumirLoopForCheckCounter_;
+    LLVM::FunctionRef kumirLoopForCheckCounter_;
 
-    llvm::Function* kumirLoopTimesInitCounter_;
-    llvm::Function* kumirLoopTimesCheckCounter_;
+    LLVM::FunctionRef kumirLoopTimesInitCounter_;
+    LLVM::FunctionRef kumirLoopTimesCheckCounter_;
 
-    llvm::Function* kumirLoopEndCounter_;
+    LLVM::FunctionRef kumirLoopEndCounter_;
 
-    llvm::Function* kumirScalarAsBool_;
+    LLVM::FunctionRef kumirScalarAsBool_;
 
-    llvm::Function* kumirOutputStdoutII_;
-    llvm::Function* kumirOutputStdoutSI_;
-    llvm::Function* kumirOutputStdoutIS_;
-    llvm::Function* kumirOutputStdoutSS_;
-    llvm::Function* kumirOutputStdout_;
+    LLVM::FunctionRef kumirOutputStdoutII_;
+    LLVM::FunctionRef kumirOutputStdoutSI_;
+    LLVM::FunctionRef kumirOutputStdoutIS_;
+    LLVM::FunctionRef kumirOutputStdoutSS_;
+    LLVM::FunctionRef kumirOutputStdout_;
 
-    llvm::Function* kumirPrintScalarVariable_;
-    llvm::Function* kumirInputScalarVariable_;
-    llvm::Function* kumirPrintArrayVariable_;
-    llvm::Function* kumirInputArrayVariable_;
+    LLVM::FunctionRef kumirPrintScalarVariable_;
+    LLVM::FunctionRef kumirInputScalarVariable_;
+    LLVM::FunctionRef kumirPrintArrayVariable_;
+    LLVM::FunctionRef kumirInputArrayVariable_;
 
-    llvm::Function* kumirOutputFileII_;
-    llvm::Function* kumirOutputFileSI_;
-    llvm::Function* kumirOutputFileIS_;
-    llvm::Function* kumirOutputFileSS_;
+    LLVM::FunctionRef kumirOutputFileII_;
+    LLVM::FunctionRef kumirOutputFileSI_;
+    LLVM::FunctionRef kumirOutputFileIS_;
+    LLVM::FunctionRef kumirOutputFileSS_;
 
-    llvm::Function* kumirInputStdin_;
-    llvm::Function* kumirInputFile_;
-    llvm::Function* kumirGetScalarArgument_;
-    llvm::Function* kumirGetArrayArgument_;
+    LLVM::FunctionRef kumirInputStdin_;
+    LLVM::FunctionRef kumirInputFile_;
+    LLVM::FunctionRef kumirGetScalarArgument_;
+    LLVM::FunctionRef kumirGetArrayArgument_;
 
-    llvm::Function* kumirAssert_;
-    llvm::Function* kumirAbortOnError_;
-    llvm::Function* kumirSetCurrentLineNumber_;
-    llvm::Function* kumirCheckValueDefined_;
-    llvm::Function* kumirHalt_;
-    llvm::Function* kumirCheckCallStack_;
-    llvm::Function* kumirPopCallStackCounter_;
+    LLVM::FunctionRef kumirAssert_;
+    LLVM::FunctionRef kumirAbortOnError_;
+    LLVM::FunctionRef kumirSetCurrentLineNumber_;
+    LLVM::FunctionRef kumirCheckValueDefined_;
+    LLVM::FunctionRef kumirHalt_;
+    LLVM::FunctionRef kumirCheckCallStack_;
+    LLVM::FunctionRef kumirPopCallStackCounter_;
 
-    llvm::Function* kumirOpEq_;
-    llvm::Function* kumirOpNeq_;
-    llvm::Function* kumirOpLs_;
-    llvm::Function* kumirOpGt_;
-    llvm::Function* kumirOpLq_;
-    llvm::Function* kumirOpGq_;
+    LLVM::FunctionRef kumirOpEq_;
+    LLVM::FunctionRef kumirOpNeq_;
+    LLVM::FunctionRef kumirOpLs_;
+    LLVM::FunctionRef kumirOpGt_;
+    LLVM::FunctionRef kumirOpLq_;
+    LLVM::FunctionRef kumirOpGq_;
 
-    llvm::Function* kumirOpAdd_;
-    llvm::Function* kumirOpSub_;
-    llvm::Function* kumirOpMul_;
-    llvm::Function* kumirOpDiv_;
-    llvm::Function* kumirOpPow_;
+    LLVM::FunctionRef kumirOpAdd_;
+    LLVM::FunctionRef kumirOpSub_;
+    LLVM::FunctionRef kumirOpMul_;
+    LLVM::FunctionRef kumirOpDiv_;
+    LLVM::FunctionRef kumirOpPow_;
 
-    llvm::Function* kumirOpNeg_;
+    LLVM::FunctionRef kumirOpNeg_;
 
     std::vector<llvm::Value*> tempValsToFree_;
     std::stack<size_t> tempValsToFreeStartPos_;
     bool addMainEntryPoint_;
-    std::list<llvm::Function*> initFunctions_;
+    QList<LLVM::FunctionRef> initFunctions_;
 
     Shared::GeneratorInterface::DebugLevel debugLevel_;
 
-    QList<const llvm::Function*> externs_;
+    QList<LLVM::FunctionRef> externs_;
     QMap<AST::ExpressionWPtr, llvm::Value*> calculateCache_;
     int lastLineNumber_;
 
@@ -249,7 +242,7 @@ private:
      * @param params list of parameter type names
      * @return extern "C" name
      */
-    static CString buildCXXName(const QString & ns,
+    static QByteArray buildCXXName(const QString & ns,
                                 const QString & clazz,
                                 const QString & name,
                                 const QStringList & params

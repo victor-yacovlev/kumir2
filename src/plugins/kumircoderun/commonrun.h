@@ -49,6 +49,7 @@ public:
             )  _override;
     ~ExternalModuleCallFunctor();
     void checkForActorConnected(const std::string & asciiModuleName);
+    void terminate();
 
 private slots:
     void handleActorSync();

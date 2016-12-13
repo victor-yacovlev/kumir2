@@ -1,10 +1,8 @@
 # Actors not ready for production use
 complexnumbers
-draw
-# grasshopper
-isometricrobot
+#draw
+grasshopper
 turtle
-
 
 # Tools used by developers only
 as
@@ -14,3 +12,5 @@ kumir2-python
 kumir2-python-teacher
 python3language
 
+# Generator not ready for production use
+llvmcodegenerator

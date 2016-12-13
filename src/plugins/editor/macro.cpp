@@ -14,14 +14,14 @@ QString screenString(QString s)
     return s;
 }
 
-extern QDomElement dumpMacro(const Macro &m, QDomDocument &document, QDomElement &root)
+extern QDomElement dumpMacro(QSharedPointer<Macro> m, QDomDocument &document, QDomElement &root)
 {
     QDomElement macroElement = document.createElement("macro");
-    macroElement.setAttribute("title", m.title);
-    if (!m.key.isNull())
-        macroElement.setAttribute("key", m.key);
-    for (int i=0; i<m.commands.size(); i++) {
-        const KeyCommand & cmd = m.commands[i];
+    macroElement.setAttribute("title", m->title);
+    if (!m->key.isNull())
+        macroElement.setAttribute("key", m->key);
+    for (int i=0; i<m->commands.size(); i++) {
+        const KeyCommand & cmd = m->commands[i];
         QDomElement commandElement = document.createElement("command");
         commandElement.setAttribute("name", dumpKeyCommandType(cmd.type));
         if (cmd.text.length() > 0)
@@ -32,26 +32,28 @@ extern QDomElement dumpMacro(const Macro &m, QDomDocument &document, QDomElement
     return macroElement;
 }
 
-extern bool loadMacro(const QDomElement &v, Macro &m)
+extern bool loadMacro(const QDomElement &v, QSharedPointer<Macro> m)
 {
-    m.action = 0;
-    m.commands.clear();
-    m.title = v.attribute("title");
+    m->action = 0;
+    m->commands.clear();
+    m->title = v.attribute("title");
     const QString key = v.attribute("key").trimmed();
+    const QString last = v.attribute("last", "false").toLower().trimmed();
+    m->showInLastBlock = last=="true" || last=="1";
     if (key.length()==1)
-        m.key = key[0];    
+        m->key = key[0];
     else
-        m.key = QChar(QChar::Null);
+        m->key = QChar(QChar::Null);
     if ( key.toLower() == "up" )
-        m.extKey = Qt::Key_Up;
+        m->extKey = Qt::Key_Up;
     else if ( key.toLower() == "down" )
-        m.extKey = Qt::Key_Down;
+        m->extKey = Qt::Key_Down;
     else if ( key.toLower() == "left" )
-        m.extKey = Qt::Key_Left;
+        m->extKey = Qt::Key_Left;
     else if ( key.toLower() == "right" )
-        m.extKey = Qt::Key_Right;
+        m->extKey = Qt::Key_Right;
     else if ( key.toLower() == "space" )
-        m.extKey = Qt::Key_Space;
+        m->extKey = Qt::Key_Space;
 
     const QDomNodeList commands = v.elementsByTagName("command");
     for (int i=0; i<commands.count(); i++) {
@@ -64,21 +66,21 @@ extern bool loadMacro(const QDomElement &v, Macro &m)
                     loadKeyCommandType(cmd.attribute("name")),
                     text
                     );
-        m.commands.push_back(command);
+        m->commands.push_back(command);
     }
-    return m.commands.size() > 0;
+    return m->commands.size() > 0;
 }
 
-extern QList<Macro> loadFromFile(const QString &fileName)
+extern QList<QSharedPointer<Macro> > loadFromFile(const QString &fileName)
 {
-    QList<Macro> result;
+    QList<QSharedPointer<Macro> > result;
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
         QDomDocument doc;
         doc.setContent(&f);
         const QDomNodeList macros = doc.elementsByTagName("macro");
         for (int i=0; i<macros.count(); i++) {
-            Macro macro;
+            QSharedPointer<Macro> macro(new Macro());
             if (loadMacro(macros.at(i).toElement(), macro)) {
                 result << macro;
             }
@@ -88,13 +90,13 @@ extern QList<Macro> loadFromFile(const QString &fileName)
     return result;
 }
 
-extern bool saveToFile(const QString &fileName, const QList<Macro> &macros)
+extern bool saveToFile(const QString &fileName, const QList<QSharedPointer<Macro> > &macros)
 {
     QDomDocument document("macros");
     QDomElement root = document.createElement("macros");
     document.appendChild(root);
     for (int i=0; i<macros.size(); i++) {
-        const Macro & macro = macros[i];
+        QSharedPointer<Macro> macro = macros[i];
         dumpMacro(macro, document, root);
     }
     QFile f(fileName);

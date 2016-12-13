@@ -15,33 +15,33 @@ void NameTranslator::reset()
     l_.push_back(root);
 }
 
-CString NameTranslator::add(const QString &name)
+QByteArray NameTranslator::add(const QString &name)
 {
     const QString baseCname = suggestName(name);
     QString cname = baseCname;
 
     uint16_t counter = 1;
-    while (isReservedName(cname) || !find(cname).empty()) {
+    while (isReservedName(cname) || !find(cname).isEmpty()) {
         cname = QString("%1_%2").arg(baseCname).arg(counter);
     }
 
-    CString result = cname.toStdString();
+    QByteArray result = cname.toLatin1();
     ns().rmap.insert(result, name);
     ns().map.insert(name, result);
     return result;
 }
 
-CString NameTranslator::addGlobal(const QString &name)
+QByteArray NameTranslator::addGlobal(const QString &name)
 {
     const QString baseCname = suggestName(name);
     QString cname = baseCname;
 
     uint16_t counter = 1;
-    while (isReservedName(cname) || !find(cname).empty()) {
+    while (isReservedName(cname) || !find(cname).isEmpty()) {
         cname = QString("%1_%2").arg(baseCname).arg(counter);
     }
 
-    CString result = cname.toStdString();
+    QByteArray result = cname.toLatin1();
     g_.rmap.insert(result, name);
     g_.map.insert(name, result);
     return result;
@@ -59,10 +59,10 @@ void NameTranslator::endNamespace()
     l_.pop_back();
 }
 
-CString NameTranslator::find(const QString &name) const
+QByteArray NameTranslator::find(const QString &name) const
 {
     int nsIndex = l_.size() - 1;
-    CString result;
+    QByteArray result;
     while (nsIndex >= 0) {
         const Namespace &ns = l_.at(nsIndex);
         if (ns.map.contains(name)) {
@@ -71,7 +71,7 @@ CString NameTranslator::find(const QString &name) const
         }
         nsIndex --;
     }
-    if (result.empty() && g_.map.contains(name)) {
+    if (result.isEmpty() && g_.map.contains(name)) {
         result = g_.map[name];
     }
     return result;
@@ -82,14 +82,14 @@ NameTranslator::Namespace& NameTranslator::ns()
     return l_.back();
 }
 
-CString NameTranslator::screenUtf8Name(const QString &x)
+QByteArray NameTranslator::screenUtf8Name(const QString &x)
 {
-    CString result;
+    QByteArray result;
     for (int i=0; i<x.length(); i++) {
         const QChar source = x.at(i);
         if (0 == source.toLatin1() || source.isSpace() || '@' == source) {
             QString code = "u" + QString::number(source.unicode(), 16).toUpper();
-            result.append(code.toStdString());
+            result.append(code.toLatin1());
         }
         else {
             result.push_back(source.toLatin1());

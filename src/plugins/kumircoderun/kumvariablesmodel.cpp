@@ -7,6 +7,10 @@ extern "C" {
 #include <QPalette>
 #include <QApplication>
 
+#include "extensionsystem/kplugin.h"
+#include "extensionsystem/pluginmanager.h"
+#include "shared/interfaces/editorinterface.h"
+
 
 namespace KumirCodeRun {
 
@@ -365,7 +369,7 @@ QVariant KumVariablesModel::data(const QModelIndex &index, int role) const
                 return tr("Globals");
             }
             else if (role == Qt::FontRole) {
-                QFont fnt;
+                QFont fnt = mainEditorFont();
                 fnt.setBold(true);
                 return fnt;
             }
@@ -382,7 +386,7 @@ QVariant KumVariablesModel::data(const QModelIndex &index, int role) const
                 return text;
             }
             else if (role == Qt::FontRole) {
-                QFont fnt;
+                QFont fnt = mainEditorFont();
                 fnt.setBold(true);
                 return fnt;
             }
@@ -404,11 +408,11 @@ QVariant KumVariablesModel::data(const QModelIndex &index, int role) const
                 mutex_->lock();
                 bool isReference = item->isReference();
                 mutex_->unlock();
+                QFont fnt = mainEditorFont();
                 if (isReference) {
-                    QFont fnt;
                     fnt.setItalic(true);
-                    return fnt;
                 }
+                return fnt;
             }
         }
         else if (item->itemType() == KumVariableItem::ArrayItem) {
@@ -423,7 +427,11 @@ QVariant KumVariablesModel::data(const QModelIndex &index, int role) const
                 else if (item->hasValue())
                     text += " = " + item->arrayRepresentation();
                 mutex_->unlock();
-                return text;
+                return text;                
+            }
+            else if (role == Qt::FontRole) {
+                QFont fnt = mainEditorFont();
+                return fnt;
             }
         }
     }
@@ -503,6 +511,20 @@ void KumVariablesModel::emitValueChanged(
         ::memcpy(lessIndeces.data(), indeces.constData(), (indeces.size()-1) * sizeof(int));
         emitValueChanged(variable, lessIndeces);
     }
+}
+
+QFont KumVariablesModel::mainEditorFont() const
+{
+    using namespace Shared;
+    using namespace ExtensionSystem;
+
+    QFont result;
+
+    EditorInterface* editorPlugin = PluginManager::instance()->findPlugin<EditorInterface>();
+    if (editorPlugin) {
+        result = editorPlugin->defaultEditorFont();
+    }
+    return result;
 }
 
 QString KumVariableItem::name() const

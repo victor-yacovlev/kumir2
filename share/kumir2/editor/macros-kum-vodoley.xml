@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <macros>
-    <macro title="использовать Водолей" key="3">
+    <macro title="использовать Водолей" key="5" last="true">
 	<command name="InsertImport" text="Водолей" />
 
 

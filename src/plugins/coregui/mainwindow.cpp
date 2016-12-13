@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <QSharedPointer>
+#include <QMenuBar>
 #include <QMessageBox>
 
 namespace CoreGUI {
@@ -30,12 +31,38 @@ MainWindow::MainWindow(Plugin * p) :
     prevBottomSize_(DefaultConsoleHeight),
     menubarContextMenu_(0),
     afterShowTimerId2_(0),
-    afterShowTimerId3_(0)
+    afterShowTimerId3_(0),
+    afterShowTimerId4_(0)
 {   
 
     debuggerWindow_ = 0;
+    _presentationModeContext.enabled = false;
+    _presentationModeContext.clockTimerId = 0;
 
-    ui->setupUi(this);    
+
+    ui->setupUi(this);
+
+    _presentationModeContext.topRightCorner = new QWidget(this);
+    _presentationModeContext.clockWidget = new QLabel(_presentationModeContext.topRightCorner);
+    _presentationModeContext.clockWidget->setText("HH:mm");
+    _presentationModeContext.leavePresentationModeButton = new QToolButton(_presentationModeContext.topRightCorner);
+    _presentationModeContext.leavePresentationModeButton->setCheckable(true);
+    QHBoxLayout *l = new QHBoxLayout(_presentationModeContext.topRightCorner);
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(4);
+    _presentationModeContext.topRightCorner->setLayout(l);
+    _presentationModeContext.leavePresentationModeButton->setIcon(Widgets::IconProvider::self()->iconForName("fullscreen-exit"));
+    _presentationModeContext.leavePresentationModeButton->setToolTip(tr("Exit presentation mode"));
+    _presentationModeContext.clockWidget->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+    _presentationModeContext.clockWidget->setMinimumWidth(50);
+    _presentationModeContext.topRightCorner->setMinimumSize(80, 24);
+    connect(_presentationModeContext.leavePresentationModeButton, SIGNAL(clicked(bool)), this, SLOT(leavePresentationMode()));
+    l->addWidget(_presentationModeContext.clockWidget);
+    l->addWidget(_presentationModeContext.leavePresentationModeButton);
+    ui->menubar->setCornerWidget(_presentationModeContext.topRightCorner);
+    _presentationModeContext.topRightCorner->setVisible(false);
+
+
     ui->menuEdit->setProperty("menuRole", "edit");
     ui->menuInsert->setProperty("menuRole", "insert");
 
@@ -760,6 +787,15 @@ void MainWindow::setFocusOnCentralWidget()
         twe->component->setFocus();
 }
 
+static void notifyAllActorsGuiReady()
+{
+    QList<Shared::ActorInterface*> actors =
+            PluginManager::instance()->findPlugins<Shared::ActorInterface>();
+    Q_FOREACH(Shared::ActorInterface* actor, actors) {
+        actor->notifyGuiReady();
+    }
+}
+
 void MainWindow::timerEvent(QTimerEvent *e)
 {
     e->accept();
@@ -772,6 +808,16 @@ void MainWindow::timerEvent(QTimerEvent *e)
         killTimer(afterShowTimerId3_);
         afterShowTimerId3_ = 0;
         setFirstTimeWindowLayout_stage3();
+        afterShowTimerId4_ = startTimer(100);
+    }
+    if (afterShowTimerId4_ == e->timerId()) {
+        killTimer(afterShowTimerId4_);
+        notifyAllActorsGuiReady();
+    }
+    if (isPresentationMode() && _presentationModeContext.clockTimerId==e->timerId()) {
+        const QTime dt = QDateTime::currentDateTime().time();
+        const QString time = dt.toString("HH:mm");
+        _presentationModeContext.clockWidget->setText(time);
     }
     checkCounterValue();
 }
@@ -1125,6 +1171,70 @@ void MainWindow::saveNativeExecutable()
     }
     worker->progressDialog->deleteLater();
     worker->deleteLater();
+}
+
+void MainWindow::ensureBottomVisible()
+{
+    qDebug() << "Ensure bottom visible";
+    ui->actionShow_Console_Pane->setChecked(true);
+    setConsoleVisible(true);
+}
+
+void MainWindow::addPresentationModeItemToMenu()
+{
+    ui->menuWindow->addSeparator();
+    _presentationModeContext.togglePresentationMode = new QAction(this);
+    _presentationModeContext.togglePresentationMode->setCheckable(true);
+    _presentationModeContext.togglePresentationMode->setText(tr("Presentation mode"));
+    _presentationModeContext.togglePresentationMode->setShortcut(QKeySequence("F11"));
+    _presentationModeContext.togglePresentationMode->setShortcutContext(Qt::ApplicationShortcut);
+    connect(_presentationModeContext.togglePresentationMode, SIGNAL(triggered(bool)), this, SLOT(togglePresentationMode()));
+    ui->menuWindow->addAction(_presentationModeContext.togglePresentationMode);
+}
+
+void MainWindow::enterPresentationMode()
+{
+    if (isPresentationMode())
+        return;
+    _presentationModeContext.togglePresentationMode->setChecked(true);
+    _presentationModeContext.leavePresentationModeButton->setChecked(true);
+    _presentationModeContext.clockTimerId = startTimer(300);
+    _presentationModeContext.enabled = true;
+    setWindowState(windowState() | Qt::WindowFullScreen);
+    _presentationModeContext.topRightCorner->setVisible(true);
+    if (m_plugin->mySettings()) {
+        int mainFontSize = m_plugin->mySettings()->value(Plugin::PresentationModeMainFontSizeKey,
+                                                         Plugin::PresentationModeMainFontSizeDefaultValue).toInt();
+        m_plugin->updateAppFontSize(mainFontSize);
+    }
+}
+
+void MainWindow::leavePresentationMode()
+{
+    if (!isPresentationMode())
+        return;
+    _presentationModeContext.togglePresentationMode->setChecked(false);
+    _presentationModeContext.leavePresentationModeButton->setChecked(false);
+    killTimer(_presentationModeContext.clockTimerId);
+    _presentationModeContext.enabled = false;
+    setWindowState(windowState() &~ Qt::WindowFullScreen);
+    _presentationModeContext.topRightCorner->setVisible(false);
+    m_plugin->updateSettings(QStringList());  // Restore old font size from settings
+}
+
+void MainWindow::togglePresentationMode()
+{
+    if (!isPresentationMode()) {
+        enterPresentationMode();
+    }
+    else {
+        leavePresentationMode();
+    }
+}
+
+bool MainWindow::isPresentationMode() const
+{
+    return _presentationModeContext.enabled;
 }
 
 bool MainWindow::saveCurrentFileAs()
@@ -1628,8 +1738,12 @@ void MainWindow::loadSettings(const QStringList & keys)
                 sizes[0] = height() - sizes[1];
             }
             ui->splitter->setSizes(sizes);
-            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+            bool showConsole = settings_->value(Plugin::MainWindowShowConsoleKey, false).toBool();
+//            ui->actionShow_Console_Pane->setChecked(sizes[1] > 0);
+            ui->actionShow_Console_Pane->setChecked(showConsole);
         }
+        // notify GUI ready
+        afterShowTimerId4_ = startTimer(300);
     }
     menubarContextMenu_->loadSettings();
 }
@@ -1711,6 +1825,7 @@ void MainWindow::saveSettings()
     settings_->setValue(Plugin::MainWindowSplitterStateKey+"0", sizes[0]);
     settings_->setValue(Plugin::MainWindowSplitterStateKey+"1", sizes[1]);
     settings_->setValue("SavedBottomSize", prevBottomSize_);
+    settings_->setValue(Plugin::MainWindowShowConsoleKey, ui->actionShow_Console_Pane->isChecked());
     centralSide_->save();
     secondarySide_->save();
     menubarContextMenu_->saveSettings();

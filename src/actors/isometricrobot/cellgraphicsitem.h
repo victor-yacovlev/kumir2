@@ -39,9 +39,7 @@ private:
     int i_cellX;
     int i_cellY;
     RobotView *m_view;
-    bool b_hoveredCell;
 
-    bool b_pressed;
 
 };
 

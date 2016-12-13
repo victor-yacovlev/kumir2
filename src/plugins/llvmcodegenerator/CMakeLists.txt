@@ -1,5 +1,5 @@
 project(LLVMCodeGenerator)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.0)
 
 if(NOT DEFINED USE_QT)
     set(USE_QT 4)
@@ -38,6 +38,9 @@ set(SOURCES
     llvmcodegeneratorplugin.cpp
     llvmgenerator.cpp
     nametranslator.cpp
+    llvm_module_${Llvm_API_VERSION}.cpp
+    llvm_function_${Llvm_API_VERSION}.cpp
+    llvm_type_${Llvm_API_VERSION}.cpp
 )
 
 set(MOC_HEADERS
@@ -57,6 +60,7 @@ copySpecFile(LLVMCodeGenerator)
 add_library(LLVMCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
 #handleTranslation(LLVMCodeGenerator)
 target_link_libraries(LLVMCodeGenerator
+    ${Llvm_LD_FLAGS}
     ${Llvm_LIBRARIES}
     ${DEP_LIBS}
     ${QT_LIBRARIES}
@@ -123,25 +127,25 @@ if(WIN32)
     )
 else()
     find_program(Clang_EXECUTABLE NAMES clang PATHS ${LLVM_ROOT} ${LLVM_ROOT}/bin)
-    add_custom_target(
-        stdlib.llvm
-        ALL
+    add_custom_command(
+        OUTPUT ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
         DEPENDS stdlib_c.h stdlib_c.cpp
         COMMAND ${Clang_EXECUTABLE} -c -std=c++0x -emit-llvm
             -I${CMAKE_SOURCE_DIR}/src/shared
             -o ${SHARE_PATH}/llvmcodegenerator/stdlib.bc
             ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
     )
+    add_custom_target(llvm-stdlib ALL DEPENDS ${SHARE_PATH}/llvmcodegenerator/stdlib.bc)
     if(CMAKE_BUILD_TYPE MATCHES Debug)
-    add_custom_target(
-        stdlib.llvm-debug
-        ALL
+    add_custom_command(
+        OUTPUT ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o
         DEPENDS stdlib_c.h stdlib_c.cpp
         COMMAND ${Clang_EXECUTABLE} -c -g -std=c++0x -DSTDLIB_DEBUG
             -I${CMAKE_SOURCE_DIR}/src/shared
             -o ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o
             ${CMAKE_CURRENT_SOURCE_DIR}/stdlib_c.cpp
     )
+    add_custom_target(llvm-stdlib-debug ALL DEPENDS ${SHARE_PATH}/llvmcodegenerator/stdlib_debug.o)
     endif()
 endif(WIN32)
 

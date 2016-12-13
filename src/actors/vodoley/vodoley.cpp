@@ -27,7 +27,7 @@
 
         static const double Pi = 3.14159265358979323846264338327950288419717;
 
-Menzurka::Menzurka(int x,int y,uint size,float lsize)
+Menzurka::Menzurka(int x,int y,uint size,float lsize,QMutex* mutex)
 {
     SizeInLiters=size;
     literSize=lsize;
@@ -37,6 +37,7 @@ Menzurka::Menzurka(int x,int y,uint size,float lsize)
     GpY=4;
     curFil=1;
     needFill=-1;
+    M=mutex;
 
 };
 
@@ -45,7 +46,7 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 {
 
 	Q_UNUSED(option); Q_UNUSED(widget);
-	
+	M->lock();
 	//qDebug()<<"Repaint menzurka "<<Gp<<" curFil"<<curFil;
  	QBrush black(Qt::black);
     float size=(literSize*SizeInLiters);
@@ -123,11 +124,12 @@ void Menzurka::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         if(curFil==(uint)needFill)waterGradient.setColorAt(1, W2);else waterGradient.setColorAt(0.3, W2);
         painter->setBrush(waterGradient);
         painter->setOpacity(0.5);
-        painter->drawRoundedRect(offsetX, offsetY+size-literSize*curFil,X_SIZE-1,literSize*curFil, 2, 2);
+        painter->drawRoundedRect(offsetX, offsetY+size-literSize*curFil,X_SIZE,literSize*curFil, 2, 2);
     };
 
 
 	//painter->drawLine(offsetX+1, offsetY+size-literSize*curFil,offsetX+X_SIZE-2,offsetY+size);
+    M->unlock();
 };
 
 Vodoley::Vodoley()
@@ -260,9 +262,9 @@ void Vodoley::CreateVodoley(void)
 {
     float literSize = MAX_SIZE/maxSize();
     qDebug()<<"Liter Size:"<<literSize;
-    Amen=new Menzurka(30,30+(maxSize()-Asize())*literSize,Asize(),literSize);
-    Bmen=new Menzurka(140,30+(maxSize()-Bsize())*literSize,Bsize(),literSize);
-    Cmen=new Menzurka(250,30+(maxSize()-Csize())*literSize,Csize(),literSize);
+    Amen=new Menzurka(30,30+(maxSize()-Asize())*literSize,Asize(),literSize,&mutex);
+    Bmen=new Menzurka(140,30+(maxSize()-Bsize())*literSize,Bsize(),literSize,&mutex);
+    Cmen=new Menzurka(250,30+(maxSize()-Csize())*literSize,Csize(),literSize,&mutex);
 
     Amen->setCurFill(CurA());
     Bmen->setCurFill(CurB());
@@ -329,31 +331,38 @@ void Vodoley::resizeEvent ( QResizeEvent * event )
 
 void Vodoley::reset()
 {
-
+    mutex.tryLock(30);
     setBaseFill(Afill,Bfill,Cfill);
+    mutex.unlock();
     updateMenzur();
 };
 
 
 void Vodoley::FillA()
 {
+    mutex.lock();
     Curfill[0]=Asize();
+    mutex.unlock();
     updateMenzur();
 };
 void Vodoley::FillB()
-{
+{    mutex.lock();
     Curfill[1]=Bsize();
+    mutex.unlock();
     updateMenzur();
 };
 void Vodoley::FillC()
 {
+    mutex.unlock();
     Curfill[2]=Csize();
+    mutex.unlock();
     updateMenzur();
 };
 
 void Vodoley::MoveFromTo(uint from,uint to)
 {
-    if(to>2){Curfill[from]=0;updateMenzur();return;};//Выливаем
+    mutex.lock();
+    if(to>2){Curfill[from]=0;mutex.unlock();updateMenzur();return;};//Выливаем
     int svobodno=Maxfill[to]-Curfill[to];
     Curfill[to]=Curfill[to]+Curfill[from];
     if(Curfill[to]>Maxfill[to])Curfill[to]=Maxfill[to];
@@ -363,7 +372,9 @@ void Vodoley::MoveFromTo(uint from,uint to)
         Curfill[from]=0;
     else
         Curfill[from]=Curfill[from]-svobodno;
+    mutex.unlock();
     updateMenzur();
+    QApplication::processEvents();
 };
 
 
@@ -622,7 +633,8 @@ void Vodoley::saveZ()
 void Vodoley::updateMenzur()
 {
     float literSize = MAX_SIZE/maxSize();
-    qDebug()<<"Liter size"<<literSize;
+    //qDebug()<<"Liter size"<<literSize;
+    mutex.lock();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
     Amen->setSize(Asize());
@@ -649,16 +661,25 @@ void Vodoley::updateMenzur()
 	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
-  	view->update();
-	scene->update();
-	updateNeedBirka();
 
+    mutex.unlock();
+    
+
+	updateNeedBirka();
+    redraw();
 	if(Csize()<1)emit CNull();else emit CNotNull();
 };
+void Vodoley::redraw()
+{
+    mutex.lock();
+    view->update();
+	scene->update();
+    mutex.unlock();
+}
 
 void Vodoley::updateNeedBirka()
 {
-
+mutex.lock();
     if(needFrame)
 	{
 		if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR)){needFrame->setPalette(QPalette(QColor(50,90,50),QColor(100,190,100)));}
@@ -668,6 +689,7 @@ void Vodoley::updateNeedBirka()
 
 	needLabel->setText(" "+QString::number(AfillR));
 	qDebug()<<"NEED:"<<QString::number(AfillR);
+    mutex.unlock();
 };
 void Vodoley::mousePressEvent(QMouseEvent *event)
 {

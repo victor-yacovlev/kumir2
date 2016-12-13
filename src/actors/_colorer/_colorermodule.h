@@ -29,6 +29,7 @@ class _ColorerModule
 public /* methods */:
     _ColorerModule(ExtensionSystem::KPlugin * parent);
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
+    static const QStringList & standardRussianColorNames();
 public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);

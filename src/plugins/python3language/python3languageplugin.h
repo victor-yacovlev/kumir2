@@ -74,6 +74,7 @@ public:
     QString startPageTitle() const;
     QList<QAction*> startPageActions() const;
     void setStartPageTitleChangeHandler(const QObject *, const char *);
+    inline void runProgramInCurrentThread(bool useTestingEntryPoint = false) {} // Not implemented
 
 Q_SIGNALS:
     void errorOutputRequest(const QString &);
@@ -122,7 +123,7 @@ private /*fields*/:
 
     // RunInterface interface
 public:
-    RunMode currentRunMode() const;
+    Shared::RunInterface::RunMode currentRunMode() const;
 };
 
 } // namespace

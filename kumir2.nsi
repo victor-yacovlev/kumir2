@@ -1,12 +1,14 @@
 !include MUI2.nsh
  
 # This include is used only by build system
-# For manual build change this line to something line:
+# For manual build change these lines to set variables OutFile, Name, and InstallDir:
 #  OutFile "kumir2-...exe"
-!include outfilename.nsh
+#  Name "Кумир-2.x"
+#  InstallDir "$PROGRAMFILES\Kumir2x"
+#  !define VERSION_SUFFIX "master"
+!include nsis_version_info.nsh
 
-Name "Кумир-2.x"
-InstallDir "$PROGRAMFILES\Kumir2x"
+
 RequestExecutionLevel admin
 
 
@@ -68,15 +70,15 @@ Section "Kumir" Kumir
     
     Call RefreshShellIcons
 
-    CreateDirectory "$SMPROGRAMS\Кумир2"
-    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир2\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир2\Удалить Кумир.lnk" "$INSTDIR\uninstall.exe"
+    CreateDirectory "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}"
+    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Удалить Кумир.lnk" "$INSTDIR\uninstall.exe"
     ; Uninstaller registration
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "DisplayName" "Кумир2"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2" "UninstallString" "$INSTDIR\uninstall.exe"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir_${VERSION_SUFFIX}" "DisplayName" "Кумир ${VERSION_SUFFIX}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir_${VERSION_SUFFIX}" "UninstallString" "$INSTDIR\uninstall.exe"
 
     WriteUninstaller $INSTDIR\uninstall.exe
     
@@ -86,7 +88,7 @@ function un.onInit
 	SetShellVarContext all
  
 	#Verify the uninstaller - last chance to back out
-	MessageBox MB_OKCANCEL "Удалить Кумир 2.1?" IDOK next
+        MessageBox MB_OKCANCEL "Удалить Кумир ${VERSION_SUFFIX}?" IDOK next
 		Abort
 	next:
 	
@@ -96,12 +98,12 @@ Section "uninstall"
 
     Delete /REBOOTOK "$INSTDIR\uninstall.exe"
     RMDir /r /REBOOTOK "$INSTDIR"
-    RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир2"
+    RMDir /r /REBOOTOK "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}"
 
     DeleteRegKey HKCR ".kum"
     DeleteRegKey HKCR "ru.niisi.kumir2.program"
     DeleteRegKey HKCR ".kod"
     DeleteRegKey HKCR "ru.niisi.kumir2.bytecode"
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir2"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir_${VERSION_SUFFIX}"
 
 SectionEnd

@@ -163,7 +163,7 @@ void AboutDialog::addSettingsFilesPaths()
     const QList<const KPlugin *> plugins = PluginManager::instance()->loadedConstPlugins();
     QStringList settingsFiles;
     Q_FOREACH( const KPlugin *plugin, plugins ) {
-        const QString fileName = plugin->pluginSettings()->settingsFilePath();
+        const QString fileName = plugin->mySettings()->settingsFilePath();
         settingsFiles << fileName;
     }
     ui->tableWidget->setRowCount(ui->tableWidget->rowCount()+1);

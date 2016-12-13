@@ -99,7 +99,7 @@ bool Term::isEmpty() const
     return sessions_.isEmpty();
 }
 
-QSize Term::minimumSizeHint() const
+QSize Term::sizeHint() const
 {
     QSize result = plane_->minimumSizeHint();
     result.rwidth() = 0;
@@ -113,6 +113,11 @@ QSize Term::minimumSizeHint() const
         result.rwidth() = qMax(result.width(), sb_horizontal->minimumWidth());
     }
     return result;
+}
+
+QSize Term::minimumSizeHint() const
+{
+    return QSize(100, 0);
 }
 
 void Term::resizeEvent(QResizeEvent *e)

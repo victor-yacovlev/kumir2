@@ -24,7 +24,7 @@ public:
     };
 
     enum StopReason { SR_Done, SR_UserInteraction, SR_InputRequest, SR_Error, SR_UserTerminated };
-    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn, RM_Blind, RM_Regular, RM_Idle };
+    enum RunMode { RM_StepOver, RM_ToEnd, RM_StepOut, RM_StepIn, RM_Idle, RM_Regular, RM_Blind };
 
     inline virtual bool hasBreakpointsSupport() const { return false; }
     inline virtual void setBreakpoint(
@@ -44,6 +44,9 @@ public:
     virtual void runStepInto() = 0;
     virtual void runToEnd() = 0;
     virtual void runTesting() = 0;
+
+    virtual void runProgramInCurrentThread(bool useTestingEntryPoint = false) = 0;
+
     virtual bool isTestingRun() const = 0;
     virtual void terminate() = 0;
     virtual bool hasMoreInstructions() const = 0;
@@ -72,6 +75,7 @@ public:
     inline virtual void removeBreakpoint(const QString & /*fileName*/, quint32 /*lineNo*/) {}
 
 };
+
 
 }
 Q_DECLARE_METATYPE(Shared::RunInterface::StopReason)

@@ -5,8 +5,11 @@ from check_syntax.error import Error
 # from types_analyser import initial_checking
 import ast
 
-from types_analyzer2 import basic_type_check, typetable, functable, parsers, type_analizer_errors
+from types_analyzer2 import basic_type_check
+from types_analyzer2 import typetable
+from types_analyzer2 import type_analizer_errors
 from types_analyzer2 import special_internal_types
+from types_analyzer2 import parsers
 
 name = "TYPE-ANALYZER"
 

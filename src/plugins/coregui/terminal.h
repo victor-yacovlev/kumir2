@@ -20,6 +20,7 @@ class Term : public QWidget
 public:
     explicit Term(QWidget *parent = 0);
     bool isActiveComponent() const;
+    QSize sizeHint() const;
     QSize minimumSizeHint() const;
     bool isEmpty() const;    
     ExtensionSystem::SettingsPtr settings() const;

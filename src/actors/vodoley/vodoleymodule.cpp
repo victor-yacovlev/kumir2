@@ -53,6 +53,9 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
         createRescentMenu();
+        
+        redrawTimer = new QTimer(this);
+        connect(redrawTimer,SIGNAL(timeout()), MainWindow, SLOT(redraw()));
     }
     
     return "";
@@ -82,6 +85,12 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+    MainWindow->redraw();
+    if(current==GlobalState::GS_Running)
+    {
+        redrawTimer->start(100);
+    }else
+        redrawTimer->stop();
 }
 
 /* public slot */ void VodoleyModule::loadActorData(QIODevice * source)
@@ -182,69 +191,82 @@ private:
 {
     /* алг вылей A */
     // TODO implement me
+  
+     mutex.lock();
     MainWindow->MoveFromTo(0,3);//Move water from A to ....
-    
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runEmptyB()
 {
     /* алг вылей B */
     // TODO implement me
+    // mutex.lock();
     MainWindow->MoveFromTo(1,3);
-    
+    // mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runEmptyC()
 {
     /* алг вылей C */
     // TODO implement me
-    MainWindow->MoveFromTo(1,3);
-    
+   //  mutex.lock();
+    MainWindow->MoveFromTo(2,3);
+  //   mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToB()
 {
     /* алг перелей из A в B */
     // TODO implement me
+  //   mutex.lock();
     MainWindow->MoveFromTo(0,1);
-    
+   //  mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToC()
 {
     /* алг перелей из A в C */
-    // TODO implement me
+
+//    mutex.lock();
     MainWindow->MoveFromTo(0,2);
+   //mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromBToA()
 {
     /* алг перелей из B в A */
-    // TODO implement me
+ 
+  //   mutex.lock();
     MainWindow->MoveFromTo(1,0);
+  //   mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromBToC()
 {
     /* алг перелей из B в C */
     // TODO implement me
+   //  mutex.lock();
     MainWindow->MoveFromTo(1,2);
-    
+  //   mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromCToB()
 {
     /* алг перелей из C в B */
     // TODO implement me
+  //   mutex.lock();
     MainWindow->MoveFromTo(2,1);
+  //   mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromCToA()
 {
     /* алг перелей из C в A */
     // TODO implement me
+  //   mutex.lock();
     MainWindow->MoveFromTo(2,0);
-    
+ //    mutex.unlock();
 }
 
 /* public slot */ bool VodoleyModule::runTaskComplited()

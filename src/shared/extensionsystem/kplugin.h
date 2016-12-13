@@ -45,10 +45,8 @@ public:
 
     inline virtual QList<QWidget*> settingsEditorPages() { return QList<QWidget*>(); }
 
-    inline static SettingsPtr pluginSettings() { return self->mySettings(); }
     SettingsPtr mySettings() const;
 
-    inline static QDir pluginResourcesDir() { return self->myResourcesDir(); }
     QDir myResourcesDir() const;
 
     virtual ~KPlugin();
@@ -80,7 +78,6 @@ public:
 private:
     SettingsPtr settings_;
     QString resourcesDir_;
-    static KPlugin* self;
 
 };
 

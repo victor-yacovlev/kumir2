@@ -140,8 +140,11 @@ def cmake_disabled_modules():
 
 def _split_into_branch_and_hash(s):
     assert isinstance(s, str)
-    index = s.rindex("-")
-    return s[:index], s[index+1:]
+    index = s.rfind("-")
+    if -1==index:
+        return s, "unknown"
+    else:
+        return s[:index], s[index+1:]
 
 def cmake_version_info():
     version_name = get_version_information(os.getcwd())
@@ -177,14 +180,42 @@ def package_bundle_name():
     OUT_FILE.write(output)
 
 
+def nsis_include_file():
+    version_name = get_version_information(os.getcwd())
+    data = ""
+    if is_tag(version_name):
+        data += "OutFile \"kumir2-"+version_name+"-install.exe\"\r\n"
+        data += "Name \"Кумир "+version_name+"\"\r\n"
+        data += "InstallDir \"$PROGRAMFILES\\Kumir-"+version_name+"\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + version_name + "\"\r\n"
+    else:
+        branch, ghash = _split_into_branch_and_hash(version_name)
+        data += "OutFile \"kumir2-" + branch + "-" + ghash + "-install.exe\"\r\n"
+        data += "Name \"Кумир 2.x-" + branch + "\"\r\n"
+        data += "InstallDir \"$PROGRAMFILES\\Kumir2x-" + branch + "\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + branch + "\"\r\n"
+    if sys.stdout==OUT_FILE:
+        OUT_FILE.write(data)
+    else:
+        OUT_FILE.write(data.encode("CP1251"))
+
+
+
 def main():
     global OUT_FILE
     mode = "package_bundle_name"
+    out_file_name = None
     for arg in sys.argv:
         if arg.startswith("--mode="):
             mode = arg[7:]
         elif arg.startswith("--out="):
-            OUT_FILE = open(arg[6:], 'w')
+            out_file_name = arg[6:]
+    if out_file_name:
+        if mode.startswith("nsis"):
+            open_mode = "wb"
+        else:
+            open_mode = "w"
+        OUT_FILE = open(out_file_name, open_mode)
     if mode in globals():
         globals()[mode]()
     OUT_FILE.close()

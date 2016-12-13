@@ -78,6 +78,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     }
 
     if (actor->evaluate(qAlgKey, arguments)==Shared::ES_Async) {
+        qApp->processEvents();
         // Wait for actor thread to finish
         forever {
             bool done = false;
@@ -111,7 +112,7 @@ AnyValue ExternalModuleCallFunctor::operator ()
     AnyValue result = Util::QVariantToValue(returnValue, 0);
 
     // Check for out and in/out arguments and store them
-    for (size_t i=0; i<alist.size(); i++) {
+    for (size_t i=0; i<qMin((size_t)argumentReturnValues.size(), alist.size()); i++) {
         Variable var = alist.at(i);
         const QVariant & qval = argumentReturnValues.at(i);
         if (var.isReference() && qval.isValid()) {
@@ -138,6 +139,13 @@ void ExternalModuleCallFunctor::checkForActorConnected(const std::string &asciiM
             connectedActors_.push_back(actor);
         }
     }
+}
+
+void ExternalModuleCallFunctor::terminate()
+{
+    finishedMutex_->lock();
+    finishedFlag_ = true;
+    finishedMutex_->unlock();
 }
 
 void ExternalModuleCallFunctor::handleActorSync()

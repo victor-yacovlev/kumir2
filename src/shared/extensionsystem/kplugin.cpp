@@ -8,7 +8,6 @@ KPlugin::KPlugin()
 {
 }
 
-KPlugin* KPlugin::self = 0;
 
 QList<KPlugin*> KPlugin::loadedPlugins(const QString &pattern)
 {

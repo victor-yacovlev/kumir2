@@ -11,6 +11,8 @@
 #include "editor.h"
 #include "settingspage.h"
 
+#include "interfaces/guiinterface.h"
+
 namespace Editor {
 
 using namespace Shared;
@@ -167,6 +169,10 @@ QFont EditorPlugin::defaultEditorFont() const
     else
         fnt = ptMonoFont_;
     int fntSize = mySettings()->value(SettingsPage::KeyFontSize, SettingsPage::DefaultFontSize).toInt();
+    Shared::GuiInterface * gui = ExtensionSystem::PluginManager::instance()->findPlugin<Shared::GuiInterface>();
+    if (gui && gui->overridenEditorFontSize()>0) {
+        fntSize = gui->overridenEditorFontSize();
+    }
     fnt.setPointSize(fntSize);
     return fnt;
 }
@@ -238,7 +244,7 @@ void EditorPlugin::connectGlobalSignalsToEditor(EditorInstance *editor)
 }
 
 
-void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<Macro> &macros, bool rewrite)
+void EditorPlugin::updateUserMacros(const QString & analizerName, const QList<QSharedPointer<Macro> > &macros, bool rewrite)
 {
     if (rewrite) {
         QString fileName = analizerName.length() > 0

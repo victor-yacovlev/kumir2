@@ -10,6 +10,7 @@
 #include "extensionsystem/pluginmanager.h"
 #include "shared/interfaces/guiinterface.h"
 #include "shared/interfaces/actorinterface.h"
+#include "course_model.h"
 typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;
 //#include "task/mainwindow.h"
@@ -34,6 +35,14 @@ public:
     QWidget* settingsEditorPage();
     QList<QMenu*> menus() const;
     QString getText();
+   inline QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters() const
+    {
+        QList<ExtensionSystem::CommandLineParameter> params;
+        params.append(ExtensionSystem::CommandLineParameter(true,'w',"work",tr("Work book file"),QVariant::String,false));
+        params.append(ExtensionSystem::CommandLineParameter(true,'c',"classbook",tr("Classbook file"),QVariant::String,false));
+        params.append(ExtensionSystem::CommandLineParameter(true,'o',"output",tr("Output file"),QVariant::String,false));
+        return params;
+    };
     void setParam(QString paramname,QString param){};
     bool startNewTask(QStringList isps,KumZadanie* task);
     void setPreProgram(QVariant param);
@@ -50,6 +59,7 @@ public:
      }
     void rebuildRescentMenu();
     bool isSafeToQuit();
+    void start();
 public slots:
     void setEnabled(bool value);
     void setTestingResult(ProgramRunStatus status, int value);
@@ -68,6 +78,9 @@ private /*methods*/:
 
 private /*fields*/:
     void loadCource(QString file);
+    int loadCourseFromConsole(QString wbname ,QString cbname);
+    int checkTaskFromConsole(const int taskID);
+    int loadWorkBook(QString wbfilename,QString cbname);
     AI * getActor(QString name);
     QWidget* mainWindow_;
     QAction* actionPerformCheck_;
@@ -83,6 +96,12 @@ private /*fields*/:
     int isp_no,field_no;
     void selectNext(KumZadanie* task);
     KumZadanie* cur_task;
+    bool DISPLAY;
+    courseModel* course;
+    void showError(QString err);
+    QFileInfo cur_courseFileInfo;
+    QTextStream  resultStream;
+    QFile outFile;
 
 };
 

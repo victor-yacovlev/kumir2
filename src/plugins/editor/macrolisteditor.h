@@ -18,9 +18,9 @@ class MacroListEditor : public QDialog
     
 public:
     explicit MacroListEditor(const QDir & resourcesRoot, QWidget *parent = 0);
-    void initialize(const QList<Macro> & macros,
-                    const QList<Macro> &systemMacros);
-    QList<Macro> result() const;
+    void initialize(const QList<QSharedPointer<Macro> > & macros,
+                    const QList<QSharedPointer<Macro> > &systemMacros);
+    QList<QSharedPointer<Macro> > result() const;
     ~MacroListEditor();
     
 
@@ -31,8 +31,8 @@ private slots:
 
 private:
     Ui::MacroListEditor *ui;
-    QList<Macro> macros_;
-    QList<Macro> systemMacros_;
+    QList<QSharedPointer<Macro> > macros_;
+    QList<QSharedPointer<Macro> > systemMacros_;
     QString prefix_;
 };
 
