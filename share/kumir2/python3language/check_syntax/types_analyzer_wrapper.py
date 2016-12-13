@@ -10,6 +10,7 @@ from types_analyzer2 import typetable
 from types_analyzer2 import type_analizer_errors
 from types_analyzer2 import special_internal_types
 from types_analyzer2 import parsers
+from types_analyzer2 import functable
 
 name = "TYPE-ANALYZER"
 

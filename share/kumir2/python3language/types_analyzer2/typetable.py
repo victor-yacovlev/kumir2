@@ -5,7 +5,7 @@ import string
 from .typedefs import TypeDef
 from types_analyzer2.special_pseudo_types import SelfType, KeyType, ValueType
 from . import functable
-from . import parsers
+# from . import parsers
 from .typedefs import *
 from .funcdefs import *
 

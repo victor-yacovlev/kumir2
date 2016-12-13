@@ -5,7 +5,7 @@ import symtable
 from . import typetable
 from . import funcdefs
 from .functable import MethodsTable
-# from . import functable
+from . import functable
 from .typedefs import *
 from .funcdefs import *
 from .special_pseudo_types import *

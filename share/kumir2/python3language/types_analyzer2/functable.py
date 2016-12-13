@@ -75,12 +75,12 @@ class MethodsTable:
             assert isinstance(kind, inspect._ParameterKind)
             provided_arg = None
             arg_name = arg.signature.name
-            if kind == inspect._ParameterKind.KEYWORD_ONLY:
+            if kind == inspect._KEYWORD_ONLY:
                 allow_kwdict = True
                 if arg_name in kwdict:
                     provided_arg = kwdict[arg_name]
                     del kwdict[arg_name]
-            if kind == inspect._ParameterKind.POSITIONAL_OR_KEYWORD:
+            if kind == inspect._POSITIONAL_OR_KEYWORD:
                 allow_kwdict = True
                 if arg_name in kwdict:
                     provided_arg = kwdict[arg_name]
@@ -91,7 +91,7 @@ class MethodsTable:
                     pass  # do bind this parameter to actual list
                 else:
                     raise NoEnoughtArgumentsMatchError(method, provided_positional_args_count)
-            if kind == inspect._ParameterKind.VAR_POSITIONAL:
+            if kind == inspect._VAR_POSITIONAL:
                 allow_kwlist = True
                 kwlist_arg = arg
             result[arg] = copy.copy(provided_arg) if provided_arg else None
@@ -113,7 +113,7 @@ class MethodsTable:
 
     ## TODO move to separate .py file
     def match(self, method: MethodDef, args: list, types_table, kwdict, owner_class):
-        assert isinstance(types_table, typetable.TypesTable)
+        # assert isinstance(types_table, typetable.TypesTable)
 
         initial_method = method  # for control it's not changed (shown in debugger)
         method = method.copy()
@@ -132,7 +132,7 @@ class MethodsTable:
         for method_arg in args_to_check:
             assert isinstance(method_arg, ArgumentDef)
             provided_type = bound_args[method_arg]
-            if method_arg.signature.kind != inspect._ParameterKind.VAR_POSITIONAL:
+            if method_arg.signature.kind != inspect._VAR_POSITIONAL:
                 assert isinstance(provided_type, TypeDef) or provided_type is None
                 required_type = method_arg.typedef
                 reverse_match = getattr(method_arg, "reverse_match", False)
@@ -156,7 +156,7 @@ class MethodsTable:
             ## If there is not any information on function return type, try to deduce it from
             ## function AST body
             visitor = method.ast_visitor;
-            assert isinstance(visitor, basic_type_check.Visitor)
+            # assert isinstance(visitor, basic_type_check.Visitor)
             node = method.ast_node
             visitor.begin_function_match(method.name, bound_args)
             visitor.visit_function_body(node)
@@ -207,11 +207,13 @@ class MethodsTable:
         arg = method.arguments[arg_no - 1]
         assert isinstance(arg, ArgumentDef)
         assert arg.signature.default != inspect.Signature.empty
-        assert isinstance(types_table, typetable.TypesTable)
+        # assert isinstance(types_table, typetable.TypesTable)
         return copy.copy(arg), arg.typedef
 
     def __nth_arg_vt(self, method, bound_args: dict, arg_no: int, types_table):
         a, nth_arg = self.__nth_arg(method, bound_args, arg_no, types_table)
+        if nth_arg is None:
+            return a, types_table.lookup_by_name("object")
         assert isinstance(nth_arg, TypeDef)
         if nth_arg.valuetype is None:
             return a, types_table.lookup_by_name("object")
@@ -220,6 +222,8 @@ class MethodsTable:
 
     def __nth_arg_kt(self, method, bound_args: dict, arg_no: int, types_table):
         a, nth_arg = self.__nth_arg(method, bound_args, arg_no, types_table)
+        if nth_arg is None:
+            return a, types_table.lookup_by_name("object")
         assert isinstance(nth_arg, TypeDef)
         if nth_arg.keytype is None:
             return a, types_table.lookup_by_name("object")
@@ -227,14 +231,14 @@ class MethodsTable:
 
 
     def __match_values(self, method, bound_args: dict, types_table, owner_class):
-        assert isinstance(types_table, typetable.TypesTable)
+        # assert isinstance(types_table, typetable.TypesTable)
         for arg, val in bound_args.items():
             if isinstance(val, TypedCallable):
                 new_val = self.__match_typedef(method, val, val, bound_args, types_table, owner_class, val)
                 bound_args[arg] = copy.copy(new_val)
 
     def __match_arguments(self, method, bound_args: dict, types_table, owner_class, scope):
-        assert isinstance(types_table, typetable.TypesTable)
+        # assert isinstance(types_table, typetable.TypesTable)
         args_list = list(bound_args.keys())
         args_list.sort(key=lambda x: x.arg_number)
         for arg in args_list:
@@ -257,7 +261,7 @@ class MethodsTable:
     def __match_typedef(self, method, pattern: TypeDef, value: TypeDef, bound_args, types_table, owner_class, scope):
         if pattern is None and value is None:
             return None
-        assert isinstance(types_table, typetable.TypesTable)
+        # assert isinstance(types_table, typetable.TypesTable)
         if isinstance(pattern, SelfType):
             result = owner_class
         elif isinstance(pattern, NthArgType):
@@ -291,11 +295,11 @@ class MethodsTable:
                 assert isinstance(sig, inspect.Parameter)
                 kind = sig.kind;
                 assert isinstance(kind, inspect._ParameterKind)
-                if kind in [inspect._ParameterKind.POSITIONAL_OR_KEYWORD]:
+                if kind in [inspect._POSITIONAL_OR_KEYWORD]:
                     kwlist.append(bound_args[arg])
-                elif kind in [inspect._ParameterKind.KEYWORD_ONLY]:
+                elif kind in [inspect._KEYWORD_ONLY]:
                     kwdict[arg.signature.name] = bound_args[arg]
-                elif kind in [inspect._ParameterKind.VAR_POSITIONAL]:
+                elif kind in [inspect._VAR_POSITIONAL]:
                     kwlist += bound_args[arg]
             clazz = pattern.clazz
             ev = pattern.evaluate
@@ -309,6 +313,8 @@ class MethodsTable:
         else:
             result = value
 
+        if result is None:
+            return None
 
         # Do recursively
         result = copy.copy(result)
@@ -391,7 +397,7 @@ class MethodsTable:
     def resolve_lambda_rtype(self, value):
         assert isinstance(value, Lambda)
         visitor = value.ast_visitor;
-        assert isinstance(visitor, basic_type_check.Visitor)
+        # assert isinstance(visitor, basic_type_check.Visitor)
         node = value.ast_node
         bound_args = {}
         for arg in value.arg_types:

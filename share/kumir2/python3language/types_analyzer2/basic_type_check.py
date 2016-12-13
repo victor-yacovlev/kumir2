@@ -424,6 +424,8 @@ class Visitor(ast.NodeVisitor):
                 instance_type = None
                 method_name = node.func.id
                 methods = self.functable.lookup_functions_by_name(method_name)
+                if self.namespace:
+                    methods = self.functable.lookup_functions_by_name(self.namespace + "." + method_name) + methods
             if not methods:
                 # Might be class constructor?
                 instance_type = self.typetable.lookup_by_name(method_name)
@@ -494,24 +496,45 @@ class Visitor(ast.NodeVisitor):
             return list_type
 
         elif isinstance(node, ast.Attribute):
+            def update_node_st(n, st):
+                if isinstance(n.value, ast.Name):
+                    try:
+                        symbol = st.lookup(n.value.id)
+                        r = getattr(symbol, "module_symbol_table", st)
+                    except:
+                        r = st
+                    if not hasattr(n.value, "symbol_table"):
+                        setattr(n.value, "symbol_table", r)
+                elif isinstance(n.value, ast.Attribute):
+                    update_node_st(n.value, st)
+
+            update_node_st(node, self.current_symbol_table())
+
+            if isinstance(node.value, ast.Name):
+                symb_name = node.value.id
+            elif isinstance(node.value, ast.Attribute):
+                symb_name = node.value.attr
+            else:
+                symb_name = None
+            attribute_name = node.attr
+
             instance_type = self.resolve_expression_type(node.value)
             if instance_type is None:
                 return None
-            # Try to find class related properties
-            attribute_name = node.attr
+
             if attribute_name in instance_type.properties:
                 return instance_type.properties[attribute_name]
-            if isinstance(node.value, ast.Name) and isinstance(instance_type, ModuleTypeDef):
-                st = self.current_symbol_table()
-                symbol = st.lookup(node.value.id)
+
+            if isinstance(instance_type, ModuleTypeDef):
+                st = getattr(node.value, "symbol_table")
+                symbol = st.lookup(attribute_name)
                 module_symbol_table = getattr(symbol, "module_symbol_table", None)
                 if module_symbol_table is not None:
-                    symbol = module_symbol_table.lookup(attribute_name)
-                    if symbol is not None:
-                        return getattr(symbol, "typedef", None)
-
-
-
+                    # symbol = module_symbol_table.lookup(attribute_name)
+                    setattr(node, "symbol_table", module_symbol_table)
+                if symbol is not None:
+                    result = getattr(symbol, "typedef", None)
+                    return result
 
 
     def assign_type_to_target(self, target, rvalue_type):
@@ -584,10 +607,11 @@ class Visitor(ast.NodeVisitor):
 def find_module_file(path, name):
     assert isinstance(path, list)
     assert isinstance(name, str)
-    if name=="sys":
-        # 'sys' is a built in named module
-        from .headers import sys_0
-        return sys_0.__file__
+    from .headers import stdlib
+    stdlib_dir = os.path.dirname(stdlib.__file__)
+    header_file = stdlib_dir + os.path.sep + name + ".py"
+    if os.path.exists(header_file):
+        return header_file
     for pe in path:
         full_path = pe + os.path.sep + name + ".py"
         if os.path.exists(full_path):
