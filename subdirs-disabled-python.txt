@@ -8,6 +8,7 @@ kumircompilertool
 llvmcodegenerator
 
 # 2. Kumir-related apps
+kumir2-checkcourse
 kumir2-bc
 kumir2-classic
 kumir2-highgrade
@@ -21,6 +22,9 @@ open
 run
 
 # 3. Actors not ready to support Python
+_colorer
+robot
+painter
 complexnumbers
 draw
 grasshopper
