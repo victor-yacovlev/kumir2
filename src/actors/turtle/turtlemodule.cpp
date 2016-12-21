@@ -182,6 +182,7 @@ const double Pi = 3.14159265;
         QGraphicsLineItem* line=addLine(lineF);
         QPen mp=QPen(QColor(color));
         mp.setWidthF(width);
+        mp.setCapStyle(Qt::RoundCap);
         mp.setCosmetic(true);
         line->setPen(mp);
         line->setZValue(90);
@@ -835,6 +836,14 @@ void TurtleModule::createGui()
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
     
     showToolsBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("menu-24x24-black.png")));
+    
+    
+    showTurtleBut=new QToolButton(CurView);
+    showTurtleBut->move(50,20);
+    showTurtleBut->setCheckable(true);
+    showTurtleBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("Trtl1.svg")));
+    showTurtleBut->setChecked(true);
+    connect(showTurtleBut,SIGNAL(toggled (bool)),this,SLOT(showTurtleSlt(bool)));
    // connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
  //   connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
     connect(navigator,SIGNAL(redrawNet()),this,SLOT(drawNet()));
@@ -872,7 +881,7 @@ void TurtleModule::createGui()
 
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QBrush curBackground=QBrush(QColor(TurtleSettings()->value("Draw/BackColor","#B4B40A").toString()));
+    QBrush curBackground=QBrush(QColor(TurtleSettings()->value("BackColor","#FFFFCC").toString()));
     
     CurScene->setBackgroundBrush (curBackground);
     Color Black;
@@ -1007,7 +1016,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 {
   
     mutex.lock();    
- mPen->tailDown();
+ mPen->tailUp();
   mutex.unlock();
 }
 
@@ -1038,7 +1047,7 @@ mutex.unlock();
     
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
-    
+     CurScene->update();
 }
 
 /* public slot */ void TurtleModule::runBack(const qreal dist)
@@ -1060,6 +1069,7 @@ mutex.unlock();
     
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
+     CurScene->update();
     
 }
 
@@ -1089,6 +1099,7 @@ mutex.unlock();
     
     // Turtle->rotate();
     mutex.unlock();
+    CurScene->update();
     
 }
     /* public slot */ void TurtleModule::runSetPenColor(const Color& color)
@@ -1132,6 +1143,15 @@ mutex.unlock();
     {
         navigator->setVisible(state);
     };
+    
+    
+    void TurtleModule::showTurtleSlt(bool state)
+    {
+     
+        mPen->setTurtleVis(state);
+        CurView->update();
+
+    }
     void TurtleModule::netStepChange(double value)
     {
         double oldValue=NetStepY();

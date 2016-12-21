@@ -336,6 +336,7 @@ void TurtlePult::Up()
 
     turtleObj->runForward(stepVal->value ());
     Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
+    turtleObj->getCurView()->forceRedraw();
 
 
 };
@@ -346,13 +347,14 @@ void TurtlePult::Down()
     turtleObj->runBack(stepVal->value ());
 
     Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
+    turtleObj->getCurView()->forceRedraw();
 
 };
 void TurtlePult::Left()
 {
  turtleObj->runLeft(gradVal->value ());
  Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
-
+turtleObj->getCurView()->forceRedraw();
 
 };
 void TurtlePult::Right()
@@ -360,28 +362,33 @@ void TurtlePult::Right()
      if(!greenLight->link())return;
      turtleObj->runRight(gradVal->value ());
      Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
-
+  
+    turtleObj->getCurView()->forceRedraw();
 };
 
 void TurtlePult::SwStena()
-{
-    if(askFree->isChecked () ) askFree->setChecked(false);
+{//
+  //  if(!greenLight->link())return;
+ //   turtleObj->runTailDown();
+   
+    // if(askFree->isChecked () ) askFree->setChecked(false);
 };
 void TurtlePult::SwSvobodno()
 {
-    if(askStena->isChecked () )askStena->setChecked(false);
+  //  if(!greenLight->link())return;
+  //  turtleObj->runTailUp();
 };
 void TurtlePult::TempS()
 {
-//    if(!greenLight->link())return;
-//    turtleObj->TailDown();
-//    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
+    if(!greenLight->link())return;
+    turtleObj->runTailDown();
+    Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
 };
 void TurtlePult::RadS()
 {
-//    if(!greenLight->link())return;
-//    turtleObj->TailUp();
-//    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
+   if(!greenLight->link())return;
+    turtleObj->runTailUp();
+    Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
 };
 
 void TurtlePult::resetTurtle()

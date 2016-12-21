@@ -71,6 +71,10 @@ namespace ActorTurtle {
         {
             return tailup;
         }
+        void setTurtleVis(bool vis)
+        {
+            turtle->setVisible(vis);
+        }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
             Q_UNUSED(option) Q_UNUSED(widget);
@@ -79,7 +83,7 @@ namespace ActorTurtle {
                 painter->setBrush(tailColor);
                 painter->drawPath(tail);
             }
-            turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
+            if(turtle->isVisible())turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
         
         }
         
@@ -236,7 +240,7 @@ public /* methods */:
      static ExtensionSystem::SettingsPtr TurtleSettings();
     QColor axisColor()
     {
-        return QColor(TurtleSettings()->value("AxisColor","blue").toString());
+        return QColor(TurtleSettings()->value("AxisColor","#996600").toString());
     }
    TurtleView * getCurView()
     {
@@ -267,6 +271,7 @@ public /* methods */:
     
     void showNavigator(bool state);
     
+    void showTurtleSlt(bool state);
     /* ========= CLASS PRIVATE ========= */
 
 private:
@@ -289,7 +294,7 @@ private:
     Color penColor;
 
     DrawNavigator* navigator;
-    QToolButton *showToolsBut;
+    QToolButton *showToolsBut,*showTurtleBut;
     QDir curDir;
      bool animate;
     qreal curAngle;
