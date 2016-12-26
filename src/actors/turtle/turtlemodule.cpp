@@ -43,13 +43,12 @@ const double Pi = 3.14159265;
     
    
     
-    
-    
+  
     
     
     QRectF TurtleScene::getRect() //User lines bounding rect
     {
-        QRectF boundRect=QRectF(QPointF(-7,15),QPointF(5,-5));//default rect
+        QRectF boundRect=QRectF(QPointF(-50,50),QPointF(50,50));//default rect
         
         for(int i=0;i<lines.count();i++)
         {
@@ -1150,7 +1149,7 @@ mutex.unlock();
      
         mPen->setTurtleVis(state);
         CurView->update();
-
+        CurView->forceRedraw();
     }
     void TurtleModule::netStepChange(double value)
     {
@@ -1207,7 +1206,7 @@ mutex.unlock();
         //        mPen->scale(0.5,0.5);
         //        mPen->scale(0.5,0.5);
         //        mPen->scale(0.5,0.5);
-        mPen->setScale((0.05)*mPen->scale());
+        mPen->setScale((0.03)*mPen->scale());
         mPen->setZValue(100);
        // mPen->rotate(180);
         mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
@@ -1217,6 +1216,10 @@ mutex.unlock();
         
         
     }
+    void TurtleModule::handleGuiReady()
+    {
+        zoomFullDraw();
+    };
     
     void TurtleModule::zoomFullDraw()
     {
