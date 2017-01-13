@@ -444,7 +444,7 @@ void Plugin::showError(QString err)
 void Plugin::selectNext(KumZadanie* task)
     {
        QString dirName="";
-        if(!DISPLAY)dirName=cur_courseFileInfo.absolutePath () ;
+        if(!DISPLAY)dirName=cur_courseFileInfo.absolutePath () +"/";
         
         for(int i=0;i<task->isps.count();i++)
         {
@@ -467,10 +467,10 @@ void Plugin::selectNext(KumZadanie* task)
                 return;
             }
            
-            QFile* field_data=new QFile(dirName+"/"+task->field(task->isps.at(i), field_no));
-            qDebug()<<"Loadfield"<<dirName+"/"+task->field(task->isps.at(i),field_no);
+            QFile* field_data=new QFile(dirName+task->field(task->isps.at(i), field_no));
+            qDebug()<<"Loadfield"<<dirName+task->field(task->isps.at(i),field_no);
             if(!field_data->open(QIODevice::ReadOnly)){
-               showError(QString::fromUtf8("Ошибка открытия обстановки!"));
+               showError(QString::fromUtf8("Ошибка открытия обстановки! File:")+dirName+task->field(task->isps.at(i),field_no));
                 return;   
             }
           
