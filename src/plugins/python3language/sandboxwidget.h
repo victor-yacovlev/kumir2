@@ -1,6 +1,10 @@
 #ifndef PYTHON3LANGUAGE_SANDBOXWIDGET_H
 #define PYTHON3LANGUAGE_SANDBOXWIDGET_H
 
+extern "C" {
+#include <Python.h>
+}
+
 #include "sandboxwidget_frame.h"
 
 #include <QtGlobal>
@@ -10,9 +14,6 @@
 #include <QImage>
 #include <QMutex>
 
-extern "C" {
-#include <Python.h>
-}
 
 #include "extensionsystem/settings.h"
 

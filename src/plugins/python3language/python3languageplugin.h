@@ -1,11 +1,11 @@
 #ifndef PYTHON3_LANGUAGE_PLUGIN_H
 #define PYTHON3_LANGUAGE_PLUGIN_H
-
-#include <QtCore>
-
 extern "C" {
 #include <Python.h>
 }
+
+#include <QtCore>
+
 
 
 #include "interfaces/analizerinterface.h"

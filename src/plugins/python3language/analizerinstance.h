@@ -1,11 +1,11 @@
 #ifndef PYTHON3LANGUAGE_ANALIZERINSTANCE_H
 #define PYTHON3LANGUAGE_ANALIZERINSTANCE_H
 
-
-#include <QObject>
 extern "C" {
 #include <Python.h>
 }
+
+#include <QObject>
 
 #include "interfaces/analizer_instanceinterface.h"
 

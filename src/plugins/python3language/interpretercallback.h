@@ -1,6 +1,10 @@
 #ifndef PYTHON3LANGUAGE_INTERPRETERCALLBACK_H
 #define PYTHON3LANGUAGE_INTERPRETERCALLBACK_H
 
+extern "C" {
+#include <Python.h>
+}
+
 #include <QObject>
 #include <QMutex>
 #include <QMutexLocker>
@@ -9,9 +13,6 @@
 #include <QMap>
 #include <QVariant>
 
-extern "C" {
-#include <Python.h>
-}
 
 namespace Python3Language {
 

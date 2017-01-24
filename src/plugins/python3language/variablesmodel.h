@@ -1,14 +1,15 @@
 #ifndef PYTHON3LANGUAGE_VARIABLESMODEL_H
 #define PYTHON3LANGUAGE_VARIABLESMODEL_H
 
-#include <QtCore>
-#include <QStandardItemModel>
-#include <QStandardItem>
-
 extern "C" {
 #include <Python.h>
 #include <frameobject.h>
 }
+
+#include <QtCore>
+#include <QStandardItemModel>
+#include <QStandardItem>
+
 
 #include "pyutils.h"
 

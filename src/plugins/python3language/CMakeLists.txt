@@ -8,7 +8,7 @@ endif(NOT DEFINED USE_QT)
 if(${USE_QT} GREATER 4)
     # Find Qt5
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 else()
     # Find Qt4
@@ -33,7 +33,6 @@ if(MSVC)
         "${PYTHON_LIBRARIES}"
     )
 endif()
-add_definitions(-DQT_NO_KEYWORDS)
 
 set(SOURCES
     python3languageplugin.cpp

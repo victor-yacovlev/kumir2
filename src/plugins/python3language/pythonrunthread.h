@@ -1,12 +1,12 @@
 #ifndef PYTHON3LANGUAGE_PYTHONRUNTHREAD_H
 #define PYTHON3LANGUAGE_PYTHONRUNTHREAD_H
 
-#include <QtCore>
 extern "C" {
 #include <Python.h>
 #include <frameobject.h>
 }
 
+#include <QtCore>
 #include <interfaces/runinterface.h>
 
 

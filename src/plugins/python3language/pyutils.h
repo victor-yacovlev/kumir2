@@ -1,10 +1,11 @@
 #ifndef PYUTILS_H
 #define PYUTILS_H
 
-#include <QtCore>
 extern "C" {
 #include <Python.h>
 }
+
+#include <QtCore>
 
 namespace Python3Language {
 
