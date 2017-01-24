@@ -41,14 +41,14 @@ const double Pi = 3.14159265;
         return pluginManager->settingsByObject(plugin);
     }//Get  settings
     
+   
     
-    
-    
+  
     
     
     QRectF TurtleScene::getRect() //User lines bounding rect
     {
-        QRectF boundRect=QRectF(QPointF(-7,15),QPointF(5,-5));//default rect
+        QRectF boundRect=QRectF(QPointF(-50,50),QPointF(50,50));//default rect
         
         for(int i=0;i<lines.count();i++)
         {
@@ -155,6 +155,7 @@ const double Pi = 3.14159265;
         qreal bs=fontMetric.boundingRect(Text).width();
         qreal ch=bs/Text.length();
         qreal psizeF=widthChar/bs;
+       
         
         
         
@@ -167,28 +168,45 @@ const double Pi = 3.14159265;
         
         
         texts.append(addSimpleText(Text,font));
-        //        texts.last()->scale(0.001,0.001);
+//        texts.last()->scale(0.001,0.001);
         texts.last()->setScale(psizeF);
         texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
         texts.last()->setPen(QPen(color));
         texts.last()->setZValue(90);
         return widthChar;
     };
+    void TurtleScene::addDrawLine(QLineF lineF,QColor color,qreal width)
+    {
+        if(lineF.length()==0)return;
+        QGraphicsLineItem* line=addLine(lineF);
+        QPen mp=QPen(QColor(color));
+        mp.setWidthF(width);
+        mp.setCapStyle(Qt::RoundCap);
+        mp.setCosmetic(true);
+        line->setPen(mp);
+        line->setZValue(90);
+        lines.append(line);
+        
+        
+        
+    }
     void TurtleScene::DestroyNet()
     {
-        //  qDebug()<<Netlines.count();
+      //  qDebug()<<Netlines.count();
         for ( int i = 0; i < Netlines.count(); i++)
         {
-            
-            delete Netlines[i];
+       
+           delete Netlines[i];
         }
         Netlines.clear();
         
     }
-    void TurtleScene::drawOnlyAxis(double startx ,double endx,double starty,double endy)
+    void TurtleScene::drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw)
     {
         
         QPen axisPen=QPen(DRAW->axisColor());
+        axisPen.setWidthF(aw);
+        axisPen.setCosmetic(true);
         Netlines.append(addLine(startx-qAbs(startx-endx),0  , endx+qAbs(startx-endx), 0 ));
         Netlines.last()->setPen(axisPen);
         Netlines.last()->setZValue(1);
@@ -196,51 +214,55 @@ const double Pi = 3.14159265;
         Netlines.append(addLine(0,starty-qAbs(starty-endy),0 , endy+qAbs(startx-endx) ));
         Netlines.last()->setPen(axisPen);
         Netlines.last()->setZValue(1);
-        
+
     }
     
     
     
-    void TurtleScene::drawNet(double startx ,double endx,double starty,double endy,QColor color,double stepX,double stepY,bool net)
+    void TurtleScene::drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw)
     {
         
         QPointF pos,tail;
         QColor AxisColor=DRAW->axisColor();
+        auto lp=QPen(color);
+        lp.setWidthF(nw);
+        lp.setCosmetic(true);
         
         DestroyNet();
         if(!net)
         {
-            drawOnlyAxis(startx,endx,starty,endy);
+            drawOnlyAxis(startx,endx,starty,endy,aw);
             return;
         }
-        int lines=qRound(startx/stepX);
-        startx=lines*stepX;
-        double fx1=startx-NET_RESERVE*stepX,fx2,fy1,fy2;
+        int lines=qRound(startx/step);
+        startx=lines*step;
+        double fx1=startx-NET_RESERVE*step,fx2,fy1,fy2;
         
         // return;
-        while (fx1 < endx+NET_RESERVE*stepX)
+        while (fx1 < endx+NET_RESERVE*step)
 		{
-			fx1 = fx1 + stepX;
+			fx1 = fx1 + step;
 			fx2 = fx1;
-			fy1 = starty-NET_RESERVE*stepX;
-			fy2 = endy+NET_RESERVE*stepX;
+			fy1 = starty-NET_RESERVE*step;
+			fy2 = endy+NET_RESERVE*step;
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
-			Netlines.last()->setPen(QPen(color));
+			Netlines.last()->setPen(lp);
             if(fx1>0-1/DRAW->zoom() && fx1<0+1/DRAW->zoom())
             {
                 QPen axisPen=QPen(AxisColor);
-                // axisPen.setWidth(3/DRAW->zoom());
-                Netlines.last()->setPen(axisPen);
+                axisPen.setWidthF(aw);
+                axisPen.setCosmetic(true);
+               // axisPen.setWidth(3/DRAW->zoom());
+                Netlines.last()->setPen(axisPen); 
                 Netlines.last()->setZValue(1);
-                Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
-                Netlines.last()->setZValue(1);
-                Netlines.last()->setPen(axisPen);
+              //  Netlines.append(addLine(fx1+1/DRAW->zoom(), fy1 , fx2+1/DRAW->zoom(), fy2 ));
+              //  Netlines.last()->setZValue(1);
+              //  Netlines.last()->setPen(axisPen);
             }
 		}
-        //  Netlines.append(addLine(-1, -1 , 1, 1 ));
-        // Netlines.append(addLine(1, -1 , -1, 1 ));
+
         lines=starty/stepY;
         starty=lines*stepY;
         fy1 = starty-NET_RESERVE*stepY;
@@ -254,17 +276,17 @@ const double Pi = 3.14159265;
             
             Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
-			Netlines.last()->setPen(QPen(color));
+			Netlines.last()->setPen(lp);
             if(fy1>0-1/DRAW->zoom() && fy1<0+1/DRAW->zoom())
             {
                 QPen axisPen=QPen(AxisColor);
-                // axisPen.setWidth(6/(DRAW->zoom()*2));
-                // qDebug()<<"Width"<<6/(DRAW->zoom()*2);
+                axisPen.setWidthF(aw);
+                axisPen.setCosmetic(true);
                 Netlines.last()->setPen(axisPen);
                 Netlines.last()->setZValue(1);
-                Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
-                Netlines.last()->setZValue(1);
-                Netlines.last()->setPen(axisPen);
+               //Netlines.append(addLine(fx1, fy1+1/DRAW->zoom() , fx2, fy2+1/DRAW->zoom() ));
+                //Netlines.last()->setZValue(1);
+               // Netlines.last()->setPen(axisPen);
             }
             
 		}
@@ -273,10 +295,10 @@ const double Pi = 3.14159265;
     int   TurtleScene::loadFromFile(const QString& p_FileName)
     {
         QFileInfo fi(p_FileName);
-        QString name = fi.fileName();
+        QString name = fi.fileName();                        
         QString Title = QString::fromUtf8("Чертежник - ") + name;
         double CurX,CurY;
-        //  MV->setWindowTitle ( Title);
+      //  MV->setWindowTitle ( Title);
         qreal CurrentScale;
         
         QString tmp = "";
@@ -353,7 +375,7 @@ const double Pi = 3.14159265;
         }
         
         // koordinaty vektorov
-        // CurZ = 1.;
+       // CurZ = 1.;
         while (!l_File.atEnd())
         {
             //считываем цвет
@@ -447,7 +469,7 @@ const double Pi = 3.14159265;
         
         return 0;
         
-        
+
     }
     int TurtleScene::saveToFile(const QString& p_FileName)
     {
@@ -594,7 +616,18 @@ const double Pi = 3.14159265;
         
         
     };
-    void TurtleView::resizeEvent ( QResizeEvent * event )
+void TurtleView::paintEvent(QPaintEvent *event)
+    {
+        if(!dr_mutex->tryLock())
+        {
+            return;
+        }else
+        {
+            QGraphicsView::paintEvent(event);
+            dr_mutex->unlock();
+        }
+    }
+ void TurtleView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
         {
@@ -622,32 +655,34 @@ const double Pi = 3.14159265;
     void TurtleView::mouseReleaseEvent ( QMouseEvent * event )
     {
         pressed=false;
+       
         DRAW->drawNet();
     };
     void TurtleView::mouseMoveEvent ( QMouseEvent * event )
     {
         if(pressed)
         {
+            dr_mutex->lock();
             setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
-            //if(qAbs(delta.x())>100)press_pos.setX(event->pos().x());
-            //if(qAbs(delta.y())>100)press_pos.setY(event->pos().y());
+
+            
             QPointF center = mapToScene(viewport()->rect().center());
             //QPointF center = sceneRect().center();
-            qDebug()<<"CenterOn"<<center;
-            // center.setX(center.x()+(mapToScene(press_pos).x()-mapToScene(event->pos()).x()));
-            // center.setY(center.y()+(mapToScene(press_pos).y()-mapToScene(event->pos()).y()));
-            //   scrollContentsBy(press_pos.x()-event->pos().x(), 10);
+             qDebug()<<"CenterOn"<<center;
+
             verticalScrollBar()->setValue(verticalScrollBar()->value()+(press_pos.y()-event->pos().y()));
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +(press_pos.x()-event->pos().x()));
             // centerOn(center);
-            
-            qDebug()<<"CenterOn"<<center<<" realCenter"<<mapToScene(viewport()->rect().center());
+          
+           qDebug()<<"CenterOn"<<center<<" realCenter"<<mapToScene(viewport()->rect().center());
             qDebug()<<"SCENERECTCENTER"<<sceneRect().center().x();
             qDebug()<<"DELTA"<<delta<<" xd"<<press_pos.x()-event->pos().x()<<" yd"<<mapToScene(press_pos).y()-mapToScene(event->pos()).y();
             press_pos=event->pos();
             qDebug()<<"Ppos"<<press_pos;
             update();
+            setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+            dr_mutex->unlock();
         }
     };
     void TurtleView::setZoom(double zoom)
@@ -689,14 +724,17 @@ const double Pi = 3.14159265;
             }
             if(pixel_per_cell<15)
             {
-                stepX=DRAW->NetStepX()*2;
-                stepY=DRAW->NetStepX()*2;
-                //if(stepX>5)stepX=(int)(stepX-0.5);
-                //if(stepY>5)stepY=(int)(stepY-0.5);
+                while(pixel_per_cell<15){
+                  pixel_per_cell=stepX/(1/c_scale);
+                
+                 stepX=stepX*1.5;
+                 stepY=stepY*1.5;
+                    }
+        
                 DRAW->setNetStepX(stepX);
                 DRAW->setNetStepY(stepY);
                 DRAW->drawNet();
-                //DRAW->scalePen(1.2);
+             
                 
             }
             DRAW->setNetStepX(stepX);
@@ -707,23 +745,23 @@ const double Pi = 3.14159265;
         }
         else
         {
-            double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
-            if(!net)pixel_per_cell=lastStep/(1/c_scale);
+           double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
+            //if(!net)pixel_per_cell=lastStep/(1/c_scale);
             if(pixel_per_cell<15) //Net step too short
             {
-                net=false;
+             net=false;
                 smallNetLabel->show();
-                // lastStep=DRAW->NetStepX();
+               // lastStep=DRAW->NetStepX();
             }else
             {
-                if(pixel_per_cell>15 && !net && pixel_per_cell<150)
+                if(pixel_per_cell>15 && !net && pixel_per_cell<this->width()*2)
                 {
-                    net=true;
+                 net=true;
                     smallNetLabel->hide();
-                    DRAW->setNetStepX(lastStep);
-                    DRAW->setNetStepY(lastStep);
+                   // DRAW->setNetStepX(lastStep);
+                   // DRAW->setNetStepY(lastStep);
                 }
-                if(pixel_per_cell>150)
+                if(pixel_per_cell>this->width()*2)
                 {
                     net=false;
                 }
@@ -792,17 +830,26 @@ void TurtleModule::createGui()
     showToolsBut=new QToolButton(CurView);
     showToolsBut->move(20,20);
     showToolsBut->setCheckable(true);
-    
-    
+
+
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
     
+    showToolsBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("menu-24x24-black.png")));
+    
+    
+    showTurtleBut=new QToolButton(CurView);
+    showTurtleBut->move(50,20);
+    showTurtleBut->setCheckable(true);
+    showTurtleBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("Trtl1.svg")));
+    showTurtleBut->setChecked(true);
+    connect(showTurtleBut,SIGNAL(toggled (bool)),this,SLOT(showTurtleSlt(bool)));
    // connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
  //   connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
     connect(navigator,SIGNAL(redrawNet()),this,SLOT(drawNet()));
     connect(navigator,SIGNAL(autoNetChange(bool)),this,SLOT(autoNetChange(bool)));
     connect(navigator,SIGNAL(netStepChange(double)),this,SLOT(netStepChange(double)));
     
-    // navigator->setDraw(this);
+  
     connect(navigator->zoomUp,SIGNAL(pressed()),this,SLOT(zoomIn()));
     connect(navigator->zoomDown,SIGNAL(pressed()),this,SLOT(zoomOut()));
     connect(navigator->zoomNormal,SIGNAL(pressed()),this,SLOT(zoomNorm()));
@@ -814,12 +861,12 @@ void TurtleModule::createGui()
     
     navigator->move(20,showToolsBut->pos().y()+showToolsBut->height());
     navigator->hide();
-    
-    CurScene->setDraw(this);
+
+    CurScene->setDraw(this,&mutex);
     CurView->setScene(CurScene);
     penColor.r = penColor.g = penColor.b = 0;
     penColor.a = 255;
-    CurView->setDraw(this);
+    CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
     CurView->setViewportUpdateMode (QGraphicsView::BoundingRectViewportUpdate);//For better perfomance; Manual Update;
     drawNet();
@@ -829,11 +876,11 @@ void TurtleModule::createGui()
     netStepX=1;
     netStepY=1;
 
-    
-    
+
+
     CurView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     CurView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    QBrush curBackground=QBrush(QColor(TurtleSettings()->value("Draw/BackColor","#B4B40A").toString()));
+    QBrush curBackground=QBrush(QColor(TurtleSettings()->value("BackColor","#FFFFCC").toString()));
     
     CurScene->setBackgroundBrush (curBackground);
     Color Black;
@@ -847,6 +894,8 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 {
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
+        redrawTimer = new QTimer(this);
+        connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
     }
     return "";
 }
@@ -875,6 +924,18 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
+  
+    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+    CurView->forceRedraw();
+    CurScene->update(CurScene->sceneRect());
+    CurView->repaint();
+    CurView->viewport()->update();
+    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+    if(current==GlobalState::GS_Running)
+    {
+        redrawTimer->start(500);
+    }else
+        redrawTimer->stop();
 }
 
 /* public slot */ void TurtleModule::loadActorData(QIODevice * source)
@@ -952,14 +1013,17 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 
 /* public slot */ void TurtleModule::runTailUp()
 {
-    mPen->tailDown();
-    
+  
+    mutex.lock();    
+ mPen->tailUp();
+  mutex.unlock();
 }
 
 /* public slot */ void TurtleModule::runTailDown()
 {
-    mPen->tailDown();
-    
+mutex.lock();    
+mPen->tailDown();
+mutex.unlock();    
 }
 
 /* public slot */ void TurtleModule::runForward(const qreal dist)
@@ -980,9 +1044,9 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     //t3->moveBy(moveX,moveY);
     
     
-    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
+    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
-    
+     CurScene->update();
 }
 
 /* public slot */ void TurtleModule::runBack(const qreal dist)
@@ -1002,8 +1066,9 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     //t3->moveBy(moveX,moveY);
     
     
-    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a));
+    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
+     CurScene->update();
     
 }
 
@@ -1033,6 +1098,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     
     // Turtle->rotate();
     mutex.unlock();
+    CurScene->update();
     
 }
     /* public slot */ void TurtleModule::runSetPenColor(const Color& color)
@@ -1076,6 +1142,15 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     {
         navigator->setVisible(state);
     };
+    
+    
+    void TurtleModule::showTurtleSlt(bool state)
+    {
+     
+        mPen->setTurtleVis(state);
+        CurView->update();
+        CurView->forceRedraw();
+    }
     void TurtleModule::netStepChange(double value)
     {
         double oldValue=NetStepY();
@@ -1101,7 +1176,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
                                      QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
         QPointF start=CurView->sceneRect().topLeft();
         QPointF end=CurView->sceneRect().bottomRight();
-        CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet());
+        CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet(),mySettings()->value("NetWidth",1).toFloat(),mySettings()->value("AxisWidth",2).toFloat());
         
      
         mutex.unlock();
@@ -1131,7 +1206,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
         //        mPen->scale(0.5,0.5);
         //        mPen->scale(0.5,0.5);
         //        mPen->scale(0.5,0.5);
-        mPen->setScale((0.05)*mPen->scale());
+        mPen->setScale((0.03)*mPen->scale());
         mPen->setZValue(100);
        // mPen->rotate(180);
         mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
@@ -1141,6 +1216,10 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
         
         
     }
+    void TurtleModule::handleGuiReady()
+    {
+        zoomFullDraw();
+    };
     
     void TurtleModule::zoomFullDraw()
     {

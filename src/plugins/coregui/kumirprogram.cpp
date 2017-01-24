@@ -293,11 +293,18 @@ void KumirProgram::testingRun()
     endStatus_ = Running;
     if (state_==Idle) {
         emit giveMeAProgram();
-        prepareRunner(GeneratorInterface::LinesOnly);
+        if (!prepareRunner(GeneratorInterface::LinesOnly)) {
+            QMessageBox::information(mainWidget_, tr("No program loaded"),
+                                  tr("You must open program first")
+                                  );
+            courseManagerRequest_ = false;
+            return;
+        }
         if (!runner()->hasTestingEntryPoint()) {
             QMessageBox::information(mainWidget_, testingRunAction_->text(),
                                   tr("This program does not have testing algorithm")
                                   );
+            courseManagerRequest_ = false;
             return;
         }
     }
@@ -322,11 +329,14 @@ void KumirProgram::regularRun()
     runner()->runContinuous();
 }
 
-void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
+bool KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLevel)
 {
     using namespace Shared;
 
     bool ok = false;
+    if (!editor_) {
+        return false;
+    }
     const QUrl sourceProgramUrl = editor_->documentContents().sourceUrl;
     QString sourceProgramPath;
     qDebug()<<sourceProgramUrl<<sourceProgramUrl.scheme()<<sourceProgramUrl.path();
@@ -396,6 +406,7 @@ void KumirProgram::prepareRunner(Shared::GeneratorInterface::DebugLevel debugLev
     }
 
     terminal_->start(sourceProgramPath);
+    return true;
 }
 
 void KumirProgram::stepRun()

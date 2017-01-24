@@ -23,6 +23,7 @@ You should change it corresponding to functionality.
 namespace ActorDraw {
 #define NET_RESERVE 15
 #define KUM_MULTI 50
+
     
     ExtensionSystem::SettingsPtr DrawModule::DrawSettings()
     {
@@ -51,28 +52,28 @@ namespace ActorDraw {
                 if(lines.at(i)->line().p1().x()<boundRect.left() || (i==0))
                 {
                     deb=lines.at(i)->line().p1().x();
-                    boundRect.setLeft(lines.at(i)->line().p1().x()); 
+                    boundRect.setLeft(lines.at(i)->line().p1().x());
                     
                 }
                 if(lines.at(i)->line().p2().x()>boundRect.right() || (i==0))
                 {
-                    boundRect.setRight(lines.at(i)->line().p2().x()); 
+                    boundRect.setRight(lines.at(i)->line().p2().x());
                     
                 }
-         
+                
             }
             if(lines.at(i)->line().dx()<0)
             {
                 if(lines.at(i)->line().p2().x()<boundRect.left() || (i==0))
                 {
-                    boundRect.setLeft(lines.at(i)->line().p2().x()); 
-                } 
+                    boundRect.setLeft(lines.at(i)->line().p2().x());
+                }
                 if(lines.at(i)->line().p1().x()>boundRect.right() || (i==0))
                 {
-                    boundRect.setRight(lines.at(i)->line().p1().x()); 
+                    boundRect.setRight(lines.at(i)->line().p1().x());
                     
                 }
-             
+                
             }
             if(lines.at(i)->line().dy()>=0)
             {
@@ -80,11 +81,11 @@ namespace ActorDraw {
                 if(-lines.at(i)->line().p1().y()>boundRect.bottom() || (i==0))
                 {
                     deb=-lines.at(i)->line().p1().y();
-                    boundRect.setBottom(-lines.at(i)->line().p1().y()); 
+                    boundRect.setBottom(-lines.at(i)->line().p1().y());
                 }
                 if(lines.at(i)->line().p2().x()>boundRect.top() || (i==0))
                 {
-                    boundRect.setTop(-lines.at(i)->line().p2().y()); 
+                    boundRect.setTop(-lines.at(i)->line().p2().y());
                     
                 }
             }
@@ -106,12 +107,12 @@ namespace ActorDraw {
         }
         
         //if(boundRect.width()!=boundRect.height())
-       // {
-       //     qreal size=qMax(boundRect.width(),boundRect.width());
-       //     boundRect.setWidth(size);
-       //     boundRect.setHeight(size);
-            
-      //  }
+        // {
+        //     qreal size=qMax(boundRect.width(),boundRect.width());
+        //     boundRect.setWidth(size);
+        //     boundRect.setHeight(size);
+        
+        //  }
         
         return(boundRect);
     };
@@ -130,14 +131,14 @@ namespace ActorDraw {
         QGraphicsEllipseItem * testCirc=addEllipse(QRectF(pos.x()-radius,pos.y()-radius,radius*2,radius*2));
         QList<QGraphicsItem *> colItems=collidingItems(testCirc);
         delete testCirc;
-     
+        
         for (int i=0;i<colItems.count();i++)
-            {
-             
-             if(isUserLine(colItems.at(i)))
+        {
+            
+            if(isUserLine(colItems.at(i)))
                 return true;
-                   
-            }
+            
+        }
         return false;
         
     };
@@ -152,9 +153,10 @@ namespace ActorDraw {
         qreal psizeF=widthChar/bs;
        
         
-   
+        
+        
         //  font.setPointSizeF(psizeF*inc);
-          bs=fontMetric.boundingRect("OOOXX").width()/5;
+        bs=fontMetric.boundingRect("OOOXX").width()/5;
         
        
         fontMetric=QFontMetricsF(font);
@@ -229,9 +231,9 @@ namespace ActorDraw {
         }
         int lines=qRound(startx/stepX);
         startx=lines*stepX;
-        double fx1=startx-NET_RESERVE*stepX,fx2,fy1,fy2; 
-
-       // return;
+        double fx1=startx-NET_RESERVE*stepX,fx2,fy1,fy2;
+        
+        // return;
         while (fx1 < endx+NET_RESERVE*stepX)
 		{
 			fx1 = fx1 + stepX;
@@ -255,8 +257,7 @@ namespace ActorDraw {
               //  Netlines.last()->setPen(axisPen);
             }
 		}
-      //  Netlines.append(addLine(-1, -1 , 1, 1 ));
-       // Netlines.append(addLine(1, -1 , -1, 1 ));
+
         lines=starty/stepY;
         starty=lines*stepY;
         fy1 = starty-NET_RESERVE*stepY;
@@ -476,7 +477,7 @@ bool DrawScene::event(QEvent * event)
         
         
         
-
+        
         return 0;
         
 
@@ -616,7 +617,7 @@ int DrawScene::saveToFile(const QString& p_FileName)
             l_File.write(ccc);
         }
         
-       
+        
         
         l_File.write("stroke\n");
         l_File.write("grestore\n");
@@ -701,7 +702,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         {return;}
         if(zoom<1/MAX_ZOOM)
         {return;}
-       this->scale(zoom/c_scale,zoom/c_scale);
+        this->scale(zoom/c_scale,zoom/c_scale);
         
         c_scale=zoom;
     };
@@ -711,7 +712,7 @@ void DrawView::resizeEvent ( QResizeEvent * event )
         if(DRAW->isAutoNet())
         {
             net=true;
-             smallNetLabel->hide();
+            smallNetLabel->hide();
             double pixel_per_cell=DRAW->NetStepX()/(1/c_scale);
             qreal stepX=DRAW->NetStepX();
             qreal stepY=DRAW->NetStepY();
@@ -838,12 +839,13 @@ void DrawModule::createGui()
 
 
     connect(showToolsBut,SIGNAL(toggled (bool)),this,SLOT(showNavigator(bool)));
+    
     showToolsBut->setIcon(QIcon(myResourcesDir().absoluteFilePath("menu-24x24-black.png")));
     connect(m_actionDrawSaveDrawing,SIGNAL(triggered()),this,SLOT(saveFile()));
     connect(m_actionDrawLoadDrawing,SIGNAL(triggered()),this,SLOT(openFile()));
     connect(navigator,SIGNAL(redrawNet()),this,SLOT(drawNet()));
     connect(navigator,SIGNAL(autoNetChange(bool)),this,SLOT(autoNetChange(bool)));
-     connect(navigator,SIGNAL(netStepChange(double)),this,SLOT(netStepChange(double)));
+    connect(navigator,SIGNAL(netStepChange(double)),this,SLOT(netStepChange(double)));
     
     connect(navigator->zoomUp,SIGNAL(pressed()),this,SLOT(zoomIn()));
     connect(navigator->zoomDown,SIGNAL(pressed()),this,SLOT(zoomOut()));
@@ -1183,7 +1185,7 @@ void DrawModule::drawNet()
         CurView->setZoom(CurView->zoom()*0.5);
         scalePen(Pen()->scale()*(2));
         CurView->setNet();
-        drawNet(); 
+        drawNet();
     };
     void DrawModule::zoomNorm()
     {

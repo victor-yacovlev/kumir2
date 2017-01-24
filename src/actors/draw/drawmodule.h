@@ -86,7 +86,8 @@ namespace ActorDraw {
         DrawScene ( QObject * parent = 0 ){installEventFilter(this);};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
         void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
-        void addDrawLine(QLineF lineF,QColor color,qreal width);
+        
+	void addDrawLine(QLineF lineF,QColor color,qreal width);
         void reset()
         {
             for(int i=0;i<lines.count();i++)
@@ -115,7 +116,7 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
-        QMutex* dr_mutex;
+	QMutex* dr_mutex;
         
         
        
@@ -132,8 +133,7 @@ public /* methods */:
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
     void handleGuiReady();
-    // static DrawModule * self;
-   // static ExtensionSystem::SettingsPtr MySettings();
+
     bool isAutoNet() const
     {
         return autoNet;
@@ -245,7 +245,9 @@ private:
     QDir curDir;
     bool animate;
     QTimer *redrawTimer;
-
+    qreal curAngle;
+    qreal AncX,AncY;
+  
 
 };
         

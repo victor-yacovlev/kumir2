@@ -71,6 +71,10 @@ namespace ActorTurtle {
         {
             return tailup;
         }
+        void setTurtleVis(bool vis)
+        {
+            turtle->setVisible(vis);
+        }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
             Q_UNUSED(option) Q_UNUSED(widget);
@@ -79,7 +83,7 @@ namespace ActorTurtle {
                 painter->setBrush(tailColor);
                 painter->drawPath(tail);
             }
-            turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
+            if(turtle->isVisible())turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
         
         }
         
@@ -97,7 +101,7 @@ namespace ActorTurtle {
     public:
         TurtleView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
-        void setDraw(TurtleModule* draw){DRAW=draw;};
+        void setDraw(TurtleModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
         double zoom()const
         {return c_scale;};
         void setZoom(double zoom);
@@ -112,10 +116,11 @@ namespace ActorTurtle {
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
             horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
             
-            verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
-            verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
-            
+           // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+          //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+           
         }
+
     protected:
         // void scrollContentsBy ( int dx, int dy );
         void resizeEvent ( QResizeEvent * event );
@@ -123,6 +128,8 @@ namespace ActorTurtle {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
+        void paintEvent(QPaintEvent *event);
+
     private:
         TurtleModule* DRAW;
         double c_scale;
@@ -131,6 +138,7 @@ namespace ActorTurtle {
         QPoint press_pos;
         bool firstResize;
         double lastStep;
+        QMutex* dr_mutex;
         QLabel* smallNetLabel;
         
     };
@@ -139,17 +147,10 @@ namespace ActorTurtle {
     {
     public:
         TurtleScene ( QObject * parent = 0 ){};
-        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net);
-        void setDraw(TurtleModule* draw){DRAW=draw;};
-        void addDrawLine(QLineF lineF,QColor color)
-        {
-            QGraphicsLineItem* line=addLine(lineF);
-            line->setPen(QPen(QColor(color)));
-            line->setZValue(90);
-            lines.append(line);
-            
-            
-        }
+        void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
+        void setDraw(TurtleModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
+  	
+	void addDrawLine(QLineF lineF,QColor color,qreal width);
         void reset()
         {
             for(int i=0;i<lines.count();i++)
@@ -161,7 +162,8 @@ namespace ActorTurtle {
             
         }
         void DestroyNet();
-        void drawOnlyAxis(double startx ,double endx,double starty,double endy);
+        void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
+        
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();
@@ -176,6 +178,7 @@ namespace ActorTurtle {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         TurtleModule* DRAW;
+	QMutex* dr_mutex;
         
         
         
@@ -192,6 +195,7 @@ public /* methods */:
     static QList<ExtensionSystem::CommandLineParameter> acceptableCommandLineParameters();
     QWidget* mainWidget() const;
     QWidget* pultWidget() const;
+    void handleGuiReady();
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
     void scalePen(double factor)
     {
@@ -237,7 +241,7 @@ public /* methods */:
      static ExtensionSystem::SettingsPtr TurtleSettings();
     QColor axisColor()
     {
-        return QColor(TurtleSettings()->value("AxisColor","blue").toString());
+        return QColor(TurtleSettings()->value("AxisColor","#996600").toString());
     }
    TurtleView * getCurView()
     {
@@ -267,8 +271,8 @@ public /* methods */:
     void zoomFullDraw();
     
     void showNavigator(bool state);
-
-
+    
+    void showTurtleSlt(bool state);
     /* ========= CLASS PRIVATE ========= */
 
 private:
@@ -291,10 +295,12 @@ private:
     Color penColor;
 
     DrawNavigator* navigator;
-    QToolButton *showToolsBut;
+    QToolButton *showToolsBut,*showTurtleBut;
     QDir curDir;
+     bool animate;
     qreal curAngle;
     qreal AncX,AncY;
+    QTimer *redrawTimer;
     TurtlePult * pult;
 
 };
