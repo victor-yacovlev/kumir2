@@ -10,6 +10,7 @@ if(${USE_QT} GREATER 4)
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml X11Extras REQUIRED)
     include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5X11Extras_INCLUDE_DIRS})
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5X11Extras_LIBRARIES})
+    add_definitions(-DQT_NONLATIN_SHORTCUTS_BUG)
 else()
     # Find Qt4
     set(QT_USE_QTMAIN 1)
