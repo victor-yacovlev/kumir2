@@ -7,9 +7,16 @@ endif(NOT DEFINED USE_QT)
 
 if(${USE_QT} GREATER 4)
     # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml X11Extras REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5X11Extras_INCLUDE_DIRS})
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5X11Extras_LIBRARIES})
+    if(UNIX AND NOT APPLE)
+        find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml X11Extras REQUIRED)
+        include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5X11Extras_INCLUDE_DIRS})
+        set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5X11Extras_LIBRARIES})
+    else()
+        find_package(Qt5 5.3.0 COMPONENTS Core Widgets Xml REQUIRED)
+        include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS})
+        set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Xml_LIBRARIES})
+    endif()
+
     add_definitions(-DQT_NONLATIN_SHORTCUTS_BUG)
 else()
     # Find Qt4
