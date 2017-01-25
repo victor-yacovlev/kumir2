@@ -6,6 +6,7 @@ extern "C" {
 }
 
 #include "sandboxwidget_frame.h"
+#include "pyinterpreterprocess.h"
 
 #include <QtGlobal>
 #include <QWidget>
@@ -67,6 +68,8 @@ private:
 
     bool resetFlag_;
     QMutex resetMutex_;
+
+    PyInterpreterProcess* _pyInterpreterProcess;
 };
 
 } // namespace Python3Language

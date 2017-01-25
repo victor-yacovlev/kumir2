@@ -45,6 +45,7 @@ set(SOURCES
     variablesmodel.cpp
     sandboxwidget.cpp
     syntaxchecksettingspage.cpp
+    pyinterpreterprocess.cpp
 )
 
 set(MOC_HEADERS
@@ -57,6 +58,7 @@ set(MOC_HEADERS
     variablesmodel.h
     sandboxwidget.h
     syntaxchecksettingspage.h
+    pyinterpreterprocess.h
 )
 
 if(${USE_QT} GREATER 4)

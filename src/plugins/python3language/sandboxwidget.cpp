@@ -32,6 +32,7 @@ SandboxWidget::SandboxWidget(const QString & pythonPath, QWidget *parent)
     , py_(0)
     , pythonPath_(pythonPath)
     , resetFlag_(0)
+//    , _pyInterpreterProcess(PyInterpreterProcess::create(this))
 {
     QVBoxLayout * mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
