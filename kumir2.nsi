@@ -38,7 +38,7 @@ Section "Kumir" Kumir
 
     SetOutPath "$INSTDIR"
     File LICENSE_RU.rtf
-    File vcredist_x86.exe
+    File /nonfatal vcredist_x86.exe
     SetOutPath "$INSTDIR\bin"
     File /r bin\*
     SetOutPath "$INSTDIR\lib"
