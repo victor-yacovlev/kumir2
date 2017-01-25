@@ -54,32 +54,59 @@ Section "Kumir" Kumir
     SetOutPath "$INSTDIR\python"
     File /nonfatal /r python\*
 
+    IfFileExists "$INSTDIR\vcredist_x86.exe" 0 EndCheckVcRedist
+        ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
+        Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
+    EndCheckVcRedist:
 
-    ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
-    Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
-    
-    WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
-    WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
-    WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
-    WriteRegStr HKCR "ru.niisi.kumir2.program\shell\Создать выполняемый файл\command" "" 'wscript.exe "$INSTDIR\bin\kumir2-llvmc-w.vbs" "%L"'
-    WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
-    WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
-    WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"    
-    WriteRegStr HKCR "ru.niisi.kumir2.bytecode\shell\open\command" "" '"$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
-    WriteRegStr HKCR "ru.niisi.kumir2.bytecode\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kod.ico"
-    
-    Call RefreshShellIcons
+    IfFileExists "$INSTDIR\bin\kumir2-open.exe" 0 EndCheckKumirOpen
+        WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
+        WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
+        WriteRegStr HKCR "ru.niisi.kumir2.program\shell\open\command" "" '"$INSTDIR\bin\kumir2-open.exe" "%1"'
+        WriteRegStr HKCR "ru.niisi.kumir2.program\shell\Создать выполняемый файл\command" "" 'wscript.exe "$INSTDIR\bin\kumir2-llvmc-w.vbs" "%L"'
+        WriteRegStr HKCR "ru.niisi.kumir2.program\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kum.ico"
+    EndCheckKumirOpen:
+
+    IfFileExists "$INSTDIR\bin\kumir2-run.exe" 0 EndCheckKumirRun
+        WriteRegStr HKCR ".kod" "" "ru.niisi.kumir2.bytecode"
+        WriteRegStr HKCR "ru.niisi.kumir2.bytecode" "" "Выполняемый байткод Кумир"
+        WriteRegStr HKCR "ru.niisi.kumir2.bytecode\shell\open\command" "" '"$INSTDIR\bin\kumir2-run.exe" "%1" "%*"'
+        WriteRegStr HKCR "ru.niisi.kumir2.bytecode\DefaultIcon" "" "$INSTDIR\share\icons\kumir2-kod.ico"
+    EndCheckKumirRun:
 
     CreateDirectory "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}"
-    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
-    CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+
+    IfFileExists "$INSTDIR\bin\kumir2-classic.exe" 0 EndCheckKumirClassic
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Стандарт.lnk" "$INSTDIR\bin\kumir2-classic.exe"
+    EndCheckKumirClassic:
+
+    IfFileExists "$INSTDIR\bin\kumir2-highgrade.exe" 0 EndCheckKumirHighgrade
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для старших классов.lnk" "$INSTDIR\bin\kumir2-highgrade.exe"
+    EndCheckKumirHighgrade:
+
+    IfFileExists "$INSTDIR\bin\kumir2-ide.exe" 0 EndCheckKumirIde
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Про.lnk" "$INSTDIR\bin\kumir2-ide.exe"
+    EndCheckKumirIde:
+
+    IfFileExists "$INSTDIR\bin\kumir2-teacher.exe" 0 EndCheckKumirTeacher
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир для учителей.lnk" "$INSTDIR\bin\kumir2-teacher.exe"
+    EndCheckKumirTeacher:
+
+    IfFileExists "$INSTDIR\bin\kumir2-python.exe" 0 EndCheckKumirPython
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Python.lnk" "$INSTDIR\bin\kumir2-python.exe"
+    EndCheckKumirPython:
+
+    IfFileExists "$INSTDIR\bin\kumir2-python-teacher.exe" 0 EndCheckKumirPythonTeacher
+        CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Кумир-Python (учительский режим).lnk" "$INSTDIR\bin\kumir2-python-teacher.exe"
+    EndCheckKumirPythonTeacher:
+
     CreateShortCut "$SMPROGRAMS\Кумир ${VERSION_SUFFIX}\Удалить Кумир.lnk" "$INSTDIR\uninstall.exe"
+
     ; Uninstaller registration
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir_${VERSION_SUFFIX}" "DisplayName" "Кумир ${VERSION_SUFFIX}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\kumir_${VERSION_SUFFIX}" "UninstallString" "$INSTDIR\uninstall.exe"
 
+    Call RefreshShellIcons
     WriteUninstaller $INSTDIR\uninstall.exe
     
 SectionEnd
