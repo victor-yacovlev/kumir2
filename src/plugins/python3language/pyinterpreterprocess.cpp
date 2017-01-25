@@ -237,8 +237,8 @@ void PyInterpreterProcess::handleReadStandardOutput()
 
 void PyInterpreterProcess::handleReadStandardError()
 {
-    QByteArray stderr = readAllStandardError();
-    qDebug() << "StdErr from Python process: " << stderr;
+    QByteArray stderrData = readAllStandardError();
+    qDebug() << "StdErr from Python process: " << stderrData;
 }
 
 } // namespace Python3Language
