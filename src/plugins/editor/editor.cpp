@@ -234,11 +234,15 @@ void EditorInstance::timerEvent(QTimerEvent *e)
 {
     if (e->timerId()==timerId_) {
         e->accept();
+        bool isRussianLayout = Utils::isRussianLayout();
+        bool isCapsLock = Utils::isCapsLock();
+        bool isShiftPressed = Utils::shiftKeyPressed;
+        bool isAltPressed = Utils::altKeyPressed;
         emit keyboardLayoutChanged(
-                    Utils::isRussianLayout()? QLocale::Russian : QLocale::English,
-                    Utils::isCapsLock(),
-                    Utils::shiftKeyPressed,
-                    Utils::altKeyPressed
+                    isRussianLayout ? QLocale::Russian : QLocale::English,
+                    isCapsLock,
+                    isShiftPressed,
+                    isAltPressed
                     );
         const bool hasSelection = cursor_->hasSelection() || cursor_->hasRectSelection();
         cut_->setEnabled(hasSelection);

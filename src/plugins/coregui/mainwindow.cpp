@@ -939,8 +939,8 @@ void MainWindow::setupStatusbarForTab()
                 );
         connect(twe->component, SIGNAL(recordMacroChanged(bool)),
                 statusBar_, SLOT(setRecordIndicator(bool)));
-
-    }
+    }    
+    statusBar_->setDocumentType(twe->type);
 }
 
 void MainWindow::prepareRecentFilesMenu()
@@ -2174,6 +2174,13 @@ void MainWindow::setConsoleVisible(bool v)
             centralSide_->setSizes(QList<int>() << summ << 0);
         }
 
+    }
+    QWidget * currentTabWidget = tabWidget_->currentWidget();
+    if (!currentTabWidget)
+        return;
+    TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(currentTabWidget);
+    if (twe->type == Program || twe->type == Text) {
+        twe->setProperty("consoleVisible", v);
     }
 }
 

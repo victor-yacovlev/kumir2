@@ -1,15 +1,20 @@
 #include "utils.h"
 
 #include <QtCore>
-#include <QtGui>
+#include <QApplication>
 
 #ifdef Q_OS_WIN32
 #   include <windows.h>
 #endif
 
-#ifdef Q_WS_X11
-#   include <X11/XKBlib.h>
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
 #   include <QX11Info>
+#   include <X11/XKBlib.h>
+#   include <X11/Xatom.h>
+#if QT_VERSION < 0x050000
+#endif
+#else
+#   include <QInputMethod>
 #endif
 
 #ifdef Q_OS_MACX
@@ -21,10 +26,37 @@ namespace Editor {
 bool Utils::isRussianLayout()
 {
     bool result = false;
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
+#if QT_VERSION < 0x050000
+    // Qt4 implementation
     QString keybLang = QApplication::keyboardInputLocale().name();
     result = keybLang.contains("ru");
+#else
+    // Qt5 implementation
+    QInputMethod* inputMethod = QApplication::inputMethod();
+    QString keybLang = inputMethod->locale().name();
+    result = keybLang.contains("ru");
+    Display * d = QX11Info::display();
+    if (d && !result) {  // Might be variant of main input method
+        // solution found at: http://www.linux.org.ru/forum/development/12852504
+        XkbStateRec xkbState;
+        XkbGetState(d, XkbUseCoreKbd, &xkbState);
+        Atom real_prop_type; int fmt;
+        unsigned long nitems, extra_bytes;
+        char *prop_data = NULL;
+        Atom rules_atom = XInternAtom(d, "_XKB_RULES_NAMES", False);
+        XGetWindowProperty(d, DefaultRootWindow(d), rules_atom, 0L, 1024,
+            False, XA_STRING, &real_prop_type, &fmt, &nitems, &extra_bytes, (unsigned char **) (void *) &prop_data);
+        QStringList names;
+        for(char* p=prop_data; p-prop_data < (long)nitems && p != NULL; p += strlen(p)+1) names.append( p );
+        if (names.count() > 3 ) names = names[2].split(",");
+        XFree(prop_data);
+        keybLang = names[xkbState.group];
+        result = keybLang.contains("ru");
+    }
 #endif
+#endif // X11
+
 #ifdef Q_OS_WIN32
     HKL l = GetKeyboardLayout(0);
     result = unsigned(l)==0x4190419;
@@ -38,7 +70,7 @@ bool Utils::isRussianLayout()
 bool Utils::isCapsLock()
 {
     bool result = false;
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
     Display * d = QX11Info::display();
     if (d) {
         unsigned n;

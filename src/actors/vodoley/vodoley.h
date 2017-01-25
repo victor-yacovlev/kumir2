@@ -183,7 +183,7 @@ public:
 	QAction * actSave;
     void createActions(QList<QAction*> actions);
     bool ready()
-    {return ((Curfill[0]==AfillR)||(Curfill[1]==BfillR)||(Curfill[1]==AfillR));};
+    {return ((Curfill[0]==AfillR)||(Curfill[1]==AfillR)||(Curfill[2]==AfillR));};
  
 protected:
     void mousePressEvent(QMouseEvent *event);
