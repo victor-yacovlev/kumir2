@@ -2,6 +2,7 @@
 #define COREGUI_STATUSBAR_H
 
 #include "extensionsystem/kplugin.h"
+#include "mainwindow.h"
 
 #include <QStatusBar>
 #include <QToolButton>
@@ -30,6 +31,7 @@ public slots:
     void setEditorCursorPosition(uint row, uint column);
     void setEditorKeyboardLayout(QLocale::Language lang, bool capslock, bool shift, bool alt);
     void setRecordIndicator(bool on);
+    void setDocumentType(MainWindow::DocumentType type);
 
 private:
     int fontHeight() const;
@@ -65,6 +67,7 @@ private:
     bool keyboardAlt_;
     bool editorRecord_;
     QList<QToolButton*> toolButtons_;
+    MainWindow::DocumentType documentType_;
 };
 
 } // namespace CoreGUI

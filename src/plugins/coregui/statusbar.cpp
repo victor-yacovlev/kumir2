@@ -112,6 +112,12 @@ void StatusBar::setRecordIndicator(bool on)
     if (upd) update();
 }
 
+void StatusBar::setDocumentType(MainWindow::DocumentType type)
+{
+    documentType_ = type;
+    update();
+}
+
 void StatusBar::setStepsDoneCounter(uint value)
 {
     bool upd = stepsDone_ != value;
@@ -356,6 +362,8 @@ void StatusBar::resizeEvent(QResizeEvent *event)
 
 void StatusBar::paintModeItem(QPainter &p, int x)
 {
+    if (MainWindow::Program != documentType_)
+        return;
     paintItemRect(p, modeItemSize(), x);
     using Shared::PluginInterface;
     p.save();
@@ -394,6 +402,8 @@ void StatusBar::paintModeItem(QPainter &p, int x)
 
 void StatusBar::paintCounterItem(QPainter &p, int x)
 {
+    if (MainWindow::Program != documentType_)
+        return;
     paintItemRect(p, counterItemSize(), x);
     using Shared::PluginInterface;
     p.save();
@@ -495,6 +505,8 @@ QColor StatusBar::alternateColor() const
 
 void StatusBar::paintCursorItem(QPainter &p, int x)
 {
+    if (MainWindow::StartPage == documentType_)
+        return;
     paintItemRect(p, cursorPositionItemSize(), x);
     p.save();
     const QRect textRect(QPoint(x + ItemPadding, (height() - fontHeight()) / 2),
@@ -508,6 +520,8 @@ void StatusBar::paintCursorItem(QPainter &p, int x)
 
 void StatusBar::paintKeyboardItem(QPainter &p, int x)
 {   
+    if (MainWindow::StartPage == documentType_)
+        return;
     paintItemRect(p, keyboardLayoutItemSize(), x);
     bool active = parentWidget() && parentWidget()->isActiveWindow();
     const QColor activeColor = palette().brush(QPalette::Active, QPalette::Text).color();
