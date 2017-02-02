@@ -1016,6 +1016,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
   
     mutex.lock();    
  mPen->tailUp();
+   CurScene->update();
   mutex.unlock();
 }
 
@@ -1023,7 +1024,8 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 {
 mutex.lock();    
 mPen->tailDown();
-mutex.unlock();    
+    CurScene->update();
+mutex.unlock();
 }
 
 /* public slot */ void TurtleModule::runForward(const qreal dist)
