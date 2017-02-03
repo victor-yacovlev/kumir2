@@ -1150,6 +1150,7 @@ mutex.unlock();
     {
      
         mPen->setTurtleVis(state);
+        mPen->update();
         CurView->update();
         CurView->forceRedraw();
     }

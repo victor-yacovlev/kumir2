@@ -276,6 +276,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(2,0);
+    msleep(1);
  //    mutex.unlock();
 }
 
