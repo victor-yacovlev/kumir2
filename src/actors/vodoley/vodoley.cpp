@@ -375,6 +375,7 @@ void Vodoley::MoveFromTo(uint from,uint to)
     mutex.unlock();
     updateMenzur();
     QApplication::processEvents();
+    
 };
 
 
