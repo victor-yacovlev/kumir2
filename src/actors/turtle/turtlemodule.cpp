@@ -18,11 +18,15 @@ You should change it corresponding to functionality.
 #include <QtGui>
 
 namespace ActorTurtle {
-#define NET_RESERVE 15
-#define KUM_MULTI 50
-#define ZOOM_DEMULT 0.2
+
+
+
+
+const int KumMulti = 50;
+const int NetReserve = 15;
 const double Pi = 3.14159265;
-       static const qreal MAX_ZOOM = 1000000;
+static const qreal MAX_ZOOM = 1000000;
+
     class AAA : public QWidget {
     public:
         inline explicit AAA(QWidget * pult): QWidget(), pult_(pult) {
@@ -150,7 +154,7 @@ const double Pi = 3.14159265;
     qreal TurtleScene::drawText(const QString &Text,qreal widthChar,QPointF from,QColor color)
     {
         QFont font ( "Courier", 12);
-        font.setPointSizeF(KUM_MULTI);
+        font.setPointSizeF(KumMulti);
         QFontMetricsF fontMetric(font);
         qreal bs=fontMetric.boundingRect(Text).width();
         qreal ch=bs/Text.length();
@@ -236,15 +240,15 @@ const double Pi = 3.14159265;
         }
         int lines=qRound(startx/step);
         startx=lines*step;
-        double fx1=startx-NET_RESERVE*step,fx2,fy1,fy2;
+        double fx1=startx-NetReserve*step,fx2,fy1,fy2;
         
         // return;
-        while (fx1 < endx+NET_RESERVE*step)
+        while (fx1 < endx+NetReserve*step)
 		{
 			fx1 = fx1 + step;
 			fx2 = fx1;
-			fy1 = starty-NET_RESERVE*step;
-			fy2 = endy+NET_RESERVE*step;
+			fy1 = starty-NetReserve*step;
+			fy2 = endy+NetReserve*step;
             
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
@@ -265,14 +269,14 @@ const double Pi = 3.14159265;
 
         lines=starty/stepY;
         starty=lines*stepY;
-        fy1 = starty-NET_RESERVE*stepY;
+        fy1 = starty-NetReserve*stepY;
         
-		while (fy1 < endy+NET_RESERVE*stepY)
+		while (fy1 < endy+NetReserve*stepY)
 		{
 			fy1 = fy1 + stepY;
 			fy2 = fy1;
-			fx1 = startx-NET_RESERVE*stepY;
-			fx2 = endx+NET_RESERVE*stepY;
+			fx1 = startx-NetReserve*stepY;
+			fx2 = endx+NetReserve*stepY;
             
             Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
