@@ -15,7 +15,8 @@ You should change it corresponding to functionality.
 #include <QProcessEnvironment>
 #include "extensionsystem/pluginmanager.h"
  //#include <iostream> 
-#define ANIMTIME 100
+
+const int AnimTime = 100;
 namespace ActorRobot {
 
     
@@ -495,27 +496,27 @@ namespace ActorRobot {
         if(sepItmRight)return true;return false;
     }
     
-    QGraphicsLineItem* FieldItm::UpWallLine()
+    QGraphicsLineItem* FieldItm::UpWallLine() const
     {
         return upWallLine;
     }
     
-    QGraphicsLineItem* FieldItm::DownWallLine()
+    QGraphicsLineItem* FieldItm::DownWallLine()const
     {
         return downWallLine;
     }
     
-    QGraphicsLineItem* FieldItm::LeftWallLine()
+    QGraphicsLineItem* FieldItm::LeftWallLine()const
     {
         return leftWallLine;
     }
     
-    QGraphicsLineItem* FieldItm::RightWallLine()
+    QGraphicsLineItem* FieldItm::RightWallLine()const
     {
         return rightWallLine;
     }
     
-    bool FieldItm::isColored()
+    bool FieldItm::isColored() const
     {
         return IsColored;
     }
@@ -1021,7 +1022,7 @@ namespace ActorRobot {
         return QPoint(stlb*fieldSize+ddx,str*fieldSize);
     };
     
-    FieldItm* RoboField::getFieldItem(int str,int stlb)
+    FieldItm* RoboField::getFieldItem(int str,int stlb) const
     {
         if(rows()<str) {
             qDebug("RoboField:rows()<str");
@@ -1328,7 +1329,7 @@ namespace ActorRobot {
         clickCell=QPair<int,int>(-1,-1);
     }
     
-    void RoboField::debug()
+    void RoboField::debug()const 
     {
         QList<QGraphicsItem*> items=this->items();
         for(int i=0;i<items.count();i++)
@@ -1617,11 +1618,11 @@ namespace ActorRobot {
         }
        
     };
-    qreal RoboField::m_height()
+    qreal RoboField::m_height() const 
     {
         return FIELD_SIZE_SMALL*  rows(); 
     }
-    qreal RoboField::m_width()
+    qreal RoboField::m_width() const
     {
         return FIELD_SIZE_SMALL*  rows(); 
     }
@@ -3195,36 +3196,7 @@ namespace ActorRobot {
     }
     
     
-    
-    void RoboField::showCellDialog(FieldItm * cellClicked)
-    {
-        
-//        qDebug() << "showCellDialog";
-//        QPoint pos = views().first()->pos();
-//        pos = views().first()->mapToGlobal(pos);
-//        qDebug() << "Pos: " << pos;
-//        cellDialog->move(pos);
-//        
-//        cellDialog->setRowCols(rows(),columns());
-//        
-//        
-//        //       cellDialog->mark->setChecked(cellClicked->mark);
-//        
-//        
-//        //       cellDialog->colored->setChecked(cellClicked->IsColored);
-//        
-//        QChar upChar,downChar;
-//        if(cellClicked->upChar == ' ')upChar='_';else upChar=cellClicked->upChar;
-//        if(cellClicked->downChar == ' ')downChar='_';else downChar=cellClicked->downChar;
-//        
-//        cellDialog->upChar->setText(upChar);
-//        cellDialog->downChar->setText(downChar);
-//        
-//        cellDialog->RadSpinBox->setValue(cellClicked->radiation);
-//        cellDialog->TempSpinBox->setValue(cellClicked->temperature);
-//        
-//        cellDialog->show();
-    };
+
     
     void RoboField::cellDialogOk()
     {
@@ -3336,7 +3308,7 @@ namespace ActorRobot {
         Items[str][stlb]=item;
     }
     
-    RoboField* RoboField::Clone()
+    RoboField* RoboField::Clone() const
     {
         RoboField* clone=new RoboField(0,Actor);
         clone->setFieldItems(Items);
@@ -4484,7 +4456,7 @@ void RobotModule::runGoUp()
 //         emit sendToPultLog(status);
 //     }
 if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
-    if(animation)msleep(ANIMTIME);
+    if(animation)msleep(AnimTime);
 	return;
 }
 
@@ -4511,7 +4483,7 @@ void RobotModule::runGoDown()
   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
     if(animation){
         view->update();
-     msleep(ANIMTIME);   
+     msleep(AnimTime);
     }
 	return;
 }
@@ -4541,7 +4513,7 @@ void RobotModule::runGoLeft()
     if(animation)
     {
         view->update();
-        msleep(ANIMTIME);
+        msleep(AnimTime);
     }
 	return;
 }
@@ -4566,7 +4538,7 @@ void RobotModule::runGoRight()
      if(animation)
      {
          view->update();
-     msleep(ANIMTIME);
+     msleep(AnimTime);
      }
 	return;
 }
@@ -4590,7 +4562,7 @@ void RobotModule::runDoPaint()
     if(animation)
     {
         view->update();
-        msleep(ANIMTIME);
+        msleep(AnimTime);
     }
 	return;
 }

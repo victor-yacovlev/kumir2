@@ -195,15 +195,18 @@ private:
      mutex.lock();
     MainWindow->MoveFromTo(0,3);//Move water from A to ....
      mutex.unlock();
+    msleep(1);
 }
 
 /* public slot */ void VodoleyModule::runEmptyB()
 {
     /* алг вылей B */
     // TODO implement me
-    // mutex.lock();
+     mutex.lock();
     MainWindow->MoveFromTo(1,3);
-    // mutex.unlock();
+    //msleep(1);
+    mutex.unlock();
+    msleep(1);
 }
 
 /* public slot */ void VodoleyModule::runEmptyC()
@@ -212,6 +215,8 @@ private:
     // TODO implement me
    //  mutex.lock();
     MainWindow->MoveFromTo(2,3);
+    msleep(1);
+    
   //   mutex.unlock();
 }
 
@@ -221,6 +226,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(0,1);
+    msleep(1);
    //  mutex.unlock();
 }
 
@@ -230,6 +236,7 @@ private:
 
 //    mutex.lock();
     MainWindow->MoveFromTo(0,2);
+    msleep(1);
    //mutex.unlock();
 }
 
@@ -239,6 +246,7 @@ private:
  
   //   mutex.lock();
     MainWindow->MoveFromTo(1,0);
+    msleep(1);
   //   mutex.unlock();
 }
 
@@ -248,6 +256,7 @@ private:
     // TODO implement me
    //  mutex.lock();
     MainWindow->MoveFromTo(1,2);
+    msleep(1);
   //   mutex.unlock();
 }
 
@@ -257,6 +266,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(2,1);
+    msleep(1);
   //   mutex.unlock();
 }
 
@@ -266,6 +276,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(2,0);
+    msleep(1);
  //    mutex.unlock();
 }
 
