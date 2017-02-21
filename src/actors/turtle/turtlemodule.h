@@ -67,7 +67,7 @@ namespace ActorTurtle {
         {
             return QRectF(-15, -30, mX, mY);
         }
-        bool isTailUp()
+        bool isTailUp() const
         {
             return tailup;
         }
@@ -229,21 +229,21 @@ public /* methods */:
     {
         netStepY=step;
     }
-    double zoom()
+    double zoom() const
     {
         return CurView->zoom();
     }
     
-    TurtlePen* Pen()
+    TurtlePen* Pen() const
     {
         return mPen;
     }
      static ExtensionSystem::SettingsPtr TurtleSettings();
-    QColor axisColor()
+    QColor axisColor() const
     {
         return QColor(TurtleSettings()->value("AxisColor","#996600").toString());
     }
-   TurtleView * getCurView()
+   TurtleView * getCurView() const
     {
         return CurView;
     }

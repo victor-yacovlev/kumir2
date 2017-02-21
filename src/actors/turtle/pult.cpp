@@ -383,12 +383,14 @@ void TurtlePult::TempS()
     if(!greenLight->link())return;
     turtleObj->runTailDown();
     Logger->appendText(QString::fromUtf8("опустить хвост\n"),QString::fromUtf8("опустить хвост"),"OK");
+   
 };
 void TurtlePult::RadS()
 {
    if(!greenLight->link())return;
     turtleObj->runTailUp();
     Logger->appendText(QString::fromUtf8("поднять хвост\n"),QString::fromUtf8("поднять хвост"),"OK");
+    turtleObj->getCurView()->forceRedraw();
 };
 
 void TurtlePult::resetTurtle()
