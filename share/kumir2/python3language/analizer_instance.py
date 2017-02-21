@@ -5,6 +5,17 @@ NOTE: Each analizer instance runs in it's own interpreter
 """
 import copy
 import os
+
+if __name__ == "__main__":
+    import sys
+    script_dir = os.path.dirname(__file__)
+    thirdpary_packages_dir = script_dir + os.path.sep + "3rd-party"
+    for name in os.listdir(thirdpary_packages_dir):
+        pkg_dir = thirdpary_packages_dir + os.path.sep + name
+        sys.path.append(pkg_dir)
+        if os.path.exists(pkg_dir + os.path.sep + "src"):
+            sys.path.append(pkg_dir + os.path.sep + "src")
+
 from check_syntax import *
 from check_syntax import pep8_wrapper
 
@@ -226,12 +237,8 @@ def get_line_property(line_no, line_text):
     return result
 
 
-def __run_test(test_name):
-    base = os.path.dirname(os.path.abspath(__file__)) + "/"
-    # base = ""
-    source_file = open(base + test_name, 'r')
-    set_source_text(source_file.read())
-    source_file.close()
+def __run_test(test_data):
+    set_source_text(test_data)
 
     class LinePropPrintHex(int):
         def __repr__(self):
@@ -243,7 +250,6 @@ def __run_test(test_name):
     errors = get_errors()
 
     assert len(lines) == len(ranks) == len(props)
-    print("\nBegin test ", test_name, "========================")
     for no in range(0, len(lines)):
         out = "{:2d}: {!s:<30} # {!s:<8} {}".format(no+1, lines[no], ranks[no], props[no])
         print(out)
@@ -259,23 +265,14 @@ def __run_test(test_name):
         print(out)
         out = "    " + " " * error.start_pos + "^" * error.length
         print(out)
-    print("End test ", test_name, "==========================")
+
 
 if __name__ == "__main__":
-    TESTS = [
-        "MyTests/test1.py",
-        "MyTests/test2.py",
-        "MyTests/test3.py",
-        "MyTests/test4.py",
-        "MyTests/test5.py",
-        "MyTests/undefined_names.py",
-        "MyTests/reference_before_assignment.py",
-        "MyTests/structure_syntax_check.py",
-        "MyTests/arguments_count_mismatch.py",
-        "MyTests/arguments_types_mismatch.py"
-        # "MyTests/legacy_syntax.py",
-        # "MyTests/sa.py",
-        # "MyTests/st_an.py",
-    ]
-    for test in TESTS:
-        __run_test(test)
+    import sys
+    test_data = "";
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], 'r') as f:
+            test_data = f.read()
+    else:
+        test_data = input("Type a line to analisys: ")
+    __run_test(test_data)
