@@ -23,6 +23,7 @@ class Reporter(ReporterBase):
         pass
 
     def syntaxError(self, filename, msg, lineno, offset, text):
+        offset = min(offset, len(text)-1)
         if text[offset] == ' ':
             start = 0
             length = len(text)
