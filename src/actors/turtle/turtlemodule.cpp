@@ -1155,6 +1155,7 @@ mutex.unlock();
      
         mPen->setTurtleVis(state);
         mPen->update();
+     
         CurView->update();
         CurView->forceRedraw();
     }
@@ -1218,7 +1219,7 @@ mutex.unlock();
        // mPen->rotate(180);
         mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
         qDebug() <<myResourcesDir().absoluteFilePath("Trtl1.svg");
-        CurScene->addItem(mPen);
+        //CurScene->addItem(mPen);
 
         
         

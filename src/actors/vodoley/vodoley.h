@@ -125,11 +125,11 @@ public:
 	qreal grad;
 	pultLogger* logger;
 	VodoleyPult* pult;
- bool isReady()
- {
-   if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR))return true;
-   else return false;
- };
+    bool isReady()
+    {
+     if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR))return true;
+        else return false;
+    };
 
 	void showVodoley()
 	{
