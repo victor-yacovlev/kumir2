@@ -1304,10 +1304,11 @@ void EditorPlane::keyReleaseEvent(QKeyEvent *e)
                     , SettingsPage::DefaultTempSwitchLayoutButton)
                 .toUInt()
                 );
+//    qDebug() << "Key release event: " << int(e->key()) << " mods: " << e->modifiers();
     if (e->key()==tempSwichLayoutKey) {
         Utils::altKeyPressed = false;
     }
-    if (e->key()==Qt::Key_Shift || (e->key()==-1 && e->modifiers() & Qt::ShiftModifier)) {
+    if (e->key()==Qt::Key_Shift || ((e->key()==-1 || e->key()==0) && e->modifiers() & Qt::ShiftModifier)) {
         Utils::shiftKeyPressed = false;
     }
     if (Qt::Key_Escape == e->key() && e->modifiers() == 0)
