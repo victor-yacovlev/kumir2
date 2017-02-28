@@ -59,7 +59,8 @@ void SandboxWidget::createInterpreterProcess()
     connect(_pyInterpreterProcess, SIGNAL(stderrReceived(QString)), this, SLOT(handleStdErr(QString)));
     connect(_pyInterpreterProcess, SIGNAL(inputRequiestReceived(QString)), this, SLOT(addPyInputItem(QString)));
     connect(_pyInterpreterProcess, SIGNAL(resetReceived()), this, SLOT(reset()));
-//    connect(_pyInterpreterProcess, SIGNAL(finished(int)), this, SLOT(reset()));
+    connect(_pyInterpreterProcess, SIGNAL(processRespawned(int,QProcess::ExitStatus)),
+            this, SLOT(handleProcessRespawned(int,QProcess::ExitStatus)));
 }
 
 void SandboxWidget::reset()
@@ -396,6 +397,15 @@ void SandboxWidget::handleStdErr(const QString &message)
     else {
         addTextOutputItem(message, Sandbox::FrameError);
     }
+}
+
+void SandboxWidget::handleProcessRespawned(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    const QString message =
+            tr("Interpreter restarted after been exited with code %1")
+            .arg(exitCode) + "\n";
+    addTextOutputItem(message, Sandbox::FrameError);
+    addDefaultInputItem();
 }
 
 SandboxWidget *SandboxWidget::instance(const QString & pythonPath, QWidget *parent)

@@ -23,9 +23,9 @@ namespace Python3Language {
 int PyInterpreterProcess::DebugPortNumberOffset = 0;
 qint64 PyInterpreterProcess::AsyncCallId = 0;
 
-PyInterpreterProcess *PyInterpreterProcess::create(QObject *parent)
+PyInterpreterProcess *PyInterpreterProcess::create(bool autoRespawn, QObject *parent)
 {
-    PyInterpreterProcess *result = new PyInterpreterProcess(parent);
+    PyInterpreterProcess *result = new PyInterpreterProcess(autoRespawn, parent);
     if (result->launchProcess()) {
         QVariant pythonCwd = result->blockingCall("os", "getcwd", QVariantList());
         qDebug() << "Python working directory: " << pythonCwd.toString();
@@ -44,6 +44,7 @@ void PyInterpreterProcess::sendPing()
 
 void PyInterpreterProcess::sendExit()
 {
+    _allowProcessRespawn = false;
     sendMessage(Message (Message::Type::Exit) );
     DebugPortNumberOffset = qMax(0, DebugPortNumberOffset-1);
 }
@@ -76,8 +77,9 @@ void PyInterpreterProcess::sendInput(const QString &data)
 
 
 
-PyInterpreterProcess::PyInterpreterProcess(QObject * parent)
+PyInterpreterProcess::PyInterpreterProcess(bool autoRespawn, QObject * parent)
     : QProcess(parent)
+    , _allowProcessRespawn(autoRespawn)
 {
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     QString path = pythonExtraPath();
@@ -105,6 +107,8 @@ PyInterpreterProcess::PyInterpreterProcess(QObject * parent)
             this, SLOT(handleReadStandardError()));
     connect(qApp, SIGNAL(aboutToQuit()),
             this, SLOT(sendExit()));
+    connect(this, SIGNAL(finished(int,QProcess::ExitStatus)),
+            this, SLOT(handleProcessFinished(int,QProcess::ExitStatus)));
 }
 
 bool PyInterpreterProcess::launchProcess()
@@ -320,6 +324,14 @@ void PyInterpreterProcess::handleReadStandardError()
     QStringList lines = QString::fromUtf8(readAllStandardError()).split("\n");
     Q_FOREACH( const QString stderrData, lines ) {
         qDebug() << "StdErr from Python process: " << stderrData;
+    }
+}
+
+void PyInterpreterProcess::handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if (_allowProcessRespawn) {
+        launchProcess();
+        emit processRespawned(exitCode, exitStatus);
     }
 }
 

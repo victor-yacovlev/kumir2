@@ -50,7 +50,7 @@ class PyInterpreterProcess : public QProcess
 {
     Q_OBJECT
 public:
-    static PyInterpreterProcess* create(QObject * parent = nullptr);
+    static PyInterpreterProcess* create(bool autoRespawn, QObject * parent = nullptr);
     bool waitForPong(int msec);
     QVariant blockingCall(const QByteArray &moduleName,
                           const QByteArray &functionName,
@@ -73,10 +73,11 @@ signals:
     void stderrReceived(const QString &message);
     void inputRequiestReceived(const QString &prompt);
     void resetReceived();
+    void processRespawned(int exitCode, QProcess::ExitStatus exitStatus);
 
 
 protected:
-    explicit PyInterpreterProcess(QObject *parent = nullptr);
+    explicit PyInterpreterProcess(bool autoRespawn, QObject *parent = nullptr);
     bool launchProcess();
     void setupChildProcess();
 
@@ -91,12 +92,14 @@ protected:
 protected slots:
     void handleReadStandardOutput();
     void handleReadStandardError();
+    void handleProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 protected /* fields */:
     QByteArray _processStdOutLastLineBuffer;
     QQueue<Message> _incomingMessages;
     QMutex _incomingMessagesMutex;
     QMap<qint64, QPair<QObject*, QByteArray> > _registeredBlockingReceivers;
+    bool _allowProcessRespawn;
 
     static int DebugPortNumberOffset;
     static qint64 AsyncCallId;

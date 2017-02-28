@@ -45,6 +45,7 @@ private Q_SLOTS:
     void handleEvalFinished(bool moreLinesRequired);
     void handleStdOut(const QString &message);
     void handleStdErr(const QString &message);
+    void handleProcessRespawned(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
 

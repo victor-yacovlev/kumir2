@@ -3,15 +3,42 @@ import json
 import importlib
 import traceback
 from sandbox_console import interpreter
+import time
+import threading
+import queue
+
 
 cout = sys.__stdout__
 cin = sys.__stdin__
 cerr = sys.__stderr__
+exit = sys.exit
 
 preloaded_modules = {}
 
 globls = {}
 interp = interpreter.Interpreter()
+
+
+class NonBlockingReader(threading.Thread):
+    entries = queue.Queue()
+
+    def run(self):
+        while True:
+            try:
+                line = cin.readline().strip()
+                NonBlockingReader.entries.put(line)
+            except SystemExit:
+                break
+            except KeyboardInterrupt:
+                break
+
+    @staticmethod
+    def readline():
+        try:
+            return NonBlockingReader.entries.get(block=True, timeout=0.25)
+        except queue.Empty:
+            return None
+
 
 def do_pong():
     out_message = {
@@ -21,6 +48,7 @@ def do_pong():
     cout.write(message_line)
     cout.write("\n")
     cout.flush()
+
 
 def do_function_call(module_name, function_name, arguments):
     try:
@@ -66,14 +94,22 @@ def do_eval(async_id, eval_string):
 
 
 def process():
+    NonBlockingReader(daemon=True).start()
     while True:
-        message_line = str(cin.readline()).strip()
+        exit_code = interpreter.Interpreter.check_for_zombies()
+        if exit_code is not None:
+            cerr.write("exit({})\n".format(exit_code))
+            cerr.flush()
+            exit(exit_code)
+        # message_line = str(cin.readline()).strip()
+        message_line = NonBlockingReader.readline()
         if message_line:
             message = json.loads(message_line)
             cmd = message["type"].lower()
             if "exit" == cmd:
-                cerr.write("Bye!")
-                sys.exit(0)
+                cerr.write("exit({})\n".format(0))
+                cerr.flush()
+                exit(0)
             elif "ping" == cmd:
                 do_pong()
             elif "blocking_call" == cmd:
@@ -90,3 +126,4 @@ def process():
                 sys.stdin.push(data)
             else:
                 cerr.write("Unknown message type {}\n".format(cmd))
+                cerr.flush()
