@@ -10,6 +10,14 @@
 #include <QApplication>
 #include <QMessageBox>
 
+#ifdef Q_OS_UNIX
+#   include <signal.h>
+#   include <unistd.h>
+#endif
+#ifdef Q_OS_LINUX
+#   include <sys/prctl.h>
+#endif
+
 namespace Python3Language {
 
 int PyInterpreterProcess::DebugPortNumberOffset = 0;
@@ -102,7 +110,7 @@ PyInterpreterProcess::PyInterpreterProcess(QObject * parent)
 bool PyInterpreterProcess::launchProcess()
 {
     start(pythonExecutablePath(), {"-m", "sandbox_bridge"});
-    waitForStarted();    
+    waitForStarted();        
     if (QProcess::ProcessState::Running == state()) {
         sendPing();
         if (waitForPong(20000)) {
@@ -117,6 +125,13 @@ bool PyInterpreterProcess::launchProcess()
         qDebug() << "Error staring python process";
         return false;
     }
+}
+
+void PyInterpreterProcess::setupChildProcess()
+{
+#ifdef Q_OS_LINUX
+    ::prctl(PR_SET_PDEATHSIG, SIGKILL);
+#endif
 }
 
 void PyInterpreterProcess::sendMessage(const Message &message)

@@ -78,6 +78,7 @@ signals:
 protected:
     explicit PyInterpreterProcess(QObject *parent = nullptr);
     bool launchProcess();
+    void setupChildProcess();
 
     void sendMessage(const Message &message);
     Message waitForMessage(Message::Type waitType, int msec);
