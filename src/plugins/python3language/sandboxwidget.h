@@ -1,9 +1,6 @@
 #ifndef PYTHON3LANGUAGE_SANDBOXWIDGET_H
 #define PYTHON3LANGUAGE_SANDBOXWIDGET_H
 
-extern "C" {
-#include <Python.h>
-}
 
 #include "sandboxwidget_frame.h"
 #include "pyinterpreterprocess.h"
@@ -24,10 +21,7 @@ class SandboxWidget : public QWidget
 {
     Q_OBJECT
 public:    
-    static SandboxWidget* instance(const QString &pythonPath, QWidget *parent = 0);
-    static PyObject* __init__();
-
-Q_SIGNALS:
+    explicit SandboxWidget(const QString &pythonPath, QWidget *parent);
 
 public Q_SLOTS:
     void createWelcomeFrame();
@@ -48,17 +42,7 @@ private Q_SLOTS:
     void handleProcessRespawned(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
-
-
-    explicit SandboxWidget(const QString &pythonPath, QWidget *parent);
     void createInterpreterProcess();
-
-    static SandboxWidget * self;
-
-    static PyObject* write_output(PyObject *, PyObject * args);
-    static PyObject* write_error(PyObject *, PyObject * args);
-    static PyObject* read_input(PyObject *, PyObject * args);
-    static PyObject* _reset(PyObject *, PyObject *);
 
     bool eventFilter(QObject *obj, QEvent *evt);
     bool filterKeyPressEvent(QKeyEvent *event);
@@ -66,17 +50,9 @@ private:
     void focusInEvent(QFocusEvent *event);
     ExtensionSystem::SettingsPtr editorSettings();
     bool darkScheme() const;
-    quint32 commandNumber_;
-    QTextEdit *editor_;
-    PyThreadState *py_;
-    PyObject *mainModule_;
 
-    QString lastCommandOutput_;
-    QString lastCommandError_;
-    QString pythonPath_;
-
-    bool resetFlag_;
-    QMutex resetMutex_;
+    QTextEdit *_editor;
+    QString _pythonPath;
 
     PyInterpreterProcess* _pyInterpreterProcess;
 };

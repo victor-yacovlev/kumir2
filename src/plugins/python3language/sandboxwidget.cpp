@@ -1,6 +1,5 @@
 #include "sandboxwidget.h"
 #include "sandboxwidget_frame.h"
-#include "pyutils.h"
 
 #include <QVBoxLayout>
 #include <QTextEdit>
@@ -23,30 +22,25 @@
 
 namespace Python3Language {
 
-SandboxWidget * SandboxWidget::self = 0;
-
 SandboxWidget::SandboxWidget(const QString & pythonPath, QWidget *parent)
     : QWidget(parent)
-    , commandNumber_(0)
-    , editor_(new QTextEdit(this))
-    , py_(0)
-    , pythonPath_(pythonPath)
-    , resetFlag_(0)
+    , _editor(new QTextEdit(this))
+    , _pythonPath(pythonPath)
     , _pyInterpreterProcess(0)
 {
     QVBoxLayout * mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
-    mainLayout->addWidget(editor_);
-    editor_->installEventFilter(this);
+    mainLayout->addWidget(_editor);
+    _editor->installEventFilter(this);
 
 
     if (editorSettings()) {
         const QString fontName = editorSettings()->value("Font/Family", "monospace").toString();
         const int fontSize = editorSettings()->value("Font/Size", 12).toInt();
-        QFont font = editor_->font();
+        QFont font = _editor->font();
         font.setFamily(fontName);
         font.setPointSize(fontSize);
-        editor_->setFont(font);
+        _editor->setFont(font);
     }
 
     reset();
@@ -115,7 +109,7 @@ void SandboxWidget::reset()
 
     createInterpreterProcess();
 
-    editor_->clear();
+    _editor->clear();
     createWelcomeFrame();
     addDefaultInputItem();
 }
@@ -127,18 +121,18 @@ void SandboxWidget::addDefaultInputItem()
 
 void SandboxWidget::addInputItem(const QString &promptText)
 {
-    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const QTextFrame * currentFrame = _editor->textCursor().currentFrame();
     const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
     const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
                 currentFrame->property(Sandbox::PropFrameType).toInt()
                 );
     if (frameType == Sandbox::FrameError || frameType == Sandbox::FrameOutput) {
-        editor_->textCursor().deletePreviousChar();
+        _editor->textCursor().deletePreviousChar();
     }
 
 
     QColor headerColor = darkScheme() ? QColor("deepskyblue") : QColor(Qt::blue);
-    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+    _editor->setTextCursor(_editor->document()->rootFrame()->lastCursorPosition());
     QTextTableFormat inputFormat;
     inputFormat.setBorder(1);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
@@ -151,8 +145,8 @@ void SandboxWidget::addInputItem(const QString &promptText)
     constraints[0] = QTextLength(QTextLength::FixedLength, 150.0);
     constraints[1] = QTextLength(QTextLength::PercentageLength, 100.0);
     inputFormat.setColumnWidthConstraints(constraints);
-    QTextTable *frame = editor_->textCursor().insertTable(1, 2, inputFormat);
-    const QString text = promptText.arg(++commandNumber_);    
+    QTextTable *frame = _editor->textCursor().insertTable(1, 2, inputFormat);
+    const QString text = promptText;
     frame->setProperty(Sandbox::PropFrameType, Sandbox::FrameInput);
     frame->setProperty(Sandbox::PropEditableFrame, true);
     QTextCharFormat headerFormat = frame->cellAt(0, 0).format();
@@ -160,14 +154,14 @@ void SandboxWidget::addInputItem(const QString &promptText)
     headerFormat.setForeground(headerColor);
     frame->cellAt(0, 0).setFormat(headerFormat);
     frame->cellAt(0, 0).firstCursorPosition().insertText(text);
-    editor_->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
-    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+    _editor->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
+    _editor->verticalScrollBar()->setValue(_editor->verticalScrollBar()->maximum());
 }
 
 void SandboxWidget::addPyInputItem(const QString &promptText)
 {
     QColor headerColor = darkScheme() ? QColor("deepskyblue") : QColor(Qt::magenta);
-    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+    _editor->setTextCursor(_editor->document()->rootFrame()->lastCursorPosition());
     QTextTableFormat inputFormat;
     inputFormat.setBorder(1);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
@@ -180,7 +174,7 @@ void SandboxWidget::addPyInputItem(const QString &promptText)
     constraints[0] = QTextLength(QTextLength::FixedLength, 150.0);
     constraints[1] = QTextLength(QTextLength::PercentageLength, 100.0);
     inputFormat.setColumnWidthConstraints(constraints);
-    QTextTable *frame = editor_->textCursor().insertTable(1, 2, inputFormat);
+    QTextTable *frame = _editor->textCursor().insertTable(1, 2, inputFormat);
     const QString text = promptText.isEmpty() ? QString("Input > ") : promptText + " ";
     frame->setProperty(Sandbox::PropFrameType, Sandbox::FramePyInput);
     frame->setProperty(Sandbox::PropEditableFrame, true);
@@ -189,8 +183,8 @@ void SandboxWidget::addPyInputItem(const QString &promptText)
     headerFormat.setForeground(headerColor);
     frame->cellAt(0, 0).setFormat(headerFormat);
     frame->cellAt(0, 0).firstCursorPosition().insertText(text);
-    editor_->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
-    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+    _editor->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
+    _editor->verticalScrollBar()->setValue(_editor->verticalScrollBar()->maximum());
 }
 
 void SandboxWidget::addTextOutputItem(const QString &outputText, const Sandbox::FrameType frameType)
@@ -231,19 +225,19 @@ void SandboxWidget::addTextOutputItem(const QString &outputText, const Sandbox::
     if (Sandbox::FrameError == frameType) {
         frameColor = darkScheme() ? QColor("orangered") : QColor(Qt::red);
     }
-    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+    _editor->setTextCursor(_editor->document()->rootFrame()->lastCursorPosition());
     QTextFrameFormat inputFormat;
     inputFormat.setBorder(0);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
     inputFormat.setBorderBrush(frameColor);
     inputFormat.setPadding(0);
     inputFormat.setMargin(4);
-    QTextFrame *frame = editor_->textCursor().insertFrame(inputFormat);
+    QTextFrame *frame = _editor->textCursor().insertFrame(inputFormat);
     frame->setProperty(Sandbox::PropFrameType, frameType);
     frame->setProperty(Sandbox::PropEditableFrame, false);
     frame->firstCursorPosition().insertText(outputText);
-    editor_->setTextCursor(frame->lastCursorPosition());
-    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+    _editor->setTextCursor(frame->lastCursorPosition());
+    _editor->verticalScrollBar()->setValue(_editor->verticalScrollBar()->maximum());
 }
 
 void SandboxWidget::addGraphicsOutputItem(const QImage &image)
@@ -254,24 +248,24 @@ void SandboxWidget::addGraphicsOutputItem(const QImage &image)
 void SandboxWidget::addHtmlItem(const QString &html)
 {
     QColor headerColor = darkScheme() ? QColor("darkgray") : QColor("lightgray");
-    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+    _editor->setTextCursor(_editor->document()->rootFrame()->lastCursorPosition());
     QTextFrameFormat inputFormat;
     inputFormat.setBorder(0);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
     inputFormat.setBorderBrush(headerColor);
     inputFormat.setPadding(0);
     inputFormat.setMargin(4);
-    QTextFrame *frame = editor_->textCursor().insertFrame(inputFormat);
+    QTextFrame *frame = _editor->textCursor().insertFrame(inputFormat);
     frame->setProperty(Sandbox::PropFrameType, Sandbox::FrameHtml);
     frame->setProperty(Sandbox::PropEditableFrame, false);
     frame->firstCursorPosition().insertHtml(html);
-    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
-    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+    _editor->setTextCursor(_editor->document()->rootFrame()->lastCursorPosition());
+    _editor->verticalScrollBar()->setValue(_editor->verticalScrollBar()->maximum());
 }
 
 void SandboxWidget::processCurrentInputFrame()
 {
-    QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    QTextFrame * currentFrame = _editor->textCursor().currentFrame();
     currentFrame->setProperty(Sandbox::PropEditableFrame, false);
 
     bool plainInput = currentFrame->property(Sandbox::PropFrameType).toInt() == Sandbox::FramePyInput;
@@ -289,7 +283,6 @@ void SandboxWidget::processCurrentInputFrame()
 
     text = lines.join("\n");
 
-
     if (text.trimmed().length() > 0) {
 
         if (plainInput) {
@@ -301,57 +294,24 @@ void SandboxWidget::processCurrentInputFrame()
                 if (completeStatement)
                     text += "\n";
             }
-
-            lastCommandOutput_.clear();
-            lastCommandError_.clear();
-
             _pyInterpreterProcess->nonBlockingEval(text, this, "handleEvalFinished");
         }
-
-
-//        PyEval_AcquireThread(py_);
-//        PyObject *globals = PyModule_GetDict(mainModule_);
-//        PyObject *result = PyRun_String(text.toUtf8().constData(), Py_single_input, globals, globals);
-//        if (!result) {
-//            PyErr_Print();
-//        }
-
-//        if (!resetFlag_ && lastCommandOutput_.length() > 0) {
-//            addTextOutputItem(lastCommandOutput_, Sandbox::FrameOutput);
-//        }
-//        if (lastCommandError_.length() > 0) {
-//            addTextOutputItem(lastCommandError_, Sandbox::FrameError);
-//        }
-//        Py_XDECREF(result);
-//        PyEval_ReleaseThread(py_);
     }
     else {
         currentFrame->setProperty(Sandbox::PropEditableFrame, true);
     }
-//    if (resetFlag_) {
-//        reset();
-//    }
-//    else {
-//        addDefaultInputItem();
-//    }
 }
 
 void SandboxWidget::handleEvalFinished(bool moreLinesRequired)
 {
     if (!moreLinesRequired) {
-//        if (lastCommandOutput_.length() > 0) {
-//            addTextOutputItem(lastCommandOutput_.trimmed(), Sandbox::FrameOutput);
-//        }
-//        if (lastCommandError_.length() > 0) {
-//            addTextOutputItem(lastCommandError_.trimmed(), Sandbox::FrameError);
-//        }
         addDefaultInputItem();
     }
     else {
-        QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+        QTextFrame * currentFrame = _editor->textCursor().currentFrame();
         currentFrame->setProperty(Sandbox::PropEditableFrame, true);
 
-        QTextBlock block = editor_->textCursor().block();
+        QTextBlock block = _editor->textCursor().block();
         const QString text = block.text();
         QString textToInsert = "\n";
         for (int i=0; i<text.length(); ++i) {
@@ -364,20 +324,20 @@ void SandboxWidget::handleEvalFinished(bool moreLinesRequired)
         }
         if (!textToInsert.startsWith(' ') && text.trimmed().endsWith(":"))
             textToInsert = "\n    ";
-        editor_->textCursor().insertText(textToInsert);
+        _editor->textCursor().insertText(textToInsert);
     }
 }
 
 void SandboxWidget::handleStdOut(const QString &message)
 {
 //    lastCommandOutput_ += message;
-    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const QTextFrame * currentFrame = _editor->textCursor().currentFrame();
     const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
     const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
                 currentFrame->property(Sandbox::PropFrameType).toInt()
                 );
     if (frameType == Sandbox::FrameOutput) {
-        editor_->textCursor().insertText(message);
+        _editor->textCursor().insertText(message);
     }
     else {
         addTextOutputItem(message, Sandbox::FrameOutput);
@@ -386,13 +346,13 @@ void SandboxWidget::handleStdOut(const QString &message)
 
 void SandboxWidget::handleStdErr(const QString &message)
 {
-    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const QTextFrame * currentFrame = _editor->textCursor().currentFrame();
     const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
     const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
                 currentFrame->property(Sandbox::PropFrameType).toInt()
                 );
     if (frameType == Sandbox::FrameError) {
-        editor_->textCursor().insertText(message);
+        _editor->textCursor().insertText(message);
     }
     else {
         addTextOutputItem(message, Sandbox::FrameError);
@@ -408,37 +368,11 @@ void SandboxWidget::handleProcessRespawned(int exitCode, QProcess::ExitStatus ex
     addDefaultInputItem();
 }
 
-SandboxWidget *SandboxWidget::instance(const QString & pythonPath, QWidget *parent)
-{
-    if (!self) {
-        self = new SandboxWidget(pythonPath, parent);
-    }
-    return self;
-}
-
-PyObject *SandboxWidget::__init__()
-{
-    static PyMethodDef methods[] = {
-        { "write_output", write_output, METH_VARARGS, "Output regular text to sandbox frame" },
-        { "write_error", write_error, METH_VARARGS, "Output error (red) text to sandbox frame" },
-        { "read_input", read_input, METH_VARARGS, "Read text line from sandbox frame" },
-        { "_reset", _reset, METH_VARARGS, "Reset interpreter" },
-        { 0, 0, 0, 0 }
-    };
-
-    static PyModuleDef module = {
-        PyModuleDef_HEAD_INIT,
-        "_kumir_sandbox", 0, -1, methods,
-        0, 0, 0, 0
-    };
-
-    return PyModule_Create(&module);
-}
 
 void SandboxWidget::createWelcomeFrame()
 {
     const QString currentLanguage = "ru"; // TODO: internationalize!
-    const QString welcomeFileName = QDir(pythonPath_).absoluteFilePath(
+    const QString welcomeFileName = QDir(_pythonPath).absoluteFilePath(
                 QString("sandbox_greeting_%1.html").arg(currentLanguage)
                 );
     QFile greeting(welcomeFileName);
@@ -452,41 +386,10 @@ void SandboxWidget::createWelcomeFrame()
     }
 }
 
-PyObject *SandboxWidget::write_output(PyObject *, PyObject *args)
-{
-    PyObject * msg = PyTuple_GetItem(args, 0);
-    QString message = PyUnicodeToQString(msg);
-    self->lastCommandOutput_ += message;
-    Py_RETURN_NONE;
-}
-
-PyObject *SandboxWidget::write_error(PyObject *, PyObject *args)
-{
-    PyObject * msg = PyTuple_GetItem(args, 0);
-    QString message = PyUnicodeToQString(msg);
-    self->lastCommandError_ += message;
-    Py_RETURN_NONE;
-}
-
-PyObject *SandboxWidget::read_input(PyObject *, PyObject *args)
-{
-    PyObject* result = 0;
-    result = QStringToPyUnicode("");
-    Py_INCREF(result);
-    return result;
-}
-
-PyObject *SandboxWidget::_reset(PyObject *, PyObject *)
-{
-    self->resetMutex_.lock();
-    self->resetFlag_ = true;
-    self->resetMutex_.unlock();
-    Py_RETURN_NONE;
-}
 
 bool SandboxWidget::eventFilter(QObject *obj, QEvent *evt)
 {
-    if (editor_ == obj && QEvent::KeyPress == evt->type()) {
+    if (_editor == obj && QEvent::KeyPress == evt->type()) {
         QKeyEvent *event = static_cast<QKeyEvent*>(evt);
         return filterKeyPressEvent(event);
     }
@@ -534,7 +437,7 @@ bool SandboxWidget::filterKeyPressEvent(QKeyEvent *event)
         }
     }
 
-    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const QTextFrame * currentFrame = _editor->textCursor().currentFrame();
     const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
     const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
                 currentFrame->property(Sandbox::PropFrameType).toInt()
@@ -565,7 +468,7 @@ bool SandboxWidget::filterKeyPressEvent(QKeyEvent *event)
 void SandboxWidget::performEditOperation(QKeyEvent *event)
 {
     if (event->matches(QKeySequence::InsertLineSeparator)) {
-        QTextBlock block = editor_->textCursor().block();
+        QTextBlock block = _editor->textCursor().block();
         const QString text = block.text();
         QString textToInsert = "\n";
         for (int i=0; i<text.length(); ++i) {
@@ -576,17 +479,17 @@ void SandboxWidget::performEditOperation(QKeyEvent *event)
                 break;
             }
         }
-        editor_->textCursor().insertText(textToInsert);
+        _editor->textCursor().insertText(textToInsert);
     }
     else if (Qt::Key_Tab == event->key()) {
-        editor_->textCursor().insertText("    ");
+        _editor->textCursor().insertText("    ");
     }
 }
 
 void SandboxWidget::focusInEvent(QFocusEvent *event)
 {
     event->accept();
-    editor_->setFocus();
+    _editor->setFocus();
 }
 
 ExtensionSystem::SettingsPtr SandboxWidget::editorSettings()

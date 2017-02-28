@@ -44,7 +44,7 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
     qRegisterMetaType<QList<Python3Language::ValueRepresentation> >("QList<ValueRepresentation>");
     qDebug() << "Append _kumit to inittab";
     PyImport_AppendInittab("_kumir", &InterpreterCallback::__init__);
-    PyImport_AppendInittab("_kumir_sandbox", SandboxWidget::__init__);
+
 #ifdef Q_OS_WIN32
     qDebug() << "Setting initial PYTHONPATH";
     static const QString KumirRoot =
@@ -82,7 +82,7 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
     connectRunThreadSignals();
     qDebug() << "Initialization done";
 
-    sandboxWidget_ = SandboxWidget::instance(myResourcesDir().absolutePath(), 0);
+    sandboxWidget_ = new SandboxWidget(myResourcesDir().absolutePath(), 0);
 
     return QString();
 }
