@@ -7,6 +7,7 @@
 #include "sandboxwidget.h"
 #include "syntaxchecksettingspage.h"
 
+
 namespace Python3Language {
 
 Python3LanguagePlugin::Python3LanguagePlugin()
@@ -109,7 +110,7 @@ void Python3LanguagePlugin::stop()
     Q_FOREACH ( PythonAnalizerInstance* instance, analizerInstances_ )
         instance->stopPythonInterpreter();
     QCoreApplication::instance()->processEvents();
-    PyEval_AcquireThread(pyMain_);
+//    PyEval_AcquireThread(pyMain_);
     //    Py_Finalize();
 }
 

@@ -13,6 +13,7 @@
 namespace Python3Language {
 
 int PyInterpreterProcess::DebugPortNumberOffset = 0;
+qint64 PyInterpreterProcess::AsyncCallId = 0;
 
 PyInterpreterProcess *PyInterpreterProcess::create(QObject *parent)
 {
@@ -50,6 +51,19 @@ QVariant PyInterpreterProcess::blockingCall(const QByteArray &moduleName, const 
     sendMessage(Message(moduleName, functionName, arguments));
     Message response = waitForMessage(Message::Type::BlockingReturn, -1);
     return response.returnValue;
+}
+
+void PyInterpreterProcess::nonBlockingEval(const QString &evalString, QObject *readyObject, const char *readyMethod)
+{
+    QPair<QObject*, QByteArray> readyReceiver(readyObject, readyMethod);
+    _registeredBlockingReceivers[++AsyncCallId] = readyReceiver;
+    Message request(AsyncCallId, evalString);
+    sendMessage(request);
+}
+
+void PyInterpreterProcess::sendInput(const QString &data)
+{
+    sendMessage(Message(Message::Type::InputResponse, data));
 }
 
 
@@ -121,6 +135,15 @@ void PyInterpreterProcess::sendMessage(const Message &message)
         obj["function_name"] = QString::fromLatin1(message.functionName);
         obj["arguments"] = QJsonArray::fromVariantList(message.arguments);
         break;
+    case Message::Type::NonBlockingEval:
+        obj["type"] = "non_blocking_eval";
+        obj["eval_string"] = message.stringData;
+        obj["async_id"] = message.asyncId;
+        break;
+    case Message::Type::InputResponse:
+        obj["type"] = "input_response";
+        obj["data"] = message.stringData;
+        break;
     }
 
     const QByteArray raw = QJsonDocument(obj)
@@ -175,7 +198,7 @@ QString PyInterpreterProcess::pythonExtraPath()
     QList<QFileInfo> thirdPartyEntries = thirdParty.entryInfoList(QDir::NoDotAndDotDot|QDir::Dirs|QDir::Files);
     Q_FOREACH(const QFileInfo & entryInfo, thirdPartyEntries) {
         if (entryInfo.isDir() || entryInfo.fileName().endsWith(".egg")) {
-            targets.append(entryInfo.fileName());
+            targets.append("3rd-party/" + entryInfo.fileName());
         }
     }
 
@@ -223,9 +246,51 @@ void PyInterpreterProcess::handleReadStandardOutput()
                     _incomingMessagesMutex.unlock();
                 }
                 else if ("exception" == type) {
-                    _incomingMessagesMutex.lock();
-                    _incomingMessages.enqueue(Message (Message::Type::Exception, obj["string_data"].toString()));
-                    _incomingMessagesMutex.unlock();
+                    if (obj.contains("async_id")) {
+                        qint64 id = obj["async_id"].toVariant().toLongLong();
+                        QString repr = obj["string_data"].toString();
+                        if (_registeredBlockingReceivers.contains(id)) {
+                            QPair<QObject*, QByteArray> receiver = _registeredBlockingReceivers[id];
+                            _registeredBlockingReceivers.remove(id);
+                            QMetaObject::invokeMethod(receiver.first, receiver.second.constData(),
+                                                      Qt::DirectConnection,
+                                                      Q_ARG(bool, false),
+                                                      Q_ARG(QString, repr));
+                        }
+                    }
+                    else {
+                        _incomingMessagesMutex.lock();
+                        _incomingMessages.enqueue(Message (Message::Type::Exception, obj["string_data"].toString()));
+                        _incomingMessagesMutex.unlock();
+                    }
+                }
+                else if ("eval_return" == type) {
+                    qint64 id = obj["async_id"].toVariant().toLongLong();
+                    bool moreLinesRequired = obj["more_lines_required"].toBool();
+                    if (_registeredBlockingReceivers.contains(id)) {
+                        QPair<QObject*, QByteArray> receiver = _registeredBlockingReceivers[id];
+                        _registeredBlockingReceivers.remove(id);
+                        QMetaObject::invokeMethod(receiver.first, receiver.second.constData(),
+                                                  Qt::DirectConnection,
+                                                  Q_ARG(bool, moreLinesRequired));
+                    }
+                }
+                else if ("stdout" == type || "stderr" == type) {
+                    QString msg = obj["string_data"].toString();
+                    if ("stdout" == type) {
+                        emit stdoutReceived(msg);
+                    }
+                    else {
+                        emit stderrReceived(msg);
+                    }
+                }
+                else if ("input_request" == type) {
+                    const QString prompt = obj["prompt"].toString();
+                    emit inputRequiestReceived(prompt);
+                }
+                else if ("reset" == type) {
+                    _registeredBlockingReceivers.clear();
+                    emit resetReceived();
                 }
             }
             else {
@@ -237,8 +302,10 @@ void PyInterpreterProcess::handleReadStandardOutput()
 
 void PyInterpreterProcess::handleReadStandardError()
 {
-    QByteArray stderrData = readAllStandardError();
-    qDebug() << "StdErr from Python process: " << stderrData;
+    QStringList lines = QString::fromUtf8(readAllStandardError()).split("\n");
+    Q_FOREACH( const QString stderrData, lines ) {
+        qDebug() << "StdErr from Python process: " << stderrData;
+    }
 }
 
 } // namespace Python3Language

@@ -34,15 +34,23 @@ public Q_SLOTS:
     void reset();
     void addDefaultInputItem();
     void addInputItem(const QString & promptText);
+    void addPyInputItem(const QString & promptText);
     void addTextOutputItem(const QString & outputText, const Sandbox::FrameType frameType);
     void addGraphicsOutputItem(const QImage & image);
     void addHtmlItem(const QString & html);
 
     void processCurrentInputFrame();
 
+private Q_SLOTS:
+    void handleEvalFinished(bool moreLinesRequired);
+    void handleStdOut(const QString &message);
+    void handleStdErr(const QString &message);
+
 private:
 
+
     explicit SandboxWidget(const QString &pythonPath, QWidget *parent);
+    void createInterpreterProcess();
 
     static SandboxWidget * self;
 

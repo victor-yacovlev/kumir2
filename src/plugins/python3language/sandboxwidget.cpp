@@ -32,7 +32,7 @@ SandboxWidget::SandboxWidget(const QString & pythonPath, QWidget *parent)
     , py_(0)
     , pythonPath_(pythonPath)
     , resetFlag_(0)
-//    , _pyInterpreterProcess(PyInterpreterProcess::create(this))
+    , _pyInterpreterProcess(0)
 {
     QVBoxLayout * mainLayout = new QVBoxLayout;
     setLayout(mainLayout);
@@ -52,71 +52,99 @@ SandboxWidget::SandboxWidget(const QString & pythonPath, QWidget *parent)
     reset();
 }
 
-void SandboxWidget::reset()
+void SandboxWidget::createInterpreterProcess()
 {
-    editor_->clear();
-    if (py_) {
-        PyEval_AcquireThread(py_);
-        Py_EndInterpreter(py_);
-        PyEval_ReleaseLock();
-    }
+    _pyInterpreterProcess = PyInterpreterProcess::create(this);
+    connect(_pyInterpreterProcess, SIGNAL(stdoutReceived(QString)), this, SLOT(handleStdOut(QString)));
+    connect(_pyInterpreterProcess, SIGNAL(stderrReceived(QString)), this, SLOT(handleStdErr(QString)));
+    connect(_pyInterpreterProcess, SIGNAL(inputRequiestReceived(QString)), this, SLOT(addPyInputItem(QString)));
+    connect(_pyInterpreterProcess, SIGNAL(resetReceived()), this, SLOT(reset()));
+//    connect(_pyInterpreterProcess, SIGNAL(finished(int)), this, SLOT(reset()));
+}
 
+void SandboxWidget::reset()
+{    
+//    if (py_) {
+//        PyEval_AcquireThread(py_);
+//        Py_EndInterpreter(py_);
+//        PyEval_ReleaseLock();
+//    }
+
+////#ifdef Q_OS_WIN32
+////    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
+////#else
+//    if (PyThreadState_GET())
+////#endif
+//        PyEval_AcquireLock();
+//    else
+//        PyGILState_Ensure();
+//    py_ = Py_NewInterpreter();
 //#ifdef Q_OS_WIN32
-//    if (_Py_atomic_load_relaxed(&_PyThreadState_Current))
+//    prepareBundledSysPath();
 //#else
-    if (PyThreadState_GET())
+//    appendToSysPath(pythonPath_);
 //#endif
-        PyEval_AcquireLock();
-    else
-        PyGILState_Ensure();
-    py_ = Py_NewInterpreter();
-#ifdef Q_OS_WIN32
-    prepareBundledSysPath();
-#else
-    appendToSysPath(pythonPath_);
-#endif
-    createSysArgv(QStringList() << "");
-    mainModule_ = PyImport_AddModule("__main__");
-    PyObject* py_sandbox_wrapper = PyImport_ImportModule("sandbox_wrapper");
-    if (!py_sandbox_wrapper) { printPythonTraceback(); return; }
+//    createSysArgv(QStringList() << "");
+//    mainModule_ = PyImport_AddModule("__main__");
+//    PyObject* py_sandbox_wrapper = PyImport_ImportModule("sandbox_wrapper");
+//    if (!py_sandbox_wrapper) { printPythonTraceback(); return; }
 
-    PyObject* sandbox_dict = PyModule_GetDict(py_sandbox_wrapper);
-    PyObject* sandbox_keys = PyDict_Keys(sandbox_dict);
-    PyObject* main_dict = PyModule_GetDict(mainModule_);
-    Py_ssize_t itemsCount = PyObject_Length(sandbox_keys);
-    for (Py_ssize_t i=0; i<itemsCount; ++i) {
-        PyObject* key = PyList_GetItem(sandbox_keys, i);
-        PyObject* value = PyDict_GetItem(sandbox_dict, key);
-        if (PyCallable_Check(value)) {
-            PyDict_SetItem(main_dict, key, value);
-        }
+//    PyObject* sandbox_dict = PyModule_GetDict(py_sandbox_wrapper);
+//    PyObject* sandbox_keys = PyDict_Keys(sandbox_dict);
+//    PyObject* main_dict = PyModule_GetDict(mainModule_);
+//    Py_ssize_t itemsCount = PyObject_Length(sandbox_keys);
+//    for (Py_ssize_t i=0; i<itemsCount; ++i) {
+//        PyObject* key = PyList_GetItem(sandbox_keys, i);
+//        PyObject* value = PyDict_GetItem(sandbox_dict, key);
+//        if (PyCallable_Check(value)) {
+//            PyDict_SetItem(main_dict, key, value);
+//        }
+//    }
+//    PyEval_ReleaseThread(py_);
+
+//    commandNumber_ = 0;
+//    resetFlag_ = false;
+
+    if (_pyInterpreterProcess) {
+        _pyInterpreterProcess->disconnect(this);
+        _pyInterpreterProcess->sendExit();
+        _pyInterpreterProcess->deleteLater();
+        QCoreApplication::processEvents();
     }
-    PyEval_ReleaseThread(py_);
 
-    commandNumber_ = 0;    
-    resetFlag_ = false;
+    createInterpreterProcess();
 
+    editor_->clear();
     createWelcomeFrame();
-
     addDefaultInputItem();
 }
 
 void SandboxWidget::addDefaultInputItem()
 {
-    addInputItem(tr("In [%1]> "));
+    addInputItem(tr(">>> "));
 }
 
 void SandboxWidget::addInputItem(const QString &promptText)
 {
+    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
+    const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
+                currentFrame->property(Sandbox::PropFrameType).toInt()
+                );
+    if (frameType == Sandbox::FrameError || frameType == Sandbox::FrameOutput) {
+        editor_->textCursor().deletePreviousChar();
+    }
+
+
     QColor headerColor = darkScheme() ? QColor("deepskyblue") : QColor(Qt::blue);
     editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
     QTextTableFormat inputFormat;
     inputFormat.setBorder(1);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
     inputFormat.setBorderBrush(headerColor);
-    inputFormat.setCellPadding(8);
+    inputFormat.setCellPadding(4);
     inputFormat.setCellSpacing(0);
-    inputFormat.setMargin(8);
+    inputFormat.setMargin(4);
     QVector<QTextLength> constraints;
     constraints.resize(2);
     constraints[0] = QTextLength(QTextLength::FixedLength, 150.0);
@@ -135,38 +163,85 @@ void SandboxWidget::addInputItem(const QString &promptText)
     editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
 }
 
-void SandboxWidget::addTextOutputItem(const QString &outputText, const Sandbox::FrameType frameType)
+void SandboxWidget::addPyInputItem(const QString &promptText)
 {
-    QString frameHeading = tr("Out [%1]: ");
-    QColor frameColor = darkScheme() ? Qt::white : Qt::darkGreen;
-    if (Sandbox::FrameError == frameType) {
-        frameHeading = tr("Error [%1]: ");
-        frameColor = darkScheme() ? QColor("orangered") : QColor(Qt::red);
-    }
+    QColor headerColor = darkScheme() ? QColor("deepskyblue") : QColor(Qt::magenta);
     editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
     QTextTableFormat inputFormat;
     inputFormat.setBorder(1);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
-    inputFormat.setBorderBrush(frameColor);
-    inputFormat.setCellPadding(8);
+    inputFormat.setBorderBrush(headerColor);
+    inputFormat.setCellPadding(4);
     inputFormat.setCellSpacing(0);
-    inputFormat.setMargin(8);
+    inputFormat.setMargin(4);
     QVector<QTextLength> constraints;
     constraints.resize(2);
     constraints[0] = QTextLength(QTextLength::FixedLength, 150.0);
     constraints[1] = QTextLength(QTextLength::PercentageLength, 100.0);
     inputFormat.setColumnWidthConstraints(constraints);
     QTextTable *frame = editor_->textCursor().insertTable(1, 2, inputFormat);
-    const QString text = frameHeading.arg(commandNumber_);
-    frame->setProperty(Sandbox::PropFrameType, frameType);
-    frame->setProperty(Sandbox::PropEditableFrame, false);
+    const QString text = promptText.isEmpty() ? QString("Input > ") : promptText + " ";
+    frame->setProperty(Sandbox::PropFrameType, Sandbox::FramePyInput);
+    frame->setProperty(Sandbox::PropEditableFrame, true);
     QTextCharFormat headerFormat = frame->cellAt(0, 0).format();
     headerFormat.setFontWeight(QFont::Bold);
-    headerFormat.setForeground(frameColor);
+    headerFormat.setForeground(headerColor);
     frame->cellAt(0, 0).setFormat(headerFormat);
     frame->cellAt(0, 0).firstCursorPosition().insertText(text);
-    frame->cellAt(0, 1).firstCursorPosition().insertText(outputText);
     editor_->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
+    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+}
+
+void SandboxWidget::addTextOutputItem(const QString &outputText, const Sandbox::FrameType frameType)
+{
+//    QString frameHeading = tr("Out [%1]: ");
+//    QColor frameColor = darkScheme() ? Qt::white : Qt::darkGreen;
+//    if (Sandbox::FrameError == frameType) {
+//        frameHeading = tr("Error [%1]: ");
+//        frameColor = darkScheme() ? QColor("orangered") : QColor(Qt::red);
+//    }
+//    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+//    QTextTableFormat inputFormat;
+//    inputFormat.setBorder(1);
+//    inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
+//    inputFormat.setBorderBrush(frameColor);
+//    inputFormat.setCellPadding(8);
+//    inputFormat.setCellSpacing(0);
+//    inputFormat.setMargin(8);
+//    QVector<QTextLength> constraints;
+//    constraints.resize(2);
+//    constraints[0] = QTextLength(QTextLength::FixedLength, 150.0);
+//    constraints[1] = QTextLength(QTextLength::PercentageLength, 100.0);
+//    inputFormat.setColumnWidthConstraints(constraints);
+//    QTextTable *frame = editor_->textCursor().insertTable(1, 2, inputFormat);
+//    const QString text = frameHeading.arg(commandNumber_);
+//    frame->setProperty(Sandbox::PropFrameType, frameType);
+//    frame->setProperty(Sandbox::PropEditableFrame, false);
+//    QTextCharFormat headerFormat = frame->cellAt(0, 0).format();
+//    headerFormat.setFontWeight(QFont::Bold);
+//    headerFormat.setForeground(frameColor);
+//    frame->cellAt(0, 0).setFormat(headerFormat);
+//    frame->cellAt(0, 0).firstCursorPosition().insertText(text);
+//    frame->cellAt(0, 1).firstCursorPosition().insertText(outputText);
+//    editor_->setTextCursor(frame->cellAt(0, 1).firstCursorPosition());
+//    editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
+
+    QColor frameColor = darkScheme() ? QColor("darkgray") : QColor("lightgray");
+    if (Sandbox::FrameError == frameType) {
+        frameColor = darkScheme() ? QColor("orangered") : QColor(Qt::red);
+    }
+    editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
+    QTextFrameFormat inputFormat;
+    inputFormat.setBorder(0);
+    inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
+    inputFormat.setBorderBrush(frameColor);
+    inputFormat.setPadding(0);
+    inputFormat.setMargin(4);
+    QTextFrame *frame = editor_->textCursor().insertFrame(inputFormat);
+    frame->setProperty(Sandbox::PropFrameType, frameType);
+    frame->setProperty(Sandbox::PropEditableFrame, false);
+    frame->firstCursorPosition().insertText(outputText);
+    editor_->setTextCursor(frame->lastCursorPosition());
     editor_->verticalScrollBar()->setValue(editor_->verticalScrollBar()->maximum());
 }
 
@@ -180,11 +255,11 @@ void SandboxWidget::addHtmlItem(const QString &html)
     QColor headerColor = darkScheme() ? QColor("darkgray") : QColor("lightgray");
     editor_->setTextCursor(editor_->document()->rootFrame()->lastCursorPosition());
     QTextFrameFormat inputFormat;
-    inputFormat.setBorder(1);
+    inputFormat.setBorder(0);
     inputFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
     inputFormat.setBorderBrush(headerColor);
-    inputFormat.setPadding(8);
-    inputFormat.setMargin(8);
+    inputFormat.setPadding(0);
+    inputFormat.setMargin(4);
     QTextFrame *frame = editor_->textCursor().insertFrame(inputFormat);
     frame->setProperty(Sandbox::PropFrameType, Sandbox::FrameHtml);
     frame->setProperty(Sandbox::PropEditableFrame, false);
@@ -198,41 +273,128 @@ void SandboxWidget::processCurrentInputFrame()
     QTextFrame * currentFrame = editor_->textCursor().currentFrame();
     currentFrame->setProperty(Sandbox::PropEditableFrame, false);
 
+    bool plainInput = currentFrame->property(Sandbox::PropFrameType).toInt() == Sandbox::FramePyInput;
+
     const QTextTable * frameTable = qobject_cast<const QTextTable*>(currentFrame);
     Q_ASSERT(frameTable);
 
     const QTextTableCell cell = frameTable->cellAt(0, 1);
+    QStringList lines;
     QString text;
     for (QTextFrame::iterator it=cell.begin(); it!=cell.end(); ++it) {
-        if (text.length() > 0)
-            text += "\n";
-        text += it.currentBlock().text();
+        text = it.currentBlock().text();
+        lines.append(text);
     }
 
-    text = text.trimmed();
-    if (text.length() > 0) {
-        lastCommandOutput_.clear();
-        lastCommandError_.clear();
-        PyEval_AcquireThread(py_);
-        PyObject *globals = PyModule_GetDict(mainModule_);
-        PyObject *result = PyRun_String(text.toUtf8().constData(), Py_single_input, globals, globals);
-        if (!result) {
-            PyErr_Print();
+    text = lines.join("\n");
+
+
+    if (text.trimmed().length() > 0) {
+
+        if (plainInput) {
+            _pyInterpreterProcess->sendInput(text + "\n");
         }
-        if (!resetFlag_ && lastCommandOutput_.length() > 0) {
-            addTextOutputItem(lastCommandOutput_, Sandbox::FrameOutput);
+        else {
+            if (lines.size() > 1) {
+                bool completeStatement = lines.last().trimmed().isEmpty();
+                if (completeStatement)
+                    text += "\n";
+            }
+
+            lastCommandOutput_.clear();
+            lastCommandError_.clear();
+
+            _pyInterpreterProcess->nonBlockingEval(text, this, "handleEvalFinished");
         }
-        if (lastCommandError_.length() > 0) {
-            addTextOutputItem(lastCommandError_, Sandbox::FrameError);
-        }
-        Py_XDECREF(result);
-        PyEval_ReleaseThread(py_);
-    }
-    if (resetFlag_) {
-        reset();
+
+
+//        PyEval_AcquireThread(py_);
+//        PyObject *globals = PyModule_GetDict(mainModule_);
+//        PyObject *result = PyRun_String(text.toUtf8().constData(), Py_single_input, globals, globals);
+//        if (!result) {
+//            PyErr_Print();
+//        }
+
+//        if (!resetFlag_ && lastCommandOutput_.length() > 0) {
+//            addTextOutputItem(lastCommandOutput_, Sandbox::FrameOutput);
+//        }
+//        if (lastCommandError_.length() > 0) {
+//            addTextOutputItem(lastCommandError_, Sandbox::FrameError);
+//        }
+//        Py_XDECREF(result);
+//        PyEval_ReleaseThread(py_);
     }
     else {
+        currentFrame->setProperty(Sandbox::PropEditableFrame, true);
+    }
+//    if (resetFlag_) {
+//        reset();
+//    }
+//    else {
+//        addDefaultInputItem();
+//    }
+}
+
+void SandboxWidget::handleEvalFinished(bool moreLinesRequired)
+{
+    if (!moreLinesRequired) {
+//        if (lastCommandOutput_.length() > 0) {
+//            addTextOutputItem(lastCommandOutput_.trimmed(), Sandbox::FrameOutput);
+//        }
+//        if (lastCommandError_.length() > 0) {
+//            addTextOutputItem(lastCommandError_.trimmed(), Sandbox::FrameError);
+//        }
         addDefaultInputItem();
+    }
+    else {
+        QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+        currentFrame->setProperty(Sandbox::PropEditableFrame, true);
+
+        QTextBlock block = editor_->textCursor().block();
+        const QString text = block.text();
+        QString textToInsert = "\n";
+        for (int i=0; i<text.length(); ++i) {
+            if (' ' == text[i]) {
+                textToInsert.push_back(' ');
+            }
+            else {
+                break;
+            }
+        }
+        if (!textToInsert.startsWith(' ') && text.trimmed().endsWith(":"))
+            textToInsert = "\n    ";
+        editor_->textCursor().insertText(textToInsert);
+    }
+}
+
+void SandboxWidget::handleStdOut(const QString &message)
+{
+//    lastCommandOutput_ += message;
+    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
+    const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
+                currentFrame->property(Sandbox::PropFrameType).toInt()
+                );
+    if (frameType == Sandbox::FrameOutput) {
+        editor_->textCursor().insertText(message);
+    }
+    else {
+        addTextOutputItem(message, Sandbox::FrameOutput);
+    }
+}
+
+void SandboxWidget::handleStdErr(const QString &message)
+{
+    const QTextFrame * currentFrame = editor_->textCursor().currentFrame();
+    const bool editable = currentFrame->property(Sandbox::PropEditableFrame).toBool();
+    const Sandbox::FrameType frameType = static_cast<Sandbox::FrameType>(
+                currentFrame->property(Sandbox::PropFrameType).toInt()
+                );
+    if (frameType == Sandbox::FrameError) {
+        editor_->textCursor().insertText(message);
+    }
+    else {
+        addTextOutputItem(message, Sandbox::FrameError);
     }
 }
 
@@ -369,10 +531,10 @@ bool SandboxWidget::filterKeyPressEvent(QKeyEvent *event)
                 );
 
     const bool selfProcess =
-            Sandbox::FrameInput == frameType &&
+            (Sandbox::FrameInput == frameType || Sandbox::FramePyInput == frameType) &&
                             event->matches(QKeySequence::InsertParagraphSeparator);
     const bool selfEdit =
-            Sandbox::FrameInput == frameType &&
+            (Sandbox::FrameInput == frameType || Sandbox::FramePyInput == frameType) &&
             (
                 event->matches(QKeySequence::InsertLineSeparator) ||
                 (0 == event->modifiers() && Qt::Key_Tab == event->key())

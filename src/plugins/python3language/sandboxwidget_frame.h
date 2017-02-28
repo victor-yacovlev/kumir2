@@ -13,7 +13,8 @@ enum FrameType {
     FrameOutput,
     FrameError,
     FrameHtml,
-    FrameImage
+    FrameImage,
+    FramePyInput
 };
 
 }

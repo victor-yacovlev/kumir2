@@ -1,12 +1,17 @@
 import sys
 import json
 import importlib
+import traceback
+from sandbox_console import interpreter
 
 cout = sys.__stdout__
 cin = sys.__stdin__
 cerr = sys.__stderr__
 
 preloaded_modules = {}
+
+globls = {}
+interp = interpreter.Interpreter()
 
 def do_pong():
     out_message = {
@@ -42,6 +47,24 @@ def do_function_call(module_name, function_name, arguments):
     cout.write("\n")
     cout.flush()
 
+
+def clean_traceback(tb):
+    me = __file__
+    frame = tb.tb_frame
+    # internals = frame.__internals__
+    code = frame.f_code
+    filename = code.co_filename
+    if me == filename:
+        next = tb.tb_next
+        return clean_traceback(next)
+    else:
+        return tb
+
+
+def do_eval(async_id, eval_string):
+    interp.runsource_separate_thread(async_id, eval_string)
+
+
 def process():
     while True:
         message_line = str(cin.readline()).strip()
@@ -58,5 +81,12 @@ def process():
                 function_name = message["function_name"]
                 arguments = message["arguments"]
                 do_function_call(module_name, function_name, arguments)
+            elif "non_blocking_eval" == cmd:
+                eval_string = message["eval_string"]
+                async_id = message["async_id"]
+                do_eval(async_id, eval_string)
+            elif "input_response" == cmd:
+                data = message["data"]
+                sys.stdin.push(data)
             else:
                 cerr.write("Unknown message type {}\n".format(cmd))
