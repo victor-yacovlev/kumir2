@@ -205,7 +205,14 @@ Message PyInterpreterProcess::waitForMessage(Message::Type waitType, int msec)
 
 QString PyInterpreterProcess::pythonExecutablePath()
 {
+#ifdef Q_OS_LINUX
     return "/usr/bin/python3";
+#endif
+#ifdef Q_OS_WIN
+    const QString kumirRoot = QCoreApplication::applicationDirPath() + "/../";
+    const QString pythonExe = QDir::cleanPath(kumirRoot+"/python/python.exe");
+    return pythonExe;
+#endif
 }
 
 QString PyInterpreterProcess::pythonExtraPath()
