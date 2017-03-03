@@ -1219,7 +1219,7 @@ mutex.unlock();
         mPen->setScale((0.03)*mPen->scale());
         mPen->setZValue(100);
        // mPen->rotate(180);
-        mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
+      //  mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
         qDebug() <<myResourcesDir().absoluteFilePath("Trtl1.svg");
         //CurScene->addItem(mPen);
 

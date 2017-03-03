@@ -204,7 +204,7 @@ public /* methods */:
     {
         mutex.lock();
         mPen->setScale(factor);
-        mTurt->setScale(factor);
+      //  mTurt->setScale(factor);
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
