@@ -872,7 +872,7 @@ void TurtleModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::BoundingRectViewportUpdate);//For better perfomance; Manual Update;
+    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     drawNet();
     CreatePen();
     CurView->setZoom(50);
