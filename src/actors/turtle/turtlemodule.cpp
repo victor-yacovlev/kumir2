@@ -1160,6 +1160,7 @@ mutex.unlock();
      
         CurView->update();
         CurView->forceRedraw();
+        CurView->repaint();
     }
     void TurtleModule::netStepChange(double value)
     {
