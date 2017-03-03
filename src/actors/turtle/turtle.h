@@ -47,8 +47,8 @@ public:
  TurtlePult* Tpult;
  QDir myresdir;
  void AutoClose(){autoClose=true;close();};
- void showTurtle(){setVisible(true);};
- void hideTurtle(){setVisible(false);};
+ void showTurtle(){setVisible(true); t1->show();};
+ void hideTurtle(){setVisible(false); t1->hide();};
 
 protected:
  void mousePressEvent(QMouseEvent *event);
@@ -62,7 +62,7 @@ public slots:
  void reset();
  void DoRotate(double deg);
  void DoMove(int range);
- void hideTurtle(QPoint pos);
+// void hideTurtle();
  void Repaint(){
      view->repaint();
      scene->update();};
