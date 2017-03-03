@@ -74,6 +74,8 @@ namespace ActorTurtle {
         void setTurtleVis(bool vis)
         {
             turtle->setVisible(vis);
+            turtle->update();
+            turtle->renderer();
            
         }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

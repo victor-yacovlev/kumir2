@@ -1154,7 +1154,7 @@ mutex.unlock();
     {
      
         mPen->setTurtleVis(state);
-        mPen->setVisible(state);
+        //mPen->setVisible(state);
         mPen->update();
         CurScene->update();
      
