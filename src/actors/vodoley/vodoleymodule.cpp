@@ -168,22 +168,32 @@ private:
 {
     /* алг наполни A */
     // TODO implement me
+    
+     mutex.lock();
    MainWindow->FillA();
+     mutex.unlock();
+    msleep(1);
+    
 }
 
 /* public slot */ void VodoleyModule::runFillB()
 {
     /* алг наполни B */
     // TODO implement me
+      mutex.lock();
     MainWindow->FillB();
-    
+    mutex.unlock();
+    msleep(1);
 }
 
 /* public slot */ void VodoleyModule::runFillC()
 {
     /* алг наполни C */
     // TODO implement me
+    mutex.lock();
     MainWindow->FillC();
+    mutex.unlock();
+    msleep(1);
     
 }
 
