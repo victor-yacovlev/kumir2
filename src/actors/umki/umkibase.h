@@ -4,8 +4,11 @@
 #include <QtCore>
 #include <QtGui>
 
+#if QT_VERSION >= 0x050100
 #include <QSerialPort>
-//#include "/usr/include/qt4/QtSerialPort/qserialport.h"
+#else
+#include "QtSerialPort/qserialport.h"
+#endif
 
 #define MAX_DATA_MAS 8192
 #define MAX_DATA_MAS_D 9192
