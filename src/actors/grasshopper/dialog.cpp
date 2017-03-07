@@ -1,10 +1,10 @@
 //
-// C++ Implementation: printDialog
+// C++ Implementation: new task dialog
 //
 // Description: 
 //
 //
-// Author: Denis Khachko <mordol@mail.ru>, (C) 2008
+// Author: Denis Khachko <mordol@lpm.org.ru>
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -31,10 +31,8 @@ void Dialog::setMax()
 	int max=BaseA->value();
 	if(BaseB->value()>max)max=BaseB->value();
 
- 
-	//NeedA->setMaximum(max);
-        //NeedB->setMaximum(BaseB->value());
-        //NeedC->setMaximum(BaseC->value());
+
+     
  };
 
 void Dialog::addFlag()
