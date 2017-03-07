@@ -1,0 +1,312 @@
+{
+	"name": { "ascii": "Umki", "ru_RU": "УМКИ" },
+	"methods": [
+        { "name": {"ascii": "go up", "ru_RU": "вверх" }, "async": true },
+        { "name": {"ascii": "go down", "ru_RU": "вниз" }, "async": true },
+        { "name": {"ascii": "go left", "ru_RU": "влево" }, "async": true },
+        { "name": {"ascii": "go right", "ru_RU": "вправо"}, "async": true },
+
+	
+        { "name": {"ascii": "do paint", "ru_RU": "закрасить" }, "async": true },
+	{
+			"name": {"ascii": "is wall at top", "ru_RU": "сверху стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at bottom", "ru_RU": "снизу стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at left", "ru_RU": "слева стена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is wall at right", "ru_RU": "справа стена"},
+			"returnType": "bool"
+		},
+		{
+			"name": {"ascii": "is free at top", "ru_RU": "сверху свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at bottom", "ru_RU": "снизу свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at left", "ru_RU": "слева свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is free at right", "ru_RU": "справа свободно"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is Color", "ru_RU": "клетка закрашена"},
+			"returnType": "bool"
+		},
+		{ 
+			"name": {"ascii": "is Clear", "ru_RU": "клетка чистая"},
+			"returnType": "bool"
+		},
+	{ 
+			"name": {"ascii": "temp", "ru_RU": "темп"},
+			"returnType": "int"
+	},		
+
+		{ 
+			"name": {"ascii": "radiation", "ru_RU": "радиация"},
+			"returnType": "double"
+		},
+		{ 
+			"name": {"ascii": "temperature", "ru_RU": "температура"},
+			"returnType": "int"
+		},		
+
+		{ 
+			"name": {"ascii": "dim", "ru_RU": "дым"},
+			"returnType": "int"
+		},		
+		{ 
+			"name": {"ascii": "osv", "ru_RU": "освещенность"},
+			"returnType": "int"
+		},		
+		{ 
+			"name": {"ascii": "bar", "ru_RU": "давление"},
+			"returnType": "int"
+		},		
+		{ 
+			"name": {"ascii": "kas", "ru_RU": "препятствие"},
+			"returnType": "int"
+		},		
+		{ 
+			"name": {"ascii": "sbrosKas", "ru_RU": "сброс_препятствие"},
+			"returnType": "int"
+		},		
+		{ 
+			"name": {"ascii": "numb_car", "ru_RU": "количество"},
+			"returnType": "int"
+		},		
+
+		{
+			"name": {"ascii": "impLeftAll", "ru_RU": "имп_лев_все"},
+			"async": false,
+			"arguments": [
+				{ "name": "impLeftAll", "baseType": "int"}
+			]
+		},		
+
+		{
+			"name": {"ascii": "impRightAll", "ru_RU": "имп_прав_все"},
+			"async": false,
+			"arguments": [
+				{ "name": "impRightAll", "baseType": "int"}
+			]
+		},		
+
+		{
+			"name": {"ascii": "impLeft", "ru_RU": "имп_лев"},
+			"async": false,
+			"arguments": [
+				{ "name": "impLeft", "baseType": "int"}
+			]
+		},		
+
+		{
+			"name": {"ascii": "impRight", "ru_RU": "имп_прав"},
+			"async": false,
+			"arguments": [
+				{ "name": "impRight", "baseType": "int"}
+			]
+		},		
+
+
+		{
+			"name": {"ascii": "numbUstr", "ru_RU": "машинка"},
+			"async": false,
+			"arguments": [
+				{ "name": "numb", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "signal", "ru_RU": "сигнал"},
+			"async": false,
+			"arguments": [
+				{ "name": "sec", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "svet", "ru_RU": "свет"},
+			"async": false,
+			"arguments": [
+				{ "name": "sec", "baseType": "int"}
+			]
+		},		
+
+
+		{
+			"name": {"ascii": "field size", "ru_RU": "@@размер поля"},
+			"async": false,
+			"arguments": [
+				{ "name": "rows", "baseType": "int", "access": "out" },
+				{ "name": "cols", "baseType": "int", "access": "out" }
+			]
+		},		
+		{
+			"name": {"ascii": "mark", "ru_RU": "@@метка"},
+			"async": false,
+			"returnType": "bool",
+			"arguments": [
+				{ "name": "row", "baseType": "int" },
+				{ "name": "col", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "colored", "ru_RU": "@@закрашена"},
+			"async": false,
+			"returnType": "bool",
+			"arguments": [
+				{ "name": "row", "baseType": "int" },
+				{ "name": "col", "baseType": "int"}
+			]
+		},		
+		{
+			"name": {"ascii": "umki pos", "ru_RU": "@@УМКИ"},
+			"async": false,
+			"arguments": [
+				{ "name": "row", "baseType": "int", "access": "out" },
+				{ "name": "col", "baseType": "int", "access": "out" }
+			]
+		},		
+		{
+			"name": {"ascii": "upChar", "ru_RU": "@@верхняя буква"},
+			"async": false,
+			"returnType": "char",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},
+		{
+			"name": {"ascii": "cellTemp", "ru_RU": "@@температура"},
+			"async": false,
+			"returnType": "int",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},
+		{
+			"name": {"ascii": "cellRad", "ru_RU": "@@радиация"},
+			"async": false,
+			"returnType": "double",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		},	
+		{
+			"name": {"ascii": "downChar", "ru_RU": "@@нижняя буква"},
+			"async": false,
+			"returnType": "char",
+			"arguments": [
+				{ "name": "row", "baseType": "int"},
+				{ "name": "col", "baseType": "int"}
+			]
+		}
+		
+	],
+	"gui": {
+		"windows": [
+			{ "role": "main", "icon": "umki" },
+			{ "role": "pult", "icon": "umki-pult" }
+		],
+		"menus": [
+			{
+				"title": { "ascii": "Umki", "ru_RU": "УМКИ" },
+				"items": [
+					{
+						"title": {
+							"ascii": "Load Environment...", 
+		                    "ru_RU": "Загрузить обстановку..."
+		                },
+						"icon": "file-open"
+					},	
+                    {
+						"title": {
+							"ascii": "Load Rescent...", 
+		                    "ru_RU": "Недавние обстановки"
+		                },
+						"icon": "file-rescent"
+					},
+					{
+						"title": {
+							"ascii": "Revert Environment", 
+		                    "ru_RU": "Вернуть исходную обстановку"
+		                },
+						"icon": "file-revert"
+					},
+					{
+						"title": {
+							"ascii": "Save Environment...", 
+		                    "ru_RU": "Сохранить обстановку..."
+		                },
+						"icon": "file-save-as"
+					},
+                    {
+						"title": {
+							"ascii": "Edit Environment...", 
+		                    "ru_RU": "Редактировать обстановку..."
+		            				    },
+						"icon": "file-save-as"
+		    },
+                    {
+						"title": {
+							"ascii": "Auto window size.", 
+		                    "ru_RU": "Авто размер окна"
+		            				    },
+						"icon": "file-save-as"
+		    },
+                          {
+                          "title": {
+                          "ascii": "New Environment...", 
+                          "ru_RU": "Новая обстановка..."
+                          },
+                          "icon": "file-new"
+                          }
+				]
+			}
+		]
+	},
+	"settings": {
+		"TextColor": {
+			"type": "color",
+			"default": "#FFFFFF",
+			"title": {"ascii": "Text color", "ru_RU": "Цвет смиволов"}
+		},
+		"LineColor": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Grid color", "ru_RU": "Цвет сетки"}
+		},
+		"LineColorEdit": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Grid  color (edit mode)", "ru_RU": "Цвет сетки (редактирование)"}
+		},
+		"WallColor": {
+			"type": "color",
+			"default": "#C8C800",
+			"title": {"ascii": "Wall color", "ru_RU": "Цвет стен"}
+		},
+		"NormalColor": {
+			"type": "color",
+			"default": "#289628",
+			"title": {"ascii": "Background color", "ru_RU": "Цвет поля"}
+		},
+		"EditColor": {
+			"type": "color",
+			"default": "#00008C",
+			"title": {"ascii": "Background color (edit mode)", "ru_RU": "Цвет поля (редактирование)"}
+		}
+	}
+}
