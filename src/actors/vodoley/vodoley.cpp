@@ -209,7 +209,7 @@ Vodoley::Vodoley()
 	needFrame->setPalette(QPalette(QColor(140,140,140),QColor(100,100,100)));
 	needFrame->setBackgroundRole(QPalette::Window);
 	needFrame->setAutoFillBackground(true);
-	needFrame->show();
+	needFrame->hide();
 	needLabel=new QLabel(needFrame);
 	needLabel->setText("999");
 	needLabel->move(2,2);
@@ -324,8 +324,7 @@ void Vodoley::resizeEvent ( QResizeEvent * event )
     QRectF sizeRect=QRectF(scene->sceneRect().topLeft(),QSize(qMax(scene->sceneRect().width(),scene->sceneRect().height())+43,qMax(scene->sceneRect().width(),scene->sceneRect().height())));
     view->fitInView(sizeRect, Qt::KeepAspectRatio);
     needFrame->move(view->width()/2-10,5);
-    //qDebug()<<sizeRect<<" view:"<<view->geometry();
-   // view->scale(0.7,0.7);
+
     QWidget::resizeEvent(event);
 }
 
@@ -633,9 +632,10 @@ void Vodoley::saveZ()
 
 void Vodoley::updateMenzur()
 {
-    float literSize = MAX_SIZE/maxSize();
+
     //qDebug()<<"Liter size"<<literSize;
     mutex.lock();
+    float literSize = MAX_SIZE/maxSize();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
     Amen->setSize(Asize());
@@ -698,8 +698,7 @@ void Vodoley::mousePressEvent(QMouseEvent *event)
 	qDebug()<<"TailPoint:"<<point;
 	//Curfill[0]=CurA()-1;
 	Amen->setGp(point.x());
-	view->update();
-	scene->update();
+    redraw();
     qDebug()<<"View geometrey"<<view->geometry();
 };
 NewDialog::NewDialog()
@@ -737,24 +736,4 @@ NewDialog::NewDialog()
 	this->setLayout(layout);
     
 };
-//void Vodoley::closeEvent ( QCloseEvent * event )
-//{
-//	if((pult->libMode)||(autoClose))
-//	{
-//		close();
-//		event->accept();
-//		return;
-//	};
-//	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
-//								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
-//								   QMessageBox::Yes | QMessageBox::Default,
-//								   QMessageBox::No,
-//								   QMessageBox::Cancel | QMessageBox::Escape);
-//	if (ret == QMessageBox::Yes) {
-//		pult->AutoClose();
-//		pult->close();
-//		event->accept();
-//	} else {
-//		event->ignore();
-//	}
-//};
+
