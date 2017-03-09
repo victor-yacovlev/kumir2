@@ -209,7 +209,7 @@ Vodoley::Vodoley()
 	needFrame->setPalette(QPalette(QColor(140,140,140),QColor(100,100,100)));
 	needFrame->setBackgroundRole(QPalette::Window);
 	needFrame->setAutoFillBackground(true);
-	needFrame->hide();
+	needFrame->show();
 	needLabel=new QLabel(needFrame);
 	needLabel->setText("999");
 	needLabel->move(2,2);
@@ -282,6 +282,7 @@ void Vodoley::CreateVodoley(void)
 
     Atext=scene->addSimpleText("A");
     Atext->setPos(35,15+(maxSize()-Asize())*literSize);
+    //Atext->hide();
     Btext=scene->addSimpleText("B");
     Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
     Ctext=scene->addSimpleText("C");
@@ -657,7 +658,7 @@ void Vodoley::updateMenzur()
 	Cmen->setYoffset(40+(maxSize()-Csize())*literSize);
 	Cmen->setCurFill(CurC());
 
-	Atext->setPos(35,15+(maxSize()-Asize())*literSize);
+	//Atext->setPos(35,15+(maxSize()-Asize())*literSize);
 
 	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
