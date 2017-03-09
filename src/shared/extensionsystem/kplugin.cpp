@@ -89,9 +89,9 @@ QDir KPlugin::myResourcesDir() const
     QDir result = QDir(thisModulePath);
     QString message = QString::fromLatin1("The directory not exists or not readable: %1")
             .arg(thisModulePath);
-    Q_ASSERT_X(result.exists() && result.isReadable(), "KPlugin::myResourcesDir",
-               message.toLocal8Bit().constData()
-               );
+//    Q_ASSERT_X(result.exists() && result.isReadable(), "KPlugin::myResourcesDir",
+//               message.toLocal8Bit().constData()
+//               );
     return result;
 }
 
