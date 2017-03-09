@@ -660,9 +660,9 @@ void Vodoley::updateMenzur()
 
 	//Atext->setPos(35,15+(maxSize()-Asize())*literSize);
 
-	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
+	//Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
-	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
+	//Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
 
     mutex.unlock();
     
