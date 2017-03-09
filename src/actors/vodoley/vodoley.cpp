@@ -667,9 +667,9 @@ void Vodoley::updateMenzur()
     mutex.unlock();
     
 
-	updateNeedBirka();
-    redraw();
-	if(Csize()<1)emit CNull();else emit CNotNull();
+	//updateNeedBirka();
+   // redraw();
+//	if(Csize()<1)emit CNull();else emit CNotNull();
 };
 void Vodoley::redraw()
 {
