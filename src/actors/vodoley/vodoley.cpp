@@ -343,7 +343,7 @@ void Vodoley::FillA()
     mutex.lock();
     Curfill[0]=Asize();
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
 };
 void Vodoley::FillB()
 {    mutex.lock();
@@ -658,11 +658,11 @@ void Vodoley::updateMenzur()
 	Cmen->setYoffset(40+(maxSize()-Csize())*literSize);
 	Cmen->setCurFill(CurC());
 
-	//Atext->setPos(35,15+(maxSize()-Asize())*literSize);
+	Atext->setPos(35,15+(maxSize()-Asize())*literSize);
 
-	//Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
+	Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
 
-	//Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
+	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
 
     mutex.unlock();
     
