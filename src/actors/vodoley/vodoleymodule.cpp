@@ -172,7 +172,7 @@ private:
      mutex.lock();
    MainWindow->FillA();
      mutex.unlock();
-    msleep(1);
+   // msleep(1);
     
 }
 

@@ -349,14 +349,14 @@ void Vodoley::FillB()
 {    mutex.lock();
     Curfill[1]=Bsize();
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
 };
 void Vodoley::FillC()
 {
     mutex.unlock();
     Curfill[2]=Csize();
     mutex.unlock();
-    updateMenzur();
+    //updateMenzur();
 };
 
 void Vodoley::MoveFromTo(uint from,uint to)
@@ -373,7 +373,7 @@ void Vodoley::MoveFromTo(uint from,uint to)
     else
         Curfill[from]=Curfill[from]-svobodno;
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
     QApplication::processEvents();
     
 };
@@ -635,7 +635,7 @@ void Vodoley::updateMenzur()
 {
 
     //qDebug()<<"Liter size"<<literSize;
-    mutex.lock();
+    //mutex.lock();
     float literSize = MAX_SIZE/maxSize();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
@@ -664,16 +664,17 @@ void Vodoley::updateMenzur()
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
 
-    mutex.unlock();
+  //  mutex.unlock();
     
-
-	//updateNeedBirka();
+    
+	updateNeedBirka();
    // redraw();
 //	if(Csize()<1)emit CNull();else emit CNotNull();
 };
 void Vodoley::redraw()
 {
     mutex.lock();
+    updateMenzur();
     view->update();
 	scene->update();
     mutex.unlock();
@@ -681,7 +682,7 @@ void Vodoley::redraw()
 
 void Vodoley::updateNeedBirka()
 {
-mutex.lock();
+//mutex.lock();
     if(needFrame)
 	{
 		if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR)){needFrame->setPalette(QPalette(QColor(50,90,50),QColor(100,190,100)));}
@@ -691,7 +692,7 @@ mutex.lock();
 
 	needLabel->setText(" "+QString::number(AfillR));
 	qDebug()<<"NEED:"<<QString::number(AfillR);
-    mutex.unlock();
+   // mutex.unlock();
 };
 void Vodoley::mousePressEvent(QMouseEvent *event)
 {
