@@ -183,7 +183,7 @@ private:
       mutex.lock();
     MainWindow->FillB();
     mutex.unlock();
-    msleep(1);
+    //msleep(1);
 }
 
 /* public slot */ void VodoleyModule::runFillC()
@@ -216,18 +216,18 @@ private:
     MainWindow->MoveFromTo(1,3);
     //msleep(1);
     mutex.unlock();
-    msleep(1);
+   // msleep(1);
 }
 
 /* public slot */ void VodoleyModule::runEmptyC()
 {
     /* алг вылей C */
     // TODO implement me
-   //  mutex.lock();
+    mutex.lock();
     MainWindow->MoveFromTo(2,3);
     msleep(1);
     
-  //   mutex.unlock();
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToB()
