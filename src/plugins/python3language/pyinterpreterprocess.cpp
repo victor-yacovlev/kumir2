@@ -173,9 +173,14 @@ void PyInterpreterProcess::sendMessage(const Message &message)
 
 Message PyInterpreterProcess::waitForMessage(Message::Type waitType, int msec)
 {
+#ifndef Q_OS_WIN32
+    static const int ActiveWaitTimeout = 10;
+#else
+    static const int ActiveWaitTimeout = 50;
+#endif
     Message result;
     int quantumNo = 1;
-    const int quantumCount = msec / 500;
+    const int quantumCount = msec / ActiveWaitTimeout;
     while (quantumNo <= quantumCount || -1==msec) {
         if (Message::Type::None != result.type) break;
         _incomingMessagesMutex.lock();
@@ -195,7 +200,7 @@ Message PyInterpreterProcess::waitForMessage(Message::Type waitType, int msec)
         _incomingMessagesMutex.unlock();
         QApplication::processEvents();
         handleReadStandardOutput();
-        QThread::msleep(500);
+        QThread::msleep(ActiveWaitTimeout);
         if (-1 != msec) {
             quantumNo++;
         }
