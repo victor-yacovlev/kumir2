@@ -320,7 +320,7 @@ void TokenizerInstance::updateLinePropFromTokens(TokenizerInstance::Line &line) 
 
 Shared::Analizer::LineProp TokenizerInstance::lineProp(int lineNo, const QString &text) const
 {
-    if (_lines.size() < lineNo ) {
+    if (_lines.size() <= lineNo ) {
         // Not ready yet, so append empty lines
         for (int i=_lines.size(); i<lineNo+1; ++i) {
             _lines.append(Line());
@@ -345,6 +345,7 @@ Shared::Analizer::LineProp TokenizerInstance::lineProp(int lineNo, const QString
         mode = endMode;
         startPos = endPos;
     }
+    _lines[lineNo].text = text;
     _lines[lineNo].parseModeAtEnd = endMode;
     updateLinePropFromTokens(_lines[lineNo]);
     return lp;
