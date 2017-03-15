@@ -1,8 +1,8 @@
 #ifndef PYTHON3_LANGUAGE_PLUGIN_H
 #define PYTHON3_LANGUAGE_PLUGIN_H
-extern "C" {
-#include <Python.h>
-}
+//extern "C" {
+//#include <Python.h>
+//}
 
 #include <QtCore>
 
@@ -14,6 +14,7 @@ extern "C" {
 #include "extensionsystem/kplugin.h"
 #include "sandboxwidget.h"
 
+#include "pyinterpreterprocess.h"
 
 namespace Python3Language {
 
@@ -39,6 +40,7 @@ class Python3LanguagePlugin
     Q_INTERFACES(Shared::AnalizerInterface Shared::RunInterface Shared::StartpageWidgetInterface)
 public:
     Python3LanguagePlugin();
+    ~Python3LanguagePlugin();
 
     // KPlugin methods
     QList<QWidget*> settingsEditorPages();
@@ -112,13 +114,15 @@ protected Q_SLOTS:
     void updateSettings(const QStringList &);
 
 private /*fields*/:
-    PyFileHandler * fileHandler_;
-    PyThreadState * pyMain_;
+    PyFileHandler * _fileHandler;
+//    PyThreadState * pyMain_;
     PythonRunThread * runner_;
     QDateTime loadedProgramVersion_;
-    QList<class PythonAnalizerInstance*> analizerInstances_;
-    SandboxWidget * sandboxWidget_;
-    SyntaxCheckSettingsPage * syntaxCheckSettingsPage_;
+    QList<class PythonAnalizerInstance*> _analizerInstances;
+    SandboxWidget * _sandboxWidget;
+    SyntaxCheckSettingsPage * _syntaxCheckSettingsPage;
+
+    PyInterpreterProcess * _interpreterForAnalizers;
 
 
     // RunInterface interface

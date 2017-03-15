@@ -46,6 +46,7 @@ set(SOURCES
     sandboxwidget.cpp
     syntaxchecksettingspage.cpp
     pyinterpreterprocess.cpp
+    tokenizerinstance.cpp
 )
 
 set(MOC_HEADERS
@@ -59,6 +60,7 @@ set(MOC_HEADERS
     sandboxwidget.h
     syntaxchecksettingspage.h
     pyinterpreterprocess.h
+    tokenizerinstance.h
 )
 
 if(${USE_QT} GREATER 4)

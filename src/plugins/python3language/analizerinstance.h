@@ -1,12 +1,8 @@
 #ifndef PYTHON3LANGUAGE_ANALIZERINSTANCE_H
 #define PYTHON3LANGUAGE_ANALIZERINSTANCE_H
 
-extern "C" {
-#include <Python.h>
-}
-
 #include <QObject>
-
+#include "pyinterpreterprocess.h"
 #include "interfaces/analizer_instanceinterface.h"
 
 namespace Python3Language {
@@ -14,6 +10,7 @@ namespace Python3Language {
 using namespace Shared::Analizer;
 
 class Python3LanguagePlugin;
+class TokenizerInstance;
 
 class PythonAnalizerInstance
         : public QObject
@@ -40,30 +37,18 @@ Q_SIGNALS:
     void internallyReanalized();
 
 protected /*methods*/:
-    void stopPythonInterpreter();
     explicit PythonAnalizerInstance(Python3LanguagePlugin *parent,
-                                    const QStringList & extraPythonPaths);
-    void initializePyAnalizer(const QStringList & extraPythonPaths);
+                                    PyInterpreterProcess* interpreter);
 
     void queryErrors();
-    void queryLineProperties();
-    void queryLineRanks();
 
-private /*fields*/:
-    Python3LanguagePlugin* plugin_;
-    QString currentSourceText_;
-    ::PyThreadState* py_;
-    ::PyObject* py_analizerInstance;
-    ::PyObject* py_setSourceDirName;
-    ::PyObject* py_setSourceText;
-    ::PyObject* py_getErrors;
-    ::PyObject* py_getLineProperties;
-    ::PyObject* py_getLineRanks;
-    ::PyObject* py_getLineProperty;
-    ::PyObject* py_setUsePep8;
-    QList<Error> errors_;
-    QList<LineProp> lineProperties_;
-    QList<QPoint> lineRanks_;
+private /*fields*/:    
+    Python3LanguagePlugin* _plugin;
+    PyInterpreterProcess* _py;
+    QString _currentSourceText;
+    QList<Error> _errors;
+    long long _internalId;
+    TokenizerInstance *_tokenizer;
 
 };
 

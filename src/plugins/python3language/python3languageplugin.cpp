@@ -1,3 +1,7 @@
+extern "C" {
+#include <Python.h>
+}
+
 #include "python3languageplugin.h"
 #include "analizerinstance.h"
 #include "pythonrunthread.h"
@@ -12,29 +16,39 @@ namespace Python3Language {
 
 Python3LanguagePlugin::Python3LanguagePlugin()
     : ExtensionSystem::KPlugin()
-    , fileHandler_(new PyFileHandler(this))
-    , pyMain_(0)
+    , _fileHandler(new PyFileHandler(this))
     , runner_(0)
-    , sandboxWidget_(0)
-    , syntaxCheckSettingsPage_(0)
-{    
+    , _sandboxWidget(0)
+    , _syntaxCheckSettingsPage(0)
+    , _interpreterForAnalizers(0)
+{
+
+}
+
+Python3LanguagePlugin::~Python3LanguagePlugin()
+{
+    // Delete analizers first, then interpreters
+    Q_FOREACH(PythonAnalizerInstance *a, _analizerInstances) {
+        delete a;
+    }
+    _interpreterForAnalizers->deleteLater();
 }
 
 QList<QWidget *> Python3LanguagePlugin::settingsEditorPages()
 {
     QList<QWidget*> result;
-    if (!syntaxCheckSettingsPage_) {
-        syntaxCheckSettingsPage_ = new SyntaxCheckSettingsPage(mySettings());
-        connect (syntaxCheckSettingsPage_, SIGNAL(settingsChanged(QStringList)),
+    if (!_syntaxCheckSettingsPage) {
+        _syntaxCheckSettingsPage = new SyntaxCheckSettingsPage(mySettings());
+        connect (_syntaxCheckSettingsPage, SIGNAL(settingsChanged(QStringList)),
                  this, SLOT(updateSettings(QStringList)));
-        result.append(syntaxCheckSettingsPage_);
+        result.append(_syntaxCheckSettingsPage);
     }
     return result;
 }
 
 Analizer::SourceFileInterface * Python3LanguagePlugin::sourceFileHandler()
 {
-    return fileHandler_;
+    return _fileHandler;
 }
 
 QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSystem::CommandLine &)
@@ -66,23 +80,12 @@ QString Python3LanguagePlugin::initialize(const QStringList &, const ExtensionSy
     qDebug() << "Calling _wputenv";
     _wputenv_s(L"PYTHONPATH", wPythonPath);
 #endif
-    qDebug() << "Py_Initialize()";
     Py_Initialize();
-    qDebug() << "Initializing threads";
     PyEval_InitThreads();
-    qDebug() << "Saving main thread state";
-    pyMain_ = PyEval_SaveThread();
-    qDebug() << "Acquring main thread lock";
-    PyEval_AcquireThread(pyMain_);
-    qDebug() << "Releasing main thread lock";
-    PyEval_ReleaseLock();
-    qDebug() << "Creating runner instance";
     runner_ = PythonRunThread::instance(this, myResourcesDir().absolutePath());
-    qDebug() << "Connecting signals/slots";
     connectRunThreadSignals();
-    qDebug() << "Initialization done";
-
-    sandboxWidget_ = new SandboxWidget(myResourcesDir().absolutePath(), 0);
+    _sandboxWidget = new SandboxWidget(myResourcesDir().absolutePath(), 0);
+    _interpreterForAnalizers = PyInterpreterProcess::create(true, this);
 
     return QString();
 }
@@ -107,20 +110,16 @@ void Python3LanguagePlugin::connectRunThreadSignals()
 
 void Python3LanguagePlugin::stop()
 {
-    Q_FOREACH ( PythonAnalizerInstance* instance, analizerInstances_ )
-        instance->stopPythonInterpreter();
     QCoreApplication::instance()->processEvents();
-//    PyEval_AcquireThread(pyMain_);
-    //    Py_Finalize();
 }
 
 void Python3LanguagePlugin::updateSettings(const QStringList & keys)
 {
-    if (syntaxCheckSettingsPage_) {
-        syntaxCheckSettingsPage_->setSettingsObject(mySettings());
+    if (_syntaxCheckSettingsPage) {
+        _syntaxCheckSettingsPage->setSettingsObject(mySettings());
     }
     if (mySettings() && keys.contains(SyntaxCheckSettingsPage::UsePep8Key)) {
-        Q_FOREACH(PythonAnalizerInstance * analizer, analizerInstances_) {
+        Q_FOREACH(PythonAnalizerInstance * analizer, _analizerInstances) {
             analizer->setUsePep8(
                         mySettings()->value(
                             SyntaxCheckSettingsPage::UsePep8Key,
@@ -134,15 +133,14 @@ void Python3LanguagePlugin::updateSettings(const QStringList & keys)
 
 Analizer::InstanceInterface * Python3LanguagePlugin::createInstance()
 {
-    static const QStringList ExtraPythonPath = extraPaths();
-    analizerInstances_.append(new PythonAnalizerInstance(this, ExtraPythonPath));
-    analizerInstances_.last()->setUsePep8(
+    _analizerInstances.append(new PythonAnalizerInstance(this, _interpreterForAnalizers));
+    _analizerInstances.last()->setUsePep8(
                 mySettings()->value(
                     SyntaxCheckSettingsPage::UsePep8Key,
                     SyntaxCheckSettingsPage::UsePep8DefaultValue
                     ).toBool()
                 );
-    return analizerInstances_.last();
+    return _analizerInstances.last();
 }
 
 void Python3LanguagePlugin::setStdInTextStream(QTextStream *stream)
@@ -157,7 +155,7 @@ void Python3LanguagePlugin::setStdOutTextStream(QTextStream *stream)
 
 QWidget *Python3LanguagePlugin::startPageWidget()
 {
-    return sandboxWidget_;
+    return _sandboxWidget;
 }
 
 QString Python3LanguagePlugin::startPageTitle() const
@@ -183,7 +181,7 @@ RunInterface::RunMode Python3LanguagePlugin::currentRunMode() const
 
 bool Python3LanguagePlugin::loadProgram(const RunnableProgram & program)
 {
-    const QString programSource = fileHandler_->toString(fileHandler_->fromBytes(program.executableData));
+    const QString programSource = _fileHandler->toString(_fileHandler->fromBytes(program.executableData));
     const QString preRunSource = extractFunction(programSource, "__pre_run__");
     const QString postRunSource = extractFunction(programSource, "__post_run__");
     const QString preTestSource = extractFunction(programSource, "__pre_test__");
