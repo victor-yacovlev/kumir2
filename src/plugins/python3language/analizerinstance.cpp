@@ -16,7 +16,7 @@ PythonAnalizerInstance::PythonAnalizerInstance(Python3LanguagePlugin *parent,
     , _plugin(parent)
     , _py(interpreter)
     , _internalId(-1)
-    , _tokenizer(new TokenizerInstance(this))
+    , _tokenizer(new TokenizerInstance(this, _globalNames))
 {
     QVariant id = _py->blockingCall("analyzer", "create", QVariantList());
     _internalId = id.toLongLong();
@@ -48,6 +48,7 @@ void PythonAnalizerInstance::setSourceText(const QString &plainText)
 //                      QVariantList() << _internalId << plainText);
 
 //    queryErrors();
+    queryNamesExtract();
     _currentSourceText = plainText;
     _tokenizer->setSourceText(plainText);
 }
@@ -127,6 +128,35 @@ void PythonAnalizerInstance::queryErrors() {
         result.append(error);
     }
     _errors = result;
+}
+
+static
+QStringList extractNamesFromMap(const QString &key, const QMap<QString,QVariant> &map)
+{
+    QStringList result;
+    if (map.contains(key)) {
+        const QVariant v = map.value(key);
+        if (QVariant::List==v.type()) {
+            QVariantList vList = v.toList();
+            Q_FOREACH(const QVariant &vv, vList) {
+                result.append(vv.toString());
+            }
+        }
+    }
+    return result;
+}
+
+void PythonAnalizerInstance::queryNamesExtract()
+{
+
+    const QVariant pyGlobalsResult =
+            _py->blockingCall("analyzer", "get_global_names", QVariantList() << _internalId);
+    if (QVariant::Map == pyGlobalsResult.type()) {
+        QMap<QString,QVariant> map = pyGlobalsResult.toMap();
+        _globalNames.modules = extractNamesFromMap("modules", map);
+        _globalNames.functions = extractNamesFromMap("functions", map);
+        _globalNames.classes = extractNamesFromMap("classes", map);
+    }
 }
 
 QList<LineProp> PythonAnalizerInstance::lineProperties() const

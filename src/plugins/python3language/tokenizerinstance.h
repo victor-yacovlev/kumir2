@@ -2,6 +2,7 @@
 #define PYTHON3LANGUAGE_TOKENIZERINSTANCE_H
 
 #include "interfaces/analizer_instanceinterface.h"
+#include "namecontext.h"
 #include <QObject>
 #include <QString>
 #include <QRegExp>
@@ -14,12 +15,13 @@ class TokenizerInstance : public QObject
 {
     Q_OBJECT
 public:
-    explicit TokenizerInstance(QObject *parent = 0);
+    explicit TokenizerInstance(QObject *parent, const NamesContext & globals);
     void setSourceText(const QString &text);
     QList<Shared::Analizer::Error> errors() const;
     QList<Shared::Analizer::LineProp> lineProperties() const;
     QList<QPoint> lineRanks() const;
     Shared::Analizer::LineProp lineProp(int lineNo, const QString &text) const;
+
 
 private:
 
@@ -74,9 +76,7 @@ private:
     void updateLinePropFromTokens(Line &line) const;
 
     mutable QList<Line> _lines;
-    QStringList _moduleNames;
-    QStringList _functionNames;
-    QStringList _classNames;
+    const NamesContext & _globalNames;
     QStringList _operators;
     QStringList _keywordsPrimary;
     QStringList _keywordsSecondary;

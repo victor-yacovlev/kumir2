@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "pyinterpreterprocess.h"
+#include "namecontext.h"
 #include "interfaces/analizer_instanceinterface.h"
 
 namespace Python3Language {
@@ -11,6 +12,7 @@ using namespace Shared::Analizer;
 
 class Python3LanguagePlugin;
 class TokenizerInstance;
+
 
 class PythonAnalizerInstance
         : public QObject
@@ -41,6 +43,7 @@ protected /*methods*/:
                                     PyInterpreterProcess* interpreter);
 
     void queryErrors();
+    void queryNamesExtract();
 
 private /*fields*/:    
     Python3LanguagePlugin* _plugin;
@@ -48,6 +51,7 @@ private /*fields*/:
     QString _currentSourceText;
     QList<Error> _errors;
     long long _internalId;
+    NamesContext _globalNames;
     TokenizerInstance *_tokenizer;
 
 };

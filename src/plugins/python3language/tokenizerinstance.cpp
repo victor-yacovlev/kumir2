@@ -5,7 +5,9 @@
 
 namespace Python3Language {
 
-TokenizerInstance::TokenizerInstance(QObject *parent) : QObject(parent)
+TokenizerInstance::TokenizerInstance(QObject *parent, const NamesContext & globals)
+    : QObject(parent)
+    , _globalNames(globals)
 {
     QStringList operatorsForRx = QStringList()
             << "\\(" << "\\)" << "\\[" << "\\]" << "\\{" << "\\}"
@@ -257,6 +259,15 @@ void TokenizerInstance::detectIdentifierType(TokenizerInstance::Token &token) co
         if (_keywordsPrimary.contains(token.text)) {
             token.type = Keyword;
         }
+        else if (_globalNames.classes.contains(token.text)) {
+            token.type = ClassName;
+        }
+        else if (_globalNames.functions.contains(token.text)) {
+            token.type = FunctionName;
+        }
+        else if (_globalNames.modules.contains(token.text)) {
+            token.type = ModuleName;
+        }
     }
 }
 
@@ -354,5 +365,6 @@ Shared::Analizer::LineProp TokenizerInstance::lineProp(int lineNo, const QString
     updateLinePropFromTokens(_lines[lineNo]);
     return lp;
 }
+
 
 } // namespace Python3Language
