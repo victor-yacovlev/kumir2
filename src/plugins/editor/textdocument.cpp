@@ -10,14 +10,18 @@
 namespace Editor
 {
 
-
-
 TextDocument::TextDocument(EditorInstance * editor)
     : QObject(editor)
     , editor_(editor)
     , undoStack_(new QUndoStack(this))
 {
     wasHiddenTextFlag_ = false;
+    if (editor->analizer()) {
+        _syntaxHighlightBehaviour = editor->analizer()->plugin()->syntaxHighlightBehaviour();
+    }
+    else {
+        _syntaxHighlightBehaviour = AnalizerInterface::IndependentLinesHighlight;
+    }
 }
 
 bool TextDocument::noUndoRedo = false;
@@ -55,7 +59,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
             data_[line].selected << false;
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
-        if (analizer)
+        if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
             data_[line].highlight = analizer->lineProp(line, data_[line].text).toList();
 
     }
@@ -67,7 +71,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
             data_[line].selected << false;
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
-        if (analizer)
+        if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
             data_[line].highlight = analizer->lineProp(line, data_[line].text).toList();
 
         // 2. Insert middle lines
@@ -82,7 +86,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
                 tl.selected << false;
                 tl.highlight << Shared::LxTypeEmpty;
             }
-            if (analizer)
+            if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
                 tl.highlight = analizer->lineProp(i, tl.text).toList();
             data_.insert(line+1, tl);
         }
@@ -100,8 +104,19 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
             data_[line+lines.count()-1].selected << false;
         while (data_[line+lines.count()-1].highlight.size() < data_[line+lines.count()-1].text.length())
             data_[line+lines.count()-1].highlight << Shared::LxTypeEmpty;
-        if (analizer)
+        if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
             data_[line+lines.count()-1].highlight = analizer->lineProp(line+lines.count()-1, data_[line+lines.count()-1].text).toList();
+    }
+
+    if (analizer && AnalizerInterface::IndependentLinesHighlight!=_syntaxHighlightBehaviour) {
+        int rehighlightStart =
+                AnalizerInterface::CompleteTextHighlight==_syntaxHighlightBehaviour
+                ? 0
+                : line;
+        int rehighlightEnd = data_.size();
+        for (int i=rehighlightStart; i<rehighlightEnd; ++i) {
+            data_[i].highlight = analizer->lineProp(i, data_[i].text).toList();
+        }
     }
 }
 
@@ -181,7 +196,7 @@ void TextDocument::removeText(QString &removedText, const Shared::Analizer::Inst
             cnt --;
         }
         if (line < data_.size()) {
-            if (analizer)
+            if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
                 tl.highlight = analizer->lineProp(line, tl.text).toList();
             data_[line] = tl;
             removedLines_.insert(removedCounter);
@@ -209,6 +224,16 @@ void TextDocument::removeText(QString &removedText, const Shared::Analizer::Inst
     for (int i=0; i<blankLines; i++) {
         data_.pop_back();
     }
+    if (analizer && AnalizerInterface::IndependentLinesHighlight!=_syntaxHighlightBehaviour) {
+        int rehighlightStart =
+                AnalizerInterface::CompleteTextHighlight==_syntaxHighlightBehaviour
+                ? 0
+                : line;
+        int rehighlightEnd = data_.size();
+        for (int i=rehighlightStart; i<rehighlightEnd; ++i) {
+            data_[i].highlight = analizer->lineProp(i, data_[i].text).toList();
+        }
+    }
 }
 
 void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
@@ -216,13 +241,23 @@ void TextDocument::insertLine(const QString &text, const uint beforeLineNo)
     TextLine textLine;
     textLine.text = text;
     textLine.inserted = true;
-    if (editor_->analizerInstance_) {
+    if (editor_->analizerInstance_ && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour) {
         textLine.highlight = editor_->analizerInstance_->lineProp(qMin(beforeLineNo, uint(data_.size())), text).toList();
     }
     for (uint i=0; i<text.length(); i++) {
         textLine.selected.push_back(false);
     }
     data_.insert(qMin(beforeLineNo, uint(data_.size())), textLine);
+    if (editor_->analizerInstance_ && AnalizerInterface::IndependentLinesHighlight!=_syntaxHighlightBehaviour) {
+        int rehighlightStart =
+                AnalizerInterface::CompleteTextHighlight==_syntaxHighlightBehaviour
+                ? 0
+                : beforeLineNo;
+        int rehighlightEnd = data_.size();
+        for (int i=rehighlightStart; i<rehighlightEnd; ++i) {
+            data_[i].highlight = editor_->analizerInstance_->lineProp(i, data_[i].text).toList();
+        }
+    }
 }
 
 void TextDocument::removeLine(const uint lineNo)
