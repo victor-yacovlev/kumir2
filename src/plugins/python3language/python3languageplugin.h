@@ -51,6 +51,7 @@ public:
     inline bool primaryAlphabetIsLatin() const { return true; }
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline IndentsBehaviour indentsBehaviour() const { return PythonIndents; }
+    inline SyntaxHighlightBehaviour syntaxHighlightBehaviour() const { return RestLinesHighlight; }
     inline QString defaultDocumentFileNameSuffix() const { return "py"; }
     inline QString languageName() const { return "Python"; }
 

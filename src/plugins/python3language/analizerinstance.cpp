@@ -44,10 +44,10 @@ void PythonAnalizerInstance::setSourceDirName(const QString &path)
 
 void PythonAnalizerInstance::setSourceText(const QString &plainText)
 {
-    _py->blockingCall("analyzer", "set_source_text",
-                      QVariantList() << _internalId << plainText);
+//    _py->blockingCall("analyzer", "set_source_text",
+//                      QVariantList() << _internalId << plainText);
 
-    queryErrors();
+//    queryErrors();
     _currentSourceText = plainText;
     _tokenizer->setSourceText(plainText);
 }

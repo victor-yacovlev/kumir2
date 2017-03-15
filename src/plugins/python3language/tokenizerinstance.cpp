@@ -234,15 +234,19 @@ void TokenizerInstance::takeStringLiteral(
             endMode = Normal;
         }
         else if ("\"\"\""==tokenToFind) {
+            token.type = Literal;
             endMode = DoubleQuotedMultilineLiteral;
         }
         else if ("'''"==tokenToFind) {
+            token.type = Literal;
             endMode = SingleQuotedMultiLineLiteral;
         }
     }
     else {
         endPos = p + tokenToFind.length();
         token.text += text.mid(startPos, endPos-startPos);
+        token.type = Literal;
+        endMode = Normal;
     }
 
 }
