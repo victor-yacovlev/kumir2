@@ -7,7 +7,6 @@
 #else
 #include <QtGui>
 #endif
-
 #include "interfaces/lexemtype.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/editor_instanceinterface.h"
@@ -15,6 +14,8 @@
 #include "extensionsystem/settings.h"
 
 namespace Editor {
+
+using Shared::AnalizerInterface;
 
 struct TextLine
 {
@@ -158,6 +159,7 @@ private:
     QList<TextLine> data_;
     QString hiddenText_;
     bool wasHiddenTextFlag_;
+    AnalizerInterface::SyntaxHighlightBehaviour _syntaxHighlightBehaviour;
 };
 
 }
