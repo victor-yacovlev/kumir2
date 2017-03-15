@@ -104,6 +104,10 @@ QString VodoleyModule::initialize(const QStringList &configurationParameters, co
 
 }
 
+    void VodoleyModule::tryToSleep()
+    {
+        if((rand() % 100 <5))msleep(2);
+    }
 /* public */ QWidget* VodoleyModule::mainWidget() const
 {
     return  MainWindow;
@@ -168,22 +172,32 @@ private:
 {
     /* алг наполни A */
     // TODO implement me
+    
+     mutex.lock();
    MainWindow->FillA();
+     mutex.unlock();
+    tryToSleep();
+    
 }
 
 /* public slot */ void VodoleyModule::runFillB()
 {
     /* алг наполни B */
     // TODO implement me
+      mutex.lock();
     MainWindow->FillB();
-    
+    mutex.unlock();
+   tryToSleep();
 }
 
 /* public slot */ void VodoleyModule::runFillC()
 {
     /* алг наполни C */
     // TODO implement me
+    mutex.lock();
     MainWindow->FillC();
+    mutex.unlock();
+    tryToSleep();
     
 }
 
@@ -195,7 +209,7 @@ private:
      mutex.lock();
     MainWindow->MoveFromTo(0,3);//Move water from A to ....
      mutex.unlock();
-    msleep(1);
+    tryToSleep();
 }
 
 /* public slot */ void VodoleyModule::runEmptyB()
@@ -206,18 +220,18 @@ private:
     MainWindow->MoveFromTo(1,3);
     //msleep(1);
     mutex.unlock();
-    msleep(1);
+   tryToSleep();
 }
 
 /* public slot */ void VodoleyModule::runEmptyC()
 {
     /* алг вылей C */
     // TODO implement me
-   //  mutex.lock();
+    mutex.lock();
     MainWindow->MoveFromTo(2,3);
-    msleep(1);
+    tryToSleep();
     
-  //   mutex.unlock();
+     mutex.unlock();
 }
 
 /* public slot */ void VodoleyModule::runFromAToB()
@@ -226,7 +240,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(0,1);
-    msleep(1);
+    tryToSleep();
    //  mutex.unlock();
 }
 
@@ -236,7 +250,7 @@ private:
 
 //    mutex.lock();
     MainWindow->MoveFromTo(0,2);
-    msleep(1);
+    tryToSleep();
    //mutex.unlock();
 }
 
@@ -246,7 +260,7 @@ private:
  
   //   mutex.lock();
     MainWindow->MoveFromTo(1,0);
-    msleep(1);
+    tryToSleep();
   //   mutex.unlock();
 }
 
@@ -256,7 +270,7 @@ private:
     // TODO implement me
    //  mutex.lock();
     MainWindow->MoveFromTo(1,2);
-    msleep(1);
+   tryToSleep();
   //   mutex.unlock();
 }
 
@@ -266,7 +280,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(2,1);
-    msleep(1);
+   tryToSleep();
   //   mutex.unlock();
 }
 
@@ -276,7 +290,7 @@ private:
     // TODO implement me
   //   mutex.lock();
     MainWindow->MoveFromTo(2,0);
-    msleep(1);
+    tryToSleep();
  //    mutex.unlock();
 }
 

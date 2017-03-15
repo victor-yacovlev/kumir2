@@ -1639,7 +1639,7 @@ namespace ActorRobot {
      * 0< - Ошибка в строке
      * 10 - Ошибки основного прогона
      */
-    int RoboField::loadFromDataStream(QIODevice * l_File)
+    const int RoboField::loadFromDataStream(QIODevice * l_File)
     {
         
         //destroyField();
@@ -2155,7 +2155,7 @@ namespace ActorRobot {
      * 0< - Ошибка в строке
      * 10 - Ошибки основного прогона
      */
-    int RoboField::loadFromFile(QString fileName)
+    const int RoboField::loadFromFile(const QString& fileName)
     {
         
         //destroyField();

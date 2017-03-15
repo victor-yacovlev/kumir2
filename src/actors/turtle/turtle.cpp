@@ -366,7 +366,7 @@ turtle::~turtle()
 //	qDebug()<<"TailPoint:"<<point;
 //	tailPoint=point;
 //	showCurTurtle();
-    hideTurtle(event->pos());
+    //hideTurtle(event->pos());
 
 
  };
@@ -398,20 +398,4 @@ int ret = QMessageBox::warning(this, QString::fromUtf8("Черепаха"),
          event->ignore();
      }
 };
-void turtle::hideTurtle(QPoint pos)
-{
-    qDebug()<<"hideTurtle"<<pos;
-    if(pos.x()>25 && pos.y()>25) {
-        if(!obod) {
-            t1->hide();
-            t2->show();
-            obod=true;
-            qDebug()<<"t2";
-        }
-        else {
-            t1->show();
-            obod=false;
-        }
-    }
 
-};

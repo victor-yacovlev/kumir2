@@ -74,6 +74,9 @@ namespace ActorTurtle {
         void setTurtleVis(bool vis)
         {
             turtle->setVisible(vis);
+            turtle->update();
+            turtle->renderer();
+           
         }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
@@ -201,7 +204,7 @@ public /* methods */:
     {
         mutex.lock();
         mPen->setScale(factor);
-        mTurt->setScale(factor);
+      //  mTurt->setScale(factor);
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }

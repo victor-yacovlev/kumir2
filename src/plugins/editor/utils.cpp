@@ -14,7 +14,7 @@
 #if QT_VERSION < 0x050000
 #endif
 #else
-#   include <QInputMethod>
+#  // include <QInputMethod>
 #endif
 
 #ifdef Q_OS_MACX

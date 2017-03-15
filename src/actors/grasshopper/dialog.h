@@ -36,8 +36,7 @@ class Dialog : public QDialog, Ui::Dialog
 
 	
 	int ANeed(){return NeedA->value();};
-//	int BNeed(){return NeedB->value();};
-//	int CNeed(){return NeedC->value();};
+
 
 	void setSizes(int A,int B)
 		{
@@ -108,6 +107,7 @@ class Dialog : public QDialog, Ui::Dialog
 		taskNeeded->setChecked(task);
 		if(!task)return;
 		frame_3->setEnabled(true);
+       
 		qDebug()<<"frame_3->ENABLED!";
 		};
     void translateButtons()

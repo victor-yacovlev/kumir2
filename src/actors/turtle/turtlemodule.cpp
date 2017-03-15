@@ -872,7 +872,7 @@ void TurtleModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::BoundingRectViewportUpdate);//For better perfomance; Manual Update;
+    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     drawNet();
     CreatePen();
     CurView->setZoom(50);
@@ -1154,9 +1154,13 @@ mutex.unlock();
     {
      
         mPen->setTurtleVis(state);
+        //mPen->setVisible(state);
         mPen->update();
+        CurScene->update();
+     
         CurView->update();
         CurView->forceRedraw();
+        CurView->repaint();
     }
     void TurtleModule::netStepChange(double value)
     {
@@ -1200,7 +1204,7 @@ mutex.unlock();
         QPainterPath myPath;
         myPath.cubicTo(QPointF(-10*2,13*2),QPointF(19,17),QPointF(0,-1) );
         
-        mPen = new TurtlePen(0,myResourcesDir().absoluteFilePath("Trtl1.svg"));
+        mPen = new TurtlePen(NULL,myResourcesDir().absoluteFilePath("Trtl1.svg"));
 
         
 
@@ -1208,17 +1212,13 @@ mutex.unlock();
         mPen->setZValue(100);
       
         CurScene->addItem(mPen);
-        //        mPen->scale(0.5,0.5);
-        //        mPen->scale(0.5,0.5);
-        //        mPen->scale(0.5,0.5);
-        //        mPen->scale(0.5,0.5);
-        //        mPen->scale(0.5,0.5);
+
+
         mPen->setScale((0.03)*mPen->scale());
         mPen->setZValue(100);
-       // mPen->rotate(180);
-        mTurt= new QGraphicsSvgItem(myResourcesDir().absoluteFilePath("Trtl1.svg"));
+
         qDebug() <<myResourcesDir().absoluteFilePath("Trtl1.svg");
-        CurScene->addItem(mPen);
+  
 
         
         

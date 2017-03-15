@@ -323,8 +323,8 @@ namespace ActorRobot {
         FieldItm* getFieldItem(int str,int stlb) const;
         void debug() const;
         void setColorFromSett();
-        int loadFromFile(QString fileName);
-        int loadFromDataStream(QIODevice * l_File);
+        const int loadFromFile(const QString& fileName);
+        const int loadFromDataStream(QIODevice * l_File);
         int saveToFile(QString fileName);
         void createRobot();
         void UpdateColors();
