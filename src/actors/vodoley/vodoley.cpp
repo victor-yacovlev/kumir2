@@ -282,6 +282,7 @@ void Vodoley::CreateVodoley(void)
 
     Atext=scene->addSimpleText("A");
     Atext->setPos(35,15+(maxSize()-Asize())*literSize);
+    //Atext->hide();
     Btext=scene->addSimpleText("B");
     Btext->setPos(145,15+(maxSize()-Bsize())*literSize);
     Ctext=scene->addSimpleText("C");
@@ -324,8 +325,7 @@ void Vodoley::resizeEvent ( QResizeEvent * event )
     QRectF sizeRect=QRectF(scene->sceneRect().topLeft(),QSize(qMax(scene->sceneRect().width(),scene->sceneRect().height())+43,qMax(scene->sceneRect().width(),scene->sceneRect().height())));
     view->fitInView(sizeRect, Qt::KeepAspectRatio);
     needFrame->move(view->width()/2-10,5);
-    //qDebug()<<sizeRect<<" view:"<<view->geometry();
-   // view->scale(0.7,0.7);
+
     QWidget::resizeEvent(event);
 }
 
@@ -343,20 +343,20 @@ void Vodoley::FillA()
     mutex.lock();
     Curfill[0]=Asize();
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
 };
 void Vodoley::FillB()
 {    mutex.lock();
     Curfill[1]=Bsize();
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
 };
 void Vodoley::FillC()
 {
     mutex.unlock();
     Curfill[2]=Csize();
     mutex.unlock();
-    updateMenzur();
+    //updateMenzur();
 };
 
 void Vodoley::MoveFromTo(uint from,uint to)
@@ -373,7 +373,7 @@ void Vodoley::MoveFromTo(uint from,uint to)
     else
         Curfill[from]=Curfill[from]-svobodno;
     mutex.unlock();
-    updateMenzur();
+   // updateMenzur();
     QApplication::processEvents();
     
 };
@@ -633,9 +633,10 @@ void Vodoley::saveZ()
 
 void Vodoley::updateMenzur()
 {
-    float literSize = MAX_SIZE/maxSize();
+
     //qDebug()<<"Liter size"<<literSize;
-    mutex.lock();
+    //mutex.lock();
+    float literSize = MAX_SIZE/maxSize();
     if(Asize()==0){Amen->hide();Atext->hide();}//TODO LockPult
     else{Amen->show();Atext->show();};
     Amen->setSize(Asize());
@@ -663,16 +664,17 @@ void Vodoley::updateMenzur()
 
 	Ctext->setPos(255,15+(maxSize()-Csize())*literSize);
 
-    mutex.unlock();
+  //  mutex.unlock();
     
-
+    
 	updateNeedBirka();
-    redraw();
-	if(Csize()<1)emit CNull();else emit CNotNull();
+   // redraw();
+//	if(Csize()<1)emit CNull();else emit CNotNull();
 };
 void Vodoley::redraw()
 {
     mutex.lock();
+    updateMenzur();
     view->update();
 	scene->update();
     mutex.unlock();
@@ -680,7 +682,7 @@ void Vodoley::redraw()
 
 void Vodoley::updateNeedBirka()
 {
-mutex.lock();
+//mutex.lock();
     if(needFrame)
 	{
 		if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR)){needFrame->setPalette(QPalette(QColor(50,90,50),QColor(100,190,100)));}
@@ -690,7 +692,7 @@ mutex.lock();
 
 	needLabel->setText(" "+QString::number(AfillR));
 	qDebug()<<"NEED:"<<QString::number(AfillR);
-    mutex.unlock();
+   // mutex.unlock();
 };
 void Vodoley::mousePressEvent(QMouseEvent *event)
 {
@@ -698,8 +700,7 @@ void Vodoley::mousePressEvent(QMouseEvent *event)
 	qDebug()<<"TailPoint:"<<point;
 	//Curfill[0]=CurA()-1;
 	Amen->setGp(point.x());
-	view->update();
-	scene->update();
+    redraw();
     qDebug()<<"View geometrey"<<view->geometry();
 };
 NewDialog::NewDialog()
@@ -737,24 +738,4 @@ NewDialog::NewDialog()
 	this->setLayout(layout);
     
 };
-//void Vodoley::closeEvent ( QCloseEvent * event )
-//{
-//	if((pult->libMode)||(autoClose))
-//	{
-//		close();
-//		event->accept();
-//		return;
-//	};
-//	int ret = QMessageBox::warning(this, QString::fromUtf8("Водолей"),
-//								   QString::fromUtf8("Закрыть исполнитель Водолей?"),
-//								   QMessageBox::Yes | QMessageBox::Default,
-//								   QMessageBox::No,
-//								   QMessageBox::Cancel | QMessageBox::Escape);
-//	if (ret == QMessageBox::Yes) {
-//		pult->AutoClose();
-//		pult->close();
-//		event->accept();
-//	} else {
-//		event->ignore();
-//	}
-//};
+
