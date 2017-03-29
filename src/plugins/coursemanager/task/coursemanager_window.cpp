@@ -1,5 +1,5 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "coursemanager_window.h"
+#include "ui_coursemanager_window.h"
 //#include "interface.h"
 
 #include "interfaces/browserinterface.h"

@@ -1,6 +1,6 @@
 #include "coursemanager_plugin.h"
 #include <dataformats/kumfile.h>
-#include "task/mainwindow.h"
+#include "task/coursemanager_window.h"
 #include "interfaces/analizerinterface.h"
 #include "interfaces/runinterface.h"
 #include "interfaces/generatorinterface.h"
