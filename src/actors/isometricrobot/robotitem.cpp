@@ -372,8 +372,17 @@ RobotItem::~RobotItem()
 
 void RobotItem::reset()
 {
+    qint8 initialRotationsCount = 0;
+
+    if (East==_model->direction())
+        initialRotationsCount = 1;
+    else if (North==_model->direction())
+        initialRotationsCount = 2;
+    else if (West==_model->direction())
+        initialRotationsCount = 3;
+
     setPosition(calculateRobotPosition(_model->scenePosition()));
-    setFrameNo(0);
+    setFrameNo(initialRotationsCount * _framesPerTurn);
 }
 
 }
