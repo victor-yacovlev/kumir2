@@ -7,6 +7,27 @@
 
 static const int MARK_BLOCK  = 12;
 
+static QString fixWindowPath(QString fileName)
+{
+    // Some great course authors edit xml files by hands and
+    // use f*cking operating system that uses '\' directory
+    // separator instead of '/'. The code below is to fix
+    // these entries.
+
+    // RegExp: \\(\S)     '\' then any non-space symbol
+    //                    The only reason to use \ in good systems
+    //                    is to screen space symbols, so take it
+    //                    in care. If there is non-space symbol
+    //                    after '\' then this is Windows path
+    static QRegExp rxManuallyEditedWindowsPath("\\\\(\\S)");
+    int symbolPos = 0;
+    while ( -1 != (symbolPos=rxManuallyEditedWindowsPath.indexIn(fileName)) ) {
+        const QString symbolAfterBackSlash = rxManuallyEditedWindowsPath.cap(1);
+        fileName.replace(symbolPos, 2, "/" + symbolAfterBackSlash);
+    }
+    return fileName;
+}
+
 int courseModel::loadCourse(QString file)
 {
 
@@ -323,7 +344,7 @@ QString courseModel::progFile(int index)
     if(csEl.isNull()) {
         return "";
     }
-    return csEl.text();
+    return fixWindowPath(csEl.text());
 }
 
 QStringList courseModel::Modules(int index)
@@ -415,24 +436,7 @@ QStringList courseModel::Fields(int index, QString isp)
             while(!fieldEl.isNull())
             {
                 //qDebug()<<"fiield:"<<fieldEl.text();
-                QString fieldFileName = fieldEl.text();
-
-                // Some great course authors edit xml files by hands and
-                // use f*cking operating system that uses '\' directory
-                // separator instead of '/'. The code below is to fix
-                // these entries.
-
-                // RegExp: \\(\S)     '\' then any non-space symbol
-                //                    The only reason to use \ in good systems
-                //                    is to screen space symbols, so take it
-                //                    in care. If there is non-space symbol
-                //                    after '\' then this is Windows path
-                static QRegExp rxManuallyEditedWindowsPath("\\\\(\\S)");
-                int symbolPos = 0;
-                while ( -1 != (symbolPos=rxManuallyEditedWindowsPath.indexIn(fieldFileName)) ) {
-                    const QString symbolAfterBackSlash = rxManuallyEditedWindowsPath.cap(1);
-                    fieldFileName.replace(symbolPos, 2, "/" + symbolAfterBackSlash);
-                }
+                const QString fieldFileName = fixWindowPath(fieldEl.text());
 
                 fields.append(fieldFileName);
                 fieldEl=fieldEl.nextSiblingElement("ENV");
