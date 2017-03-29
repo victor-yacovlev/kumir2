@@ -378,7 +378,9 @@ void courseModel::setIspEnvs(QModelIndex index,QString isp,QStringList Envs)
             QDomNodeList childList=csEl.childNodes();
             for(int j=0;j<childList.count();j++)
             {
-                if(childList.at(j).nodeName()=="ENV")csEl.removeChild(childList.at(j));
+                if(childList.at(j).nodeName()=="ENV") {
+                    csEl.removeChild(childList.at(j));
+                }
             }
 
             for(int i=0;i<Envs.count();i++)
@@ -395,7 +397,7 @@ void courseModel::setIspEnvs(QModelIndex index,QString isp,QStringList Envs)
     }
 }
 
-QStringList courseModel::Fields(int index,QString isp)
+QStringList courseModel::Fields(int index, QString isp)
 {
 
     QDomNode node=nodeById(index,root);
@@ -413,7 +415,26 @@ QStringList courseModel::Fields(int index,QString isp)
             while(!fieldEl.isNull())
             {
                 //qDebug()<<"fiield:"<<fieldEl.text();
-                fields.append(fieldEl.text());
+                QString fieldFileName = fieldEl.text();
+
+                // Some great course authors edit xml files by hands and
+                // use f*cking operating system that uses '\' directory
+                // separator instead of '/'. The code below is to fix
+                // these entries.
+
+                // RegExp: \\(\S)     '\' then any non-space symbol
+                //                    The only reason to use \ in good systems
+                //                    is to screen space symbols, so take it
+                //                    in care. If there is non-space symbol
+                //                    after '\' then this is Windows path
+                static QRegExp rxManuallyEditedWindowsPath("\\\\(\\S)");
+                int symbolPos = 0;
+                while ( -1 != (symbolPos=rxManuallyEditedWindowsPath.indexIn(fieldFileName)) ) {
+                    const QString symbolAfterBackSlash = rxManuallyEditedWindowsPath.cap(1);
+                    fieldFileName.replace(symbolPos, 2, "/" + symbolAfterBackSlash);
+                }
+
+                fields.append(fieldFileName);
                 fieldEl=fieldEl.nextSiblingElement("ENV");
             }
             //  qDebug()<<"Return fiield:"<<fields;
