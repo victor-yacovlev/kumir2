@@ -21,19 +21,19 @@ include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     coursemanager_plugin.cpp
-    task/mainwindow.cpp
+    task/coursemanager_window.cpp
     course_model.cpp
 )
 
 set(FORMS
     task/editdialog.ui
-    task/mainwindow.ui
+    task/coursemanager_window.ui
     task/newkursdialog.ui
 )
 
 set(MOC_HEADERS
     coursemanager_plugin.h
-    task/mainwindow.h
+    task/coursemanager_window.h
     course_model.h
 )
 
