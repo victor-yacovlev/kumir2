@@ -43,6 +43,14 @@ RobotView::RobotView(RobotModel * model, const QDir & imagesDir, QGraphicsItem *
     }
 }
 
+void RobotView::waitForAnimated()
+{
+    if (_robotItem) {
+        _robotItem->waitForAnimated();
+    }
+    update();
+}
+
 RobotView::~RobotView()
 {
     if (_robotItem) {
@@ -53,7 +61,9 @@ RobotView::~RobotView()
 void RobotView::handleModelFieldChanged()
 {
     createField();
+    const bool robotWasAnimated = isAnimated();
     createRobot();
+    setAnimated(robotWasAnimated);
 }
 
 
@@ -669,14 +679,14 @@ void RobotView::handleRobotEvaluationFinised()
 
 void RobotView::setAnimated(bool v)
 {
-    if (!_robotItem)
+    if (! _robotItem)
         return;
     _robotItem->setAnimated(v);
 }
 
 bool RobotView::isAnimated() const
 {
-    if (_robotItem)
+    if (! _robotItem)
         return false;
     return _robotItem->isAnimated();
 }

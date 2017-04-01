@@ -76,10 +76,11 @@ void RobotItem::waitForAnimated()
         AnimationType anim = _animationType;
         _mutex_animation->unlock();
         if (anim==NoAnimation)
+            QApplication::processEvents();
             break;
-        QApplication::processEvents();
         msleep(1);
     }
+    QApplication::processEvents();
 }
 
 void RobotItem::handleAnimationFinished()
