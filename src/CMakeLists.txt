@@ -6,6 +6,10 @@ if(NOT DEFINED USE_QT)
     set(USE_QT 4)
 endif(NOT DEFINED USE_QT)
 
+if(NOT USE_QT GREATER 4)
+    message(WARNING "Support for Qt4 will be discontinued soon. Please upgrade to Qt5!")
+endif()
+
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
         set(CMAKE_CXX_FLAGS "-Zm300 -EHsc -GR -Y-")

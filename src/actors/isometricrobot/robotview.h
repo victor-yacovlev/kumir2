@@ -35,7 +35,7 @@ public:
         Points
     };
     RobotView(RobotModel * model, const QDir & imagesDir, QGraphicsItem *parent=NULL);
-    inline void waitForAnimated() { _robotItem->waitForAnimated(); }
+    void waitForAnimated();
     void prepareToDispose();
     void finishEvaluation();
     inline qreal baseZOrder(int x, int y) { return _model->cellAt(x, y).baseZOrder; }

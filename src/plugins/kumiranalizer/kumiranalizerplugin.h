@@ -39,6 +39,7 @@ public:
     inline bool caseInsensitiveGrammatic() const { return false; }
     inline bool supportPartialCompiling() const { return true; }
     inline IndentsBehaviour indentsBehaviour() const { return HardIndents; }
+    inline SyntaxHighlightBehaviour syntaxHighlightBehaviour() const { return IndependentLinesHighlight; }
 
     QWidget * languageQuickReferenceWidget();
 

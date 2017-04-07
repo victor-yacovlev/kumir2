@@ -221,6 +221,7 @@ void PainterModule::runSetBrush(const Color& cs)
     QColor c(cs.r, cs.g, cs.b, cs.a);
     brush.setColor(c);
     brush.setStyle(style);
+    transparent = false;
 }
 
 

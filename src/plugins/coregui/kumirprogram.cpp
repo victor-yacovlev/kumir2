@@ -431,7 +431,7 @@ void KumirProgram::stepIn()
         stepRun();
     }
     else {
-        setAllActorsAnimationFlag(true);
+        setAllActorsAnimationFlag(false);
         runner()->runStepInto();
     }
 }

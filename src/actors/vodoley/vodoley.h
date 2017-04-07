@@ -125,11 +125,11 @@ public:
 	qreal grad;
 	pultLogger* logger;
 	VodoleyPult* pult;
- bool isReady()
- {
-   if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR))return true;
-   else return false;
- };
+    bool isReady()
+    {
+     if((CurA()==AfillR)||(CurB()==AfillR)||(CurC()==AfillR))return true;
+        else return false;
+    };
 
 	void showVodoley()
 	{
@@ -155,9 +155,9 @@ public:
 		Curfill[2]=C;
 
 	};
-	uint Asize(){return Maxfill[0];};
-	uint Bsize(){return Maxfill[1];};
-	uint Csize(){return Maxfill[2];};
+	uint Asize() const {return Maxfill[0];};
+	uint Bsize() const {return Maxfill[1];};
+	uint Csize() const {return Maxfill[2];};
 
 	uint maxSize()
 	{
@@ -254,7 +254,7 @@ private:
     QMutex mutex;
     QString curDir;
     bool autoClose;
-//    WHeader* vodHeader;
+
 };
 
 #endif

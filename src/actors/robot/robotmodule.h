@@ -218,11 +218,11 @@ namespace ActorRobot {
         
         bool hasLeftSep();
         bool hasRightSep();
-        QGraphicsLineItem* UpWallLine();
-        QGraphicsLineItem* DownWallLine();
-        QGraphicsLineItem* LeftWallLine();
-        QGraphicsLineItem* RightWallLine();
-        bool isColored();
+        QGraphicsLineItem* UpWallLine() const;
+        QGraphicsLineItem* DownWallLine() const;
+        QGraphicsLineItem* LeftWallLine() const ;
+        QGraphicsLineItem* RightWallLine() const;
+        bool isColored() const;
         
         void removeUpWall();
         
@@ -297,7 +297,7 @@ namespace ActorRobot {
         Q_OBJECT
     public:
         RoboField(QWidget *parent,RobotModule* actor);
-        RoboField* Clone();
+        RoboField* Clone() const ;
         ~RoboField();
         
     public:
@@ -309,28 +309,22 @@ namespace ActorRobot {
         void redrawRTFields();
         void destroyRobot();
         
-        /**
-         * –ö–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç—Ä–æ–∫ –ø–æ–ª—è —Ä–æ–±–æ—Ç–∞
-         * @return –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç—Ä–æ–∫
-         */
+    
         inline int rows() const { return Items.count(); }
-        /**
-         * –ö–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç–æ–ª–±—Ü–æ–≤ –ø–æ–ª—è —Ä–æ–±–æ—Ç–∞
-         * @return –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ —Å—Ç–æ–ª–±—Ü–æ–≤
-         */
+ 
         inline int columns() const { return Items.isEmpty()? 0 : Items.last().size();  }
         void drawNet();
-        qreal m_height();
-        qreal m_width();
+        qreal m_height() const;
+        qreal m_width() const;
         void setItem(FieldItm* item,uint str,uint stlb);
         void destroyNet();
         void destroyScene();
         void createField(int shirina,int visota);
-        FieldItm* getFieldItem(int str,int stlb);
-        void debug();
+        FieldItm* getFieldItem(int str,int stlb) const;
+        void debug() const;
         void setColorFromSett();
-        int loadFromFile(QString fileName);
-        int loadFromDataStream(QIODevice * l_File);
+        const int loadFromFile(const QString& fileName);
+        const int loadFromDataStream(QIODevice * l_File);
         int saveToFile(QString fileName);
         void createRobot();
         void UpdateColors();
@@ -375,7 +369,7 @@ namespace ActorRobot {
   
         void reverseMark(int row,int col);
         
-        bool isEditMode()
+        bool isEditMode() const
         {
             return mode>0;
         }
@@ -383,7 +377,7 @@ namespace ActorRobot {
         inline QList<QList<FieldItm * > > FieldItems() { return Items; }
         void setFieldItems(QList<QList<FieldItm * > > FieldItems);
         
-        QPointF roboPosF()
+        QPointF roboPosF() const
         {
             if(robot)return robot->scenePos () ;
             return QPointF(0,0);
@@ -398,9 +392,9 @@ namespace ActorRobot {
         {
             mode=Mode; 
         }
-        void showCellDialog(FieldItm * cellClicked);
-        inline FieldItm * currentCell() { return getFieldItem(robo_y,robo_x); }
-        inline FieldItm * cellAt(int x,int y) { return getFieldItem(x,y); }
+      
+        inline FieldItm * currentCell()const  { return getFieldItem(robo_y,robo_x); }
+        inline FieldItm * cellAt(int x,int y)const  { return getFieldItem(x,y); }
         
         inline void setMarkMode(bool isColor) { markMode=isColor; }
         
@@ -527,6 +521,7 @@ namespace ActorRobot {
         RobotModule(ExtensionSystem::KPlugin * parent);
         static RobotModule * self;
         QSize minimumSize()const;
+        
         public slots:
         // Reset actor state before program starts
         void reset();

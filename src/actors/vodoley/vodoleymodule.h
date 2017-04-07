@@ -61,7 +61,7 @@ public slots:
     bool runTaskComplited();
     void openRecent();
     void updateLastFiles(const QString newFile );
-
+    void tryToSleep();
     /* ========= CLASS PRIVATE ========= */
 
 private:

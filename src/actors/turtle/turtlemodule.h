@@ -67,13 +67,16 @@ namespace ActorTurtle {
         {
             return QRectF(-15, -30, mX, mY);
         }
-        bool isTailUp()
+        bool isTailUp() const
         {
             return tailup;
         }
         void setTurtleVis(bool vis)
         {
             turtle->setVisible(vis);
+            turtle->update();
+            turtle->renderer();
+           
         }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
         {
@@ -201,7 +204,7 @@ public /* methods */:
     {
         mutex.lock();
         mPen->setScale(factor);
-        mTurt->setScale(factor);
+      //  mTurt->setScale(factor);
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
@@ -229,21 +232,21 @@ public /* methods */:
     {
         netStepY=step;
     }
-    double zoom()
+    double zoom() const
     {
         return CurView->zoom();
     }
     
-    TurtlePen* Pen()
+    TurtlePen* Pen() const
     {
         return mPen;
     }
      static ExtensionSystem::SettingsPtr TurtleSettings();
-    QColor axisColor()
+    QColor axisColor() const
     {
         return QColor(TurtleSettings()->value("AxisColor","#996600").toString());
     }
-   TurtleView * getCurView()
+   TurtleView * getCurView() const
     {
         return CurView;
     }
