@@ -34,6 +34,9 @@ DeclarativeSettingsPage::DeclarativeSettingsPage(
         else if (entry.type==Color) {
             pImpl_->addColorField(key, entry);
         }
+        else if (entry.type==String) {
+            pImpl_->addStringField(key, entry);
+        }
         else {
             qFatal("Not implemented");
         }

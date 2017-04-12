@@ -1084,6 +1084,8 @@ class SettingsEntry:
         self._key = key
         self._type = json_entry["type"]
         self._default = json_entry["default"]
+        if isinstance(self._default, dict):
+            self._default = self._default[os.name]
         if "minimum" in json_entry:
             self._minimum = json_entry["minimum"]
         else:
@@ -3045,7 +3047,7 @@ class ModuleCppClass(CppClassBase):
         """ % self.class_name
 
     # noinspection PyPep8Naming
-    def terminateEvaluationImplementation(self):
+    def terminateEvaluationCppImplementation(self):
         """
         Creates terminateEvaluation implementation stub
 
@@ -3570,7 +3572,11 @@ You should change it corresponding to functionality.
 
 // Qt includes
 #include <QtCore>
-#include <QtGui>
+#if QT_VERSION >= 0x050000
+#   include <QtWidgets>
+#else
+#   include <QtGui>
+#endif
 
 namespace $namespace {
 
@@ -3641,7 +3647,7 @@ endif(NOT DEFINED USE_QT)
 if(${USE_QT} GREATER 4)
     # Find Qt5
     find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
+    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
     set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
     set(MOC_PARAMS "-I/usr/include/qt5"
                    "-I/usr/include/qt5/QtCore"
