@@ -1,25 +1,20 @@
 project(Kumir2)
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
-
-set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
-
-include_directories(${CMAKE_SOURCE_DIR}/src/shared)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-
-
-
-
-if((${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64") AND NOT (EXISTS /etc/ubuntu-release) AND NOT (EXISTS /etc/debian_version))
-    set(LIB_BASENAME lib64)
-else()
-    set(LIB_BASENAME lib)
+if(EXISTS custom_variables.cmake)
+    include(custom_variables.cmake)
 endif()
+
+include(kumir2_common.cmake)
+if(WIN32)
+    include(kumir2_win32.cmake)
+elseif(APPLE)
+    include(kumir2_apple.cmake)
+else()
+    include(kumir2_linux.cmake)
+endif()
+
 
 if(WIN32)
   set(EXEC_DIR bin)
@@ -43,11 +38,7 @@ elseif(APPLE)
         set(LIBEXECS_DIR Kumir.app/Contents/MacOS)
     endif(XCODE)
 else()
-  set(EXEC_DIR bin)
-  set(LIBS_DIR ${LIB_BASENAME}/kumir2)
-  set(PLUGINS_DIR ${LIB_BASENAME}/kumir2/plugins)
-  set(RESOURCES_DIR share/kumir2)
-  set(LIBEXECS_DIR libexec/kumir2)
+
 endif()
 
 add_definitions(-DIDE_LIBRARY_BASENAME="${LIB_BASENAME}")
