@@ -14,15 +14,15 @@
 #include <QUrl>
 #include <QSettings>
 
-#ifdef LIBRARY_BUILD
-#define EXTERN Q_DECL_EXPORT
+#ifdef DOCBOOKVIEWER_LIBRARY
+#define EXTERN_LIB Q_DECL_EXPORT
 #else
-#define EXTERN Q_DECL_IMPORT
+#define EXTERN_LIB Q_DECL_IMPORT
 #endif
 
 namespace DocBookViewer {
 
-class EXTERN DocBookView
+class EXTERN_LIB DocBookView
         : public QWidget
 {
     Q_OBJECT

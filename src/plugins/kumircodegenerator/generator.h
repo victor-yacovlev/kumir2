@@ -15,7 +15,7 @@
 
 
 namespace Bytecode {
-class Data;
+struct Data;
 }
 
 namespace AST {

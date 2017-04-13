@@ -58,32 +58,32 @@ public slots:
     int runOperatorASSIGN(const ActorKeyboard::Keycode &x);
 
     bool runOperatorEQUAL(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    bool runOperatorEQUAL(const ActorKeyboard::Keycode &self, int other);
-    bool runOperatorEQUAL(int other, const ActorKeyboard::Keycode &self);
+    bool runOperatorEQUAL(const ActorKeyboard::Keycode &self, const int other);
+    bool runOperatorEQUAL(const int other, const ActorKeyboard::Keycode &self);
 
     bool runOperatorNOTEQUAL(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    bool runOperatorNOTEQUAL(const ActorKeyboard::Keycode &self, int other);
-    bool runOperatorNOTEQUAL(int other, const ActorKeyboard::Keycode &self);
+    bool runOperatorNOTEQUAL(const ActorKeyboard::Keycode &self, const int other);
+    bool runOperatorNOTEQUAL(const int other, const ActorKeyboard::Keycode &self);
 
     bool runOperatorLESS(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    bool runOperatorLESS(const ActorKeyboard::Keycode &self, int other);
-    bool runOperatorLESS(int self, const ActorKeyboard::Keycode &other);
+    bool runOperatorLESS(const ActorKeyboard::Keycode &self, const int other);
+    bool runOperatorLESS(const int self, const ActorKeyboard::Keycode &other);
 
     bool runOperatorGREATER(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    bool runOperatorGREATER(const ActorKeyboard::Keycode &self, int other);
-    bool runOperatorGREATER(int self, const ActorKeyboard::Keycode &other);
+    bool runOperatorGREATER(const ActorKeyboard::Keycode &self, const int other);
+    bool runOperatorGREATER(const int self, const ActorKeyboard::Keycode &other);
 
     int runOperatorPLUS(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    int runOperatorPLUS(const ActorKeyboard::Keycode &self, int other);
-    int runOperatorPLUS(int self, const ActorKeyboard::Keycode &other);
+    int runOperatorPLUS(const ActorKeyboard::Keycode &self, const int other);
+    int runOperatorPLUS(const int self, const ActorKeyboard::Keycode &other);
 
     int runOperatorMINUS(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    int runOperatorMINUS(const ActorKeyboard::Keycode &self, int other);
-    int runOperatorMINUS(int self, const ActorKeyboard::Keycode &other);
+    int runOperatorMINUS(const ActorKeyboard::Keycode &self, const int other);
+    int runOperatorMINUS(const int self, const ActorKeyboard::Keycode &other);
 
     int runOperatorASTERISK(const ActorKeyboard::Keycode &self, const ActorKeyboard::Keycode &other);
-    int runOperatorASTERISK(const ActorKeyboard::Keycode &self, int other);
-    int runOperatorASTERISK(int self, const ActorKeyboard::Keycode &other);
+    int runOperatorASTERISK(const ActorKeyboard::Keycode &self, const int other);
+    int runOperatorASTERISK(const int self, const ActorKeyboard::Keycode &other);
 
 protected:
     struct KeyEvent {

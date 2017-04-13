@@ -1,7 +1,6 @@
 #ifndef ANALIZER_INTERFACE_H
 #define ANALIZER_INTERFACE_H
 
-#include "error.h"
 #include <kumir2-libs/dataformats/ast.h>
 
 #include "analizer_instanceinterface.h"

@@ -23,7 +23,7 @@ class KumirAnalizerPlugin
     Q_PLUGIN_METADATA(IID "kumir2.KumirAnalizer" FILE "")
 #endif
     Q_INTERFACES(Shared::AnalizerInterface)
-    friend struct AnalizerPrivate;
+    friend class AnalizerPrivate;
 public:
     Shared::Analizer::InstanceInterface * createInstance();
     Shared::Analizer::SourceFileInterface * sourceFileHandler();

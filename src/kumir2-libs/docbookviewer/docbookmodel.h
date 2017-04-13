@@ -13,7 +13,7 @@
 #include <QSvgRenderer>
 #include <QImage>
 
-#ifdef LIBRARY_BUILD
+#ifdef DOCBOOKVIEWER_LIBRARY
 #define EXTERN Q_DECL_EXPORT
 #else
 #define EXTERN Q_DECL_IMPORT

@@ -404,13 +404,13 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
     moduleContexts_.back().globals.reserve(16);
     moduleContexts_.back().moduleNames.clear();
     moduleContexts_.back().moduleNames.reserve(16);
-    for (int i=0; i<moduleContexts_.back().globals.size(); i++) {
+    for (int i=0; i<(int)moduleContexts_.back().globals.size(); i++) {
         moduleContexts_.back().globals.at(i).clear();
         moduleContexts_.back().globals.at(i).reserve(256);
     }
     moduleContexts_.back().constants.reserve(256);
     LocalsMap locals;
-    for (int i=0; i<program.d.size(); i++) {
+    for (int i=0; i<(int)program.d.size(); i++) {
         const TableElem e = program.d[i];
         if (e.type==EL_GLOBAL) {
             if (moduleContexts_[currentModuleContext].globals.size()<=e.module) {
@@ -452,7 +452,7 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
 #define VM_LOCALE Kumir::CP866
 #endif
             int externModuleContext = -1;
-            for (int m=0; m<moduleContexts_.size(); m++) {
+            for (int m=0; m<(int)moduleContexts_.size(); m++) {
                 if (moduleContexts_[m].filename==e.fileName) {
                     externModuleContext = m;
                     break;
@@ -978,7 +978,7 @@ void KumirVM::evaluateNextInstruction()
         ip = 0;
     }
     const std::vector<Instruction> * program = contextsStack_.top().program;
-    if (ip >= program->size()) {
+    if (ip >=(int) program->size()) {
         return;
     }
     const Instruction & instr = program->at(ip);
@@ -1963,7 +1963,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             hasInput = true;
             if (stacksMutex_) stacksMutex_->lock();
 
-            for (int i=0; i<references.size(); i++) {
+            for (int i=0; i<(int)references.size(); i++) {
                 if (references.at(i).baseType()==VT_int) {
                     int value = Kumir::IO::readInteger(fileReference, !fileIO);
                     references.at(i).setValue(AnyValue(value));
@@ -2008,7 +2008,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         {
             String margin;
             margin.reserve(100);
-            for (int i=0; i<references.size(); i++) {
+            for (int i=0; i<(int)references.size(); i++) {
                 const Variable & var = references.at(i);
                 if (var.isConstant())
                     continue;
@@ -2111,7 +2111,7 @@ void KumirVM::do_specialcall(uint16_t alg)
         const String & s = first.value().toString();
         error_ = Kumir::Core::getError();
         if (error_.length()==0) {
-            if (index<1 || index>s.length()) {
+            if (index<1 || index>(int)s.length()) {
                 error_ = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
             }
             else {
@@ -2136,7 +2136,7 @@ void KumirVM::do_specialcall(uint16_t alg)
             if (index<1) {
                 error_ = Kumir::Core::fromUtf8("Индекс символа меньше 1");
             }
-            else if (index>source.length()) {
+            else if (index>(int)source.length()) {
                 error_ = Kumir::Core::fromUtf8("Индекс символа больше длины строки");
             }
             else {
@@ -2158,14 +2158,14 @@ void KumirVM::do_specialcall(uint16_t alg)
         const String & s = first.value().toString();
         error_ = Kumir::Core::getError();
         if (error_.length()==0) {
-            if (start<1 || start>s.length()) {
+            if (start<1 || start>(int)s.length()) {
                 error_ = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
                 String empty;
                 valuesStack_.push(Variable(empty));
             }
-            else if (end<1 || end>s.length()) {
+            else if (end<1 || end>(int)s.length()) {
                 error_ = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
             }
             else {
@@ -2194,7 +2194,7 @@ void KumirVM::do_specialcall(uint16_t alg)
                 Variable r(source);
                 valuesStack_.push(r);
             }
-            else if (start>source.length()) {
+            else if (start>(int)source.length()) {
                 error_ = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start && start>0) {
@@ -2207,10 +2207,10 @@ void KumirVM::do_specialcall(uint16_t alg)
                 Variable r(source);
                 valuesStack_.push(r);
             }
-            else if (end<1 || end>source.length()) {
+            else if (end<1 || end>(int)source.length()) {
                 error_ = Kumir::Core::fromUtf8("Правая граница вырезки за пределами строки");
             }
-            else if (start<1 || start>source.length()) {
+            else if (start<1 || start>(int)source.length()) {
                 error_ = Kumir::Core::fromUtf8("Левая граница вырезки за пределами строки");
             }
             else if (end<start) {
@@ -3425,7 +3425,7 @@ KumirVM::getLocalsAndName(size_t stackIndex) const
     result.second = nullptr;
 
     size_t counter = 0;
-    for (size_t i=0; i<contextsStack_.size(); i++) {
+    for (int i=0; i<(int)contextsStack_.size(); i++) {
         const Context & context = contextsStack_.at(i);
         if (context.type == EL_MAIN || context.type == EL_TESTING ||
                 context.type == EL_FUNCTION)
@@ -3444,7 +3444,7 @@ KumirVM::getLocalsAndName(size_t stackIndex) const
 size_t KumirVM::functionCallStackSize() const
 {
     size_t result = 0;
-    for (size_t i=0; i<contextsStack_.size(); i++) {
+    for (int i=0; i<(int)contextsStack_.size(); i++) {
         const Context & context = contextsStack_.at(i);
         if (context.type == EL_MAIN || context.type == EL_TESTING ||
                 context.type == EL_FUNCTION)

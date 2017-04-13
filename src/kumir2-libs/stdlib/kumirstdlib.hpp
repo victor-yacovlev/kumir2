@@ -1117,7 +1117,7 @@ public:
     template <class S, typename C>
     inline static S & trim(S & s) {
         int nonSpacePos = 0;
-        for (; nonSpacePos<s.length(); nonSpacePos++) {
+        for (; nonSpacePos<(int)s.length(); nonSpacePos++) {
             if ( s[nonSpacePos]!=C(' ') &&
                  s[nonSpacePos]!=C('\t') &&
                  s[nonSpacePos]!=C('\n')
@@ -1170,7 +1170,7 @@ public:
         if (pos<1) {
             Core::abort(Core::fromUtf8("Индекс меньше 1"));
         }
-        else if (pos-1 >= s.length()) {
+        else if (pos-1 >= (int)(s.length())) {
             s.append(substr);
         }
         else {
@@ -1208,7 +1208,7 @@ public:
         if (count==0) {
             return;
         }
-        if (pos-1+count>s.length()) {
+        if (pos-1+count>(int)(s.length())) {
             s.resize(static_cast<size_t>(pos-1));
         }
         else {
@@ -1522,7 +1522,7 @@ public:
     }
     inline static bool mkdir(const String & fileName) {
         BOOL result = CreateDirectoryW(fileName.c_str(), NULL);
-        return result;
+        return result != 0;
     }
 #else
     inline static bool exist(const String & fileName) {

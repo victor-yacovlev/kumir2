@@ -12,7 +12,7 @@ public:
     inline void push(const T& t)
     {
         currentIndex_ ++;
-        if (currentIndex_>=data_.size()) {
+        if (currentIndex_>=(int)data_.size()) {
             data_.resize(data_.size()+deltaSize_);
         }
         data_[currentIndex_] = t;

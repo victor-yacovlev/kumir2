@@ -26,7 +26,7 @@ QVariant VariableToQVariant(const Variable & var)
             QVariantList recData;
             const AnyValue & val = var.value();
             const Record & record = val.toRecord();
-            for (int j=0; j<record.fields.size(); j++) {
+            for (int j=0; j<(int)record.fields.size(); j++) {
                 const VM::AnyValue & field = record.fields[j];
                 if (field.type()==VT_int)
                     recData << QVariant(field.toInt());

@@ -251,12 +251,12 @@ bool KeyboardModule::runOperatorEQUAL(const Keycode &self, const Keycode &other)
     return self.code == other.code;
 }
 
-bool KeyboardModule::runOperatorEQUAL(const Keycode &self, int other)
+bool KeyboardModule::runOperatorEQUAL(const Keycode &self, const int other)
 {
     return self.code == other;
 }
 
-bool KeyboardModule::runOperatorEQUAL(int other, const Keycode &self)
+bool KeyboardModule::runOperatorEQUAL(const int other, const Keycode &self)
 {
     return self.code == other;
 }
@@ -266,12 +266,12 @@ bool KeyboardModule::runOperatorNOTEQUAL(const Keycode &self, const Keycode &oth
     return self.code != other.code;
 }
 
-bool KeyboardModule::runOperatorNOTEQUAL(const Keycode &self, int other)
+bool KeyboardModule::runOperatorNOTEQUAL(const Keycode &self, const int other)
 {
     return self.code != other;
 }
 
-bool KeyboardModule::runOperatorNOTEQUAL(int other, const Keycode &self)
+bool KeyboardModule::runOperatorNOTEQUAL(const int other, const Keycode &self)
 {
     return self.code != other;
 }
@@ -281,12 +281,12 @@ bool KeyboardModule::runOperatorLESS(const Keycode &self, const Keycode &other)
     return self.code < other.code;
 }
 
-bool KeyboardModule::runOperatorLESS(const Keycode &self, int other)
+bool KeyboardModule::runOperatorLESS(const Keycode &self, const int other)
 {
     return self.code < other;
 }
 
-bool KeyboardModule::runOperatorLESS(int self, const Keycode &other)
+bool KeyboardModule::runOperatorLESS(const int self, const Keycode &other)
 {
     return self < other.code;
 }
@@ -296,12 +296,12 @@ bool KeyboardModule::runOperatorGREATER(const Keycode &self, const Keycode &othe
     return self.code > other.code;
 }
 
-bool KeyboardModule::runOperatorGREATER(const Keycode &self, int other)
+bool KeyboardModule::runOperatorGREATER(const Keycode &self, const int other)
 {
     return self.code > other;
 }
 
-bool KeyboardModule::runOperatorGREATER(int self, const Keycode &other)
+bool KeyboardModule::runOperatorGREATER(const int self, const Keycode &other)
 {
     return self > other.code;
 }
@@ -311,12 +311,12 @@ int KeyboardModule::runOperatorPLUS(const Keycode &self, const Keycode &other)
     return self.code + other.code;
 }
 
-int KeyboardModule::runOperatorPLUS(const Keycode &self, int other)
+int KeyboardModule::runOperatorPLUS(const Keycode &self, const int other)
 {
     return self.code + other;
 }
 
-int KeyboardModule::runOperatorPLUS(int self, const Keycode &other)
+int KeyboardModule::runOperatorPLUS(const int self, const Keycode &other)
 {
     return self + other.code;
 }
@@ -326,12 +326,12 @@ int KeyboardModule::runOperatorMINUS(const Keycode &self, const Keycode &other)
     return self.code - other.code;
 }
 
-int KeyboardModule::runOperatorMINUS(const Keycode &self, int other)
+int KeyboardModule::runOperatorMINUS(const Keycode &self, const int other)
 {
     return self.code - other;
 }
 
-int KeyboardModule::runOperatorMINUS(int self, const Keycode &other)
+int KeyboardModule::runOperatorMINUS(const int self, const Keycode &other)
 {
     return self - other.code;
 }
@@ -341,12 +341,12 @@ int KeyboardModule::runOperatorASTERISK(const Keycode &self, const Keycode &othe
     return self.code * other.code;
 }
 
-int KeyboardModule::runOperatorASTERISK(const Keycode &self, int other)
+int KeyboardModule::runOperatorASTERISK(const Keycode &self, const int other)
 {
     return self.code * other;
 }
 
-int KeyboardModule::runOperatorASTERISK(int self, const Keycode &other)
+int KeyboardModule::runOperatorASTERISK(const int self, const Keycode &other)
 {
     return self * other.code;
 }

@@ -24,7 +24,7 @@ typedef QWeakPointer<class Settings> SettingsWPtr;
 class EXTENSIONSYSTEM_EXPORT Settings
 {
     friend class PluginManager;
-    friend class PluginManagerImpl;
+    friend struct PluginManagerImpl;
     friend class KPlugin;
 public:
 

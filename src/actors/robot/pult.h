@@ -28,7 +28,7 @@
 #define RESP_PANEL 50
 #define LOGGER_BUTTONS 140
 #define TEXT_STEP 14
-
+#undef TEXT
 #define UP 1
 #define DOWN 2
 #define LEFT 3

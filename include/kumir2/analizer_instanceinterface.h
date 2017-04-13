@@ -6,7 +6,6 @@
 #include "analizer_helperinterface.h"
 
 #include <kumir2-libs/dataformats/ast.h>
-#include "error.h"
 
 #include <QString>
 #include <QList>

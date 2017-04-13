@@ -3,7 +3,6 @@
 
 #include <kumir2-libs/dataformats/lexem.h>
 #include <kumir2-libs/dataformats/ast.h>
-#include "error.h"
 
 #include <QString>
 #include <QList>

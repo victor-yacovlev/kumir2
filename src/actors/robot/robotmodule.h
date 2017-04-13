@@ -507,7 +507,7 @@ namespace ActorRobot {
         QToolButton * textEditBtn;
         QToolButton * radEditBtn;
         QToolButton * tmpEditBtn;
-        float c_scale;
+        double c_scale;
         int CurCellSize;
         
     };

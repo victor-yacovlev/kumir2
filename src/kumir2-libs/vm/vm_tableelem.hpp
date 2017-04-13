@@ -99,7 +99,7 @@ inline void stdStringToDataStream(std::list<char>& stream, const std::string & s
 {
     uint16_t size = uint16_t(str.length());
     valueToDataStream(stream, size);
-    for (int i=0; i<str.length(); i++) {
+    for (int i=0; i<(int)str.length(); i++) {
         stream.push_back(str[i]);
     }
 }
@@ -168,7 +168,7 @@ inline void scalarConstantToDataStream(std::list<char> & stream, const std::list
     }
     else {
         const VM::Record value = val.value().toRecord();
-        for (int i=0; i<value.fields.size(); i++) {
+        for (int i=0; i<(int)value.fields.size(); i++) {
             const VM::AnyValue & field = value.fields[i];
             scalarConstantToDataStream(stream, field.type(), field);
         }
@@ -272,7 +272,7 @@ inline void tableElemToBinaryStream(std::list<char> & ds, const TableElem &e)
     }
     else if (e.type==EL_FUNCTION || e.type==EL_MAIN || e.type==EL_TESTING || e.type==EL_BELOWMAIN || e.type==EL_INIT) {
         valueToDataStream(ds, uint16_t(e.instructions.size()));
-        for (int i=0; i<e.instructions.size(); i++) {
+        for (int i=0; i<(int)e.instructions.size(); i++) {
             valueToDataStream(ds, toUint32(e.instructions[i]));
         }
     }
@@ -377,8 +377,7 @@ inline void tableElemFromBinaryStream(std::list<char> & ds, TableElem &e)
     uint8_t r;
     uint8_t m;
     uint16_t a;
-    uint16_t id;
-    uint32_t sz;
+    uint16_t id;    
     String s;
     valueFromDataStream(ds, t);
     e.type = ElemType(t);

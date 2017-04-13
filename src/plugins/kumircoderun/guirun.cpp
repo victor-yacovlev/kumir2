@@ -70,7 +70,7 @@ bool InputFunctor::operator ()(VariableReferencesList references, Kumir::String 
 
     // Prepare input format for GUI
     String format;
-    for (int i=0; i<references.size(); i++) {
+    for (int i=0; i<(int)references.size(); i++) {
         if (references[i].baseType()==VT_int) {
             format.push_back('i');
         }
@@ -102,7 +102,7 @@ bool InputFunctor::operator ()(VariableReferencesList references, Kumir::String 
                     variable.recordClassLocalizedName();
             format.append(typeFullName);
         }
-        if (i<references.size()-1) format.push_back(';');
+        if (i<(int)references.size()-1) format.push_back(';');
     }
 
     const QString qFormat = QString::fromStdWString(format);
@@ -251,7 +251,7 @@ void OutputFunctor::operator ()(
         )
 {
     Kumir::IO::OutputStream os;
-    for (int i=0; i<formats.size(); i++) {
+    for (int i=0; i<(int)formats.size(); i++) {
         std::pair<int,int> format = formats[i];
         if (values[i].baseType()==VT_int) {
             Kumir::IO::writeInteger(os, values[i].toInt(), format.first);

@@ -291,14 +291,14 @@ int KumVariablesModel::rowCount(const QModelIndex &parent) const
         int topLevelItemsCount = 0;
         const VM::Stack<VM::Context> & stack = _vm->callStack();
         bool hasMain =false;
-        for (size_t i=0; i<stack.size(); i++) {
+        for (int i=0; i<(int)stack.size(); i++) {
             // Calculate function calls
             const VM::Context & context = stack.at(i);
             if (context.type == Bytecode::EL_FUNCTION) {
                 topLevelItemsCount += 1;
             }
         }
-        for (size_t i=0; i<stack.reservedSize(); i++) {
+        for (int i=0; i<(int)stack.reservedSize(); i++) {
             const VM::Context & context = stack.at(i);
             if (context.type == Bytecode::EL_MAIN) {
                 hasMain = true;

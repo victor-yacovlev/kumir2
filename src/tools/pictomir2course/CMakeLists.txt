@@ -42,15 +42,16 @@ set(HEADERS
     options.h
 )
 
-if(WIN32)
-    add_definitions(-DWIN32)
+if(NOT WIN32)
+    #   1. -fexceptions:    Exceptions is widely used by Boost
+    #   2. -std=c++03:      Due to bug in boost 1.49 (Ticket #6785)
+    set(CXXFLAGS    "-fexceptions -std=c++03")
 endif()
+
 
 kumir2_add_tool(
     NAME        pictomir2course
     SOURCES     ${SOURCES} ${3RDPARTY_SOURCES}
     LIBRARIES   ${3RDPARTY_LIBS}
-    CXXFLAGS    "-fexceptions -std=c++03"
-    #   1. -fexceptions:    Exceptions is widely used by Boost
-    #   2. -std=c++03:      Due to bug in boost 1.49 (Ticket #6785)
+    CXXFLAGS    ${CXXFLAGS}
 )

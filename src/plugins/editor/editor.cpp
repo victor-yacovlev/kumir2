@@ -88,7 +88,7 @@ void EditorInstance::unlock()
 
 void EditorInstance::appendMarginText(int lineNo, const QString &text)
 {
-    if (lineNo>=0 && lineNo<doc_->linesCount()) {
+    if (lineNo>=0 && lineNo<(int)doc_->linesCount()) {
         TextLine::Margin & margin = doc_->marginAt(lineNo);
         if (!margin.text.isEmpty()) {
             margin.text += "; ";
@@ -174,7 +174,7 @@ void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::D
 
 void EditorInstance::setMarginText(int lineNo, const QString &text, const QColor & fgColor)
 {
-    if (lineNo>=0 && lineNo<doc_->linesCount()) {
+    if (lineNo>=0 && lineNo<(int)doc_->linesCount()) {
         TextLine::Margin & margin = doc_->marginAt(lineNo);
         margin.text = text;
         margin.color = fgColor;
@@ -467,7 +467,7 @@ bool EditorInstance::tryEscKeyAction(const QString &text)
 void EditorInstance::toggleBreakpoint()
 {
     qint32 lineNo = cursor()->row();
-    if (0 <= lineNo && lineNo < document()->linesCount()) {
+    if (0 <= lineNo && lineNo < (int)document()->linesCount()) {
         TextLine & line = document()->at(lineNo);
         line.hasBreakpoint = !line.hasBreakpoint;
         plane_->update();
@@ -562,10 +562,10 @@ void EditorInstance::updateFromAnalizer()
     QList<QPoint> ranks = analizerInstance_->lineRanks();
     QList<Shared::Analizer::Error> errors = analizerInstance_->errors();
     std::vector<int> oldIndents(doc_->linesCount(), 0);
-    for (int i=0; i<doc_->linesCount(); i++) {
+    for (int i=0; i<(int)doc_->linesCount(); i++) {
         oldIndents[i] = doc_->indentAt(i);
     }
-    for (int i=0; i<doc_->linesCount(); i++) {
+    for (int i=0; i<(int)doc_->linesCount(); i++) {
         int oldIndent = oldIndents[i];
         if (i<ranks.size()) {
             doc_->setIndentRankAt(i, ranks[i]);
@@ -809,7 +809,7 @@ QAction *EditorInstance::toggleBreakpointAction() const
 QList<Shared::Editor::Breakpoint> EditorInstance::breakpoints() const
 {
     QList<Shared::Editor::Breakpoint> result;
-    for (int i=0; i<document()->linesCount(); i++) {
+    for (int i=0; i<(int)document()->linesCount(); i++) {
         const TextLine & line = document()->at(i);
         if (line.hasBreakpoint) {
             Shared::Editor::Breakpoint bp = line.breakpoint;
@@ -1235,7 +1235,7 @@ quint32 EditorInstance::errorLinesCount() const
     if (analizerInstance_) {
         QList<Shared::Analizer::Error> errors = analizerInstance_->errors();        
         foreach (const Shared::Analizer::Error & e, errors) {
-            if (e.line >= 0 && e.line < doc_->linesCount()) {
+            if (e.line >= 0 && e.line < (int)doc_->linesCount()) {
                 if (plugin_->teacherMode_ || !doc_->at(e.line).hidden) {
                     lines.insert(e.line);
                 }

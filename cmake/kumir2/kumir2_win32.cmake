@@ -8,7 +8,7 @@ set(KUMIR2_RESOURCES_DIR "share/kumir2")                    # non-executable res
 set(KUMIR2_LIBEXECS_DIR "bin")                              # executable supplementary binaries
 
 # Compile flags
-set(KUMIR2_CXXFLAGS "-std=c++0x -D_CRT_SECURE_NO_WARNINGS -Zm300 -EHsc -GR -Y- -DWIN32")
+set(KUMIR2_CXXFLAGS " -Zm300 -EHsc -GR -Y- -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS")
 set(KUMIR2_CXXFLAGS_Release "-DNDEBUG -DQT_NO_DEBUG -MD")
 set(KUMIR2_CXXFLAGS_Debug "-MDd -Zi")
 

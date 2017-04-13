@@ -1025,7 +1025,7 @@ String Variable::fullReferenceName() const
         String result = name();
         if (referenceIndeces_[3]) {
             result.push_back('[');
-            for (size_t i=0; i<referenceIndeces_[3]; i++) {
+            for (int i=0; i<referenceIndeces_[3]; i++) {
                 result += Kumir::Converter::sprintfInt(referenceIndeces_[i],10,0,0);
                 if (i<referenceIndeces_[3]-1)
                     result.push_back(',');

@@ -156,7 +156,7 @@ void OutputFunctor::operator ()(
         )
 {
     IO::OutputStream os;
-    for (int i=0; i<formats.size(); i++) {
+    for (int i=0; i<(int)formats.size(); i++) {
         std::pair<int,int> format = formats[i];
         if (values[i].baseType()==VM::VT_int) {
             IO::writeInteger(os, values[i].toInt(), format.first);
@@ -268,7 +268,7 @@ void GetMainArgumentFunctor::init(const std::deque<std::string> args)
 {
     currentArgument_ = 0;
     bool argumentsScope = false;
-    for (int i=1; i<args.size(); i++) {
+    for (int i=1; i<(int)args.size(); i++) {
         const std::string & arg = args[i];
         if (arg.length()==0)
             continue;

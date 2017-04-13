@@ -2,8 +2,6 @@
 #define ANALIZER_COMPILERINTERFACE_H
 
 #include <kumir2-libs/dataformats/ast.h>
-#include "error.h"
-
 #include <QString>
 #include <QList>
 

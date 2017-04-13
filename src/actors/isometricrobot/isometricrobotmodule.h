@@ -41,7 +41,7 @@ public slots:
     void runTurnLeft();
     void runDoPaint();
     bool runIsCellPainted();
-    bool runIsFlagged(int x, int y);
+    bool runIsFlagged(const int x, const int y);
     bool runIsCellClean();
     bool runIsWallAhead();
     bool runIsFreeAhead();

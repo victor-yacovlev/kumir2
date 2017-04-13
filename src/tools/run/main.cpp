@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 
     // Check if it's possible to run using regular runtime
     bool hasPluginDependency =
-            std::count_if(programData.d.begin(), programData.d.end(), IsPluginExtern);
+            0 != std::count_if(programData.d.begin(), programData.d.end(), IsPluginExtern);
 
     if (hasPluginDependency) {
         return runKumirXRun(argc, argv);
