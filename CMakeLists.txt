@@ -12,32 +12,6 @@ include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
 
-if(WIN32)
-  set(EXEC_DIR bin)
-  set(LIBS_DIR bin)
-  set(LIB_BASENAME lib)
-  set(PLUGINS_DIR lib/kumir2/plugins)
-  set(RESOURCES_DIR share/kumir2)
-  set(LIBEXECS_DIR bin)
-elseif(APPLE)
-    if(XCODE)
-        set(EXEC_DIR Debug/Kumir.app/Contents/MacOS/)
-        set(LIBS_DIR Debug/Kumir.app/Contents/PlugIns)
-        set(PLUGINS_DIR Debug/Kumir.app/Contents/PlugIns)
-        set(RESOURCES_DIR Debug/Kumir.app/Contents/Resources)
-        set(LIBEXECS_DIR Debug/Kumir.app/Contents/MacOS)
-    else()
-        set(EXEC_DIR Kumir.app/Contents/MacOS)
-        set(LIBS_DIR Kumir.app/Contents/PlugIns)
-        set(PLUGINS_DIR Kumir.app/Contents/PlugIns)
-        set(RESOURCES_DIR Kumir.app/Contents/Resources)
-        set(LIBEXECS_DIR Kumir.app/Contents/MacOS)
-    endif(XCODE)
-else()
-
-endif()
-
-
 add_subdirectory(src)
 
 
