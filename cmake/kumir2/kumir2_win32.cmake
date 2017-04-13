@@ -19,3 +19,4 @@ else()
     # ... but Qt4 - not, so it should be explicitly disabled
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Zc:wchar_t-")
 endif(${USE_QT} GREATER 4)
+
