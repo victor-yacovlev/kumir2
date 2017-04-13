@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #define DO_NOT_DECLARE_STATIC
-#include "vm/vm_abstract_handlers.h"
+#include <kumir2-libs/vm/vm_abstract_handlers.h>
 
 #ifndef _override
 #if defined(_MSC_VER)

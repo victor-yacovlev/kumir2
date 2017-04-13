@@ -2,9 +2,8 @@
 #define STATEMENT_H
 
 #include <QtCore>
-#include "interfaces/lexemtype.h"
-#include "dataformats/lexem.h"
-#include "interfaces/error.h"
+#include <kumir2/lexemtype.h>
+#include <kumir2-libs/dataformats/lexem.h>
 
 namespace AST {
 struct Statement;

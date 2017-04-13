@@ -8,17 +8,17 @@
 #include "macro.h"
 #include "settingspage.h"
 #include "editcommands.h"
-#include "widgets/cyrillicmenu.h"
-#include "interfaces/actorinterface.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/widgets/cyrillicmenu.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include "findreplace.h"
 #include "macroeditor.h"
 #include "macrolisteditor.h"
-#include "extensionsystem/pluginmanager.h"
-#include "widgets/iconprovider.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/runinterface.h"
-#include "interfaces/editor_instanceinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/widgets/iconprovider.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/runinterface.h>
+#include <kumir2/editor_instanceinterface.h>
 
 namespace Editor {
 

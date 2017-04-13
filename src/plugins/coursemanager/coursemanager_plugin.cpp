@@ -1,10 +1,10 @@
 #include "coursemanager_plugin.h"
-#include <dataformats/kumfile.h>
+#include <kumir2-libs/dataformats/kumfile.h>
 #include "task/coursemanager_window.h"
-#include "interfaces/analizerinterface.h"
-#include "interfaces/runinterface.h"
-#include "interfaces/generatorinterface.h"
-#include "interfaces/runinterface.h"
+#include <kumir2/analizerinterface.h>
+#include <kumir2/runinterface.h>
+#include <kumir2/generatorinterface.h>
+#include <kumir2/runinterface.h>
     #include <fstream>
     #include <iostream>
 

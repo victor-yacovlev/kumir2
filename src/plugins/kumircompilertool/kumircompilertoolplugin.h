@@ -1,9 +1,9 @@
 #ifndef KUMIRCOMPILERPLUGIN_H
 #define KUMIRCOMPILERPLUGIN_H
 
-#include <extensionsystem/kplugin.h>
-#include "interfaces/analizerinterface.h"
-#include "interfaces/generatorinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/analizerinterface.h>
+#include <kumir2/generatorinterface.h>
 
 
 namespace KumirCompilerTool {

@@ -1,14 +1,14 @@
 #include "kumircompilertoolplugin.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 #include <QtCore>
-#include "kumiranalizer/analizer.h"
-#include "kumiranalizer/kumiranalizerplugin.h"
-#include "interfaces/generatorinterface.h"
-#include "dataformats/kumfile.h"
-#include "stdlib/kumirstdlib.hpp"
-#include "vm/variant.hpp"
-#include "vm/vm_bytecode.hpp"
+#include "plugins/kumiranalizer/analizer.h"
+#include "plugins/kumiranalizer/kumiranalizerplugin.h"
+#include <kumir2/generatorinterface.h>
+#include <kumir2-libs/dataformats/kumfile.h>
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2-libs/vm/vm_bytecode.hpp>
 #include <iostream>
 #include <fstream>
 

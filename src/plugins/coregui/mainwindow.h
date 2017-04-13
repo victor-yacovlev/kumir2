@@ -2,9 +2,9 @@
 #define COREGUI_MAINWINDOW_H
 
 #include "plugin.h"
-#include "widgets/dockwindowplace.h"
-#include "widgets/secondarywindow.h"
-#include "widgets/multipagedialog.h"
+#include <kumir2-libs/widgets/dockwindowplace.h>
+#include <kumir2-libs/widgets/secondarywindow.h>
+#include <kumir2-libs/widgets/multipagedialog.h>
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000

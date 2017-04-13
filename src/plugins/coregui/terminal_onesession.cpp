@@ -1,8 +1,8 @@
 #include "terminal_onesession.h"
 #include "terminal.h"
-#include "stdlib/kumirstdlib.hpp"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 
 
 namespace Terminal {

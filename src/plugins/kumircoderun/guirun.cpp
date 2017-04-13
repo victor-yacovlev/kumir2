@@ -2,12 +2,12 @@
 #include "run.h"
 #include "util.h"
 
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 
 #define DO_NOT_DECLARE_STATIC
-#include "shared/vm/vm.hpp"
-#include "shared/vm/variant.hpp"
+#include <kumir2-libs/vm/vm.hpp>
+#include <kumir2-libs/vm/variant.hpp>
 
 namespace KumirCodeRun {
 

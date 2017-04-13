@@ -1,11 +1,13 @@
 #include <iostream>
 #include <fstream>
-#include "stdlib/kumirstdlib.hpp"
-#include "vm/variant.hpp"
-#include "vm/vm_bytecode.hpp"
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2-libs/vm/vm_bytecode.hpp>
 
 #if !defined(WIN32) && !defined(_WIN32)
+extern "C" {
 #include <sys/stat.h>
+}
 #endif
 
 int usage(const char * programName)

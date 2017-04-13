@@ -1,7 +1,7 @@
 #include "switchworkspacedialog.h"
 #include "ui_switchworkspacedialog.h"
 
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace CoreGUI {
 

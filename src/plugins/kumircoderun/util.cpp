@@ -1,7 +1,7 @@
 #include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "util.h"
 
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace KumirCodeRun {
 namespace Util {

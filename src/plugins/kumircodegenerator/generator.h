@@ -3,14 +3,14 @@
 
 #include <QtCore>
 
-#include "dataformats/ast.h"
-#include "dataformats/ast_variable.h"
-#include "dataformats/ast_algorhitm.h"
-#include "dataformats/lexem.h"
-#include "errormessages/errormessages.h"
-#include "interfaces/generatorinterface.h"
-#include "vm/vm_enums.h"
-#include "vm/vm_instruction.hpp"
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2-libs/dataformats/ast_variable.h>
+#include <kumir2-libs/dataformats/ast_algorhitm.h>
+#include <kumir2-libs/dataformats/lexem.h>
+#include <kumir2-libs/errormessages/errormessages.h>
+#include <kumir2/generatorinterface.h>
+#include <kumir2-libs/vm/vm_enums.h>
+#include <kumir2-libs/vm/vm_instruction.hpp>
 
 
 

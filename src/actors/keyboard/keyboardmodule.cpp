@@ -10,8 +10,8 @@ You should change it corresponding to functionality.
 #include "keyboardmodule.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "interfaces/plugininterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/plugininterface.h>
 
 // Qt includes
 #include <QtCore>

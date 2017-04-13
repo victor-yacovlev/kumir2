@@ -1,6 +1,6 @@
 #include "consolerun.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 #include "util.h"
 
 #include <QWidget>

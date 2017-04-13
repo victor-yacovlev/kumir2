@@ -1,12 +1,12 @@
 #include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include <sstream>
 #include <cstdlib>
-#include "stdlib/kumirstdlib.hpp"
-#include "vm/variant.hpp"
-#include "vm/vm_bytecode.hpp"
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2-libs/vm/vm_bytecode.hpp>
 #include "generator.h"
 #include "kumircodegeneratorplugin.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 using namespace KumirCodeGenerator;
 using namespace Bytecode;

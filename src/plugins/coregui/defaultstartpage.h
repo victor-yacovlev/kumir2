@@ -1,7 +1,7 @@
 #ifndef DEFAULT_START_PAGE_H
 #define DEFAULT_START_PAGE_H
 
-#include "interfaces/startpage_widget_interface.h"
+#include <kumir2/startpage_widget_interface.h>
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000

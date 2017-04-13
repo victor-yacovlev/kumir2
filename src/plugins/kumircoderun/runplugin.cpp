@@ -1,7 +1,7 @@
 #include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "runplugin.h"
 #include "run.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include <iostream>
 #include <sstream>
 #include <locale.h>
@@ -9,7 +9,7 @@
 #include "commonrun.h"
 #include "consolerun.h"
 #include "guirun.h"
-#include "vm/vm_console_handlers.hpp"
+#include <kumir2-libs/vm/vm_console_handlers.hpp>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>

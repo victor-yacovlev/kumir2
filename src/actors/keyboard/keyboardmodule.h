@@ -13,8 +13,8 @@ You should change it corresponding to functionality.
 #include "keyboardmodulebase.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "utils/lockedqueue.hpp"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/utils/lockedqueue.hpp>
 
 // Qt includes
 #include <QtCore>

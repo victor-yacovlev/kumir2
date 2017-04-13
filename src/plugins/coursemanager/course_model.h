@@ -1,9 +1,9 @@
 #ifndef COURSE_MODEL_H
 #define COURSE_MODEL_H
 
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/kplugin.h"
-#include "shared/interfaces/coursesinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/coursesinterface.h>
 
 #include <QAbstractItemModel>
 #include <QApplication>

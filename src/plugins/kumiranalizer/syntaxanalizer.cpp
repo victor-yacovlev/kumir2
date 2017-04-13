@@ -6,12 +6,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "dataformats/ast_variable.h"
-#include "dataformats/ast_type.h"
-#include "errormessages/errormessages.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
-#include "vm/vm_bytecode.hpp"
+#include <kumir2-libs/dataformats/ast_variable.h>
+#include <kumir2-libs/dataformats/ast_type.h>
+#include <kumir2-libs/errormessages/errormessages.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/vm/vm_bytecode.hpp>
 
 
 using namespace Shared;

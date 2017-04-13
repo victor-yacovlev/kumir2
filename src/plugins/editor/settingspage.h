@@ -1,7 +1,7 @@
 #ifndef SETTINGSPAGE_H
 #define SETTINGSPAGE_H
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>

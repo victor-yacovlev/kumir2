@@ -11,7 +11,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 #include "isometricrobotmodulebase.h"
 #include "robot25dwindow.h"
 #include "robotmodel.h"

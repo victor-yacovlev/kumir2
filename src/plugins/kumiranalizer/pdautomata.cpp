@@ -1,8 +1,8 @@
 #include "pdautomata.h"
 
-#include "dataformats/ast.h"
-#include "interfaces/lexemtype.h"
-#include "errormessages/errormessages.h"
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2/lexemtype.h>
+#include <kumir2-libs/errormessages/errormessages.h>
 
 #include <deque>
 #include <algorithm>

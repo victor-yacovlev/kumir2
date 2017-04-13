@@ -1,11 +1,12 @@
 project(pictomir2course)
+cmake_minimum_required(VERSION 3.0)
+
+find_package(Kumir2 REQUIRED)
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/3rdparty/boost-1.54.0)
     find_package(Boost 1.54 REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
-
-cmake_minimum_required(VERSION 2.8.3)
 
 if(MSVC)
     # Use provided ZLib sources
@@ -45,12 +46,11 @@ if(WIN32)
     add_definitions(-DWIN32)
 endif()
 
-if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "-fexceptions -std=c++03")
+kumir2_add_tool(
+    NAME        pictomir2course
+    SOURCES     ${SOURCES} ${3RDPARTY_SOURCES}
+    LIBRARIES   ${3RDPARTY_LIBS}
+    CXXFLAGS    "-fexceptions -std=c++03"
     #   1. -fexceptions:    Exceptions is widely used by Boost
     #   2. -std=c++03:      Due to bug in boost 1.49 (Ticket #6785)
-endif()
-
-add_executable(pictomir2course ${SOURCES} ${3RDPARTY_SOURCES})
-target_link_libraries(pictomir2course ${3RDPARTY_LIBS} ${STDCXX_LIB})
-install(TARGETS pictomir2course DESTINATION ${EXEC_DIR})
+)

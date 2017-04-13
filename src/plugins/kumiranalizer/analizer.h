@@ -1,24 +1,20 @@
 #ifndef ANALIZER_H
 #define ANALIZER_H
 
-#include "dataformats/lexem.h"
+#include <kumir2-libs/dataformats/lexem.h>
 #include "statement.h"
-#include "interfaces/lexemtype.h"
-#include "interfaces/error.h"
-#include "interfaces/lineprop.h"
-#include "dataformats/ast.h"
-#include "interfaces/analizerinterface.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2/lexemtype.h>
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2/analizerinterface.h>
+#include <kumir2/actorinterface.h>
 
-#include "interfaces/analizer_instanceinterface.h"
+#include <kumir2/analizer_instanceinterface.h>
 
-#include "interfaces/error.h"
-#include "interfaces/lineprop.h"
-#include "dataformats/ast.h"
-#include "dataformats/ast_module.h"
-#include "dataformats/ast_algorhitm.h"
-#include "dataformats/ast_type.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2-libs/dataformats/ast_module.h>
+#include <kumir2-libs/dataformats/ast_algorhitm.h>
+#include <kumir2-libs/dataformats/ast_type.h>
+#include <kumir2/analizerinterface.h>
 
 #include <QtCore>
 

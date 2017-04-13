@@ -1,9 +1,9 @@
 #include "generator.h"
-#include "vm/vm_tableelem.hpp"
-#include "vm/vm.hpp"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
-#include "shared/dataformats/lexem.h"
+#include <kumir2-libs/vm/vm_tableelem.hpp>
+#include <kumir2-libs/vm/vm.hpp>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/dataformats/lexem.h>
 
 namespace KumirCodeGenerator {
     

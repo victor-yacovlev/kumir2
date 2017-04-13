@@ -9,7 +9,7 @@
 #include <QEvent>
 #include <QScrollArea>
 
-#include "interfaces/actorinterface.h"
+#include <kumir2/actorinterface.h>
 
 
 namespace KumirAnalizer {

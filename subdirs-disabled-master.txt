@@ -3,3 +3,4 @@
 kumir2-python
 kumir2-python-teacher
 python3language
+llvmcodegenerator

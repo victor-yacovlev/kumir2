@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include <QProcessEnvironment>
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
  //#include <iostream> 
 
 const int AnimTime = 100;

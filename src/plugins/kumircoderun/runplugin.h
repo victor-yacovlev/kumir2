@@ -2,8 +2,8 @@
 #define KUMIRCODERUN_PLUGIN_H
 
 #include <QtCore>
-#include "extensionsystem/kplugin.h"
-#include "interfaces/runinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/runinterface.h>
 #include "commonrun.h"
 #include "consolerun.h"
 #include "guirun.h"

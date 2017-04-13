@@ -2,8 +2,8 @@
 #include "ui_coursemanager_window.h"
 //#include "interface.h"
 
-#include "interfaces/browserinterface.h"
-#include "interfaces/browser_instanceinterface.h"
+#include <kumir2/browserinterface.h>
+#include <kumir2/browser_instanceinterface.h>
 
 
 MainWindowTask::MainWindowTask(QWidget *parent) :

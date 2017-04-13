@@ -1,7 +1,7 @@
 #ifndef COREGUI_SWITCHWORKSPACEDIALOG_H
 #define COREGUI_SWITCHWORKSPACEDIALOG_H
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000

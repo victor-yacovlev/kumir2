@@ -1,8 +1,8 @@
 #ifndef KUMIRANALIZERPLUGIN_H
 #define KUMIRANALIZERPLUGIN_H
 
-#include <extensionsystem/kplugin.h>
-#include <interfaces/analizerinterface.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/analizerinterface.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QStringList>

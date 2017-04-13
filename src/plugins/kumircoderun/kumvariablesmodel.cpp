@@ -7,9 +7,9 @@ extern "C" {
 #include <QPalette>
 #include <QApplication>
 
-#include "extensionsystem/kplugin.h"
-#include "extensionsystem/pluginmanager.h"
-#include "shared/interfaces/editorinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/editorinterface.h>
 
 
 namespace KumirCodeRun {

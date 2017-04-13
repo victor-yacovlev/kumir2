@@ -1,21 +1,10 @@
 project(kumir2-run)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-set(SRC
-    main.cpp
+find_package(Kumir2 REQUIRED)
+
+kumir2_add_tool(
+    NAME        kumir2-run
+    SOURCES     main.cpp
 )
-if(NOT MSVC)
-    if(APPLE)
-        set(CMAKE_CXX_FLAGS "-stdlib=libc++ -DAPPLE ${CMAKE_CXX_FLAGS}")
-    else()
-        set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
-    endif()
-endif()
-add_executable(kumir2-run ${SRC})
-target_link_libraries(kumir2-run ${STDCXX_LIB} ${STDMATH_LIB})
-if (XCODE OR MSVC_IDE)
-    set_target_properties (kumir2-run PROPERTIES PREFIX "../")
-endif(XCODE OR MSVC_IDE)
-install(TARGETS kumir2-run DESTINATION ${EXEC_DIR})
-file(COPY ${CMAKE_SOURCE_DIR}/kumir2-run.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
-install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-run.desktop DESTINATION share/applications)
+

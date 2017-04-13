@@ -20,7 +20,7 @@
 #include <QCloseEvent>
 #include <QGraphicsScene>
 #include <QtSvg>
- #include <QGraphicsSvgItem>
+#include <QGraphicsSvgItem>
 
 //class QAction;
 //class QMenu;

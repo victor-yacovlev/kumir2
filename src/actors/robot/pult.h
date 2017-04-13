@@ -17,7 +17,7 @@
 #ifndef ROBOT_PULT_H
 #define ROBOT_PULT_H
 #include "ui_pult.h"
-#include "widgets/pultlogger.h"
+#include <kumir2-libs/widgets/pultlogger.h>
 #include <QtCore>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>

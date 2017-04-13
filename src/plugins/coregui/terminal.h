@@ -8,8 +8,8 @@
 #include <QtGui>
 #endif
 
-#include "extensionsystem/settings.h"
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/settings.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 namespace Terminal {
 

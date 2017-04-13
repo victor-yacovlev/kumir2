@@ -3,10 +3,10 @@
 
 #include <QtCore>
 #include "statement.h"
-#include "interfaces/analizer_instanceinterface.h"
-#include "dataformats/ast.h"
-#include "dataformats/ast_algorhitm.h"
-#include "dataformats/ast_statement.h"
+#include <kumir2/analizer_instanceinterface.h>
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2-libs/dataformats/ast_algorhitm.h>
+#include <kumir2-libs/dataformats/ast_statement.h>
 
 
 namespace KumirAnalizer {
