@@ -97,7 +97,7 @@ QString Settings::settingsFilePath() const
 QString Settings::defaultSettingsScope()
 {
 #ifdef Q_OS_MAC
-    static const QString result = QString::fromAscii("kumir2");
+    static const QString result = "kumir2";
     return result;
 #else
     static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));

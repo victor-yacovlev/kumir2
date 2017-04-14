@@ -19,7 +19,7 @@ else()
     add_definitions(${VERSION_DEFINITIONS})
 endif()
 
-if(NOT APPLE)
+#if(NOT APPLE)
     # Various GUI configurations
 
     add_opt_subdirectory(kumir2-classic)
@@ -34,12 +34,12 @@ if(NOT APPLE)
         add_opt_subdirectory(kumir2-python-teacher)
     endif() # kumir2-python exists
 
-endif(NOT APPLE)
+#endif(NOT APPLE)
 
-if(APPLE)
+#if(APPLE)
     # Apple platform has exact one GUI configuration
-    add_opt_subdirectory(kumir2-macx)
-endif(APPLE)
+  #  add_opt_subdirectory(kumir2-macx)
+#endif(APPLE)
 
 add_opt_subdirectory(kumir2-bc)
 add_opt_subdirectory(kumir2-xrun)
