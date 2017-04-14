@@ -210,6 +210,11 @@ QString PluginManager::workspacePath() const
 
 QString PluginManagerImpl::reorderSpecsAndCreateStates(const QStringList &orderedList)
 {
+    QStringList blacklist;
+#ifdef Q_OS_UNIX
+    const char * kumirBlacklist = getenv("KUMIR_BLACKLIST");
+    blacklist = QString(kumirBlacklist).split(":");
+#endif
     QList<PluginSpec> newSpecs;
     for (int i=0; i<orderedList.size(); i++) {
         bool found = false;
@@ -223,6 +228,10 @@ QString PluginManagerImpl::reorderSpecsAndCreateStates(const QStringList &ordere
         }
         if (!found) {
             return "Spec not loaded for plugin " + orderedList[i];
+        }
+        if (blacklist.contains(spec.name)) {
+            qDebug() << "Skip loading " << spec.name << " because it blacklisted in KUMIR_BLACKLIST environment variable";
+            continue;
         }
         newSpecs << spec;
         objects << 0;
