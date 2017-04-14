@@ -32,7 +32,7 @@ int courseModel::loadCourse(QString file,bool cmode)
 {
 
     courseFileName=file;
-    qDebug()<<"courseModel::Load Course";
+    qDebug()<<"courseModel::Load Course "<<file;
     QFile f(courseFileName);
     if  (!f.open(QIODevice::ReadOnly))
     {
@@ -46,8 +46,12 @@ int courseModel::loadCourse(QString file,bool cmode)
 
     QString error="";
     int eline,ecol;
-    if(!courceXml.setContent(&f,true,&error,&eline,&ecol)){
-        qDebug()<<"ERROR LOADING CB:",error," File",file," LINE",eline,"COL",ecol;
+    QString taskData;
+    QTextStream ts(&f);
+    taskData.append(ts.readAll());
+    qDebug()<<"Cource len in symbols:",taskData.length();
+    if(!courceXml.setContent(taskData,true,&error,&eline,&ecol)){
+        qDebug()<<"ERROR LOADING CB:"<<error<<" File"<<file<<" LINE"<<eline<<"COL"<<ecol;
         if(cmode)return -1;
         QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);
 
