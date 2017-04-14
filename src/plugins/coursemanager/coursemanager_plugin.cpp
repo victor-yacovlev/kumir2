@@ -147,7 +147,7 @@ int  Plugin::loadCourseFromConsole(QString wbname,QString cbname)
         cur_courseFileInfo=fi;
         course=new courseModel();
    
-        int tasks=course->loadCourse(cbname);
+        int tasks=course->loadCourse(cbname,true);
         qDebug()<<"Tasks "<<tasks<<" loaded";
         int wb_error=loadWorkBook(wbname,fi.fileName());
 
