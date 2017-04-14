@@ -45,9 +45,9 @@ int courseModel::loadCourse(QString file)
     }
 
     QString error="";
-
-    if(!courceXml.setContent(&f,true,&error)){
-        qDebug()<<"ERROR LOADING CB:",error," File",file;
+    int eline,ecol;
+    if(!courceXml.setContent(&f,true,&error,&eline,&ecol)){
+        qDebug()<<"ERROR LOADING CB:",error," File",file," LINE",eline,"COL",ecol;
         QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);
 
     }
