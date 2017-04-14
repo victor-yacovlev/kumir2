@@ -124,7 +124,7 @@ public:
 
 
  public:
-         int loadCourse(QString fileName);
+         int loadCourse(QString fileName);//CED file
          QString getTaskText(QModelIndex index);
           QString getTaskCheck(QModelIndex index);
           QString courceDescr()

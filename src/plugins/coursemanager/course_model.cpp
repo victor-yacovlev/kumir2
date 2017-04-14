@@ -28,7 +28,7 @@ static QString fixWindowPath(QString fileName)
     return fileName;
 }
 
-int courseModel::loadCourse(QString file)
+int courseModel::loadCourse(QString file,bool cmode)
 {
 
     courseFileName=file;
@@ -48,6 +48,7 @@ int courseModel::loadCourse(QString file)
     int eline,ecol;
     if(!courceXml.setContent(&f,true,&error,&eline,&ecol)){
         qDebug()<<"ERROR LOADING CB:",error," File",file," LINE",eline,"COL",ecol;
+        if(cmode)return -1;
         QMessageBox::information( 0, "", "Error:"+ error +" File:"+ file, 0,0,0);
 
     }

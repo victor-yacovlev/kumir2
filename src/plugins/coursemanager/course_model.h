@@ -160,7 +160,7 @@ public:
 
 
  public:
-         int loadCourse(QString fileName);
+         int loadCourse(QString fileName,bool cmode=0);
          QString getTaskText(QModelIndex index);
           QString getTaskCheck(QModelIndex index);
           QString courceDescr()
