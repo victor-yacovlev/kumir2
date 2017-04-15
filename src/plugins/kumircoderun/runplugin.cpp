@@ -1,7 +1,7 @@
 #include <QtCore> // include it before STL to avoid MSVC-specific errors
 #include "runplugin.h"
 #include "run.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include <iostream>
 #include <sstream>
 #include <locale.h>
@@ -9,7 +9,7 @@
 #include "commonrun.h"
 #include "consolerun.h"
 #include "guirun.h"
-#include "vm/vm_console_handlers.hpp"
+#include <kumir2-libs/vm/vm_console_handlers.hpp>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
@@ -120,7 +120,7 @@ QMap<QString,QVariant> KumirRunPlugin::getScalarLocalValues(int frameNo) const
     pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
     const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
-    for (int i=0; i<locals.size(); i++) {
+    for (int i=0; i<(int)locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()==0) {
             const QString varName = QString::fromStdWString(var.myName());
@@ -148,7 +148,7 @@ QMap<QString,QVariant> KumirRunPlugin::getScalarGlobalValues(const QString & mod
     pRun_->lockVMMutex();
     QMap<QString,QVariant> result;
     const std::vector<Variable> & locals = pRun_->vm->getGlobals(moduleName.toStdWString());
-    for (int i=0; i<locals.size(); i++) {
+    for (int i=0; i<(int)locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()==0) {
             const QString varName = QString::fromStdWString(var.myName());
@@ -286,7 +286,7 @@ QVariantList KumirRunPlugin::getLocalTableValues(
     int counter = 0;
     pRun_->lockVMMutex();
     const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
-    for (int i=0; i<locals.size(); i++) {
+    for (int i=0; i<(int)locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
             complete = true;
@@ -312,7 +312,7 @@ QVariant KumirRunPlugin::getLocalTableValue(
     }
     pRun_->lockVMMutex();
     const std::vector<Variable> & locals = pRun_->vm->getLocals(frameNo);
-    for (int i=0; i<locals.size(); i++) {
+    for (int i=0; i<(int)locals.size(); i++) {
         const Variable & var = locals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
             if (var.hasValue(kIndeces))
@@ -336,7 +336,7 @@ QVariantList KumirRunPlugin::getGlobalTableValues(
     int counter = 0;
     pRun_->lockVMMutex();
     const std::vector<Variable> & globals = pRun_->vm->getGlobals(moduleName.toStdWString());
-    for (int i=0; i<globals.size(); i++) {
+    for (int i=0; i<(int)globals.size(); i++) {
         const Variable & var = globals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
             complete = true;
@@ -362,7 +362,7 @@ QVariant KumirRunPlugin::getGlobalTableValue(
     }
     pRun_->lockVMMutex();
     const std::vector<Variable> & globals = pRun_->vm->getGlobals(moduleName.toStdWString());
-    for (int i=0; i<globals.size(); i++) {
+    for (int i=0; i<(int)globals.size(); i++) {
         const Variable & var = globals.at(i);
         if (var.dimension()>0 && var.myName()==name.toStdWString()) {
             if (var.hasValue(kIndeces))

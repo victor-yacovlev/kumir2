@@ -5,17 +5,26 @@
 #include <QtGui>
 #endif
 
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/logger.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/logger.h>
 
-#ifdef Q_OS_MAC
-#  define PLUGINS_PATH QDir(QApplication::applicationDirPath()+"/../PlugIns").canonicalPath()
-#  define SHARE_PATH "/../Resources"
-#else
-#  define PLUGINS_PATH QDir(QApplication::applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/plugins").canonicalPath()
-#  define SHARE_PATH "/../share/kumir2"
-#endif
 
+static
+QString resolvePath(const char *what)
+{
+    static QString ExecDir = QString::fromLatin1(KUMIR2_EXEC_DIR);
+    static QString MyDir = QCoreApplication::applicationDirPath();
+    static int RootDistLevelUp = ExecDir.isEmpty()
+            ? 0
+            : ExecDir.count("/") + 1;
+    QString result = MyDir;
+    for (int i=0; i<RootDistLevelUp; ++i) {
+        result += "/../";
+    }
+    result += QString::fromLatin1(what);
+    result = QDir::cleanPath(result);
+    return result;
+}
 
 #if QT_VERSION < 0x050000
 void GuiMessageOutput(QtMsgType type, const char *msg)
@@ -130,7 +139,7 @@ public:
 #ifdef Q_OS_LINUX
         gui = gui && getenv("DISPLAY")!=0;
 #endif
-        const QString sharePath = QDir(_qApp->applicationDirPath()+SHARE_PATH).canonicalPath();
+        const QString sharePath = resolvePath(KUMIR2_RESOURCES_DIR);
         QDir translationsDir(sharePath+"/translations");
         QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
         foreach (QString tsname, ts_files) {
@@ -144,9 +153,10 @@ public:
         _qApp->setProperty("sharePath", sharePath);
 
         QSettings::setDefaultFormat(QSettings::IniFormat);
-        _qApp->addLibraryPath(PLUGINS_PATH);
+        _qApp->addLibraryPath(resolvePath(KUMIR2_LIBS_DIR));
+        _qApp->addLibraryPath(resolvePath(KUMIR2_PLUGINS_DIR));
         ExtensionSystem::PluginManager * manager = ExtensionSystem::PluginManager::instance();
-        manager->setPluginPath(PLUGINS_PATH);
+        manager->setPluginPath(resolvePath(KUMIR2_PLUGINS_DIR));
         manager->setSharePath(sharePath);
         QString error;
         qDebug() << "Initialized plugin manager";
@@ -290,19 +300,16 @@ int main(int argc, char **argv)
     Application * app = new Application(argc, argv, gui);
     QLocale russian = QLocale("ru_RU");
     QLocale::setDefault(russian);
-#ifdef Q_OS_WIN32
-    qApp->addLibraryPath(qApp->applicationDirPath());
-#endif
-#ifndef Q_OS_WIN32
-    qApp->addLibraryPath(QDir::cleanPath(qApp->applicationDirPath()+"/../"+IDE_LIBRARY_BASENAME+"/kumir2/"));
-#endif
+
+    qApp->addLibraryPath(resolvePath(KUMIR2_LIBS_DIR));
+    qApp->addLibraryPath(resolvePath(KUMIR2_PLUGINS_DIR));
 
     qApp->setApplicationVersion(gitTag.length() > 0 && gitTag!="unknown"
                                ? gitTag : gitBranch + "/" + gitHash);
     qApp->setProperty("gitTimeStamp", gitTimeStamp);
     QSplashScreen * splashScreen = 0;
 
-    const QString sharePath = QDir(qApp->applicationDirPath()+SHARE_PATH).canonicalPath();
+    const QString sharePath = resolvePath(KUMIR2_RESOURCES_DIR);
 
     const QStringList arguments = QCoreApplication::instance()->arguments();
     bool mustShowHelpAndExit = false;

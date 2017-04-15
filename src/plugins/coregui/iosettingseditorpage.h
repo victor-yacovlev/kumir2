@@ -1,7 +1,7 @@
 #ifndef COREGUI_IOSETTINGSEDITORPAGE_H
 #define COREGUI_IOSETTINGSEDITORPAGE_H
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #include <QWidget>
 

@@ -3283,9 +3283,9 @@ every build time
 #define $headerGuard
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "widgets/declarativesettingspage.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/widgets/declarativesettingspage.h>
+#include <kumir2/actorinterface.h>
 
 // Qt includes
 #include <QObject>
@@ -3414,7 +3414,7 @@ every build time
 $customTypeDeclarations
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 // Qt includes
 #include <QtCore>
@@ -3468,7 +3468,7 @@ every build time
 #include "$pluginInclude"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 // Qt includes
 #include <QtCore>
@@ -3518,7 +3518,7 @@ You should change it corresponding to functionality.
 #include "$baseClassHeader"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 // Qt includes
 #include <QtCore>
@@ -3568,7 +3568,7 @@ You should change it corresponding to functionality.
 #include "$selfHeader"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 // Qt includes
 #include <QtCore>

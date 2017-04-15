@@ -1,25 +1,9 @@
 project(KumirCodeRun)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
+find_package(Kumir2 REQUIRED)
 
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-
-include(../../kumir2_plugin.cmake)
-
+kumir2_use_qt(Core Gui)
 
 set(SOURCES
     runplugin.cpp
@@ -43,14 +27,10 @@ set(MOC_HEADERS
     kumvariablesmodel.h
 )
 
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-endif()
-copySpecFile(KumirCodeRun)
-add_library(KumirCodeRun SHARED ${MOC_SOURCES} ${SOURCES})
-handleTranslation(KumirCodeRun)
-target_link_libraries(KumirCodeRun ${QT_LIBRARIES} ExtensionSystem  ${STDCXX_LIB} ${STDMATH_LIB})
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
-install(TARGETS KumirCodeRun DESTINATION ${PLUGINS_DIR})
+kumir2_add_plugin(
+    NAME        KumirCodeRun
+    SOURCES     ${MOC_SOURCES} ${SOURCES}
+    LIBRARIES   ${QT_LIBRARIES} ExtensionSystem
+)

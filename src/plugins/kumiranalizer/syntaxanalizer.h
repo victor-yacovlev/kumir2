@@ -5,9 +5,9 @@
 #include "statement.h"
 
 #include "analizer.h"
-#include "dataformats/ast.h"
-#include "dataformats/ast_algorhitm.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2-libs/dataformats/ast.h>
+#include <kumir2-libs/dataformats/ast_algorhitm.h>
+#include <kumir2/analizerinterface.h>
 #include "lexer.h"
 
 typedef AST::Data AST_Data;

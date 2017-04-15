@@ -1,8 +1,8 @@
 #ifndef STDLIBMODULES_H
 #define STDLIBMODULES_H
 #include <QtCore>
-#include "interfaces/actorinterface.h"
-#include "stdlib/kumirstdlib.hpp"
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
 
 namespace StdLibModules {
 

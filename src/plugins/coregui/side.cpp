@@ -1,5 +1,5 @@
 #include "side.h"
-#include "widgets/dockwindowplace.h"
+#include <kumir2-libs/widgets/dockwindowplace.h>
 
 #include <QDebug>
 #include <QResizeEvent>

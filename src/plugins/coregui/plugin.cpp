@@ -2,14 +2,14 @@
 #include "switchworkspacedialog.h"
 #include "plugin.h"
 #include "mainwindow.h"
-#include "extensionsystem/pluginmanager.h"
-#include "widgets/secondarywindow.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/widgets/secondarywindow.h>
 #include "debuggerview.h"
 #include "ui_mainwindow.h"
 #include "statusbar.h"
 #include "tabwidget.h"
-#include "widgets/iconprovider.h"
-#include "widgets/actionproxy.h"
+#include <kumir2-libs/widgets/iconprovider.h>
+#include <kumir2-libs/widgets/actionproxy.h>
 
 #include "guisettingspage.h"
 #include "iosettingseditorpage.h"

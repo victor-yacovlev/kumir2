@@ -51,7 +51,7 @@ string parser::preprocess_input(istream &stream)
     streampos start = stream.tellg();
     stream.seekg(0, ios::end);
     streampos end = stream.tellg();
-    size_t file_size = end - start;
+    size_t file_size = size_t(end - start);
     stream.seekg(start, ios::beg);
     char bom_test[3];
     static const char * BOM = "\xEF\xBB\xBF";

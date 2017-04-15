@@ -15,7 +15,7 @@ You should change it corresponding to functionality.
 #else
 #   include <QtGui>
 #endif
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 #include "complexnumbersmodulebase.h"
 
 namespace ActorComplexNumbers {

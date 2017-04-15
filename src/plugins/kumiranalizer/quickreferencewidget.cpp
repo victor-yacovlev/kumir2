@@ -1,10 +1,10 @@
 #include "quickreferencewidget.h"
 #include "kumiranalizerplugin.h"
-#include "widgets/flowlayout.h"
+#include <kumir2-libs/widgets/flowlayout.h>
 #include "ui_quickreferencewidget.h"
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/kplugin.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/actorinterface.h>
 #include "analizer.h"
 
 #define DO_NOT_DECLARE_STATIC

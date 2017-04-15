@@ -3,8 +3,8 @@
 
 #include <QtCore>
 #define DO_NOT_DECLARE_STATIC
-#include "vm/vm_abstract_handlers.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/vm/vm_abstract_handlers.h>
+#include <kumir2/actorinterface.h>
 #include "commonrun.h"
 
 #ifndef _override

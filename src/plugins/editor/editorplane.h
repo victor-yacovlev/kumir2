@@ -1,8 +1,8 @@
 #ifndef EDITORPLANE_H
 #define EDITORPLANE_H
 
-#include "extensionsystem/settings.h"
-#include "docbookviewer/docbookview.h"
+#include <kumir2-libs/extensionsystem/settings.h>
+#include <kumir2-libs/docbookviewer/docbookview.h>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
@@ -10,8 +10,8 @@
 #include <QtGui>
 #endif
 
-#include "interfaces/lexemtype.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2/lexemtype.h>
+#include <kumir2/analizerinterface.h>
 
 
 namespace Editor {

@@ -1,98 +1,95 @@
 project(Kumir2)
+cmake_minimum_required(VERSION 3.0)
 
-cmake_minimum_required(VERSION 2.8)
-
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
-
-set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
-
-include_directories(${CMAKE_SOURCE_DIR}/src/shared)
-include_directories(${CMAKE_SOURCE_DIR}/src)
-
-
-
-
-if((${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64") AND NOT (EXISTS /etc/ubuntu-release) AND NOT (EXISTS /etc/debian_version))
-    set(LIB_BASENAME lib64)
-else()
-    set(LIB_BASENAME lib)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/custom_variables.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/custom_variables.cmake")
 endif()
 
-if(WIN32)
-  set(EXEC_DIR bin)
-  set(LIBS_DIR bin)
-  set(LIB_BASENAME lib)
-  set(PLUGINS_DIR lib/kumir2/plugins)
-  set(RESOURCES_DIR share/kumir2)
-  set(LIBEXECS_DIR bin)
-elseif(APPLE)
-    if(XCODE)
-        set(EXEC_DIR Debug/Kumir.app/Contents/MacOS/)
-        set(LIBS_DIR Debug/Kumir.app/Contents/PlugIns)
-        set(PLUGINS_DIR Debug/Kumir.app/Contents/PlugIns)
-        set(RESOURCES_DIR Debug/Kumir.app/Contents/Resources)
-        set(LIBEXECS_DIR Debug/Kumir.app/Contents/MacOS)
-    else()
-        set(EXEC_DIR Kumir.app/Contents/MacOS)
-        set(LIBS_DIR Kumir.app/Contents/PlugIns)
-        set(PLUGINS_DIR Kumir.app/Contents/PlugIns)
-        set(RESOURCES_DIR Kumir.app/Contents/Resources)
-        set(LIBEXECS_DIR Kumir.app/Contents/MacOS)
-    endif(XCODE)
-else()
-  set(EXEC_DIR bin)
-  set(LIBS_DIR ${LIB_BASENAME}/kumir2)
-  set(PLUGINS_DIR ${LIB_BASENAME}/kumir2/plugins)
-  set(RESOURCES_DIR share/kumir2)
-  set(LIBEXECS_DIR libexec/kumir2)
-endif()
+set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/cmake")
+find_package(Kumir2 REQUIRED)
 
-add_definitions(-DIDE_LIBRARY_BASENAME="${LIB_BASENAME}")
+include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_SOURCE_DIR}/src")
 
-set(PLUGIN_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${PLUGINS_DIR}
-)
-
-set(SHARE_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${RESOURCES_DIR})
-
-set(LIBRARY_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBS_DIR}
-)
-
-set(EXECUTABLE_OUTPUT_PATH
-    ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${EXEC_DIR}
-)
-
-set(LIBEXECS_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${LIBEXECS_DIR})
 
 add_subdirectory(src)
-add_subdirectory(userdocs)
-add_subdirectory(share/kumir2/courses)
-
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
-file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/app_icons/linux ${CMAKE_SOURCE_DIR}/app_icons/linux/*)
-foreach(icon IN ITEMS ${icons})
-    get_filename_component(subdir ${icon} PATH)
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${subdir})
-    file(COPY ${CMAKE_SOURCE_DIR}/app_icons/linux/${icon} DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${subdir})
-    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/icons/${icon} DESTINATION share/icons/${subdir})
-endforeach(icon)
-
-# TODO move into python subproject CMakeLists.txt
-if(EXISTS ${CMAKE_SOURCE_DIR}/kumir2-python.desktop)
-    file(COPY ${CMAKE_SOURCE_DIR}/kumir2-python.desktop DESTINATION ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications)
-    install(FILES ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/share/applications/kumir2-python.desktop DESTINATION share/applications)
-endif()
 
 
-file(MAKE_DIRECTORY ${SHARE_PATH}/icons)
+# Copy and create install targets for top-level resources
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/userdocs")
+file(GLOB_RECURSE resfiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/userdocs ${CMAKE_CURRENT_SOURCE_DIR}/userdocs/*)
+foreach(res IN ITEMS ${resfiles})
+    if(NOT ${res} MATCHES ^[.].*)
+        get_filename_component(subdir ${res} PATH)
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/userdocs/${subdir}")
+        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/userdocs/${res}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/userdocs/${subdir}")
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/userdocs/${res}" DESTINATION "${KUMIR2_RESOURCES_DIR}/userdocs/${subdir}")
+    endif()
+endforeach(res)
+
+# Courses in dist TODO move the code to function and reuse it
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/courses")
+file(GLOB_RECURSE resfiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/courses ${CMAKE_CURRENT_SOURCE_DIR}/courses/*)
+foreach(res IN ITEMS ${resfiles})
+    if(NOT ${res} MATCHES ^[.].*)
+        get_filename_component(subdir ${res} PATH)
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/courses/${subdir}")
+        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/courses/${res}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/courses/${subdir}")
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/courses/${res}" DESTINATION "${KUMIR2_RESOURCES_DIR}/courses/${subdir}")
+    endif()
+endforeach(res)
+
+# In-App icons TODO move the code to function and reuse it
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons")
 file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/share/kumir2/icons ${CMAKE_SOURCE_DIR}/share/kumir2/icons/*)
 foreach(icon IN ITEMS ${icons})
     get_filename_component(subdir ${icon} PATH)
-    file(MAKE_DIRECTORY ${SHARE_PATH}/icons/${subdir})
-    file(COPY ${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon} DESTINATION ${SHARE_PATH}/icons/${subdir})
-    install(FILES ${SHARE_PATH}/icons/${icon} DESTINATION ${RESOURCES_DIR}/icons/${subdir})
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    file(COPY "${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
 endforeach(icon)
+
+# Development files
+install(DIRECTORY include/ DESTINATION include/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.table")
+install(
+    FILES scripts/gen_actor_source.py
+    DESTINATION ${KUMIR2_SDK_SCRIPTS_DIR}
+    PERMISSIONS
+        OWNER_EXECUTE OWNER_WRITE OWNER_READ
+        GROUP_EXECUTE GROUP_READ
+        WORLD_EXECUTE WORLD_READ
+)
+install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
+
+# Generate and install CMake file describing current build configuration
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    "set(USE_QT ${USE_QT})\nset(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\nset(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
+)
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    DESTINATION "${KUMIR2_SDK_CMAKE_DIR}/kumir2"
+)
+
+
+# Platform-specific global resources handling
+if(WIN32)
+    # Do nothing
+elseif(APPLE)
+    # TODO Make package-related stuff
+else()
+    # Create XDG-compliant filesystem structure for applciations and icons
+
+    # Application icons
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}")
+    file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/app_icons/linux ${CMAKE_SOURCE_DIR}/app_icons/linux/*)
+    foreach(icon IN ITEMS ${icons})
+        get_filename_component(subdir ${icon} PATH)
+        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
+        file(COPY "${CMAKE_SOURCE_DIR}/app_icons/linux/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
+    endforeach(icon)
+endif()
+

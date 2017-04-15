@@ -1,6 +1,6 @@
 #include "lexer.h"
-#include "interfaces/lexemtype.h"
-#include "errormessages/errormessages.h"
+#include <kumir2/lexemtype.h>
+#include <kumir2-libs/errormessages/errormessages.h>
 
 
 using namespace Shared;

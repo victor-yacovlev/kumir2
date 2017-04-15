@@ -26,7 +26,7 @@ static bool make_dir(const string & name)
     if (exists)
         return true;
     else
-        return ::CreateDirectoryA(name.c_str(), NULL);
+        return ::CreateDirectoryA(name.c_str(), NULL) != 0;
 #else
     struct ::stat st;
     int res = ::stat(name.c_str(), &st);

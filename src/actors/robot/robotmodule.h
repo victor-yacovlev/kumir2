@@ -12,7 +12,7 @@ You should change it corresponding to functionality.
 #include <QtCore>
 #include <QtGui>
 
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 #include "robotmodulebase.h"
 #include "pult.h"
 
@@ -507,7 +507,7 @@ namespace ActorRobot {
         QToolButton * textEditBtn;
         QToolButton * radEditBtn;
         QToolButton * tmpEditBtn;
-        float c_scale;
+        double c_scale;
         int CurCellSize;
         
     };

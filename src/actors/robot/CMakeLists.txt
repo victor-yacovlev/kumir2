@@ -1,28 +1,9 @@
 project(ActorRobot)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
+find_package(Kumir2 REQUIRED)
+kumir2_use_qt(Core Gui)
 
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-    set(MOC_PARAMS "-I/usr/include/qt5" "-I/usr/include/qt5/QtCore" "-I${_qt5Core_install_prefix}/include/QtCore" "-DQT_PLUGIN")
-    foreach(IDIR ${Qt5Core_INCLUDE_DIRS})
-        set(MOC_PARAMS "-I${IDIR}" ${MOC_PARAMS})
-    endforeach()
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-find_package(PythonInterp 3.2.0 REQUIRED)
-include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     robotmodule.cpp
@@ -37,50 +18,12 @@ set(MOC_HEADERS
 set(FORMS
     pult.ui
     )
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.h ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.h ${CMAKE_CURRENT_BINARY_DIR}/ActorRobot.pluginspec
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py --update ${CMAKE_CURRENT_SOURCE_DIR}/robot.json
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/robot.json ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
+
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
+kumir2_wrap_ui(UI_SOURCES ${FORMS})
+
+kumir2_add_actor(
+    NAME        Robot
+    SOURCES     ${SOURCES} ${MOC_SOURCES} ${UI_SOURCES}
+    LIBRARIES   ${QT_LIBRARIES}
 )
-
-add_custom_target(ActorRobotPluginSpec ALL ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/ActorRobot.pluginspec ${PLUGIN_OUTPUT_PATH}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ActorRobot.pluginspec
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.moc.cpp
-    COMMAND ${QT_MOC_EXECUTABLE} ${MOC_PARAMS} -I${CMAKE_SOURCE_DIR}/src/shared -o${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.moc.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/robotmodulebase.h
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.moc.cpp
-    COMMAND ${QT_MOC_EXECUTABLE} ${MOC_PARAMS} -I${CMAKE_SOURCE_DIR}/src/shared -o${CMAKE_CURRENT_BINARY_DIR}/robotplugin.moc.cpp ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/robotplugin.h
-)
-
-set(SOURCES2
-    robotmodulebase.cpp
-    robotplugin.cpp
-)
-
-set(MOC_SOURCES2
-    robotmodulebase.moc.cpp
-    robotplugin.moc.cpp
-)
-
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-    qt5_wrap_ui(UI_SOURCES ${FORMS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-    qt4_wrap_ui(UI_SOURCES ${FORMS})
-endif()
-
-install(FILES ${PLUGIN_OUTPUT_PATH}/ActorRobot.pluginspec DESTINATION ${PLUGINS_DIR})
-handleTranslation(ActorRobot)
-add_library(ActorRobot SHARED ${MOC_SOURCES} ${SOURCES} ${MOC_SOURCES2} ${SOURCES2} ${UI_SOURCES})
-target_link_libraries(ActorRobot ${QT_LIBRARIES} ExtensionSystem Widgets ${STDCXX_LIB} ${STDMATH_LIB})
-copyResources(actors/robot)
-install(TARGETS ActorRobot DESTINATION ${PLUGINS_DIR})
-

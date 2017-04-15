@@ -2,8 +2,8 @@
 #define UTIL_H
 
 #define DO_NOT_DECLARE_STATIC
-#include "vm/variant.hpp"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2/actorinterface.h>
 #include <QVariant>
 
 namespace KumirCodeRun {

@@ -4,11 +4,11 @@
 #include "mainwindow.h"
 #include "plugin.h"
 #include "toolbarcontextmenu.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include "kumirprogram.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2/actorinterface.h>
 
-#include "widgets/iconprovider.h"
+#include <kumir2-libs/widgets/iconprovider.h>
 #include <QApplication>
 
 namespace CoreGUI {

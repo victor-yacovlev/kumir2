@@ -3,12 +3,12 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 }
-#include "stdlib/kumirstdlib.hpp"
-#include "vm/variant.hpp"
-#include "vm/vm.hpp"
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2-libs/vm/vm.hpp>
 #include "run.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 #include "util.h"
 
 namespace KumirCodeRun {

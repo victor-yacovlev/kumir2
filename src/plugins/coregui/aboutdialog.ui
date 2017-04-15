@@ -179,7 +179,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>Widgets::Utf8TextBrowser</class>
    <extends>QTextBrowser</extends>
-   <header location="global">widgets/utf8textbrowser.h</header>
+   <header location="global">kumir2-libs/widgets/utf8textbrowser.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

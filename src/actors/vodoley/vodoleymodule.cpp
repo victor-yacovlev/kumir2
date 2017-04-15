@@ -11,7 +11,7 @@ You should change it corresponding to functionality.
 #include "pult.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 // Qt includes
 #include <QtCore>

@@ -7,9 +7,9 @@
 #else
 #include <QtGui>
 #endif
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/kplugin.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/analizerinterface.h>
 
 namespace CoreGUI {
 
