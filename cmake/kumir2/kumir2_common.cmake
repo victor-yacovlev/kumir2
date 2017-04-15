@@ -50,6 +50,7 @@ endif()
 function(kumir2_use_qt)
     set(QT_COMPONENTS)
     set(_QT_LIBRARIES)
+    set(_QT_INCLUDES)
     foreach(component ${ARGN})
         if(${USE_QT} GREATER 4)
             if(${component} MATCHES "Gui")
@@ -61,11 +62,12 @@ function(kumir2_use_qt)
             list(APPEND QT_COMPONENTS "Qt${component}")
         endif()
     endforeach(component)
-    if(${USE_QT} GREATER 4)
+    if(${USE_QT} GREATER 4)        
         find_package(Qt5 ${MINIMUM_QT5_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
         foreach(component ${QT_COMPONENTS})
-            include_directories("${Qt5${component}_INCLUDE_DIRS}")
-            list(APPEND _QT_LIBRARIES "${Qt5${component}_LIBRARIES}")
+            include_directories(${Qt5${component}_INCLUDE_DIRS})
+            list(APPEND _QT_LIBRARIES ${Qt5${component}_LIBRARIES})
+            list(APPEND _QT_INCLUDES ${Qt5${component}_INCLUDE_DIRS})
         endforeach(component)
     else()
         set(QT_USE_QTMAIN 1)
@@ -73,15 +75,42 @@ function(kumir2_use_qt)
         include(${QT_USE_FILE})
     endif()
     set(QT_LIBRARIES ${_QT_LIBRARIES} PARENT_SCOPE)
+    set(QT_INCLUDES ${_QT_INCLUDES} PARENT_SCOPE)
 endfunction(kumir2_use_qt)
 
-macro(kumir2_wrap_cpp)
-    if(${USE_QT} GREATER 4)
-        qt5_wrap_cpp(${ARGN})
-    else()
-        qt4_wrap_cpp(${ARGN})
-    endif()
-endmacro(kumir2_wrap_cpp)
+function(kumir2_qt_moc INFILE FILE_LOCATION)
+    set(PARAMS_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/${INFILE}_qt_moc.params")
+    set(OF "${CMAKE_CURRENT_BINARY_DIR}/${INFILE}_qt_moc.cpp")
+    file(WRITE ${PARAMS_FILE_NAME} "")
+    get_directory_property(INC_LIST INCLUDE_DIRECTORIES)
+    get_directory_property(DEF_LIST COMPILE_DEFINITIONS)
+    list(REMOVE_DUPLICATES INC_LIST)
+    foreach(inc ${INC_LIST})
+        file(APPEND ${PARAMS_FILE_NAME} "-I${inc}\n")
+    endforeach()
+    foreach(def ${DEF_LIST})
+        file(APPEND ${PARAMS_FILE_NAME} "-D${def}\n")
+    endforeach()
+    file(APPEND ${PARAMS_FILE_NAME} "-o\n")
+    file(APPEND ${PARAMS_FILE_NAME} "${OF}\n")
+    file(APPEND ${PARAMS_FILE_NAME} "${FILE_LOCATION}/${INFILE}\n")
+    add_custom_command(
+        OUTPUT "${OF}"
+        COMMAND ${QT_MOC_EXECUTABLE} "@${PARAMS_FILE_NAME}"
+        DEPENDS ${INFILE}
+    )    
+    set(QT_MOC_OUT_FILE_NAME ${OF} PARENT_SCOPE)
+endfunction(kumir2_qt_moc)
+
+function(kumir2_wrap_cpp OUTVAR)
+    set(RESULT)
+    foreach(source ${ARGN})
+        kumir2_qt_moc(${source} "${CMAKE_CURRENT_SOURCE_DIR}")
+        list(APPEND RESULT ${QT_MOC_OUT_FILE_NAME})
+    endforeach()
+    set_source_files_properties(${RESULT} PROPERTIES GENERATED ON)
+    set(${OUTVAR} ${RESULT} PARENT_SCOPE)
+endfunction(kumir2_wrap_cpp)
 
 macro(kumir2_wrap_ui)
     if(${USE_QT} GREATER 4)
@@ -216,29 +245,11 @@ function(kumir2_add_actor)
             "${GEN_ACTOR_SOURCE_SCRIPT}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${JSON_FILE_NAME}"
     )
-    add_custom_command(
-        OUTPUT ${MODULEBASE}.moc.cpp
-        COMMAND ${QT_MOC_EXECUTABLE}
-            ${MOC_PARAMS}
-            "-I${CMAKE_SOURCE_DIR}/include/"
-            "-I${CMAKE_SOURCE_DIR}/src/"
-            "-o${CMAKE_CURRENT_BINARY_DIR}/${MODULEBASE}.moc.cpp"
-            "${CMAKE_CURRENT_BINARY_DIR}/${MODULEBASE}.h"
-        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${MODULEBASE}.h"
-    )
-    add_custom_command(
-        OUTPUT ${PLUGIN}.moc.cpp
-        COMMAND ${QT_MOC_EXECUTABLE}
-            ${MOC_PARAMS}
-            "-I${CMAKE_SOURCE_DIR}/include/"
-            "-I${CMAKE_SOURCE_DIR}/src/"
-            "-o${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN}.moc.cpp"
-            "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN}.h"
-        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN}.h"
-    )
-
-    set(MOC_SOURCES_GENERATED ${PLUGIN}.moc.cpp ${MODULEBASE}.moc.cpp)
-
+    set(MOC_SOURCES_GENERATED)
+    kumir2_qt_moc("${MODULEBASE}.h" ${CMAKE_CURRENT_BINARY_DIR})
+    list(APPEND MOC_SOURCES_GENERATED ${QT_MOC_OUT_FILE_NAME})
+    kumir2_qt_moc("${PLUGIN}.h" ${CMAKE_CURRENT_BINARY_DIR})
+    list(APPEND MOC_SOURCES_GENERATED ${QT_MOC_OUT_FILE_NAME})
 
     kumir2_add_plugin(
         NAME        "Actor${PARSED_ARGS_NAME}"
