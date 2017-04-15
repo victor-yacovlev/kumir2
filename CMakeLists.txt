@@ -27,7 +27,7 @@ foreach(res IN ITEMS ${resfiles})
     endif()
 endforeach(res)
 
-# TODO move the code to function and reuse it
+# Courses in dist TODO move the code to function and reuse it
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/courses")
 file(GLOB_RECURSE resfiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/courses ${CMAKE_CURRENT_SOURCE_DIR}/courses/*)
 foreach(res IN ITEMS ${resfiles})
@@ -38,6 +38,16 @@ foreach(res IN ITEMS ${resfiles})
         install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/courses/${res}" DESTINATION "${KUMIR2_RESOURCES_DIR}/courses/${subdir}")
     endif()
 endforeach(res)
+
+# In-App icons TODO move the code to function and reuse it
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons")
+file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/share/kumir2/icons ${CMAKE_SOURCE_DIR}/share/kumir2/icons/*)
+foreach(icon IN ITEMS ${icons})
+    get_filename_component(subdir ${icon} PATH)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    file(COPY "${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+endforeach(icon)
 
 
 if(WIN32)
@@ -55,15 +65,5 @@ else()
         file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
         file(COPY "${CMAKE_SOURCE_DIR}/app_icons/linux/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
-    endforeach(icon)
-
-    # In-app icons
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons")
-    file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/share/kumir2/icons ${CMAKE_SOURCE_DIR}/share/kumir2/icons/*)
-    foreach(icon IN ITEMS ${icons})
-        get_filename_component(subdir ${icon} PATH)
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
-        file(COPY "${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
-        install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
     endforeach(icon)
 endif()
