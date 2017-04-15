@@ -49,7 +49,32 @@ foreach(icon IN ITEMS ${icons})
     install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
 endforeach(icon)
 
+# Development files
+install(DIRECTORY include/ DESTINATION include/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.table")
+install(
+    FILES scripts/gen_actor_source.py
+    DESTINATION ${KUMIR2_SDK_SCRIPTS_DIR}
+    PERMISSIONS
+        OWNER_EXECUTE OWNER_WRITE OWNER_READ
+        GROUP_EXECUTE GROUP_READ
+        WORLD_EXECUTE WORLD_READ
+)
+install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
 
+# Generate and install CMake file describing current build configuration
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    "set(USE_QT ${USE_QT})\nset(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\nset(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
+)
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    DESTINATION "${KUMIR2_SDK_CMAKE_DIR}/kumir2"
+)
+
+
+# Platform-specific global resources handling
 if(WIN32)
     # Do nothing
 elseif(APPLE)
@@ -67,3 +92,4 @@ else()
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
     endforeach(icon)
 endif()
+
