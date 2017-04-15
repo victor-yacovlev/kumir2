@@ -3,7 +3,7 @@
 
 #include "options.h"
 
-#include "docbookviewer/contentrenderer.h"
+#include <kumir2-libs/docbookviewer/contentrenderer.h>
 #include <QString>
 #include <QStringList>
 

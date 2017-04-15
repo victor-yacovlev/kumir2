@@ -1,7 +1,7 @@
 
 #include "kumiranalizerplugin.h"
 #include "analizer.h"
-#include "errormessages/errormessages.h"
+#include <kumir2-libs/errormessages/errormessages.h>
 #include "lexer.h"
 
 #include <QtCore>

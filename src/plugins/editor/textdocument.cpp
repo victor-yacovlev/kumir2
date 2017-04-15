@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#include <extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace Editor
 {

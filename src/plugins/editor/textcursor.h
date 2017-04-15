@@ -2,10 +2,10 @@
 #define TEXTCURSOR_H
 
 
-#include "interfaces/analizerinterface.h"
+#include <kumir2/analizerinterface.h>
 #include "keycommand.h"
 #include "macro.h"
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #include <memory>
 #include <QtGui>

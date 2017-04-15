@@ -2,15 +2,15 @@
 #include "side.h"
 #include "ui_mainwindow.h"
 #include "tabwidgetelement.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include "aboutdialog.h"
 #include "kumirprogram.h"
-#include "dataformats/kumfile.h"
+#include <kumir2-libs/dataformats/kumfile.h>
 #include "statusbar.h"
 #include "tabwidget.h"
 #include "systemopenfilesettings.h"
 #include "guisettingspage.h"
-#include "widgets/iconprovider.h"
+#include <kumir2-libs/widgets/iconprovider.h>
 #include "toolbarcontextmenu.h"
 
 #include <algorithm>

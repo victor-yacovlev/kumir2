@@ -7,12 +7,12 @@ You should change it corresponding to functionality.
 */
 
 // Self include
-#include "widgets/draw_turtle_field.h"
+#include <kumir2-libs/widgets/draw_turtle_field.h>
 #include "drawmodule.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 
 // Qt includes

@@ -4,12 +4,12 @@
 #include <QtGlobal>
 #include <QObject>
 #include <QApplication>
-#include <extensionsystem/kplugin.h>
-#include <interfaces/coursesinterface.h>
-#include <widgets/declarativesettingspage.h>
-#include "extensionsystem/pluginmanager.h"
-#include "shared/interfaces/guiinterface.h"
-#include "shared/interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/coursesinterface.h>
+#include <kumir2-libs/widgets/declarativesettingspage.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/guiinterface.h>
+#include <kumir2/actorinterface.h>
 #include "course_model.h"
 typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;

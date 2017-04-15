@@ -1,15 +1,15 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 #include "macro.h"
-#include "dataformats/kumfile.h"
-#include "extensionsystem/settings.h"
-#include "docbookviewer/docbookview.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2-libs/dataformats/kumfile.h>
+#include <kumir2-libs/extensionsystem/settings.h>
+#include <kumir2-libs/docbookviewer/docbookview.h>
+#include <kumir2/analizerinterface.h>
 #include "editorplugin.h"
 
-#include "interfaces/editor_instanceinterface.h"
+#include <kumir2/editor_instanceinterface.h>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>

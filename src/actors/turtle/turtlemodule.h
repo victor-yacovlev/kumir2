@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include "turtlemodulebase.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 //#include "turtle.h"
 #include "pult.h"
 // Qt includes

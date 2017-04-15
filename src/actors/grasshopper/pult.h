@@ -19,7 +19,7 @@
 
 #include "ui_pult.h"
 #include "kuznec.h"
-#include "widgets/pultlogger.h"
+#include <kumir2-libs/widgets/pultlogger.h>
 //#include "network.h"
 #include <QtCore>
 #if QT_VERSION >= 0x050000

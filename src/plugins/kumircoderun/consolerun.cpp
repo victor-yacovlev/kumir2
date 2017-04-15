@@ -1,6 +1,6 @@
 #include "consolerun.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 #include "util.h"
 
 #include <QWidget>
@@ -23,7 +23,7 @@ ExternalModuleLoadFunctor::operator() (
 
     std::string moduleCanonicalFileName;
     bool forceUpper = true;
-    for (int i=0; i<moduleAsciiName.size(); i++) {
+    for (int i=0; i<(int)moduleAsciiName.size(); i++) {
         char ch = moduleAsciiName[i];
         QChar qch(ch);
         if (forceUpper) {

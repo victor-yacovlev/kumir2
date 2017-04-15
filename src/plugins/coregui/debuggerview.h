@@ -1,7 +1,7 @@
 #ifndef COREGUI_DEBUGGERVIEW_H
 #define COREGUI_DEBUGGERVIEW_H
 
-#include "interfaces/runinterface.h"
+#include <kumir2/runinterface.h>
 
 #include <QTreeView>
 

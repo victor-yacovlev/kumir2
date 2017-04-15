@@ -1,9 +1,9 @@
 #include "tabwidgetelement.h"
-#include "widgets/actionproxy.h"
+#include <kumir2-libs/widgets/actionproxy.h>
 #include "toolbarcontextmenu.h"
 
-#include "interfaces/actorinterface.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace CoreGUI {
 

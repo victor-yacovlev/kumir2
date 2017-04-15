@@ -7,8 +7,8 @@
 #else
 #include <QtGui>
 #endif
-#include "interfaces/analizerinterface.h"
-#include "dataformats/kumfile.h"
+#include <kumir2/analizerinterface.h>
+#include <kumir2-libs/dataformats/kumfile.h>
 
 namespace Editor {
 

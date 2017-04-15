@@ -1,7 +1,7 @@
 #ifndef COREGUI_STATUSBAR_H
 #define COREGUI_STATUSBAR_H
 
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 #include "mainwindow.h"
 
 #include <QStatusBar>

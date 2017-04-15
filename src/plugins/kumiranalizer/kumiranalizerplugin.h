@@ -1,8 +1,8 @@
 #ifndef KUMIRANALIZERPLUGIN_H
 #define KUMIRANALIZERPLUGIN_H
 
-#include <extensionsystem/kplugin.h>
-#include <interfaces/analizerinterface.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/analizerinterface.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QStringList>
@@ -23,7 +23,7 @@ class KumirAnalizerPlugin
     Q_PLUGIN_METADATA(IID "kumir2.KumirAnalizer" FILE "")
 #endif
     Q_INTERFACES(Shared::AnalizerInterface)
-    friend struct AnalizerPrivate;
+    friend class AnalizerPrivate;
 public:
     Shared::Analizer::InstanceInterface * createInstance();
     Shared::Analizer::SourceFileInterface * sourceFileHandler();

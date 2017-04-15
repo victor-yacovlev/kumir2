@@ -2,7 +2,7 @@
 #define KUMIRCODERUN_KUMVARIABLESMODEL_H
 
 #define DO_NOT_DECLARE_STATIC
-#include "vm/vm.hpp"
+#include <kumir2-libs/vm/vm.hpp>
 
 
 #include <QAbstractItemModel>

@@ -13,7 +13,7 @@ You should change it corresponding to functionality.
 #include <algorithm>
 #include "robotmodule.h"
 #include <QProcessEnvironment>
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
  //#include <iostream> 
 
 const int AnimTime = 100;
@@ -4806,7 +4806,7 @@ bool RobotModule::runIsColor()
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                  setError(trUtf8("Нет какой клетки!"));
                 return false;
@@ -4832,7 +4832,7 @@ bool RobotModule::runIsColor()
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                 setError(trUtf8("Нет какой клетки!"));
                 return false;
@@ -4878,7 +4878,7 @@ bool RobotModule::runIsColor()
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                 setError(trUtf8("Нет какой клетки!"));
                 return ' ';
@@ -4903,7 +4903,7 @@ bool RobotModule::runIsColor()
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                 setError(trUtf8("Нет какой клетки!"));
                 return 0;
@@ -4928,7 +4928,7 @@ bool RobotModule::runIsColor()
         if(!DISPLAY)
         {
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                 setError(trUtf8("Нет какой клетки!"));
                 return 0;
@@ -4955,7 +4955,7 @@ QChar RobotModule::runDownChar(const int row, const int col)
         {
             qDebug()<<"Get DC R:"<<row<<" C:"<<col<<" ROWS"<<curConsoleField->Rows();
             if(row-1>=curConsoleField->Rows()||col-1>=curConsoleField->Columns()
-               |row-1<0 || col-1<0)
+               ||row-1<0 || col-1<0)
             {
                 setError(trUtf8("Нет какой клетки!"));
                 return ' ';

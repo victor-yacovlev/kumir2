@@ -1,16 +1,10 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "dataformats/lexem.h"
-#include "interfaces/lexemtype.h"
+#include <kumir2-libs/dataformats/lexem.h>
+#include <kumir2/lexemtype.h>
 #include "statement.h"
-#include "interfaces/error.h"
-#include "dataformats/ast_variabletype.h"
-
-#include "interfaces/lineprop.h"
-#include "statement.h"
-#include "interfaces/error.h"
-#include "dataformats/ast_variabletype.h"
+#include <kumir2-libs/dataformats/ast_variabletype.h>
 
 #include <QtCore>
 

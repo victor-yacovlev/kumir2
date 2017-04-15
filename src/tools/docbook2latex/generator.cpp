@@ -1,7 +1,7 @@
 #include "generator.h"
 #include "preambule.tex.h"
 
-#include "docbookviewer/docbookmodel.h"
+#include <kumir2-libs/docbookviewer/docbookmodel.h>
 
 #include <iostream>
 

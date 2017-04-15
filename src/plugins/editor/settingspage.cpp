@@ -1,8 +1,8 @@
 #include "settingspage.h"
 #include "ui_settingspage.h"
 
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/analizerinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/analizerinterface.h>
 
 namespace Editor {
 

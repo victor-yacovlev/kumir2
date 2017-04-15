@@ -1,18 +1,20 @@
 #include <iostream>
 #include <fstream>
-#include "stdlib/kumirstdlib.hpp"
-#include "vm/vm_abstract_handlers.h"
-#include "vm/vm_console_handlers.hpp"
-#include "vm/variant.hpp"
-#include "vm/vm_bytecode.hpp"
-#include "vm/vm.hpp"
+#include <kumir2-libs/stdlib/kumirstdlib.hpp>
+#include <kumir2-libs/vm/vm_abstract_handlers.h>
+#include <kumir2-libs/vm/vm_console_handlers.hpp>
+#include <kumir2-libs/vm/variant.hpp>
+#include <kumir2-libs/vm/vm_bytecode.hpp>
+#include <kumir2-libs/vm/vm.hpp>
 
 #include <algorithm>
 
 #if defined(WIN32) || defined(_WIN32)
 #include <Windows.h>
 #else
+extern "C" {
 #include <unistd.h>
+}
 #endif
 
 using namespace Kumir;
@@ -228,7 +230,7 @@ int main(int argc, char *argv[])
 
     // Check if it's possible to run using regular runtime
     bool hasPluginDependency =
-            std::count_if(programData.d.begin(), programData.d.end(), IsPluginExtern);
+            0 != std::count_if(programData.d.begin(), programData.d.end(), IsPluginExtern);
 
     if (hasPluginDependency) {
         return runKumirXRun(argc, argv);

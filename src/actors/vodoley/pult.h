@@ -17,7 +17,7 @@
 
 #include "ui_pult.h"
 #include "vodoley.h"
-#include "widgets/pultlogger.h"
+#include <kumir2-libs/widgets/pultlogger.h>
 //#include "network.h"
 #include <QtCore>
 #if QT_VERSION >= 0x050000
@@ -29,7 +29,7 @@
 #define RESP_PANEL 40
 #define LOGGER_BUTTONS 140
 #define TEXT_STEP 14
-
+#undef TEXT
 #define UP 1
 #define DOWN 2
 #define LEFT 3
