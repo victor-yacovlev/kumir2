@@ -1,5 +1,9 @@
+# TODO Travis CI now supports only Ubuntu 12.04 and 14.04,
+# which are TOO old for us. Wait for 'xenial' support or
+# install Qt >= 5.3 and CMake >= 3.0 from some PPA
 language: cpp
 compiler: gcc
+dist: xenial
 addons:
     apt:
         packages:
