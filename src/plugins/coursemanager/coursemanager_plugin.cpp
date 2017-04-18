@@ -587,7 +587,13 @@ void Plugin::lockContrls()
     {
         prevFld->setEnabled(false);
         nextFld->setEnabled(false);
-    }
+}
+
+void Plugin::createPluginSpec()
+{
+    _pluginSpec.name = "CourseManager";
+    _pluginSpec.gui = false;
+}
 void Plugin::changeGlobalState(ExtensionSystem::GlobalState old,
                                ExtensionSystem::GlobalState current)
 {

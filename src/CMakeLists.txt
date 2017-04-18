@@ -10,6 +10,6 @@ endforeach(PACKAGE)
 
 add_subdirectory(kumir2-libs)
 add_subdirectory(plugins)
-add_subdirectory(actors)
+#add_subdirectory(actors)
 add_subdirectory(app)
 add_subdirectory(tools)

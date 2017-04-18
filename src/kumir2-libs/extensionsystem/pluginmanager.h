@@ -43,7 +43,7 @@ public:
       *
       * @param templ template
       * @return error message or empty string on success */
-    QString loadPluginsByTemplate(const QString &templ);
+    QString loadPluginsByTemplate(const QByteArray &templ);
 
     /** Loads extra module (example: actor file on demand) by given canonical
      *  file name @param canonicalFileName.
@@ -73,14 +73,14 @@ public:
     SettingsPtr settingsByObject(const KPlugin * p) const;
 
     /** Returns plugin dependency by name */
-    KPlugin * dependentPlugin(const QString &name, const class KPlugin * p) const;
+    KPlugin * dependentPlugin(const QByteArray &name, const class KPlugin * p) const;
 
     /** Return all plugins matched by regexp */
-    QList<KPlugin*> loadedPlugins(const QString & pattern = "*");
-    QList<const KPlugin*> loadedConstPlugins(const QString & pattern = "*") const;
+    QList<KPlugin*> loadedPlugins(const QByteArray& pattern = "*");
+    QList<const KPlugin*> loadedConstPlugins(const QByteArray & pattern = "*") const;
 
     /** Return plugin by specified name */
-    KPlugin* loadedPlugin(const QString & name);
+    KPlugin* loadedPlugin(const QByteArray & name);
 
     /** Module to start */
     KPlugin * startupModule();    

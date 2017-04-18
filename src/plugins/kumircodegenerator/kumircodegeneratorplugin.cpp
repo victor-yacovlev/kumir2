@@ -60,6 +60,13 @@ void KumirCodeGeneratorPlugin::setOutputToText(bool flag)
     textMode_ = false;
 }
 
+void KumirCodeGeneratorPlugin::createPluginSpec()
+{
+    _pluginSpec.name = "KumirCodeGenerator";
+    _pluginSpec.provides.append("Generator");
+    _pluginSpec.gui = false;
+}
+
 void KumirCodeGeneratorPlugin::setDebugLevel(DebugLevel debugLevel)
 {
     d->setDebugLevel(debugLevel);

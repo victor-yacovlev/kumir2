@@ -32,7 +32,7 @@ public:
     virtual QByteArray pluginName() const;
     enum State { Disabled = 0x00, Loaded=0x01, Initialized=0x02, Started=0x03, Stopped=0x04 };
     KPlugin();
-    PluginSpec pluginSpec() const;
+    const PluginSpec & pluginSpec() const;
     State state() const;
     inline virtual bool isGuiRequired() const { return pluginSpec().gui; } // Can be overridden in special cases
 
@@ -70,15 +70,19 @@ public:
     inline virtual void start() {}
     inline virtual void stop() {}
     virtual void updateSettings(const QStringList & keys) = 0;
-    KPlugin * myDependency(const QString & name) const;    
+    KPlugin * myDependency(const QByteArray & name) const;
 
-    QList<KPlugin*> loadedPlugins(const QString &pattern = "*");
-    QList<const KPlugin*> loadedPlugins(const QString &pattern = "*") const;
+    QList<KPlugin*> loadedPlugins(const QByteArray &pattern = "*");
+    QList<const KPlugin*> loadedPlugins(const QByteArray &pattern = "*") const;
+
+protected:
+    virtual void createPluginSpec() = 0;
+    PluginSpec _pluginSpec;
 
 private:
-    SettingsPtr settings_;
-    QString resourcesDir_;
-
+    SettingsPtr _settings;
+    QString _resourcesDir;
+    State _state;
 };
 
 } // namespace ExtensionSystem

@@ -191,6 +191,14 @@ void KumirCompilerToolPlugin::stop()
 
 }
 
+void KumirCompilerToolPlugin::createPluginSpec()
+{
+    _pluginSpec.name = "KumirCompilerTool";
+    _pluginSpec.gui = false;
+    _pluginSpec.dependencies.append("Analizer");
+    _pluginSpec.dependencies.append("Generator");
+}
+
 #if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN(KumirCompilerToolPlugin)
 #endif

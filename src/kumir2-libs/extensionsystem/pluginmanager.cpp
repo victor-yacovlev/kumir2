@@ -55,13 +55,7 @@ PluginManager::~PluginManager()
 
 bool PluginManager::isPluginLoaded(const QByteArray &name) const
 {
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        const PluginSpec & spec = pImpl_->specs.at(i);
-        if (spec.name.toLatin1() == name) {
-            return true;
-        }
-    }
-    return false;
+    return pImpl_->isPluginLoaded(name);
 }
 
 void PluginManager::destroy()
@@ -119,19 +113,13 @@ QString PluginManager::sharePath() const
 
 
 
-QString PluginManager::loadPluginsByTemplate(const QString &templ)
+QString PluginManager::loadPluginsByTemplate(const QByteArray &templ)
 {
-    QList<PluginRequest> requests;
-    QStringList names;
+    QList<PluginSpec> requests;
     QString error = "";
-    error = pImpl_->parsePluginsRequest(templ, requests, names);
+    error = pImpl_->parsePluginsRequest(templ, requests);
     if (!error.isEmpty())
         return error;    
-    //QScriptEngine engine;
-    //engine.evaluate("var data = null;\n");
-    //error = d->loadSpecs(names, &engine);
-    qDebug() << "Loading plugin spec files for: " << names;
-    error = pImpl_->loadSpecs(names);
     if (!error.isEmpty())
         return error;
 
@@ -139,136 +127,91 @@ QString PluginManager::loadPluginsByTemplate(const QString &templ)
 #ifdef Q_OS_UNIX
     console = getenv("DISPLAY")==0;
 #endif
-    //    console = true; // !!! was here for debug purposes
-//    if (console) {
-//        // Remove GUI plugins
-//        QList<PluginSpec>::iterator it;
-//        for (it=pImpl_->specs.begin(); it!=pImpl_->specs.end(); ) {
-//            PluginSpec spec = (*it);
-//            bool forceLoad = false;
-//            if (spec.name.startsWith("Actor") && templ.contains("(tablesOnly)")) {
-//                forceLoad = true;
-//            }
-//            if (spec.gui && !forceLoad) {
-//                names.removeAll(spec.name);
-//                QList<PluginRequest>::iterator rit;
-//                for (rit=requests.begin(); rit!=requests.end(); ) {
-//                    PluginRequest r = *(rit);
-//                    if (r.name==spec.name) {
-//                        rit = requests.erase(rit);
-//                    }
-//                    else {
-//                        rit ++;
-//                    }
-//                }
-//                it = pImpl_->specs.erase(it);
-//            }
-//            else {
-//                it++;
-//            }
-//        }
-//    }
 
-    // orderedList will contain names in order of load and initialization
-    QStringList orderedList;
-    // make dependencies for entry point plugin first
-    qDebug() << "Reordering plugin load order and building dependencies...";
-    error = pImpl_->makeDependencies(pImpl_->mainPluginName,orderedList);    
-    if (!error.isEmpty())
-        return error;
-    // make dependencies for other requests
-    for (int i=0; i<requests.size(); i++) {
-        error = pImpl_->makeDependencies(requests[i].name,orderedList);
-        if (!error.isEmpty())
+    Q_FOREACH(PluginSpec spec, requests) {
+        error = pImpl_->loadPlugin(spec, requests);
+        if (!error.isEmpty()) {
             return error;
+        }
     }
-    error = pImpl_->reorderSpecsAndCreateStates(orderedList);
-    if (!error.isEmpty())
-        return error;
-    qDebug() << "New plugin load ordered list: " << orderedList;
-    qDebug() << "Begin loading plugins";
-    error = pImpl_->loadPlugins();
-    if (!error.isEmpty())
-        return error;
-    qDebug() << "Done loading plugins";
-    pImpl_->requests = requests;
     return "";
 }
 
 QString PluginManager::loadExtraModule(const std::string &canonicalFileName)
 {
-    QString moduleName = QString::fromStdString(canonicalFileName);
-    if ( moduleName.length()>0 )
-        moduleName[0] = moduleName[0].toUpper();
+    return "Not implemented yet";
+//    QString moduleName = QString::fromStdString(canonicalFileName);
+//    if ( moduleName.length()>0 )
+//        moduleName[0] = moduleName[0].toUpper();
 
-    QString libraryFileName = moduleName.replace(" ", "");
-#if defined(Q_OS_WIN32)
-    libraryFileName += ".dll";
-#elif defined(Q_OS_MACX)
-    libraryFileName = "lib"+libraryFileName+".dylib";
-#else
-    libraryFileName = "lib"+libraryFileName+".so";
-#endif
-    QString fullPath;
-    QString check;
-    check = pImpl_->path + "/" + libraryFileName;
-    if (QFile::exists(check)) {
-        fullPath = check;
-    }
-    if (fullPath.isEmpty()) {
-        check = QDir::currentPath()+"/"+libraryFileName;
-        if (QFile::exists(check)) {
-            fullPath = check;
-        }
-    }
+//    QString libraryFileName = moduleName.replace(" ", "");
+//#if defined(Q_OS_WIN32)
+//    libraryFileName += ".dll";
+//#elif defined(Q_OS_MACX)
+//    libraryFileName = "lib"+libraryFileName+".dylib";
+//#else
+//    libraryFileName = "lib"+libraryFileName+".so";
+//#endif
+//    QString fullPath;
+//    QString check;
+//    check = pImpl_->path + "/" + libraryFileName;
+//    if (QFile::exists(check)) {
+//        fullPath = check;
+//    }
+//    if (fullPath.isEmpty()) {
+//        check = QDir::currentPath()+"/"+libraryFileName;
+//        if (QFile::exists(check)) {
+//            fullPath = check;
+//        }
+//    }
 
-    if (fullPath.isEmpty()) {
-        const QString errorMessage = tr("Can't load module %1: file not found")
-                .arg(libraryFileName);
-        return errorMessage;
-    }
+//    if (fullPath.isEmpty()) {
+//        const QString errorMessage = tr("Can't load module %1: file not found")
+//                .arg(libraryFileName);
+//        return errorMessage;
+//    }
 
-    QPluginLoader loader(fullPath);
+//    QPluginLoader loader(fullPath);
 
-    if (!loader.load()) {
-        return QString("Can't load module %1: %2")
-                .arg(libraryFileName)
-                .arg(loader.errorString());
-    }
-    KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
-    if (!plugin) {
-        return QString("Plugin is not valid (does not implement interface KPlugin)");
-        loader.unload();
-    }
-    pImpl_->objects.push_back(plugin);
-    pImpl_->states.push_back(KPlugin::Loaded);
-    PluginSpec spec;
-    spec.name = QString::fromStdString(canonicalFileName);
-    spec.libraryFileName = libraryFileName;
-    spec.gui = plugin->isGuiRequired();
-    pImpl_->specs.push_back(spec);
-    Settings * sett = new Settings(moduleName);
-    sett->changeWorkingDirectory(pImpl_->settingsWorkspacePath);
-    pImpl_->settings.push_back(SettingsPtr(sett));
-    plugin->updateSettings(QStringList());
-    CommandLine runtimeParameters;
-    if (!pImpl_->extractRuntimeParametersForPlugin(plugin, runtimeParameters)) {
-        QString error = tr("The following command line parameters required, but not set:\n");
-        for (int i=0; i<runtimeParameters.data_.size(); i++) {
-            const CommandLineParameter & param = runtimeParameters.data_[i];
-            if (param.shortDescription_.length() > 0) {
-                if (!param.isValid() && plugin==pImpl_->objects.last())
-                    error += "  " + param.toHelpLine() + "\n";
-            }
-            else if (!param.isValid()) {
-                error += "  " + param.toHelpLine() + "\n";
-            }
-        }
-        return error;
-    }
-    QString result = plugin->initialize(QStringList(), runtimeParameters);
-    pImpl_->states.last() = KPlugin::Initialized;
-    return result;
+//    if (!loader.load()) {
+//        return QString("Can't load module %1: %2")
+//                .arg(libraryFileName)
+//                .arg(loader.errorString());
+//    }
+//    KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+//    if (!plugin) {
+//        return QString("Plugin is not valid (does not implement interface KPlugin)");
+//        loader.unload();
+//    }
+//    pImpl_->objects.push_back(plugin);
+//    pImpl_->states.push_back(KPlugin::Loaded);
+//    PluginSpec spec;
+//    spec.name = QString::fromStdString(canonicalFileName);
+//    spec.libraryFileName = libraryFileName;
+//    spec.gui = plugin->isGuiRequired();
+//    pImpl_->specs.push_back(spec);
+//    Settings * sett = new Settings(moduleName);
+//    sett->changeWorkingDirectory(pImpl_->settingsWorkspacePath);
+//    pImpl_->settings.push_back(SettingsPtr(sett));
+//    plugin->updateSettings(QStringList());
+//    CommandLine runtimeParameters;
+//    if (!pImpl_->extractRuntimeParametersForPlugin(plugin, runtimeParameters)) {
+//        QString error = tr("The following command line parameters required, but not set:\n");
+//        for (int i=0; i<runtimeParameters.data_.size(); i++) {
+//            const CommandLineParameter & param = runtimeParameters.data_[i];
+//            if (param.shortDescription_.length() > 0) {
+//                if (!param.isValid() && plugin==pImpl_->objects.last())
+//                    error += "  " + param.toHelpLine() + "\n";
+//            }
+//            else if (!param.isValid()) {
+//                error += "  " + param.toHelpLine() + "\n";
+//            }
+//        }
+//        return error;
+//    }
+//    QString result = plugin->initialize(QStringList(), runtimeParameters);
+//    pImpl_->states.last() = KPlugin::Initialized;
+//    return result;
 }
 
 bool PluginManager::isGuiRequired() const
@@ -280,9 +223,37 @@ bool PluginManager::isGuiRequired() const
         return false;
 }
 
+QString PluginManager::initializePlugins()
+{
+    QString error;
+
+    // Initialize plugins with exact order from starting entry point
+    KPlugin * entryPoint = loadedPlugin(pImpl_->mainPluginName);
+    error = pImpl_->initializePlugin(entryPoint);
+    if (error.length() > 0) {
+        return error;
+    }
+
+    // Initialize rest of plugins
+    Q_FOREACH(KPlugin * plugin, pImpl_->objects) {
+        error = pImpl_->initializePlugin(plugin);
+        if (error.length() > 0) {
+            return error;
+        }
+    }
+
+    return "";
+}
+
 QString PluginManager::commandLineHelp() const
 {
-    const PluginSpec &mainSpec = pImpl_->specs.last();
+    PluginSpec mainSpec;
+    Q_FOREACH(KPlugin * plugin, pImpl_->objects) {
+        if (plugin->pluginSpec().main) {
+            mainSpec = plugin->pluginSpec();
+            break;
+        }
+    }
     bool guiMode = mainSpec.gui;
     QString result = tr("Usage:\n");
     QString programName = QCoreApplication::applicationFilePath();
@@ -369,91 +340,40 @@ QFont PluginManager::initialApplicationFont() const
     return pImpl_->initialApplicationFont;
 }
 
-QString PluginManager::initializePlugins()
-{
-    Q_ASSERT(pImpl_->specs.size()==pImpl_->objects.size());
-    for (int i=0; i<pImpl_->objects.size(); i++) {
-        if (pImpl_->states[i] != KPlugin::Loaded)
-            continue;
-        const QString name = pImpl_->specs[i].name;
-        QStringList arguments;
-        for (int j=0; j<pImpl_->requests.size(); j++) {
-            if (pImpl_->requests[j].name==name) {
-                arguments = pImpl_->requests[j].arguments;
-            }
-        }
-        CommandLine runtimeParameters;
-        if (!pImpl_->extractRuntimeParametersForPlugin(pImpl_->objects[i], runtimeParameters)) {
-            QString error = tr("The following command line parameters required, but not set:\n");
-            for (int i=0; i<runtimeParameters.data_.size(); i++) {
-                const CommandLineParameter & param = runtimeParameters.data_[i];
-                if (!param.isValid()) {
-                    error += "  " + param.toHelpLine() + "\n";
-                }
-            }
-            error += tr("Run with --help for more details.\n");
-            return error;
-        }
-        qDebug() << "Begin initialization of plugin " <<
-                    pImpl_->specs[i].name << " with parameters " << arguments;
-        QString error = pImpl_->objects[i]->initialize(arguments, runtimeParameters);
-        if (!error.isEmpty()) {
-            return QString("Error initializing %1: %2")
-                    .arg(name)
-                    .arg(error);
-        }
-        qDebug() << "Plugin initialization done";
-        pImpl_->states[i] = KPlugin::Initialized;
-    }
 
-    std::list<QString> remainingParameters = pImpl_->namedProgramArguments;
-    remainingParameters.merge(pImpl_->unnamedProgramArguments);;
-
-    if (remainingParameters.size() > 0) {
-        QString error = tr("Extra command line arguments:\n");
-
-        for (std::list<QString>::const_iterator it=remainingParameters.begin();
-             it!=remainingParameters.end(); ++it)
-        {
-            error += "  " + (*it) + "\n";
-        }
-
-        error += tr("Run with --help for more details.\n");
-        return error;
-    }
-
-    return "";
-}
-
-QList<const KPlugin*> PluginManager::loadedConstPlugins(const QString &pattern) const
+QList<const KPlugin*> PluginManager::loadedConstPlugins(const QByteArray &pattern) const
 {
     QList<const KPlugin*> result;
     const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        if (rx.exactMatch(pImpl_->specs[i].name)) {
-            result << pImpl_->objects[i];
+    Q_FOREACH(const KPlugin * p, pImpl_->objects) {
+        const PluginSpec & spec = p->pluginSpec();
+        if (rx.exactMatch(spec.name)) {
+            result.append(p);
         }
     }
     return result;
 }
 
-QList<KPlugin*> PluginManager::loadedPlugins(const QString &pattern)
+QList<KPlugin*> PluginManager::loadedPlugins(const QByteArray &pattern)
 {
     QList<KPlugin*> result;
     const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        if (rx.exactMatch(pImpl_->specs[i].name)) {
-            result << pImpl_->objects[i];
+    Q_FOREACH(KPlugin * p, pImpl_->objects) {
+        const PluginSpec & spec = p->pluginSpec();
+        if (rx.exactMatch(spec.name)) {
+            result.append(p);
         }
     }
     return result;
 }
 
-KPlugin* PluginManager::loadedPlugin(const QString &name)
+KPlugin* PluginManager::loadedPlugin(const QByteArray &name)
 {
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        if (pImpl_->specs[i].name==name)
-            return pImpl_->objects[i];
+    Q_FOREACH(KPlugin * p, pImpl_->objects) {
+        const PluginSpec & spec = p->pluginSpec();
+        if (spec.name == name) {
+            return p;
+        }
     }
     return 0;
 }
@@ -466,80 +386,23 @@ KPlugin* PluginManager::startupModule()
 QString PluginManager::start()
 {
     KPlugin * p = startupModule();
-    int index = pImpl_->objects.indexOf(p);
     p->start();
-    pImpl_->states[index] = KPlugin::Started;
+    p->_state = KPlugin::Started;
     return "";
 }
 
-PluginSpec PluginManager::specByObject(const KPlugin *p) const
-{
-    Q_ASSERT(pImpl_->specs.size()==pImpl_->objects.size());
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        if (pImpl_->objects[i]==p) {
-            return pImpl_->specs[i];
-        }
-    }
-    return PluginSpec();
-}
 
-KPlugin * PluginManager::dependentPlugin(const QString &name, const KPlugin *p) const
+KPlugin * PluginManager::dependentPlugin(const QByteArray &name, const KPlugin *p) const
 {
-    PluginSpec spec;
-    Q_ASSERT(pImpl_->specs.size()==pImpl_->objects.size());
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        if (pImpl_->objects[i]==p) {
-            spec = pImpl_->specs[i];
-        }
-    }
-    bool hasDep = false;
-    QSet<QString> depAliases;
-    for (int i=0; i<spec.dependencies.size(); i++) {
-        for (int j=0; j<pImpl_->specs.size(); j++) {
-            if (pImpl_->specs[j].provides.contains(spec.dependencies[i]))
-                depAliases |= QSet<QString>::fromList(pImpl_->specs[j].provides);
-        }
-    }
-    for (int i=0; i<spec.dependencies.size(); i++) {
-        if (depAliases.contains(spec.dependencies[i])) {
-            hasDep = true;
-            break;
-        }
-    }
-    if (!hasDep) {
-        return 0;
-    }
-    for (int i=0; i<pImpl_->specs.size(); i++) {
-        PluginSpec ss=pImpl_->specs[i];
-        if (pImpl_->specs[i].provides.contains(name)) {
-            return pImpl_->objects[i];
+    Q_FOREACH(KPlugin * anotherPlugin, pImpl_->objects) {
+        const PluginSpec & anotherSpec = anotherPlugin->pluginSpec();
+        if (anotherSpec.name == name || anotherSpec.provides.contains(name)) {
+            return anotherPlugin;
         }
     }
     return 0;
 }
 
-KPlugin::State PluginManager::stateByObject(const KPlugin *p) const
-{
-    Q_ASSERT(pImpl_->states.size()==pImpl_->objects.size());
-    for (int i=0; i<pImpl_->objects.size(); i++) {
-        if (pImpl_->objects[i]==p) {
-            return pImpl_->states[i];
-        }
-    }
-    return KPlugin::Disabled;
-}
-
-SettingsPtr PluginManager::settingsByObject(const KPlugin *p) const
-{
-    Q_ASSERT(pImpl_->settings.size()==pImpl_->objects.size());
-    for (int i=0; i<pImpl_->objects.size(); i++) {
-        if (pImpl_->objects[i]==p) {
-            //            qDebug()<<"sett"<<d->settings[i];
-            return pImpl_->settings[i];
-        }
-    }
-    return SettingsPtr();
-}
 
 PluginManager * PluginManager::instance()
 {
@@ -556,19 +419,16 @@ bool PluginManager::shutdown()
         }
     }
 
-    for (int i=pImpl_->objects.size()-1; i>=0; i--) {
-        if (pImpl_->states[i] != KPlugin::Stopped) {
-            KPlugin * p = pImpl_->objects[i];
-            SettingsPtr s = pImpl_->settings[i];
-            if (s) {
-                pImpl_->objects[i]->saveSession();
-                s->flush();
-            }
-            p->stop();
-            pImpl_->states[i] = KPlugin::Stopped;
-            pImpl_->settings[i].clear();
+    Q_FOREACH(KPlugin * plugin, pImpl_->objects) {
+        SettingsPtr s = plugin->mySettings();
+        if (s) {
+            plugin->saveSession();
+            s->flush();
         }
+        plugin->stop();
+        plugin->_state = KPlugin::Stopped;
     }
+
     return true;
 }
 

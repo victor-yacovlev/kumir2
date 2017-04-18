@@ -9,34 +9,28 @@
 
 namespace ExtensionSystem {
 
-struct PluginRequest {
-    QString name;
-    bool start;
-    QStringList arguments;
-};
 
 struct PluginManagerImpl {
     QList<KPlugin*> objects;
     QString path;
     QString sharePath;
-    QList<PluginSpec> specs;
-    QList<KPlugin::State> states;
-    QList<SettingsPtr> settings;
-    QList<PluginRequest> requests;
-    QString mainPluginName;
+
+    QByteArray mainPluginName;
     GlobalState globalState;
 
     SettingsPtr mySettings;
     QString settingsWorkspacePath;
 
 
-    QString parsePluginsRequest(const QString &templ, QList<PluginRequest> & plugins, QStringList & names);
+    QString parsePluginsRequest(const QByteArray &templ, QList<PluginSpec> & plugins);
     QString loadSpecs(const QStringList &names/*, QScriptEngine * engine*/);
     QString makeDependencies(const QString &entryPoint,
                              QStringList &orderedList);
     QString reorderSpecsAndCreateStates(const QStringList & orderedList);
     void createSettingsDialog();
-    QString loadPlugins();
+    QString loadPlugin(PluginSpec spec, const QList<PluginSpec> & allSpecs);
+    QString initializePlugin(KPlugin * plugin);
+    bool isPluginLoaded(const QByteArray & name) const;
     void changeWorkingDirectory(const QString &path, bool saveChanges, bool workDirOnly);
     bool extractRuntimeParametersForPlugin(const KPlugin * plugin, CommandLine & parameters);
 

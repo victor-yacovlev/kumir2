@@ -20,6 +20,7 @@
 #include <kumir2-libs/widgets/secondarywindow.h>
 #include <kumir2-libs/widgets/dockwindowplace.h>
 #include <kumir2-libs/docbookviewer/docbookview.h>
+#include <kumir2-libs/extensionsystem/pluginspec.h>
 #include "terminal.h"
 #include "kumirprogram.h"
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
@@ -123,6 +124,7 @@ protected:
     void start();
     void stop();
     QList<QWidget*> settingsEditorPages() override;
+    void createPluginSpec() override;
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     static void handleSIGUSR1(int, siginfo_t *, void *);
@@ -131,6 +133,7 @@ protected:
     void timerEvent(QTimerEvent *);
     QSharedMemory * ipcShm_;
 #endif
+
 
     class MainWindow * mainWindow_;
     class QLabel * m_kumirStateLabel;
