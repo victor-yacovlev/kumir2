@@ -1,0 +1,10 @@
+language: cpp
+compiler: gcc
+addons:
+    apt:
+        packages:
+        - python3-all
+        - qt5-default
+script:
+    - cmake -DUSE_QT=5
+    - make
