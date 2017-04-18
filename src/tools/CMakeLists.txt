@@ -7,7 +7,7 @@ endif()
 add_opt_subdirectory(docbook2latex)
 
 if(NOT APPLE)
-#    add_opt_subdirectory(open)
+    add_opt_subdirectory(open)
 endif()
 
 add_opt_subdirectory(courseeditor)
