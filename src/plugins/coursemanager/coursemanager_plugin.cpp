@@ -41,7 +41,7 @@ Plugin::Plugin()
     rescentMenu=new QMenu(trUtf8("Недавние тетради/курсы..."));
     // m_actionCourseLoadRescent->setMenu(rescentMenu);
     MW=new MainWindowTask();
-    MW->setup(myResourcesDir(), mySettings());
+
    
     mainWindow_=MW;
    
@@ -632,6 +632,7 @@ QString Plugin::initialize(const QStringList &configurationArguments,
         }
         return "";
     }
+    MW->setup(myResourcesDir(), mySettings());
     QList<QAction*> actions;
     actions=MW->getActions();
     for(int i=0;i<actions.count();i++)
