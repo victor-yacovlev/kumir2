@@ -16,15 +16,17 @@ namespace ExtensionSystem {
 struct PluginSpec
 {
     // Mandatory fields filled by plugin itself
-    bool gui = false;
+    bool gui;
     QByteArray name;
     QList<QByteArray> dependencies;
     QList<QByteArray> provides;
 
     // Fields filled by launcher
-    bool main = false;
+    bool main;
     QByteArray libraryFileName;
     QStringList arguments;
+
+    inline explicit PluginSpec() { gui = false; main = false; }
 };
 
 
