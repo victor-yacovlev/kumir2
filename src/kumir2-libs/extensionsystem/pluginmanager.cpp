@@ -227,19 +227,37 @@ QString PluginManager::initializePlugins()
 {
     QString error;
 
-    // Initialize plugins with exact order from starting entry point
+    // Initialize direct dependencies of startup module, but not startup itself
     KPlugin * entryPoint = loadedPlugin(pImpl_->mainPluginName);
-    error = pImpl_->initializePlugin(entryPoint);
-    if (error.length() > 0) {
-        return error;
+    const PluginSpec & spec = entryPoint->pluginSpec();
+    QList<KPlugin*> directEntryPointDeps;
+    Q_FOREACH(const QByteArray & depName, spec.dependencies) {
+        Q_FOREACH(KPlugin* anotherPlugin, pImpl_->objects) {
+            const PluginSpec & anotherSpec = anotherPlugin->pluginSpec();
+            if (anotherSpec.name == depName || anotherSpec.provides.contains(depName)) {
+                directEntryPointDeps.append(anotherPlugin);
+            }
+        }
+    }
+    Q_FOREACH(KPlugin * dep, directEntryPointDeps) {
+        error = pImpl_->initializePlugin(dep);
+        if (error.length() > 0) {
+            return error;
+        }
     }
 
-    // Initialize rest of plugins
+    // Initialize rest of plugins, but not startup
     Q_FOREACH(KPlugin * plugin, pImpl_->objects) {
         error = pImpl_->initializePlugin(plugin);
         if (error.length() > 0) {
             return error;
         }
+    }
+
+    // Initialize startup module itself
+    error = pImpl_->initializePlugin(entryPoint);
+    if (error.length() > 0) {
+        return error;
     }
 
     return "";
