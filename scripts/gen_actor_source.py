@@ -18,7 +18,6 @@ Example (create new actor skeleton):
     ../../../scripts/gen_actor_source.py --project mygreatactor.json
 
 This will create the following files:
-    MyGreatActor.pluginspec     -- actor plugin spec
     CMakeLists.txt              -- CMake project file
     mygreatactormodule.h        -- header skeleton
     mygreatactormodule.cpp      -- source skeleton
@@ -1513,6 +1512,17 @@ private:
         """ % (self.class_name, self.class_name)
 
     # noinspection PyPep8Naming
+    def createPluginSpecCppImplementation(self):
+        actor_name = self._module.name.get_camel_case_cpp_value()
+        return """
+/* protected */ void %s::createPluginSpec()
+{
+    _pluginSpec.name = "Actor%s";
+    _pluginSpec.gui = isGuiRequired();
+}
+        """ % (self.class_name, actor_name)
+
+    # noinspection PyPep8Naming
     def isGuiRequiredCppImplementation(self):
         """
         Creates implementation of isGuiRequired
@@ -2351,10 +2361,10 @@ private:
             return """
 /* public */ QList<Shared::ActorInterface*> %s::usesList() const
 {
-    static const QStringList usesNames = QStringList()
+    static const QList<QByteArray> usesNames = QList<QByteArray>()
         << %s ;
     QList<Shared::ActorInterface*> result;
-    Q_FOREACH (const QString & name, usesNames) {
+    Q_FOREACH (const QByteArray & name, usesNames) {
         ExtensionSystem::KPlugin * plugin = myDependency(name);
         Shared::ActorInterface * actor =
                 qobject_cast<Shared::ActorInterface*>(plugin);

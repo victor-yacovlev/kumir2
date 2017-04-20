@@ -220,14 +220,7 @@ function(kumir2_add_plugin)
     set_property(TARGET ${PARSED_ARGS_NAME} APPEND PROPERTY LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${KUMIR2_PLUGINS_DIR}")
     set_property(TARGET ${PARSED_ARGS_NAME} APPEND PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${KUMIR2_PLUGINS_DIR}")
     kumir2_handle_translation(${PARSED_ARGS_NAME} "ru")
-    kumir2_copy_resources(${PARSED_ARGS_NAME})
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_NAME}.pluginspec")
-        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_NAME}.pluginspec" DESTINATION "${CMAKE_BINARY_DIR}/${KUMIR2_PLUGINS_DIR}")
-        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_NAME}.pluginspec" DESTINATION ${KUMIR2_PLUGINS_DIR})
-    elseif(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_NAME}.pluginspec")
-        file(COPY "${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_NAME}.pluginspec" DESTINATION "${CMAKE_BINARY_DIR}/${KUMIR2_PLUGINS_DIR}")
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_NAME}.pluginspec" DESTINATION ${KUMIR2_PLUGINS_DIR})
-    endif()
+    kumir2_copy_resources(${PARSED_ARGS_NAME})    
     install(TARGETS ${PARSED_ARGS_NAME} DESTINATION ${KUMIR2_PLUGINS_DIR})
 endfunction(kumir2_add_plugin)
 
@@ -236,7 +229,6 @@ function(kumir2_add_actor)
     string(TOLOWER "${PARSED_ARGS_NAME}.json" JSON_FILE_NAME)
     string(TOLOWER "${PARSED_ARGS_NAME}modulebase" MODULEBASE)
     string(TOLOWER "${PARSED_ARGS_NAME}plugin" PLUGIN)
-    set(PLUGIN_SPEC "Actor${PARSED_ARGS_NAME}.pluginspec")
     set(PLUGIN_NAME "Actor${PARSED_ARGS_NAME}")
     if(EXISTS "${CMAKE_SOURCE_DIR}/scripts/gen_actor_source.py")
         set(GEN_ACTOR_SOURCE_SCRIPT "${CMAKE_SOURCE_DIR}/scripts/gen_actor_source.py")
@@ -255,7 +247,6 @@ function(kumir2_add_actor)
         OUTPUT
             ${SOURCES_GENERATED}
             ${HEADERS_GENERATED}
-            ${PLUGIN_SPEC}
         COMMAND ${PYTHON_EXECUTABLE}
             ${GEN_ACTOR_SOURCE_SCRIPT}
             "--update"
