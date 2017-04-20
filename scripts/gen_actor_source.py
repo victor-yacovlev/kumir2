@@ -166,6 +166,7 @@ import json
 import string
 import os
 import inspect
+from _ast import mod
 
 
 def string_join(lines, sep):
@@ -3588,34 +3589,6 @@ $classImplementation
     _update_file(file_base_name + ".cpp", target_dir, data)
 
 
-def create_plugin_spec_file(module, target_dir=""):
-    """
-    Creates or updates module plugin specification file
-
-    :type   module:     Module
-    :param  module:     actor module tree root
-    :type   target_dir: str
-    :param  target_dir: directory path to store (optional, by default uses current dir)
-    """
-    file_name = "Actor" + module.name.get_camel_case_cpp_value() + ".pluginspec"
-    name = "Actor" + module.name.get_camel_case_cpp_value()
-    requires = ""
-    if module.uses_list:
-        plugin_names = map(lambda s: "Actor" + s, module.uses_list)
-        # noinspection PyUnresolvedReferences
-        requires = "requires = " + string.join(plugin_names, ", ")
-    if module.gui:
-        gui = "true"
-    else:
-        gui = "false"
-    data = """
-name    = %s
-gui     = %s
-%s
-    """ % (name, gui, requires)
-    _update_file(file_name, target_dir, unicode(data.strip() + "\n"))
-
-
 def create_cmakelists_txt(module, json_file_name, target_dir=""):
     """
     Creates or updates project CMakeLists.txt file
@@ -3630,42 +3603,15 @@ def create_cmakelists_txt(module, json_file_name, target_dir=""):
     substitutions = {
         "projectName": module.get_module_cpp_namespace(),
         "moduleFileName": module.get_module_cpp_class_name().lower(),
-        "moduleBaseFileName": module.get_base_cpp_class_name().lower(),
-        "pluginFileName": module.get_plugin_cpp_class_name().lower(),
-        "specFileName": "Actor%s" % module.name.get_camel_case_cpp_value(),
-        "jsonFileName": os.path.basename(json_file_name),
-        "actorDir": module.name.get_camel_case_cpp_value().lower()
+        "actorName": module.name
     }
     data = _render_template(r"""
 project($projectName)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
+find_package(Kumir2 REQUIRED)
+kumir2_use_qt(Core Gui)
 
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-    set(MOC_PARAMS "-I/usr/include/qt5"
-                   "-I/usr/include/qt5/QtCore"
-                   "-I${_qt5Core_install_prefix}/include/QtCore"
-                   "-DQT_PLUGIN"
-    )
-    foreach(IDIR ${Qt5Core_INCLUDE_DIRS})
-        set(MOC_PARAMS "-I${IDIR}" ${MOC_PARAMS})
-    endforeach()
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui QtXml QtSvg REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-find_package(PythonInterp 3.2.0 REQUIRED)
-include(../../kumir2_plugin.cmake)
 
 set(SOURCES
     $moduleFileName.cpp
@@ -3675,95 +3621,16 @@ set(MOC_HEADERS
     $moduleFileName.h
 )
 
-add_custom_command(
-    OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
-        ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
-        ${CMAKE_CURRENT_BINARY_DIR}/$specFileName.pluginspec
-    COMMAND ${PYTHON_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
-            --update
-            ${CMAKE_CURRENT_SOURCE_DIR}/$jsonFileName
-    DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/$jsonFileName
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../scripts/gen_actor_source.py
-)
-
-add_custom_target(
-    $specFileNamePluginSpec
-    ALL
-    ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/$specFileName.pluginspec ${PLUGIN_OUTPUT_PATH}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/$specFileName.pluginspec
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
-    COMMAND ${QT_MOC_EXECUTABLE}
-        -I${CMAKE_SOURCE_DIR}/src/shared
-        ${MOC_PARAMS}
-        -o${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/$moduleBaseFileName.h
-)
-
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
-    COMMAND ${QT_MOC_EXECUTABLE}
-        -I${CMAKE_SOURCE_DIR}/src/shared
-        ${MOC_PARAMS}
-        -o${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.moc.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/$pluginFileName.h
-)
-
-set(SOURCES_GENERATED
-    $moduleBaseFileName.cpp
-    $pluginFileName.cpp
-)
-
-set(MOC_SOURCES_GENERATED
-    $moduleBaseFileName.moc.cpp
-    $pluginFileName.moc.cpp
-)
-
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-endif()
-
-install(
-    FILES ${PLUGIN_OUTPUT_PATH}/$specFileName.pluginspec
-    DESTINATION ${PLUGINS_DIR}
-)
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
 handleTranslation($specFileName)
 
-add_library(
-    $specFileName
-    SHARED
-    ${MOC_SOURCES} ${SOURCES}
-    ${MOC_SOURCES_GENERATED} ${SOURCES_GENERATED}
+kumir2_add_actor(
+    NAME        $actorName
+    SOURCES     ${SOURCES} ${MOC_SOURCES}
+    LIBRARIES   ${QT_LIBRARIES}
 )
-
-target_link_libraries(
-    $specFileName
-    ${QT_LIBRARIES}
-    ExtensionSystem
-    Widgets
-    ${STDCXX_LIB} ${STDMATH_LIB}
-)
-
-copyResources(actors/$actorDir)
-
-install(
-    TARGETS $specFileName
-    DESTINATION ${PLUGINS_DIR}
-)
-    """, substitutions).strip() + "\n"
+""", substitutions).strip() + "\n"
     _update_file("CMakeLists.txt", target_dir, data)
 
 
@@ -3828,7 +3695,6 @@ def main_update(args):
     create_plugin_source_file(module)
     create_module_base_header_file(module)
     create_module_base_source_file(module)
-    create_plugin_spec_file(module)
     return 0
 
 
