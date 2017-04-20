@@ -27,7 +27,7 @@ foreach(res IN ITEMS ${resfiles})
     endif()
 endforeach(res)
 
-# TODO move the code to function and reuse it
+# Courses in dist TODO move the code to function and reuse it
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/courses")
 file(GLOB_RECURSE resfiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/courses ${CMAKE_CURRENT_SOURCE_DIR}/courses/*)
 foreach(res IN ITEMS ${resfiles})
@@ -39,7 +39,42 @@ foreach(res IN ITEMS ${resfiles})
     endif()
 endforeach(res)
 
+# In-App icons TODO move the code to function and reuse it
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons")
+file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/share/kumir2/icons ${CMAKE_SOURCE_DIR}/share/kumir2/icons/*)
+foreach(icon IN ITEMS ${icons})
+    get_filename_component(subdir ${icon} PATH)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    file(COPY "${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+    install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
+endforeach(icon)
 
+# Development files
+install(DIRECTORY include/ DESTINATION include/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.h*")
+install(DIRECTORY src/kumir2-libs/ DESTINATION include/kumir2-libs/ FILES_MATCHING PATTERN "*.table")
+install(
+    FILES scripts/gen_actor_source.py
+    DESTINATION ${KUMIR2_SDK_SCRIPTS_DIR}
+    PERMISSIONS
+        OWNER_EXECUTE OWNER_WRITE OWNER_READ
+        GROUP_EXECUTE GROUP_READ
+        WORLD_EXECUTE WORLD_READ
+)
+install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
+
+# Generate and install CMake file describing current build configuration
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
+file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    "set(USE_QT ${USE_QT})\nset(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\nset(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
+)
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
+    DESTINATION "${KUMIR2_SDK_CMAKE_DIR}/kumir2"
+)
+
+
+# Platform-specific global resources handling
 if(WIN32)
     # Do nothing
 elseif(APPLE)
@@ -56,14 +91,5 @@ else()
         file(COPY "${CMAKE_SOURCE_DIR}/app_icons/linux/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
     endforeach(icon)
-
-    # In-app icons
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons")
-    file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/share/kumir2/icons ${CMAKE_SOURCE_DIR}/share/kumir2/icons/*)
-    foreach(icon IN ITEMS ${icons})
-        get_filename_component(subdir ${icon} PATH)
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
-        file(COPY "${CMAKE_SOURCE_DIR}/share/kumir2/icons/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
-        install(FILES "${CMAKE_SOURCE_DIR}/${KUMIR2_RESOURCES_DIR}/icons/${icon}" DESTINATION "${KUMIR2_RESOURCES_DIR}/icons/${subdir}")
-    endforeach(icon)
 endif()
+

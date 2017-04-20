@@ -29,7 +29,8 @@ namespace ActorDraw {
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
         ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorDraw")[0];
-        return pluginManager->settingsByObject(plugin);
+        return plugin->mySettings();
+//        return pluginManager->settingsByObject(plugin);
     }//Get  settings
     
     static const qreal MAX_ZOOM = 1000000;

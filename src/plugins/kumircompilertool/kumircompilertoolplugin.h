@@ -4,7 +4,7 @@
 #include <kumir2-libs/extensionsystem/kplugin.h>
 #include <kumir2/analizerinterface.h>
 #include <kumir2/generatorinterface.h>
-
+#include <kumir2-libs/extensionsystem/pluginspec.h>
 
 namespace KumirCompilerTool {
 
@@ -26,7 +26,10 @@ public:
     void start();
     void stop();
     inline void updateSettings(const QStringList &) {}
+protected:
+    void createPluginSpec();
 private:
+
     Shared::AnalizerInterface * analizer_;
     Shared::GeneratorInterface * generator_;
     QString sourceFileName_;

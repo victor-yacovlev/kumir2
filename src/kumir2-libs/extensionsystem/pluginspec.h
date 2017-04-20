@@ -15,13 +15,18 @@ namespace ExtensionSystem {
 
 struct PluginSpec
 {
-    QString name;
-    bool gui;
-    QString libraryFileName;
-    QString specFileName;
-    QStringList dependencies;
-    QStringList provides;
+    // Mandatory fields filled by plugin itself
+    bool gui = false;
+    QByteArray name;
+    QList<QByteArray> dependencies;
+    QList<QByteArray> provides;
+
+    // Fields filled by launcher
+    bool main = false;
+    QByteArray libraryFileName;
+    QStringList arguments;
 };
+
 
 extern QString readSpecFromFile(const QString & fileName, PluginSpec & spec);
 

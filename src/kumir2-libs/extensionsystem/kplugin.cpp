@@ -9,28 +9,29 @@ KPlugin::KPlugin()
 }
 
 
-QList<KPlugin*> KPlugin::loadedPlugins(const QString &pattern)
+QList<KPlugin*> KPlugin::loadedPlugins(const QByteArray &pattern)
 {
     return PluginManager::instance()->loadedPlugins(pattern);
 }
 
-QList<const KPlugin*> KPlugin::loadedPlugins(const QString &pattern) const
+QList<const KPlugin*> KPlugin::loadedPlugins(const QByteArray &pattern) const
 {
     const QList<const KPlugin*> result = PluginManager::instance()->loadedConstPlugins(pattern);
     return result;
 }
 
-PluginSpec KPlugin::pluginSpec() const
+
+const PluginSpec & KPlugin::pluginSpec() const
 {
-    return PluginManager::instance()->specByObject(this);
+    return _pluginSpec;
 }
 
 KPlugin::State KPlugin::state() const
 {
-    return PluginManager::instance()->stateByObject(this);
+    return _state;
 }
 
-KPlugin * KPlugin::myDependency(const QString &name) const
+KPlugin * KPlugin::myDependency(const QByteArray &name) const
 {
     return PluginManager::instance()->dependentPlugin(name, this);
 }
@@ -58,24 +59,21 @@ QByteArray KPlugin::pluginName() const
 
 void KPlugin::initialize(const QString & resourcesRootPath)
 {
-    settings_ = SettingsPtr(new Settings(QString::fromLatin1(pluginName())));
-    resourcesDir_ = resourcesRootPath;
+    _settings = SettingsPtr(new Settings(QString::fromLatin1(pluginName())));
+    _resourcesDir = resourcesRootPath;
     initialize(QStringList(), CommandLine());
 }
 
 SettingsPtr KPlugin::mySettings() const
 {
-    if (settings_)
-        return settings_;
-    else
-        return PluginManager::instance()->settingsByObject(this);
+    return _settings;
 }
 
 QDir KPlugin::myResourcesDir() const
 {
     QString thisModulePath;
     if (PluginManager::instance()->sharePath().isEmpty()) {
-        thisModulePath = resourcesDir_;
+        thisModulePath = _resourcesDir;
     }
     else {
         const QString sharePath = PluginManager::instance()->sharePath();

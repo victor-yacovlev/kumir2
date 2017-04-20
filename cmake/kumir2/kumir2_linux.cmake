@@ -29,6 +29,10 @@ if(NOT DEFINED KUMIR2_SDK_SCRIPTS_DIR)
     set(KUMIR2_SDK_SCRIPTS_DIR ${KUMIR2_LIBS_DIR})          # devel scripts
 endif(NOT DEFINED KUMIR2_SDK_SCRIPTS_DIR)
 
+if(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
+    set(KUMIR2_SDK_CMAKE_DIR "${LIB_BASENAME}/cmake/Kumir2") # cmake files to use from others
+endif(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
+
 # clear default CMake RPATH values
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -41,10 +45,17 @@ set(KUMIR2_CXXFLAGS_Release "-O2 -DNDEBUG -DQT_NO_DEBUG")
 set(KUMIR2_CXXFLAGS_Debug "-g -O0 -Werror -Wreorder -Wreturn-type -Wno-error=unused-variable -Wno-error=unused-parameter")
 
 # Linkage flags
-set(KUMIR2_LIBRARY_LINKER_FLAGS "-Wl,--no-undefined -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN'")
-set(KUMIR2_PLUGIN_LINKER_FLAGS "-Wl,--no-undefined -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/..'")
-set(KUMIR2_LAUNCHER_LINKER_FLAGS "-Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${KUMIR2_LIBS_DIR}'")
-set(KUMIR2_TOOL_LINKER_FLAGS "-Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${KUMIR2_LIBS_DIR}'")
+if(KUMIR2_ROOT)
+    set(KUMIR2_LIBRARY_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--no-undefined -Wl,--enable-new-dtags")
+    set(KUMIR2_PLUGIN_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--no-undefined -Wl,--enable-new-dtags")
+    set(KUMIR2_LAUNCHER_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--enable-new-dtags")
+    set(KUMIR2_TOOL_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--enable-new-dtags")
+else()
+    set(KUMIR2_LIBRARY_LINKER_FLAGS "-Wl,--no-undefined -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN'")
+    set(KUMIR2_PLUGIN_LINKER_FLAGS "-Wl,--no-undefined -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/..'")
+    set(KUMIR2_LAUNCHER_LINKER_FLAGS "-Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${KUMIR2_LIBS_DIR}'")
+    set(KUMIR2_TOOL_LINKER_FLAGS "-Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN/../${KUMIR2_LIBS_DIR}'")
+endif()
 
 # CLang-specific compatibility options
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

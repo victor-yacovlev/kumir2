@@ -1,117 +1,18 @@
 #include "pluginmanager_impl.h"
 
+#if defined(Q_OS_WIN32)
+static const char* LIB_PREFIX = "";
+static const char* LIB_SUFFIX = ".dll";
+#elif defined(Q_OS_MAC)
+static const char* LIB_PREFIX = "lib";
+static const char* LIB_SUFFIX = ".dylib";
+#else
+static const char* LIB_PREFIX = "lib";
+static const char* LIB_SUFFIX = ".so";
+#endif
+
 namespace ExtensionSystem {
 
-QString PluginManagerImpl::loadSpecs(const QStringList &names)
-{
-    for (int i=0; i<names.size(); i++) {
-        bool loaded = false;
-        for (int j=0; j<specs.size(); j++) {
-            if (specs[j].name==names[i]) {
-                loaded = true;
-                break;
-            }
-        }
-        if (loaded)
-            continue;
-        const QString fileName = path+"/"+names[i]+".pluginspec";
-        PluginSpec spec;
-        //#ifdef QT_NO_DEBUG
-#ifdef Q_OS_WIN
-        spec.libraryFileName = QString("%1/%2.dll").arg(path).arg(names[i]);
-#endif
-#ifdef Q_OS_UNIX
-        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-#endif
-#ifdef Q_OS_MAC
-        spec.libraryFileName = QString("%1/lib%2.dylib").arg(path).arg(names[i]);
-#endif
-        //#else
-        //#ifdef Q_OS_WIN
-        //        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
-        //#endif
-        //#ifdef Q_OS_UNIX
-        //        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-        //#endif
-        //#ifdef Q_OS_MAC
-        //        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
-        //#endif
-        //#endif
-        QString error = readSpecFromFile(fileName, spec);
-        if (!error.isEmpty()) {
-            return error;
-        }
-        specs << spec;
-        QStringList deps;
-        for (int j=0; j<spec.dependencies.size(); j++) {
-            deps << spec.dependencies[j];
-        }
-        error = loadSpecs(deps);
-        if (!error.isEmpty()) {
-            return error;
-        }
-    }
-    return "";
-}
-
-QString PluginManagerImpl::loadPlugins()
-{
-    for (int i=0; i<specs.size(); i++) {
-        QPluginLoader loader(specs[i].libraryFileName);
-        qDebug() << "Loading " << specs[i].libraryFileName << "...";
-        //        qDebug()<<specs[i].libraryFileName;
-        if (!loader.load()) {
-            return QString("Can't load module %1: %2")
-                    .arg(specs[i].name)
-                    .arg(loader.errorString());
-        }
-        KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
-        if (!plugin) {
-            return QString("Plugin %1 is not valid (does not implement interface KPlugin)");
-            loader.unload();
-        }
-        objects[i] = plugin;
-        states[i] = KPlugin::Loaded;
-        settings[i] = SettingsPtr(new Settings(specs[i].name));
-        plugin->updateSettings(QStringList());
-        qDebug() << "Loading done";
-    }
-    return "";
-}
-
-QString PluginManagerImpl::makeDependencies(const QString &entryPoint,
-                                               QStringList &orderedList)
-{
-    if (orderedList.contains(entryPoint)) {
-        return "";
-    }
-    orderedList.prepend(entryPoint);
-    PluginSpec spec;
-    bool found = false;
-    for (int i=0; i<specs.size(); i++) {
-        if (specs[i].provides.contains(entryPoint)) {
-            spec = specs[i];
-            orderedList.pop_front();
-            if (!orderedList.contains(spec.name))
-                orderedList.prepend(spec.name);
-            found = true;
-            break;
-        }
-    }
-    if (!found) {
-        qDebug()<<"Spec not loaded for |"+entryPoint+"|";
-        return "Spec not loaded for "+entryPoint;
-    }
-
-    for (int i=0; i<spec.dependencies.size(); i++) {
-        QString dep = spec.dependencies[i];
-        QString error = makeDependencies(dep, orderedList);
-        if (!error.isEmpty()) {
-            return error;
-        }
-    }
-    return "";
-}
 
 bool PluginManagerImpl::extractRuntimeParametersForPlugin(const KPlugin *plugin, CommandLine &parameters)
 {
@@ -181,7 +82,7 @@ void PluginManagerImpl::changeWorkingDirectory(const QString &path, bool saveCha
         settingsWorkspacePath = path;
         for (int i=0; i<objects.size(); i++) {
             KPlugin * p = objects[i];
-            SettingsPtr s = settings[i];
+            SettingsPtr s = p->mySettings();
             if (s) {
                 if (saveChanges) p->saveSession();
                 s->changeWorkingDirectory(path);
@@ -208,61 +109,136 @@ QString PluginManager::workspacePath() const
     return pImpl_->mySettings->value(PluginManager::CurrentWorkspaceKey).toString();
 }
 
-QString PluginManagerImpl::reorderSpecsAndCreateStates(const QStringList &orderedList)
+
+QString PluginManagerImpl::loadPlugin(PluginSpec spec, const QList<PluginSpec> & allSpecs)
 {
-    QStringList blacklist;
+    if (isPluginLoaded(spec.name)) {
+        return "";
+    }
+    QList<QByteArray> blacklist;
 #ifdef Q_OS_UNIX
     const char * kumirBlacklist = getenv("KUMIR_BLACKLIST");
-    blacklist = QString(kumirBlacklist).split(":");
+    blacklist = QByteArray(kumirBlacklist).split(':');
 #endif
-    QList<PluginSpec> newSpecs;
-    for (int i=0; i<orderedList.size(); i++) {
-        bool found = false;
-        PluginSpec spec;
-        for (int j=0; j<specs.size(); j++) {
-            if (specs[j].name==orderedList[i]) {
-                spec = specs[j];
-                found = true;
+    if (blacklist.contains(spec.name)) {
+        qDebug() << "Plugin " << spec.name << " not loaded because of blacklisted";
+        return "";
+    }
+
+    Q_FOREACH(const QByteArray &depName, spec.dependencies) {
+        bool specFound = false;
+        PluginSpec specToLoad;
+        Q_FOREACH(const PluginSpec & anotherSpec, allSpecs) {
+            if (anotherSpec.name == depName) {
+                specToLoad = anotherSpec;
+                specFound = true;
                 break;
             }
         }
-        if (!found) {
-            return "Spec not loaded for plugin " + orderedList[i];
+        if (!specFound) {
+            return "Can't find spec for dependency: " + depName;
         }
-        if (blacklist.contains(spec.name)) {
-            qDebug() << "Skip loading " << spec.name << " because it blacklisted in KUMIR_BLACKLIST environment variable";
-            continue;
-        }
-        newSpecs << spec;
-        objects << 0;
-        states << KPlugin::Disabled;
-#ifndef Q_OS_MAC
-        const QString applicationLanucher = qApp->arguments().at(0);
-        QString applicationName = applicationLanucher;
-        if (applicationLanucher.startsWith(qApp->applicationDirPath())) {
-            applicationName = applicationLanucher.mid(qApp->applicationDirPath().length() + 1);
-        }
-#else
-        QString applicationName = "kumir2";
-#endif
-        settings << SettingsPtr(new Settings(spec.name));
+        loadPlugin(specToLoad, allSpecs);
     }
-    specs = newSpecs;
+
+
+    spec.libraryFileName = (
+                path +
+                QString("/") +
+                QString(LIB_PREFIX) +
+                spec.name +
+                QString(LIB_SUFFIX)
+                ).toUtf8();
+
+    QPluginLoader loader(spec.libraryFileName);
+    if (!loader.load()) {
+        return QString("Can't load module %1: %2")
+                .arg(QString::fromLatin1(spec.name))
+                .arg(loader.errorString());
+    }
+    KPlugin * plugin = qobject_cast<KPlugin*>(loader.instance());
+    if (!plugin) {
+        return QString("Plugin %1 is not valid (does not implement interface KPlugin)");
+        loader.unload();
+    }
+    plugin->createPluginSpec();
+    plugin->_pluginSpec.arguments = spec.arguments;
+    plugin->_pluginSpec.main = spec.main;
+    plugin->_state = KPlugin::Loaded;
+    plugin->_settings = SettingsPtr(new Settings(QString::fromLatin1(spec.name)));
+    objects.append(plugin);
     return "";
 }
 
-QString PluginManagerImpl::parsePluginsRequest(const QString &templ, QList<PluginRequest> &plugins, QStringList & names)
+QString PluginManagerImpl::initializePlugin(KPlugin * entryPoint)
+{
+    QString error;
+    KPlugin::State state = entryPoint->state();
+    if (KPlugin::Initialized == state || KPlugin::Disabled == state) {
+        return "";
+    }
+    const PluginSpec & spec = entryPoint->pluginSpec();
+    QList<KPlugin*> deps;
+    Q_FOREACH(const QByteArray & depName, spec.dependencies) {
+        Q_FOREACH(KPlugin* anotherPlugin, objects) {
+            const PluginSpec & anotherSpec = anotherPlugin->pluginSpec();
+            if (anotherSpec.name == depName || anotherSpec.provides.contains(depName)) {
+                deps.append(anotherPlugin);
+            }
+        }
+    }
+
+    Q_FOREACH(KPlugin * dep, deps) {
+        error = initializePlugin(dep);
+        if (error.length() > 0) {
+            return error;
+        }
+    }
+
+    CommandLine runtimeParameters;
+    if (!extractRuntimeParametersForPlugin(entryPoint, runtimeParameters)) {
+        error = PluginManager::tr("The following command line parameters required, but not set:\n");
+        for (int i=0; i<runtimeParameters.data_.size(); i++) {
+            const CommandLineParameter & param = runtimeParameters.data_[i];
+            if (!param.isValid()) {
+                error += "  " + param.toHelpLine() + "\n";
+            }
+        }
+        error += PluginManager::tr("Run with --help for more details.\n");
+        return error;
+    }
+
+    error = entryPoint->initialize(spec.arguments, runtimeParameters);
+    if (error.length() == 0) {
+        entryPoint->_state = KPlugin::Initialized;
+    }
+    return error;
+}
+
+
+bool PluginManagerImpl::isPluginLoaded(const QByteArray &name) const
+{
+    Q_FOREACH(const KPlugin * plugin, objects) {
+        Q_ASSERT(plugin);
+        if (plugin->pluginSpec().name == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QString PluginManagerImpl::parsePluginsRequest(const QByteArray &templ, QList<PluginSpec> &plugins)
 {
     if (templ.trimmed().isEmpty()) {
         return "Plugins template is empty";
     }
     bool inBr = false;
-    PluginRequest cur;
+    PluginSpec cur;
     QString argument;
-    cur.start = false;
+    cur.main = false;
     for (int i=0 ; i<templ.size(); i++) {
         if (templ[i]=='!' && cur.name.isEmpty() && !inBr) {
-            cur.start = true;
+            cur.main = true;
         }
         else if (templ[i]=='(' && !inBr) {
             inBr = true;
@@ -278,7 +254,7 @@ QString PluginManagerImpl::parsePluginsRequest(const QString &templ, QList<Plugi
         }
         else if (templ[i]==',' && !inBr) {
             plugins << cur;
-            cur.start = false;
+            cur.main = false;
             cur.arguments.clear();
             cur.name = "";
         }
@@ -292,22 +268,28 @@ QString PluginManagerImpl::parsePluginsRequest(const QString &templ, QList<Plugi
     plugins << cur;
     int starts = 0;
     // Qt bug !!! Use STL instead and then convert back to QList
-    std::list<PluginRequest> stdPlugins = plugins.toStdList();
-    std::list<PluginRequest>::iterator it=stdPlugins.begin();
+    std::list<PluginSpec> stdPlugins = plugins.toStdList();
+    std::list<PluginSpec>::iterator it=stdPlugins.begin();
     while (it!=stdPlugins.end()) {
-        PluginRequest p = (*it);
+        PluginSpec p = (*it);
         if (p.name.contains("*") || p.name.contains("?")) {
-            if (p.start) {
+            if (p.main) {
                 return "Entry point defined for masked by * name in plugins template";
             }
-            QDir dir(path);
-            QStringList entries = dir.entryList(QStringList() << p.name+".pluginspec", QDir::Files);
+            QDir dir(path);            
+            QStringList entries = dir.entryList(QStringList() <<
+                                                LIB_PREFIX + p.name + LIB_SUFFIX,
+                                                QDir::Files);
             it = stdPlugins.erase(it);
             foreach (const QString & e, entries) {
-                PluginRequest pp;
-                pp.name = e.left(e.size()-11);
+                PluginSpec pp;
+                QByteArray pluginName = e
+                        .mid(QByteArray(LIB_PREFIX).length(),
+                             e.length() - QByteArray(LIB_PREFIX).length() - QByteArray(LIB_SUFFIX).length())
+                        .toLocal8Bit();
+                pp.name = pluginName;
                 pp.arguments = p.arguments;
-                pp.start = false;
+                pp.main = false;
                 stdPlugins.insert(it, pp);
             }
         }
@@ -315,13 +297,12 @@ QString PluginManagerImpl::parsePluginsRequest(const QString &templ, QList<Plugi
             ++it;
         }
     }
-    plugins = QList<PluginRequest>::fromStdList(stdPlugins);
+    plugins = QList<PluginSpec>::fromStdList(stdPlugins);
     for (int i=0; i<plugins.size(); i++) {
-        if (plugins[i].start) {
+        if (plugins[i].main) {
             starts ++;
             mainPluginName = plugins[i].name;
         }
-        names << plugins[i].name;
     }
 
     if (starts>1) {

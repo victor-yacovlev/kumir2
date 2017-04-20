@@ -15,10 +15,12 @@ set(CMAKE_INSTALL_RPATH "")
 set(CMAKE_INSTALL_RPATH "${Qt5_DIR}/../../")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'${Qt5_DIR}/../../'")
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-    if("${isSystemDir}" STREQUAL "-1")
-        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    endif()
-    
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
+
+set(KUMIR2_SDK_SCRIPTS_DIR "${KUMIR2_RESOURCES_DIR}/devel")
+set(KUMIR2_SDK_CMAKE_DIR "${KUMIR2_RESOURCES_DIR}/devel/cmake")
 
 # Compile flags
 set(KUMIR2_CXXFLAGS "-fno-exceptions -std=c++0x -fPIC -DAPPLE")

@@ -161,13 +161,13 @@ public:
         QString error;
         qDebug() << "Initialized plugin manager";
     #ifdef CONFIGURATION_TEMPLATE
-        const QString defaultTemplate = CONFIGURATION_TEMPLATE;
+        const QByteArray defaultTemplate = CONFIGURATION_TEMPLATE;
     #else
     #error No default configuration passed to GCC
     #endif
-        QString templ = defaultTemplate;
+        QByteArray templ = defaultTemplate;
         for (int i=1; i<arguments.size(); i++) {
-            QString arg = arguments[i];
+            QByteArray arg = arguments[i].toLatin1();
             if (arg.startsWith("[") && arg.endsWith("]")) {
                 templ = arg.mid(1, arg.length()-2);
             }
