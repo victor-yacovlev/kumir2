@@ -3,12 +3,12 @@
 
 #include <QtCore>
 #include <QtGui>
-#include "interfaces/generatorinterface.h"
-#include "interfaces/actorinterface.h"
-#include "interfaces/runinterface.h"
-#include "interfaces/editorinterface.h"
+#include <kumir2/generatorinterface.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2/runinterface.h>
+#include <kumir2/editorinterface.h>
 #include "terminal.h"
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 
 namespace CoreGUI {

@@ -1,10 +1,10 @@
 #include "kumirprogram.h"
-#include "extensionsystem/pluginmanager.h"
-#include "interfaces/actorinterface.h"
-#include "dataformats/ast_algorhitm.h"
-#include "interfaces/coursesinterface.h"
-#include "widgets/iconprovider.h"
-#include "widgets/actionproxy.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2-libs/dataformats/ast_algorhitm.h>
+#include <kumir2/coursesinterface.h>
+#include <kumir2-libs/widgets/iconprovider.h>
+#include <kumir2-libs/widgets/actionproxy.h>
 
 namespace CoreGUI {
 
@@ -431,7 +431,7 @@ void KumirProgram::stepIn()
         stepRun();
     }
     else {
-        setAllActorsAnimationFlag(true);
+        setAllActorsAnimationFlag(false);
         runner()->runStepInto();
     }
 }

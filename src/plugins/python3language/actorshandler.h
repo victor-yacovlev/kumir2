@@ -3,7 +3,7 @@
 
 #include <QtCore>
 
-#include "interfaces/actorinterface.h"
+#include <kumir2/actorinterface.h>
 
 namespace Python3Language {
 

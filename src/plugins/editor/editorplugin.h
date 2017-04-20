@@ -1,9 +1,9 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
-#include "extensionsystem/kplugin.h"
-#include "interfaces/editorinterface.h"
-#include "dataformats/kumfile.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/editorinterface.h>
+#include <kumir2-libs/dataformats/kumfile.h>
 #include "macro.h"
 
 namespace Editor {

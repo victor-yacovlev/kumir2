@@ -1,8 +1,8 @@
 #ifndef KUMIRCODEGENERATORPLUGIN_H
 #define KUMIRCODEGENERATORPLUGIN_H
 
-#include "extensionsystem/kplugin.h"
-#include "interfaces/generatorinterface.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/generatorinterface.h>
 
 #include <QObject>
 #include <QtPlugin>

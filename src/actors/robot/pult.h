@@ -17,7 +17,7 @@
 #ifndef ROBOT_PULT_H
 #define ROBOT_PULT_H
 #include "ui_pult.h"
-#include "widgets/pultlogger.h"
+#include <kumir2-libs/widgets/pultlogger.h>
 #include <QtCore>
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
@@ -28,7 +28,7 @@
 #define RESP_PANEL 50
 #define LOGGER_BUTTONS 140
 #define TEXT_STEP 14
-
+#undef TEXT
 #define UP 1
 #define DOWN 2
 #define LEFT 3

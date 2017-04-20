@@ -7,12 +7,12 @@ You should change it corresponding to functionality.
 */
 
 // Self include
-#include "widgets/draw_turtle_field.h"
+#include <kumir2-libs/widgets/draw_turtle_field.h>
 #include "drawmodule.h"
 
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 
 // Qt includes
@@ -65,11 +65,14 @@ namespace ActorDraw {
             if(lines.at(i)->line().dx()<0)
             {
                 if(lines.at(i)->line().p2().x()<boundRect.left() || (i==0))
+                    
                 {
+                    deb=lines.at(i)->line().p1().x();
                     boundRect.setLeft(lines.at(i)->line().p2().x());
                 }
                 if(lines.at(i)->line().p1().x()>boundRect.right() || (i==0))
                 {
+                    deb=lines.at(i)->line().p1().x();
                     boundRect.setRight(lines.at(i)->line().p1().x());
                     
                 }
@@ -83,9 +86,9 @@ namespace ActorDraw {
                     deb=-lines.at(i)->line().p1().y();
                     boundRect.setBottom(-lines.at(i)->line().p1().y());
                 }
-                if(lines.at(i)->line().p2().x()>boundRect.top() || (i==0))
+                if(lines.at(i)->line().p2().y()>boundRect.top() || (i==0))
                 {
-                    boundRect.setTop(-lines.at(i)->line().p2().y());
+                    boundRect.setTop(lines.at(i)->line().p2().y());
                     
                 }
             }

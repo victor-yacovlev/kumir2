@@ -2,7 +2,7 @@
 #define PYTHON3LANGUAGE_PYFILEHANDLER_H
 
 #include <QObject>
-#include "interfaces/analizer_sourcefileinterface.h"
+#include <kumir2/analizer_sourcefileinterface.h>
 
 namespace Python3Language {
 

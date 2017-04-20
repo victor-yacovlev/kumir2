@@ -16,9 +16,9 @@
 #include <algorithm>
 #include <functional>
 
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/kplugin.h"
-#include "interfaces/editorinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/editorinterface.h>
 
 namespace Python3Language {
 

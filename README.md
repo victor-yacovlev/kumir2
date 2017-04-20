@@ -1,6 +1,8 @@
 Kumir 2.x programming system
 ============================
 
+***NOTE*** Maintainers from AltLinux please read this: [MAINTAINERS_ru.md](MAINTAINERS_ru.md) (in Russian).
+
 Branches and tags
 -----------------
 

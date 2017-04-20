@@ -8,9 +8,9 @@
 #include <QtGui>
 #endif
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 #include "mainwindow.h"
-#include "interfaces/startpage_widget_interface.h"
+#include <kumir2/startpage_widget_interface.h>
 
 namespace CoreGUI {
 class TabWidgetElement

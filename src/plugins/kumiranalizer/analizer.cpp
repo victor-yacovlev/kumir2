@@ -1,10 +1,9 @@
 #include "analizer.h"
-#include "interfaces/error.h"
-#include "interfaces/lexemtype.h"
+#include <kumir2/lexemtype.h>
 #include "lexer.h"
 #include "pdautomata.h"
 #include "syntaxanalizer.h"
-#include "errormessages/errormessages.h"
+#include <kumir2-libs/errormessages/errormessages.h>
 #include "kumiranalizerplugin.h"
 #include "stdlibmodules.h"
 

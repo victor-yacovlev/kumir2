@@ -2,7 +2,7 @@
 #include "interpretercallback.h"
 #include "actorshandler.h"
 #include "pyutils.h"
-#include "interfaces/runinterface.h"
+#include <kumir2/runinterface.h>
 #include "variablesmodel.h"
 
 extern "C" {

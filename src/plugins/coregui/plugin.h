@@ -8,18 +8,18 @@
 #include <QtGui>
 #endif
 
-#include "extensionsystem/kplugin.h"
-#include "interfaces/editorinterface.h"
-#include "interfaces/browserinterface.h"
-#include "interfaces/generatorinterface.h"
-#include "interfaces/actorinterface.h"
-#include "interfaces/runinterface.h"
-#include "interfaces/guiinterface.h"
-#include "interfaces/coursesinterface.h"
-#include "interfaces/startpage_widget_interface.h"
-#include "widgets/secondarywindow.h"
-#include "widgets/dockwindowplace.h"
-#include "docbookviewer/docbookview.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/editorinterface.h>
+#include <kumir2/browserinterface.h>
+#include <kumir2/generatorinterface.h>
+#include <kumir2/actorinterface.h>
+#include <kumir2/runinterface.h>
+#include <kumir2/guiinterface.h>
+#include <kumir2/coursesinterface.h>
+#include <kumir2/startpage_widget_interface.h>
+#include <kumir2-libs/widgets/secondarywindow.h>
+#include <kumir2-libs/widgets/dockwindowplace.h>
+#include <kumir2-libs/docbookviewer/docbookview.h>
 #include "terminal.h"
 #include "kumirprogram.h"
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)

@@ -8,10 +8,11 @@
 
 
 
-#include "interfaces/analizerinterface.h"
-#include "interfaces/runinterface.h"
-#include "interfaces/startpage_widget_interface.h"
-#include "extensionsystem/kplugin.h"
+#include <kumir2/analizerinterface.h>
+#include <kumir2/runinterface.h>
+#include <kumir2/startpage_widget_interface.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+
 #include "sandboxwidget.h"
 
 #include "pyinterpreterprocess.h"
@@ -104,7 +105,7 @@ public Q_SLOTS:
     void insertOrChangeBreakpoint(bool enabled, const QString &fileName, quint32 lineNo, quint32 ignoreCount, const QString &condition);
     void removeBreakpoint(const QString &fileName, quint32 lineNo);
 
-protected:
+protected:    
     void connectRunThreadSignals();
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void stop();

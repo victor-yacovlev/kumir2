@@ -1,7 +1,7 @@
 #ifndef PYTHON3LANGUAGE_TOKENIZERINSTANCE_H
 #define PYTHON3LANGUAGE_TOKENIZERINSTANCE_H
 
-#include "interfaces/analizer_instanceinterface.h"
+#include <kumir2/analizer_instanceinterface.h>
 #include "namecontext.h"
 #include <QObject>
 #include <QString>

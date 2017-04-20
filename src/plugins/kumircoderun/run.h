@@ -3,9 +3,9 @@
 
 #include <QtCore>
 #define DO_NOT_DECLARE_STATIC
-#include "vm/vm.hpp"
-#include "interfaces/actorinterface.h"
-#include "interfaces/runinterface.h"
+#include <kumir2-libs/vm/vm.hpp>
+#include <kumir2/actorinterface.h>
+#include <kumir2/runinterface.h>
 #include "kumvariablesmodel.h"
 #include "guirun.h"
 #include <memory>

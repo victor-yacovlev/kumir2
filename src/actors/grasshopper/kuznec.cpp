@@ -704,7 +704,7 @@ QString Title = QString::fromUtf8("Кузнечик - ") + name;
 
 MV->setWindowTitle ( Title);
 
-qreal CurrentScale; 
+qreal CurrentScale; Q_UNUSED(CurrentScale);
 
 	QString tmp = "";
 
@@ -1173,7 +1173,7 @@ void KumKuznec::DrawNet()
 	double BegX=-1024*ZOOMMULTIP;
 	double EndX=1024*ZOOMMULTIP;
 	int Zapas = 100;
-	double fx1,fy1,fx2,fy2;
+    double fx1,fy1,fx2,fy2;  Q_UNUSED(fy1); Q_UNUSED(fy2);
 //,DeltaXX,DeltaYY;
 
 	
@@ -1261,7 +1261,7 @@ void KumKuznec::DrawNet()
 //Оси координат
 
 	
-        qreal textX,textY;
+        qreal textX,textY; Q_UNUSED(textY);
 	textX=BegX;
 	while(textX<EndX)
 	{

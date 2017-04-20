@@ -47,6 +47,8 @@ Section "Kumir" Kumir
     File /r share\*
     SetOutPath "$INSTDIR\src"
     File /r src\*
+    SetOutPath "$INSTDIR\include"
+    File /r /nonfatal "include\*"
 
     SetOutPath "$INSTDIR\llvm-mingw"
     File /nonfatal /r llvm-mingw\*

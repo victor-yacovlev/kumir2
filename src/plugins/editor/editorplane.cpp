@@ -283,7 +283,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
             else if (textX >= indentSymbols + selectionMask.size()) {
                 clearSelection = true;
             }
-            else if (realTextPosition < selectionMask.size() && !selectionMask.at(realTextPosition)) {
+            else if ((int)realTextPosition < selectionMask.size() && !selectionMask.at(realTextPosition)) {
                 clearSelection = true;
             }
 
@@ -441,9 +441,9 @@ EditorPlane::MouseAreaPart EditorPlane::partAtPosition(const QPoint &pos) const
     }
     if (x < rightTextAreaPosition())
         return TextAreaPart;
-    if (x < marginLineRect().right())
+    if (x < (uint) marginLineRect().right())
         return MarginLinePart;
-    if (x < width())
+    if (x < (uint) width())
         return MarginPart;
     return NoActionPart;
 }
@@ -614,8 +614,8 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
     // This case is matched by already set 'selectionInProgressFlag_'
     // or if left mouse button pressed while pointer is in editable area
     else if (selectionInProgressFlag_ || (
-                 e->pos().x()>editableAreaLeftBorder &&
-                 e->pos().x()<editableAreaRightBorder-2 &&
+                 e->pos().x()>(int)editableAreaLeftBorder &&
+                 e->pos().x()<(int)editableAreaRightBorder-2 &&
                  e->buttons().testFlag(Qt::LeftButton)
                  )
              )
@@ -638,7 +638,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
         if (e->pos().x()<0) {
             emit requestAutoScrollX(-1);  // scroll left by timer ticks
         }
-        else if (e->pos().x()>editableAreaRightBorder-2) {
+        else if (e->pos().x()>(int)editableAreaRightBorder-2) {
             emit requestAutoScrollX(+1);  // scroll right by timer ticks
         }
         else {
@@ -766,7 +766,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
 
     // Check if there is must be shown tooltlip for a margin line
     bool visibleMarginBox = false;
-    if (e->pos().x() >= editableAreaRightBorder
+    if (e->pos().x() >= (int) editableAreaRightBorder
             && e->button() == Qt::NoButton)
     {
             // Translate coordinates considering scroll values
@@ -785,7 +785,7 @@ void EditorPlane::mouseMoveEvent(QMouseEvent *e)
                 QFontMetrics fm(font());
                 const uint w = fm.width(text);
                 const QRect marginRect = marginBackgroundRect();
-                if (w > marginRect.width()) {
+                if (w > (uint) marginRect.width()) {
                     visibleMarginBox = true;
                     marginHintBox_->setText(text);
                     const uint y = ( e->pos().y() / lineHeight() + 1)* lineHeight();
@@ -841,7 +841,7 @@ void EditorPlane::updateScrollBars()
     QPoint prevOffset = offset();
     uint w = 1;
     uint h = 1;
-    for (int i=0 ; i<editor_->document()->linesCount(); i++) {
+    for (int i=0 ; i<(int) editor_->document()->linesCount(); i++) {
         uint indent = editor_->document()->indentAt(i) * 2;
         uint textLength = editor_->document()->textAt(i).length();
         w = qMax(w, indent + textLength + 1);
@@ -1035,7 +1035,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
         p.translate(offset());
 
         bool drawInLineRect = false;
-        if (highlightedTextLineNumber_ < editor_->document()->linesCount()) {
+        if (highlightedTextLineNumber_ < (int)editor_->document()->linesCount()) {
             const TextLine & textLine = editor_->document()->at(highlightedTextLineNumber_);
             drawInLineRect = textLine.multipleStatementsInLine;
         }
@@ -1528,7 +1528,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
                         }
                     }
                     bool moveToEnd = false;
-                    for (uint i=editor_->cursor()->column(); i<curText.length(); i++) {
+                    for (int i=editor_->cursor()->column(); i<(int)curText.length(); i++) {
                         if (curText.at(i) == ' ') {
                             moveToEnd = true;
                         }
@@ -1907,7 +1907,7 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
             row = qMax(row, 0);
             if (e->mimeData()->hasFormat(Clipboard::BlockMimeType)) {
                 pnt_dropPosCorner = QPoint(col, row);
-                if (col>widthInChars()-1) {
+                if (col>(int)widthInChars()-1) {
                     marginBackgroundAlpha_ = 64;
                 }
                 else {
@@ -1916,7 +1916,7 @@ void EditorPlane::dragEventHandler(QDragMoveEvent *e)
             }
             else if (e->mimeData()->hasText()) {
                 pnt_dropPosMarker = QPoint(col, row);
-                if (col>widthInChars()-1) {
+                if (col>(int)widthInChars()-1) {
                     marginBackgroundAlpha_ = 64;
                 }
                 else {
@@ -2277,7 +2277,7 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     bool hardIndent = editor_->analizer() &&
             Shared::AnalizerInterface::HardIndents==editor_->analizerPlugin_->indentsBehaviour();
     for (int i=startLine; i<endLine+1; i++) {
-        if (i<editor_->document()->linesCount()) {
+        if (i<(int)editor_->document()->linesCount()) {
             int indentSpace = hardIndent ? 2 * cw * editor_->document()->indentAt(i) : 0;
             if (prevLineSelected) {
                 p->drawRect(0, i*lh, indentSpace, lh);
@@ -2430,7 +2430,7 @@ void EditorPlane::paintLineNumbers(QPainter *p, const QRect &rect)
 
         if (drawBreakpoints) {
             int lineNumber = realLineNumber - 1;
-            if (lineNumber >= 0 && lineNumber < editor_->document()->linesCount()) {
+            if (lineNumber >= 0 && lineNumber < (int)editor_->document()->linesCount()) {
                 const TextLine & line = editor_->document()->at(lineNumber);
                 if (line.hasBreakpoint) {
                     p->setPen(QPen(palette().brush(QPalette::WindowText), 1));
@@ -2768,7 +2768,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
             // Align character horizontally to it's position in case
             // if various characters have different width
             const int charW = QFontMetrics(p->font()).width(text[j]);
-            if (charW<charWidth()) {
+            if (charW<(int)charWidth()) {
                 offset += (charWidth()-charW)/2;
             }
 

@@ -1,24 +1,9 @@
 project(KumirCoreGenerator)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
+find_package(Kumir2 REQUIRED)
 
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES})
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-include(../../kumir2_plugin.cmake)
-
+kumir2_use_qt(Core)
 
 set(SOURCES
     kumircodegeneratorplugin.cpp
@@ -30,15 +15,10 @@ set(MOC_HEADERS
     generator.h
 )
 
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-endif()
-copySpecFile(KumirCodeGenerator)
-add_library(KumirCodeGenerator SHARED ${MOC_SOURCES} ${SOURCES})
-handleTranslation(KumirCodeGenerator)
-target_link_libraries(KumirCodeGenerator ${QT_LIBRARIES} ExtensionSystem DataFormats ErrorMessages)
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
-install(TARGETS KumirCodeGenerator DESTINATION ${PLUGINS_DIR})
-
+kumir2_add_plugin(
+    NAME        KumirCodeGenerator
+    SOURCES     ${MOC_SOURCES} ${SOURCES}
+    LIBRARIES   ${QT_LIBRARIES} ExtensionSystem DataFormats ErrorMessages
+)

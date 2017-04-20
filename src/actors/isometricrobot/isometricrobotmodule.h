@@ -11,7 +11,7 @@ You should change it corresponding to functionality.
 
 #include <QtCore>
 #include <QtGui>
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 #include "isometricrobotmodulebase.h"
 #include "robot25dwindow.h"
 #include "robotmodel.h"
@@ -41,7 +41,7 @@ public slots:
     void runTurnLeft();
     void runDoPaint();
     bool runIsCellPainted();
-    bool runIsFlagged(int x, int y);
+    bool runIsFlagged(const int x, const int y);
     bool runIsCellClean();
     bool runIsWallAhead();
     bool runIsFreeAhead();

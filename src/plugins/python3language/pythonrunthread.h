@@ -7,7 +7,7 @@ extern "C" {
 }
 
 #include <QtCore>
-#include <interfaces/runinterface.h>
+#include <kumir2/runinterface.h>
 
 
 namespace Python3Language {

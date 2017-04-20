@@ -1,7 +1,7 @@
 #include "options.h"
 #include "generator.h"
 
-#include "docbookviewer/docbookfactory.h"
+#include <kumir2-libs/docbookviewer/docbookfactory.h>
 
 #include <string>
 #include <iostream>

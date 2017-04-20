@@ -1,7 +1,7 @@
 #ifndef COREGUI_ROW_H
 #define COREGUI_ROW_H
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #include <QtGlobal>
 #include <QSplitter>

@@ -11,7 +11,7 @@
 #include <QRectF>
 #include <QMatrix>
 
-#include "extensionsystem/kplugin.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 inline bool operator<(const QRectF &a, const QRectF &b) {
     const QString hashA = QString::fromLatin1("%1:%2:%3:%4")

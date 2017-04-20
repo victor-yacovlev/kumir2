@@ -9,10 +9,10 @@ You should change it corresponding to functionality.
 // Self include
 #include "turtlemodule.h"
 //#include "turtle.h"
-#include "widgets/draw_turtle_field.h"
+#include <kumir2-libs/widgets/draw_turtle_field.h>
 // Kumir includes
-#include "extensionsystem/kplugin.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 // Qt includes
 #include <QtCore>
 #include <QtGui>

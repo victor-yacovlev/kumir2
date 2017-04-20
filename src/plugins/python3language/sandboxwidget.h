@@ -13,7 +13,7 @@
 #include <QMutex>
 
 
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/extensionsystem/settings.h>
 
 namespace Python3Language {
 

@@ -1,25 +1,8 @@
 project(KumirCompilerTool)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
-
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} BEFORE)
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES})
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-
-include(../../kumir2_plugin.cmake)
-
+find_package(Kumir2 REQUIRED)
+kumir2_use_qt(Core)
 
 set(SOURCES
     kumircompilertoolplugin.cpp
@@ -29,14 +12,10 @@ set(MOC_HEADERS
     kumircompilertoolplugin.h
 )
 
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-endif()
-copySpecFile(KumirCompilerTool)
-add_library(KumirCompilerTool SHARED ${MOC_SOURCES} ${SOURCES})
-handleTranslation(KumirCompilerTool)
-target_link_libraries(KumirCompilerTool ${QT_LIBRARIES} ExtensionSystem DataFormats)
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
-install(TARGETS KumirCompilerTool DESTINATION ${PLUGINS_DIR})
+kumir2_add_plugin(
+    NAME        KumirCompilerTool
+    SOURCES     ${MOC_SOURCES} ${SOURCES}
+    LIBRARIES   ${QT_LIBRARIES} ExtensionSystem DataFormats
+)

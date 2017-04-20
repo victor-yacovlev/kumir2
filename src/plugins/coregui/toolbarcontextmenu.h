@@ -1,8 +1,8 @@
 #ifndef COREGUI_TOOLBARCONTEXTMENU_H
 #define COREGUI_TOOLBARCONTEXTMENU_H
 
-#include "widgets/actionproxy.h"
-#include "extensionsystem/settings.h"
+#include <kumir2-libs/widgets/actionproxy.h>
+#include <kumir2-libs/extensionsystem/settings.h>
 
 #include <QWidget>
 #include <QGridLayout>

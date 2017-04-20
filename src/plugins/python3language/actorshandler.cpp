@@ -1,6 +1,6 @@
 #include "actorshandler.h"
 
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace Python3Language {
 

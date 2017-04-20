@@ -1,4 +1,4 @@
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000
@@ -11,7 +11,7 @@
 #include "editor.h"
 #include "settingspage.h"
 
-#include "interfaces/guiinterface.h"
+#include <kumir2/guiinterface.h>
 
 namespace Editor {
 

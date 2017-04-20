@@ -4,8 +4,8 @@
 
 #include "iosettingseditorpage.h"
 
-#include "extensionsystem/settings.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/settings.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 
 namespace Terminal {
 

@@ -1,23 +1,9 @@
 project(Python3Language)
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
-if(NOT DEFINED USE_QT)
-    set(USE_QT 4)
-endif(NOT DEFINED USE_QT)
+find_package(Kumir2 REQUIRED)
+kumir2_use_qt(Core Gui)
 
-if(${USE_QT} GREATER 4)
-    # Find Qt5
-    find_package(Qt5 5.3.0 COMPONENTS Core Widgets REQUIRED)
-    include_directories(${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
-    set(QT_LIBRARIES ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES})
-else()
-    # Find Qt4
-    set(QT_USE_QTMAIN 1)
-    find_package(Qt4 4.7.0 COMPONENTS QtCore QtGui REQUIRED)
-    include(${QT_USE_FILE})
-endif()
-
-include(../../kumir2_plugin.cmake)
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions(-DPYTHON_SCRIPT_DEBUG)
 endif(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -63,16 +49,10 @@ set(MOC_HEADERS
     tokenizerinstance.h
 )
 
-if(${USE_QT} GREATER 4)
-    qt5_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-else()
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-endif()
-copySpecFile(Python3Language)
-add_library(Python3Language SHARED ${MOC_SOURCES} ${SOURCES})
-handleTranslation(Python3Language)
-target_link_libraries(Python3Language ${QT_LIBRARIES} ${PYTHON_LIBRARIES} DataFormats ExtensionSystem ${STDCXX_LIB} ${STDMATH_LIB})
+kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/kumir2/python3language)
-copyResources(python3language)
-install(TARGETS Python3Language DESTINATION ${PLUGINS_DIR})
+kumir2_add_plugin(
+  NAME Python3Language
+  SOURCES SHARED ${MOC_SOURCES} ${SOURCES}
+  LIBRARIES ${QT_LIBRARIES} ${PYTHON_LIBRARIES} DataFormats ExtensionSystem
+)

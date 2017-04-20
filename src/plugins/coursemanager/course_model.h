@@ -1,9 +1,9 @@
 #ifndef COURSE_MODEL_H
 #define COURSE_MODEL_H
 
-#include "extensionsystem/pluginmanager.h"
-#include "extensionsystem/kplugin.h"
-#include "shared/interfaces/coursesinterface.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2/coursesinterface.h>
 
 #include <QAbstractItemModel>
 #include <QApplication>
@@ -160,7 +160,7 @@ public:
 
 
  public:
-         int loadCourse(QString fileName);
+         int loadCourse(QString fileName,bool cmode=0);
          QString getTaskText(QModelIndex index);
           QString getTaskCheck(QModelIndex index);
           QString courceDescr()

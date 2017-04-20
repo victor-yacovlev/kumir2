@@ -2,9 +2,10 @@
 #define PYTHON3LANGUAGE_ANALIZERINSTANCE_H
 
 #include <QObject>
+#include <kumir2/analizer_instanceinterface.h>
+
 #include "pyinterpreterprocess.h"
 #include "namecontext.h"
-#include "interfaces/analizer_instanceinterface.h"
 
 namespace Python3Language {
 

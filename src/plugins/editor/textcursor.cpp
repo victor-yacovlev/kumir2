@@ -3,7 +3,7 @@
 #include "textdocument.h"
 #include "clipboard.h"
 #include "editcommands.h"
-#include "extensionsystem/pluginmanager.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include "settingspage.h"
 
 namespace Editor {

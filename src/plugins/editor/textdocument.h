@@ -7,11 +7,11 @@
 #else
 #include <QtGui>
 #endif
-#include "interfaces/lexemtype.h"
-#include "interfaces/analizerinterface.h"
-#include "interfaces/editor_instanceinterface.h"
-#include "dataformats/kumfile.h"
-#include "extensionsystem/settings.h"
+#include <kumir2/lexemtype.h>
+#include <kumir2/analizerinterface.h>
+#include <kumir2/editor_instanceinterface.h>
+#include <kumir2-libs/dataformats/kumfile.h>
+#include <kumir2-libs/extensionsystem/settings.h>
 
 namespace Editor {
 
