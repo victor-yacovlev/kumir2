@@ -29,3 +29,5 @@ kumir2_add_actor(
     SOURCES     ${SOURCES} ${MOC_SOURCES} ${UI_SOURCES}
     LIBRARIES   ${QT_LIBRARIES}
 )
+
+add_dependencies(ActorTurtle Actor_Colorer)

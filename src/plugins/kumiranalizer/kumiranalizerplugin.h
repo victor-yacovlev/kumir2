@@ -3,6 +3,7 @@
 
 #include <kumir2-libs/extensionsystem/kplugin.h>
 #include <kumir2/analizerinterface.h>
+#include <kumir2-libs/extensionsystem/pluginspec.h>
 
 #include <QtCore/QLocale>
 #include <QtCore/QStringList>
@@ -49,6 +50,7 @@ public:
     inline void updateSettings(const QStringList &) {}
 
 protected:
+    void createPluginSpec();
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void start();

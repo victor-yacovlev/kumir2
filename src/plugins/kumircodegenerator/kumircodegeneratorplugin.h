@@ -40,6 +40,7 @@ public:
     inline void updateSettings(const QStringList &) {}
 
 protected:
+    void createPluginSpec();
     QString initialize(const QStringList &configurationArguments,
                        const ExtensionSystem::CommandLine &runtimeArguments);
     void start();

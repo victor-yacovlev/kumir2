@@ -42,10 +42,9 @@ kumir2_add_plugin(
 
 # Generate messages file
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/kumiranalizer")
-add_custom_target(
-    KumirAnalizer_messages
-    ALL
-    ${PYTHON_EXECUTABLE}
+add_custom_command(
+    TARGET          KumirAnalizer    POST_BUILD
+    COMMAND         ${PYTHON_EXECUTABLE}
     "${CMAKE_SOURCE_DIR}/src/kumir2-libs/errormessages/scanmessages.py"
     "--db=${CMAKE_SOURCE_DIR}/share/kumir2/kumiranalizer/messages.csv"
     "--out=${CMAKE_BINARY_DIR}/${KUMIR2_RESOURCES_DIR}/kumiranalizer/messages.csv"

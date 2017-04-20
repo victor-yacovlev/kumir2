@@ -42,7 +42,8 @@ static const qreal MAX_ZOOM = 1000000;
     {
         ExtensionSystem::PluginManager * pluginManager = ExtensionSystem::PluginManager::instance();
         ExtensionSystem::KPlugin * plugin = pluginManager->loadedPlugins("ActorTurtle")[0];
-        return pluginManager->settingsByObject(plugin);
+        return plugin->mySettings();
+//        return pluginManager->settingsByObject(plugin);
     }//Get  settings
     
    

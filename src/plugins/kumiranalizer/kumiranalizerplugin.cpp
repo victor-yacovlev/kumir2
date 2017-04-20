@@ -43,6 +43,13 @@ QWidget *KumirAnalizerPlugin::languageQuickReferenceWidget()
     return _quickReferenceWidget;
 }
 
+void KumirAnalizerPlugin::createPluginSpec()
+{
+    _pluginSpec.name = "KumirAnalizer";
+    _pluginSpec.provides.append("Analizer");
+    _pluginSpec.gui = false;
+}
+
 
 QString KumirAnalizerPlugin::initialize(const QStringList &configurationArguments,
                                         const ExtensionSystem::CommandLine &runtimeArguments)

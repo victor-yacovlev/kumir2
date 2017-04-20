@@ -465,6 +465,13 @@ void KumirRunPlugin::removeBreakpoint(const QString &fileName, quint32 lineNo)
     pRun_->removeBreakpoint(fileName, lineNo);
 }
 
+void KumirRunPlugin::createPluginSpec()
+{
+    _pluginSpec.name = "KumirCodeRun";
+    _pluginSpec.gui = false;
+    _pluginSpec.provides.append("Runner");
+}
+
 void KumirRunPlugin::terminateAndWaitForStopped()
 {
     if (pRun_->isRunning()) {

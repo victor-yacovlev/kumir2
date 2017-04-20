@@ -812,6 +812,15 @@ QList<QWidget*> Plugin::settingsEditorPages() {
     return QList<QWidget*>() << guiSettingsPage_ << ioSettingsPage_;
 }
 
+void Plugin::createPluginSpec()
+{
+    _pluginSpec.name = "CoreGUI";
+    _pluginSpec.gui = true;
+    _pluginSpec.dependencies.append("Analizer");
+    _pluginSpec.dependencies.append("Editor");
+    _pluginSpec.dependencies.append("Runner");
+}
+
 void Plugin::showActorWindow(const QByteArray &asciiName)
 {
     if (showActorActions_.contains(asciiName)) {

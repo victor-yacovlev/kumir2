@@ -177,6 +177,13 @@ QFont EditorPlugin::defaultEditorFont() const
     return fnt;
 }
 
+void EditorPlugin::createPluginSpec()
+{
+    _pluginSpec.name = "Editor";
+    _pluginSpec.dependencies.append("Analizer");
+    _pluginSpec.gui = true;
+}
+
 
 QString EditorPlugin::initialize(const QStringList &arguments, const ExtensionSystem::CommandLine &)
 {

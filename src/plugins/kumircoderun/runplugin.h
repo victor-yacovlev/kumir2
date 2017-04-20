@@ -3,6 +3,7 @@
 
 #include <QtCore>
 #include <kumir2-libs/extensionsystem/kplugin.h>
+#include <kumir2-libs/extensionsystem/pluginspec.h>
 #include <kumir2/runinterface.h>
 #include "commonrun.h"
 #include "consolerun.h"
@@ -85,6 +86,7 @@ public slots:
 
 
 protected:
+    void createPluginSpec();
     void start();
     void stop();
     void timerEvent(QTimerEvent *);

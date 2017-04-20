@@ -10,6 +10,7 @@
 #include <kumir2-libs/extensionsystem/pluginmanager.h>
 #include <kumir2/guiinterface.h>
 #include <kumir2/actorinterface.h>
+#include <kumir2-libs/extensionsystem/pluginspec.h>
 #include "course_model.h"
 typedef Shared::GuiInterface GI;
 typedef Shared::ActorInterface AI;
@@ -67,6 +68,7 @@ public slots:
     void prevField();
     void lockContrls();
 private /*methods*/:
+    void createPluginSpec();
     void saveSession() const;
     void restoreSession();
     void changeCurrentDirectory(const QString & path);

@@ -868,11 +868,12 @@ void MainWindowTask::hideEvent(QHideEvent * event)
 void MainWindowTask::closeEvent(QCloseEvent *event)
 {
     
-   
+   if (settings) {
+       settings->setValue("Window/SpliterPos",ui->splitter->saveGeometry());
+       settings->setValue("Window/SpliterState",ui->splitter->saveState());
+       settings->flush();
+   }
     
-    settings->setValue("Window/SpliterPos",ui->splitter->saveGeometry());
-    settings->setValue("Window/SpliterState",ui->splitter->saveState());
-    settings->flush();
     qDebug()<<ui->splitter->saveGeometry();
     qDebug()<<"CLOSE TASK WINDOW";
   if(!course)return;
