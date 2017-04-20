@@ -91,7 +91,7 @@ public:
 
     template <class PluginInterface>
     PluginInterface* findPlugin() {
-        QList<KPlugin*> plugins = loadedPlugins();
+        QList<KPlugin*> plugins = loadedPlugins("");
         PluginInterface* result = nullptr;
         for (int i=0; i<plugins.size(); i++) {
             KPlugin * plugin = plugins[i];
@@ -104,7 +104,7 @@ public:
 
     template <class PluginInterface>
     PluginInterface* findPlugin(const QByteArray & name) {
-        QList<KPlugin*> plugins = loadedPlugins();
+        QList<KPlugin*> plugins = loadedPlugins("");
         PluginInterface* result = nullptr;
         for (int i=0; i<plugins.size(); i++) {
             KPlugin * plugin = plugins[i];
