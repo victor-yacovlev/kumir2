@@ -365,7 +365,7 @@ QList<const KPlugin*> PluginManager::loadedConstPlugins(const QByteArray &patter
     const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
     Q_FOREACH(const KPlugin * p, pImpl_->objects) {
         const PluginSpec & spec = p->pluginSpec();
-        if (rx.exactMatch(spec.name)) {
+        if ( pattern.length()==0 || (pattern.length() > 0 && rx.exactMatch(spec.name))) {
             result.append(p);
         }
     }
@@ -378,7 +378,7 @@ QList<KPlugin*> PluginManager::loadedPlugins(const QByteArray &pattern)
     const QRegExp rx = QRegExp(pattern, Qt::CaseSensitive, QRegExp::Wildcard);
     Q_FOREACH(KPlugin * p, pImpl_->objects) {
         const PluginSpec & spec = p->pluginSpec();
-        if (rx.exactMatch(spec.name)) {
+        if ( pattern.length()==0 || (pattern.length() > 0 && rx.exactMatch(spec.name))) {
             result.append(p);
         }
     }
