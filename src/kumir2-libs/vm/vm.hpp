@@ -598,12 +598,13 @@ void KumirVM::setProgram(const Bytecode::Data &program, bool isMain, const Strin
             breakpointsTable_.registerSourceFileName(filename, e.module);
         }
         else if (e.type==EL_INIT ) {
-			if (moduleContexts_[currentModuleContext].globals.size() <= e.module) {
-				moduleContexts_[currentModuleContext].globals.resize(e.module + 1);
-				moduleContexts_[currentModuleContext].globals[e.module].reserve(256);
-				moduleContexts_[currentModuleContext].moduleNames.resize(e.module + 1);
-				moduleContexts_[currentModuleContext].moduleNames[e.module] = e.moduleLocalizedName;
-			}
+            if (moduleContexts_[currentModuleContext].globals.size() <= e.module) {
+                moduleContexts_[currentModuleContext].globals.resize(e.module + 1);
+                moduleContexts_[currentModuleContext].globals[e.module].reserve(256);
+                moduleContexts_[currentModuleContext].moduleNames.resize(e.module + 1);
+                moduleContexts_[currentModuleContext].moduleNames[e.module] =
+                e.moduleLocalizedName;
+            }
             uint8_t key = e.module;
             moduleContexts_[currentModuleContext].inits.push_back(e);
             breakpointsTable_.registerSourceFileName(filename, e.module);
