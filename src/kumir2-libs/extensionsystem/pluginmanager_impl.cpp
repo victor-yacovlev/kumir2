@@ -1,61 +1,17 @@
 #include "pluginmanager_impl.h"
 
+#if defined(Q_OS_WIN32)
+static const char* LIB_PREFIX = "";
+static const char* LIB_SUFFIX = ".dll";
+#elif defined(Q_OS_MAC)
+static const char* LIB_PREFIX = "lib";
+static const char* LIB_SUFFIX = ".dylib";
+#else
 static const char* LIB_PREFIX = "lib";
 static const char* LIB_SUFFIX = ".so";
+#endif
 
 namespace ExtensionSystem {
-
-//QString PluginManagerImpl::loadSpecs(const QStringList &names)
-//{
-//    for (int i=0; i<names.size(); i++) {
-//        bool loaded = false;
-//        for (int j=0; j<specs.size(); j++) {
-//            if (specs[j].name==names[i]) {
-//                loaded = true;
-//                break;
-//            }
-//        }
-//        if (loaded)
-//            continue;
-//        const QString fileName = path+"/"+names[i]+".pluginspec";
-//        PluginSpec spec;
-//        //#ifdef QT_NO_DEBUG
-//#ifdef Q_OS_WIN
-//        spec.libraryFileName = QString("%1/%2.dll").arg(path).arg(names[i]);
-//#endif
-//#ifdef Q_OS_UNIX
-//        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-//#endif
-//#ifdef Q_OS_MAC
-//        spec.libraryFileName = QString("%1/lib%2.dylib").arg(path).arg(names[i]);
-//#endif
-//        //#else
-//        //#ifdef Q_OS_WIN
-//        //        spec.libraryFileName = QString("%1/%2d.dll").arg(path).arg(names[i]);
-//        //#endif
-//        //#ifdef Q_OS_UNIX
-//        //        spec.libraryFileName = QString("%1/lib%2.so").arg(path).arg(names[i]);
-//        //#endif
-//        //#ifdef Q_OS_MAC
-//        //        spec.libraryFileName = QString("%1/lib%2_debug.dylib").arg(path).arg(names[i]);
-//        //#endif
-//        //#endif
-//        QString error = readSpecFromFile(fileName, spec);
-//        if (!error.isEmpty()) {
-//            return error;
-//        }
-//        specs << spec;
-//        QStringList deps;
-//        for (int j=0; j<spec.dependencies.size(); j++) {
-//            deps << spec.dependencies[j];
-//        }
-//        error = loadSpecs(deps);
-//        if (!error.isEmpty()) {
-//            return error;
-//        }
-//    }
-//    return "";
-//}
 
 
 bool PluginManagerImpl::extractRuntimeParametersForPlugin(const KPlugin *plugin, CommandLine &parameters)
