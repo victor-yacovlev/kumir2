@@ -356,6 +356,14 @@ void Python3LanguagePlugin::removeBreakpoint(const QString &fileName, quint32 li
     runner_->removeBreakpoint(location);
 }
 
+void Python3LanguagePlugin::createPluginSpec()
+{
+    _pluginSpec.name = "Python3Language";
+    _pluginSpec.provides.append("Analizer");
+    _pluginSpec.provides.append("Generator");
+    _pluginSpec.provides.append("Runner");
+}
+
 
 } // namespace Python3Language
 

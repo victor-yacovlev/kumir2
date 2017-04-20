@@ -106,6 +106,7 @@ public Q_SLOTS:
     void removeBreakpoint(const QString &fileName, quint32 lineNo);
 
 protected:    
+    void createPluginSpec();
     void connectRunThreadSignals();
     QString initialize(const QStringList &, const ExtensionSystem::CommandLine &);
     void stop();
