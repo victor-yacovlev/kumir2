@@ -26,7 +26,7 @@ endif(NOT DEFINED KUMIR2_LIBEXECS_DIR)
 if(NOT DEFINED KUMIR2_SDK_SCRIPTS_DIR)
     # various Linux distros have different locations for SDK supplementary executables,
     # so allow to keep previously defined variable if set
-    set(KUMIR2_SDK_SCRIPTS_DIR ${KUMIR2_LIBS_DIR})          # devel scripts
+    set(KUMIR2_SDK_SCRIPTS_DIR "${KUMIR2_INSTALL_PREFIX}/${KUMIR2_LIBS_DIR}")          # devel scripts
 endif(NOT DEFINED KUMIR2_SDK_SCRIPTS_DIR)
 
 if(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
