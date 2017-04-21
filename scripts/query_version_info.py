@@ -185,7 +185,7 @@ def cmake_version_info():
     output += "-DGIT_TIMESTAMP=\"{}\";".format(timestamp)
 
 
-def package_bundle_name():
+def source_file_name(prefix: str, suffix: str):
     version_info = get_version_information(os.getcwd())
     if version_info["taggedRelease"]:
         version_name = version_info["version"]
@@ -193,6 +193,10 @@ def package_bundle_name():
         version_name = version_info["branch"] + "-"
         version_name += version_info["hash"] + "-"
         version_name += version_info["date"]
+    return prefix + version_name + suffix
+
+
+def package_bundle_name():
     prefix = ""
     suffix = ""
     nl = ""
@@ -206,7 +210,7 @@ def package_bundle_name():
                 nl = "\r\n"
             else:
                 nl = "\n"
-    output = prefix + version_name + suffix + nl
+    output = source_file_name(prefix, suffix) + nl
     return output
 
 

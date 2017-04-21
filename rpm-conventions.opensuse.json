@@ -1,9 +1,9 @@
 {
   "unstablePackageSuffix": "-unstable",
-  "prefix": "%_prefix",
-  "cmake": "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/%_prefix",
-  "make": "make -j 5",
-  "makeInstall": "make install",
+  "installPrefix": "%_prefix",
+  "cmakeCommand": "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$rpmBuildRoot/%_prefix",
+  "makeCommand": "make -j",
+  "makeInstallCommand": "make install",
   "rpmBuildRoot": "$RPM_BUILD_ROOT",
   "binDir": "%_bindir",
   "libDir": "%_libdir",
@@ -11,12 +11,13 @@
   "includesDir": "%_incdir",
   "defAttr": "%defattr(-,root,root)",
   "dirsOwnership": true,
+  "useBundledBoost": false,
 
   "buildRequires": [
     "python3",
     "cmake >= 3.0",
     "gcc-c++ >= 4.8",
-    "boost-devel >= 1.49",
+    "boost-devel >= 1.54",
     "libqt5-qtbase-devel >= 5.3.0",
     "libqt5-qtsvg-devel >= 5.3.0",
     "libqt5-qtx11extras-devel >= 5.3.0"
