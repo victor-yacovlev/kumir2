@@ -183,6 +183,7 @@ def cmake_version_info():
         output += "-DGIT_BRANCH=\"{}\";".format(version_name["branch"])
         output += "-DGIT_HASH=\"{}\";".format(version_name["hash"])
     output += "-DGIT_TIMESTAMP=\"{}\";".format(timestamp)
+    return output
 
 
 def source_file_name(prefix: str, suffix: str):

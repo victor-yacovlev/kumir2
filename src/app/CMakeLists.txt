@@ -29,6 +29,7 @@ else()
         OUTPUT_VARIABLE VERSION_DEFINITIONS
     )
     add_definitions(${VERSION_DEFINITIONS})
+    message(STATUS "Queried version info from git: ${VERSION_DEFINITIONS}")
 endif()
 
 #if(NOT APPLE)
