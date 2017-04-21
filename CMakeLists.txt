@@ -66,7 +66,10 @@ install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
 # Generate and install CMake file describing current build configuration
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
 file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
-    "set(USE_QT ${USE_QT})\nset(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\nset(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
+    "set(USE_QT ${USE_QT})\n"
+    "set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\n"
+    "set(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
+    "set(KUMIR2_SDK_SCRIPTS_DIR ${KUMIR2_SDK_SCRIPTS_DIR})\n"
 )
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
