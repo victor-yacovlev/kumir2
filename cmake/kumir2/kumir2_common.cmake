@@ -4,7 +4,7 @@ include(CMakeParseArguments)
 set(MINIMUM_QT5_VERSION 5.3.0)
 
 if(DEFINED KUMIR2_DISABLED_SUBDIRS)
-    message(STATUS "Explicitly disabled subdirs: ${KUMIR2_DISABLED_SUBDIRS}")
+#    message(STATUS "Explicitly disabled subdirs: ${KUMIR2_DISABLED_SUBDIRS}")
 else()
     execute_process(
         COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"

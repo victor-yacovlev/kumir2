@@ -18,7 +18,7 @@ URL:    	http://www.niisi.ru/kumir/
 Packager:	$packager
 Source:     $source
 Requires:   $kumirLibsPackageName = %version
-Requires:   /usr/bin/gtk-update-icon-cahce
+Requires:   /usr/bin/gtk-update-icon-cache
 Requires:   /usr/bin/xdg-mime
 Conflicts:  $mainPackageConflictName
 $buildRequiresList
@@ -71,11 +71,11 @@ $dataDir/icons/hicolor/*/mimetypes/*
 $dataDir/mime/packages/kumir2-mimetypes.xml
 
 
-%post -p /sbin/ldconfig
+%post
 /bin/touch --no-create $dataDir/icons/hicolor/ &>/dev/null || :
 xdg-menu install $dataDir/mime/packages/kumir2-mimetypes.xml || true
 
-%postun -p /sbin/ldconfig
+%postun
 if [ $1 -eq 0 ] ; then
   /bin/touch --no-create $dataDir/icons/hicolor/ &>/dev/null
   /usr/bin/gtk-update-icon-cache -f $dataDir/icons/hicolor/ &>/dev/null || :
