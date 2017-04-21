@@ -8,6 +8,7 @@ import time
 if 3 == sys.version_info.major:
     from urllib.parse import unquote
 
+
     def to_str(x):
         assert isinstance(x, str) or isinstance(x, bytes)
         if isinstance(x, str):
@@ -16,6 +17,7 @@ if 3 == sys.version_info.major:
             return x.decode("utf-8")
 else:
     from urllib import unquote
+
 
     def to_str(x):
         assert isinstance(x, str) or isinstance(x, unicode)
@@ -63,36 +65,60 @@ for path_variant in GIT_PATH_SEARCH:
 
 def get_version_information(top_level_dir):
     assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
+    result = {
+        "taggedRelease": True,
+        "version": None,
+        "hash": None,
+        "branch": None,
+        "date": None
+    }
     if os.path.exists(top_level_dir + os.path.sep + ".git"):
         try:
             version_info = subprocess.check_output(
-                    "git describe --abbrev=0 --tags --exact-match",
-                    shell=True,
-                    stderr=subprocess.PIPE
+                "git describe --abbrev=0 --tags --exact-match",
+                shell=True,
+                stderr=subprocess.PIPE
             ).strip()
+            result["version"] = version_info
         except subprocess.CalledProcessError:
-            version_info = to_str(subprocess.check_output(
-                    "git rev-parse --abbrev-ref HEAD",
-                    shell=True
+            result["taggedRelease"] = False
+            branch_name = to_str(subprocess.check_output(
+                "git rev-parse --abbrev-ref HEAD",
+                shell=True
             ).strip())
-            version_info += "-" + to_str(subprocess.check_output(
-                    "git --no-pager log -1 --pretty=format:%H",
-                    shell=True
+            result["branch"] = branch_name
+            git_hash = to_str(subprocess.check_output(
+                "git --no-pager log -1 --pretty=format:%H",
+                shell=True
             ).strip())
+            result["hash"] = git_hash
+            result["date"] = get_date(top_level_dir)
     else:
         dir_name = os.path.basename(top_level_dir)
         match = re.match(r"kumir2-(.+)", dir_name)
         version_info = match.group(1)
-    return to_str(version_info)
+        if version_info.startswith("2"):
+            result["version"] = version_info
+        else:
+            result["taggedRelease"] = False
+            result["date"] = get_date(top_level_dir)
+    return result
+
+
+def get_date(top_level_dir):
+    timestamp = int(get_timestamp(top_level_dir))
+    localtime = time.localtime(timestamp)
+    assert isinstance(localtime, time.struct_time)
+    return "{:04}{:02}{:02}".format(localtime.tm_year, localtime.tm_mon, localtime.tm_mday)
 
 
 def get_timestamp(top_level_dir):
     assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
     if os.path.exists(top_level_dir + os.path.sep + ".git"):
         return to_str(subprocess.check_output(
-                "git --no-pager log -1 --pretty=format:%ct",
-                shell=True,
-                stderr=subprocess.PIPE
+            "git --no-pager log -1 --pretty=format:%ct",
+            shell=True,
+            stderr=subprocess.PIPE
         )).strip()
     else:
         return "{}".format(int(time.time()))
@@ -102,31 +128,28 @@ def is_tag(version):
     return version.startswith("2")
 
 
-def find_suitable_list_file_name(version_name):
+def find_suitable_list_file_name(version_info):
     base = os.getcwd() + os.path.sep + "subdirs-disabled-{}.txt"
-    name = base.format(version_name)
+    if version_info["taggedRelease"]:
+        name = base.format(version_info["version"])
+    else:
+        name = base.format(version_info["branch"])
     if os.path.exists(name):
         return name
-    match = re.match(r"(.+)-(alpha|beta|rc|pt|test)[0-9]+", version_name)
-    if match:
-        # some release version
+    if version_info["taggedRelease"]:
+        match = re.match(r"(.+)-(alpha|beta|rc|pt|test)[0-9]+", version_info["version"])
         version_base = match.group(1)
     else:
-        # branch version
-        match = re.match(r"(.+)-(.+)", version_name)
-        if match:
-            version_base = match.group(1)
-        else:
-            version_base = None
+        version_base = version_info["branch"]
     if version_base:
         name = base.format(version_base)
         if os.path.exists(name):
             return name
 
 
-def cmake_disabled_modules():
-    version_name = get_version_information(os.getcwd())
-    disabled_list_file_name = find_suitable_list_file_name(version_name)
+def disabled_modules():
+    version_info = get_version_information(os.getcwd())
+    disabled_list_file_name = find_suitable_list_file_name(version_info)
     disabled_list = []
     if disabled_list_file_name:
         with open(disabled_list_file_name) as source:
@@ -134,35 +157,42 @@ def cmake_disabled_modules():
             for line in lines:
                 line = line.strip()
                 if line and not line.startswith("#"):
-                    disabled_list += ["[" + line + "]"]
-    if disabled_list:
-        OUT_FILE.write(" ".join(disabled_list))
+                    disabled_list += [line]
+    return disabled_list
 
-def _split_into_branch_and_hash(s):
-    assert isinstance(s, str)
-    index = s.rfind("-")
-    if -1==index:
-        return s, "unknown"
+
+def cmake_disabled_modules():
+    mods = ["[" + entry + "]" for entry in disabled_modules()]
+    if mods:
+        return " ".join(mods)
     else:
-        return s[:index], s[index+1:]
+        return ""
+
 
 def cmake_version_info():
     version_name = get_version_information(os.getcwd())
+    assert isinstance(version_name, dict)
     timestamp = get_timestamp(os.getcwd())
-    if is_tag(version_name):
-        OUT_FILE.write("-DGIT_TAG=\"{}\";".format(version_name))
-        OUT_FILE.write("-DGIT_BRANCH=\"unknown\";")
-        OUT_FILE.write("-DGIT_HASH=\"unknown\";")
+    output = ""
+    if version_name["taggedRelease"]:
+        output += "-DGIT_TAG=\"{}\";".format(version_name["version"])
+        output += "-DGIT_BRANCH=\"unknown\";"
+        output += "-DGIT_HASH=\"unknown\";"
     else:
-        OUT_FILE.write("-DGIT_TAG=\"unknown\";")
-        branch, ghash = _split_into_branch_and_hash(version_name)
-        OUT_FILE.write("-DGIT_BRANCH=\"{}\";".format(branch))
-        OUT_FILE.write("-DGIT_HASH=\"{}\";".format(ghash))
-    OUT_FILE.write("-DGIT_TIMESTAMP=\"{}\";".format(timestamp))
+        output += "-DGIT_TAG=\"unknown\";"
+        output += "-DGIT_BRANCH=\"{}\";".format(version_name["branch"])
+        output += "-DGIT_HASH=\"{}\";".format(version_name["hash"])
+    output += "-DGIT_TIMESTAMP=\"{}\";".format(timestamp)
 
 
 def package_bundle_name():
-    version_name = get_version_information(os.getcwd())
+    version_info = get_version_information(os.getcwd())
+    if version_info["taggedRelease"]:
+        version_name = version_info["version"]
+    else:
+        version_name = version_info["branch"] + "-"
+        version_name += version_info["hash"] + "-"
+        version_name += version_info["date"]
     prefix = ""
     suffix = ""
     nl = ""
@@ -177,28 +207,24 @@ def package_bundle_name():
             else:
                 nl = "\n"
     output = prefix + version_name + suffix + nl
-    OUT_FILE.write(output)
+    return output
 
 
 def nsis_include_file():
-    version_name = get_version_information(os.getcwd())
+    version_info = get_version_information(os.getcwd())
     data = ""
-    if is_tag(version_name):
-        data += "OutFile \"kumir2-"+version_name+"-install.exe\"\r\n"
-        data += "Name \"Кумир "+version_name+"\"\r\n"
-        data += "InstallDir \"$PROGRAMFILES\\Kumir-"+version_name+"\"\r\n"
-        data += "!define VERSION_SUFFIX \"" + version_name + "\"\r\n"
+    if version_info["taggedRelease"]:
+        data += "OutFile \"kumir2-" + version_info["version"] + "-install.exe\"\r\n"
+        data += "Name \"Кумир " + version_info["version"] + "\"\r\n"
+        data += "InstallDir \"$PROGRAMFILES\\Kumir-" + version_info["version"] + "\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + version_info["version"] + "\"\r\n"
     else:
-        branch, ghash = _split_into_branch_and_hash(version_name)
-        data += "OutFile \"kumir2-" + branch + "-" + ghash + "-install.exe\"\r\n"
-        data += "Name \"Кумир 2.x-" + branch + "\"\r\n"
-        data += "InstallDir \"$PROGRAMFILES\\Kumir2x-" + branch + "\"\r\n"
-        data += "!define VERSION_SUFFIX \"" + branch + "\"\r\n"
-    if sys.stdout==OUT_FILE:
-        OUT_FILE.write(data)
-    else:
-        OUT_FILE.write(data.encode("CP1251"))
-
+        data += "OutFile \"kumir2-" + version_info["branch"] + "-"
+        data += version_info["date"] + "-" + version_info["hash"] + "-install.exe\"\r\n"
+        data += "Name \"Кумир 2.x-" + version_info["branch"] + "\"\r\n"
+        data += "InstallDir \"$PROGRAMFILES\\Kumir2x-" + version_info["branch"] + "\"\r\n"
+        data += "!define VERSION_SUFFIX \"" + version_info["branch"] + "\"\r\n"
+    return data
 
 
 def main():
@@ -210,14 +236,19 @@ def main():
             mode = arg[7:]
         elif arg.startswith("--out="):
             out_file_name = arg[6:]
+    custom_encoding = False
     if out_file_name:
         if mode.startswith("nsis"):
             open_mode = "wb"
+            custom_encoding = "CP1251"
         else:
             open_mode = "w"
         OUT_FILE = open(out_file_name, open_mode)
     if mode in globals():
-        globals()[mode]()
+        data = globals()[mode]()
+        if custom_encoding:
+            data = data.encode(custom_encoding)
+        OUT_FILE.write(data)
     OUT_FILE.close()
 
 

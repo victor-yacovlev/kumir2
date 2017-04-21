@@ -1,0 +1,59 @@
+{
+  "unstablePackageSuffix": "-unstable",
+  "prefix": "%_prefix",
+  "cmake": "cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/%_prefix",
+  "make": "make -j 5",
+  "makeInstall": "make install",
+  "rpmBuildRoot": "$RPM_BUILD_ROOT",
+  "binDir": "%_bindir",
+  "libDir": "%_libdir",
+  "dataDir": "%_datadir",
+  "includesDir": "%_incdir",
+  "defAttr": "%defattr(-,root,root)",
+  "dirsOwnership": true,
+
+  "buildRequires": [
+    "python3",
+    "cmake >= 3.0",
+    "gcc-c++ >= 4.8",
+    "boost-devel >= 1.49",
+    "libqt5-qtbase-devel >= 5.3.0",
+    "libqt5-qtsvg-devel >= 5.3.0",
+    "libqt5-qtx11extras-devel >= 5.3.0"
+  ],
+
+  "requires": [
+    "libQt5Core.so.5(Qt_5.3)",
+    "libQt5Gui.so.5(Qt_5.3)",
+    "libQt5Widgets.so.5(Qt_5.3)",
+    "libQt5Svg.so.5(Qt_5.3)",
+    "libQt5Xml.so.5(Qt_5.3)",
+    "libQt5Network.so.5(Qt_5.3)",
+    "libQt5PrintSupport.so.5(Qt_5.3)",
+    "libQt5WebKit.so.5(Qt_5.3)",
+    "libQt5X11Extras.so.5(Qt_5.3)"
+  ],
+
+  "rpmGroup": "Productivity/Scientific/Other",
+
+  "commonUsedLibsPackage": {
+    "name": {
+      "prefix": "lib",
+      "suffix": ""
+    }
+  },
+  "toolsPackage": {
+    "name": {
+      "prefix": "",
+      "suffix": "-utils"
+    }
+  },
+  "develPackage": {
+    "name": {
+      "prefix": "",
+      "suffix": "-devel"
+    },
+    "cmakeFilesLocation": "%_libdir/cmake/Kumir2",
+    "develScriptsLocation": "%python3_sitelib"
+  }
+}
