@@ -32,14 +32,11 @@ $unstableNotice
 
 %build
 $removeBundledBoostIfNeed
-mkdir build
-pushd build
 $cmakeCommand \
     -DUSE_QT=5 \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-    -DKUMIR2_REAL_PREFIX=$installPrefix \
-    -DKUMIR2_SDK_CMAKE_DIR=$rpmBuildRoot/$cmakeFilesLocation \
-    -DKUMIR2_SDK_SCRIPTS_DIR=$RPM_BUILD_ROOT/$develScriptsLocation \
+    -DKUMIR2_SDK_CMAKE_DIR=$cmakeFilesLocation \
+    -DKUMIR2_SDK_SCRIPTS_DIR=$develScriptsLocation \
     -DPROVIDED_VERSION_INFO:BOOL=ON \
     -DGIT_TAG="$gitTag" \
     -DGIT_BRANCH="$gitBranch" \
@@ -47,15 +44,12 @@ $cmakeCommand \
     -DGIT_TIMESTAMP="$gitTimestamp" \
     ../
 $makeCommand
-popd
 
 %install
-pushd build
 $makeInstallCommand
-popd
 
-%clean
-rm -rf $rpmBuildRoot
+
+$cleanSection
 
 %files
 $mainFilesPrefs
@@ -72,9 +66,9 @@ $dataDir/icons/hicolor/*/apps/kumir2-classic.*
 $dataDir/applications/kumir2-highgrade.desktop
 $dataDir/icons/hicolor/*/apps/kumir2-highgrade.*
 $dataDir/applications/kumir2-teacher.desktop
-$dataDir/icons/hicolor/*/apps/teacher-highgrade.*
-$datadir/icons/hicolor/*/mimetypes/*
-$datadir/mime/packages/kumir2-mimetypes.xml
+$dataDir/icons/hicolor/*/apps/kumir2-teacher.*
+$dataDir/icons/hicolor/*/mimetypes/*
+$dataDir/mime/packages/kumir2-mimetypes.xml
 
 
 %post -p /sbin/ldconfig
@@ -246,6 +240,11 @@ def generate_rpm_spec_contents(dist: str, release: int, packager: str):
         subst["removeBundledBoostIfNeed"] = "rm -rf src/3rdparty/boost*"
     else:
         subst["removeBundledBoostIfNeed"] = ""
+
+    if not conventions["skipCleanSection"]:
+        subst["cleanSection"] = "%clean\nrm -rf $rpmBuildRoot\n"
+    else:
+        subst["cleanSection"] = ""
 
     if conventions["dirsOwnership"]:
         subst["mainFilesPrefs"] += "\n%dir $binDir"
