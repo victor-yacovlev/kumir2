@@ -6,6 +6,28 @@
  - Python >= 3.2
  - CMake >= 3.0
 
+## Готовое решение для RPM-SPEC
+В поставке есть скрипт, который генерирует SPEC-файл для openSUSE. Его легко адаптировать для любого другого 
+дистрибутива созданием файла `rpm-conventions.ДИСТРИТУБИВ.json`. Pull-requests are welcome!
+
+```
+# Создание tar.gz архива из git-репозитория
+KUMIR2_BUNDLE_NAME=`python3 scripts/query_version_info.py --mode=package_bundle_name --prefix=kumir2-`
+git archive --format tar --prefix ${KUMIR2_BUNDLE_NAME}/ -o ${KUMIR2_BUNDLE_NAME}.tar HEAD
+gzip -9 ${KUMIR2_BUNDLE_NAME}.tar
+
+# Создание SPEC-файла
+SPEC_FILE_NAME=kumir2-unstable.spec  # для нестабильных версий из master
+# или
+SPEC_FILE_NAME=kumir2.spec           # для версий, у который есть git-теги
+
+python3 scripts/generate_rpm_spec.py \
+        --dist=openSUSE \            # имя дистрибутива (см. выше про JSON-файл)
+        --release=123 \              # номер сборки
+        --packager="Vasya Pupkin <vasya@dist.ro>" \  # имя мантейнера в файле
+        > $SPEC_FILE_NAME            # имя файла для вывода
+```
+
 ## Рекомендации по именованию версий и структуре пакетов
 ### Стабильные версии и текущая версия
 Стабильные версии - это только те, для которых в VCS git предусмотрены теги, например, `2.1.0-rc7`. 
