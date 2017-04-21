@@ -79,7 +79,7 @@ def get_version_information(top_level_dir):
                 shell=True,
                 stderr=subprocess.PIPE
             ).strip()
-            result["version"] = version_info
+            result["version"] = to_str(version_info)
         except subprocess.CalledProcessError:
             result["taggedRelease"] = False
             branch_name = to_str(subprocess.check_output(
