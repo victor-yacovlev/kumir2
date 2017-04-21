@@ -73,7 +73,7 @@ $dataDir/mime/packages/kumir2-mimetypes.xml
 
 %post
 /bin/touch --no-create $dataDir/icons/hicolor/ &>/dev/null || :
-xdg-menu install $dataDir/mime/packages/kumir2-mimetypes.xml || true
+/usr/bin/xdg-mime install $dataDir/mime/packages/kumir2-mimetypes.xml || true
 
 %postun
 if [ $1 -eq 0 ] ; then
