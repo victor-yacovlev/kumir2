@@ -6,11 +6,14 @@ set(MINIMUM_QT5_VERSION 5.3.0)
 if(DEFINED KUMIR2_DISABLED_SUBDIRS)
 #    message(STATUS "Explicitly disabled subdirs: ${KUMIR2_DISABLED_SUBDIRS}")
 else()
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE DISABLED_SUBDIRS
-    )
+    # The script exists only if build from main sources tree, but not using SDK
+    if(EXISTS "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py")
+        execute_process(
+            COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE DISABLED_SUBDIRS
+        )
+    endif()
 endif()
 
 if(NOT DEFINED KUMIR2_INSTALL_PREFIX)
