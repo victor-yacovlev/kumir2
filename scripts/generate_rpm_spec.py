@@ -182,7 +182,7 @@ def generate_rpm_spec_contents(dist: str, release: int, packager: str):
     subst["disabledSubdirs"] = ";".join(disabled_subdirs)
     if version_info["taggedRelease"]:
         subst["name"] = "kumir2"
-        subst["version"] = version_info["version"]
+        subst["version"] = version_info["version"].replace("-","~")
         subst["unstableNotice"] = ""
         subst["mainPackageConflictName"] = "kumir2" + unstable_suffix
         subst["libsPackageConflictName"] = lib_prefix + "kumir2" + unstable_suffix + lib_suffix
