@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Exec=kumir2-ide %U
-Icon=kumir2
+Icon=kumir2-ide
 Name=Kumir Professional Edition
 Name[ru]=Кумир-Про
 Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;
