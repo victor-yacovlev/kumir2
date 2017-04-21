@@ -3,11 +3,15 @@ include(CMakeParseArguments)
 
 set(MINIMUM_QT5_VERSION 5.3.0)
 
-execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE DISABLED_SUBDIRS
-)
+if(DEFINED KUMIR2_DISABLED_SUBDIRS)
+    message(STATUS "Explicitly disabled subdirs: ${KUMIR2_DISABLED_SUBDIRS}")
+else()
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_disabled_modules"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE DISABLED_SUBDIRS
+    )
+endif()
 
 if(NOT DEFINED KUMIR2_INSTALL_PREFIX)
     set(KUMIR2_INSTALL_PREFIX "/usr")
@@ -17,7 +21,12 @@ function(add_opt_subdirectory SUBDIR_NAME)
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIR_NAME})
         string(FIND "${DISABLED_SUBDIRS}" "[${SUBDIR_NAME}]" SubdirDisableIndex)
         if(${SubdirDisableIndex} EQUAL -1)
-            add_subdirectory(${SUBDIR_NAME})
+            list(FIND KUMIR2_DISABLED_SUBDIRS "${SUBDIR_NAME}" ExplicitSubdirDisableIndex)
+            if(ExplicitSubdirDisableIndex EQUAL -1)
+                add_subdirectory(${SUBDIR_NAME})
+            else()
+                message(STATUS "Component ${SUBDIR_NAME} disabled for this build")
+            endif()
         else()
             message(STATUS "Component ${SUBDIR_NAME} disabled for this version")
         endif()

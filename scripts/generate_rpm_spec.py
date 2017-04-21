@@ -34,7 +34,7 @@ $unstableNotice
 $removeBundledBoostIfNeed
 $cmakeCommand \
     -DUSE_QT=5 \
-    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+    -DKUMIR2_DISABLED_SUBDIRS="$disabledSubdirs" \
     -DKUMIR2_SDK_CMAKE_DIR=$cmakeFilesLocation \
     -DKUMIR2_SDK_SCRIPTS_DIR=$develScriptsLocation \
     -DPROVIDED_VERSION_INFO:BOOL=ON \
@@ -178,6 +178,8 @@ def generate_rpm_spec_contents(dist: str, release: int, packager: str):
     version_info = query_version_info.get_version_information(os.getcwd())
     timestamp = query_version_info.get_timestamp(os.getcwd())
     subst["gitTimestamp"] = str(timestamp)
+    disabled_subdirs = query_version_info.disabled_modules()
+    subst["disabledSubdirs"] = ";".join(disabled_subdirs)
     if version_info["taggedRelease"]:
         subst["name"] = "kumir2"
         subst["version"] = version_info["version"]
