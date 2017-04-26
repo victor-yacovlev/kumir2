@@ -15,6 +15,7 @@ set(KUMIR2_PLUGINS_DIR "${LIB_BASENAME}/kumir2/plugins")    # libraries to be lo
 set(KUMIR2_RESOURCES_DIR "share/kumir2")                    # non-executable resources
 set(KUMIR2_XDG_APPLICATIONS_DIR "share/applications")       # X applications catalog
 set(KUMIR2_XDG_ICONS_DIR "share/icons")                     # X icons catalog
+set(KUMIR2_XDG_PIXMAPS_DIR "share/pixmaps")                 # X pixmaps directory
 set(KUMIR2_XDG_MIME_PACKAGES_DIR "share/mime/packages")     # X MIME packages catalog
 
 if(NOT DEFINED KUMIR2_LIBEXECS_DIR)
@@ -32,6 +33,10 @@ endif(NOT DEFINED KUMIR2_SDK_SCRIPTS_DIR)
 if(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
     set(KUMIR2_SDK_CMAKE_DIR "${LIB_BASENAME}/cmake/Kumir2") # cmake files to use from others
 endif(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
+
+if(NOT DEFINED KUMIR2_SDK_SRC_DIR)
+    set(KUMIR2_SDK_SRC_DIR "${KUMIR2_RESOURCES_DIR}/src")
+endif(NOT DEFINED KUMIR2_SDK_SRC_DIR)  # sources required to build some components (launchers, etc.)
 
 # clear default CMake RPATH values
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)

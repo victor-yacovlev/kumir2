@@ -141,24 +141,6 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     }
 
-    QString iconSuffix;
-
-    for (int i=0; i<parameters.count(); i++) {
-
-        const QString param = parameters[i];
-
-        if (param.startsWith("icon=")) {
-
-            iconSuffix = "-"+param.mid(5);
-
-        }
-
-    }
-
-    QApplication::setWindowIcon(QIcon(myResourcesDir().absoluteFilePath("kumir2-icon"+iconSuffix+".png")));
-
-
-
     sessionsDisableFlag_ = parameters.contains("nosessions",Qt::CaseInsensitive);
 
     m_kumirStateLabel = new QLabel();
@@ -168,6 +150,7 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
     qDebug() << "Creating main window";
 
     mainWindow_ = new MainWindow(this);
+    mainWindow_->setWindowIcon(QApplication::windowIcon());
     qDebug() << "Main window created";
 
 

@@ -24,6 +24,7 @@ struct PluginSpec
     // Fields filled by launcher
     bool main;
     QByteArray libraryFileName;
+    QString nonStandardPluginDir;
     QStringList arguments;
 
     inline explicit PluginSpec() { gui = false; main = false; }

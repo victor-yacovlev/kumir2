@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Exec=kumir2-teacher %U
-Icon=kumir2-teacher
-Name=Kumir Teacher Edition
-Name[ru]=Кумир (режим учителя)
-Categories=Qt;KDE;Education;X-KDE-Edu-Misc;Math;
-X-Kumir-MDI=true

@@ -298,6 +298,14 @@ int main(int argc, char **argv)
     gui = gui && getenv("DISPLAY")!=0;
 #endif
     Application * app = new Application(argc, argv, gui);
+#ifdef WINDOW_ICON
+    if (gui) {
+        QApplication* guiApp = qobject_cast<QApplication*>(qApp);
+        QString imgPath = ":/kumir2-launcher/" + QString::fromLatin1(WINDOW_ICON);
+        QIcon icon(imgPath);
+        guiApp->setWindowIcon(icon);
+    }
+#endif
     QLocale russian = QLocale("ru_RU");
     QLocale::setDefault(russian);
 
@@ -331,7 +339,7 @@ int main(int argc, char **argv)
 
 #ifdef SPLASHSCREEN
     if (gui && !mustShowHelpAndExit && !mustShowVersionAndExit) {
-        QString imgPath = sharePath+QString("/")+SPLASHSCREEN;
+        QString imgPath = ":/kumir2-launcher/" + QString::fromLatin1(SPLASHSCREEN);
         splashScreen = new QSplashScreen();
         QImage img(imgPath);
         QPainter p(&img);

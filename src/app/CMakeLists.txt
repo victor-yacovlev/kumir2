@@ -32,27 +32,15 @@ else()
     message(STATUS "Queried version info from git: ${VERSION_DEFINITIONS}")
 endif()
 
-#if(NOT APPLE)
-    # Various GUI configurations
 
-    add_opt_subdirectory(kumir2-classic)
-    add_opt_subdirectory(kumir2-highgrade)
-    add_opt_subdirectory(kumir2-ide)
-    add_opt_subdirectory(kumir2-teacher)
-    #add_opt_subdirectory(kumir2-checkcourse)
+# Various GUI configurations
 
-    # Check if Python present in this git branch and Python3 libraries found
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/kumir2-python")
-        add_opt_subdirectory(kumir2-python)
-        add_opt_subdirectory(kumir2-python-teacher)
-    endif() # kumir2-python exists
+add_opt_subdirectory(kumir2-classic)
+add_opt_subdirectory(kumir2-highgrade)
+add_opt_subdirectory(kumir2-ide)
+add_opt_subdirectory(kumir2-teacher)
+add_opt_subdirectory(kumir2-checkcourse)
 
-#endif(NOT APPLE)
-
-#if(APPLE)
-    # Apple platform has exact one GUI configuration
-  #  add_opt_subdirectory(kumir2-macx)
-#endif(APPLE)
 
 add_opt_subdirectory(kumir2-bc)
 add_opt_subdirectory(kumir2-xrun)

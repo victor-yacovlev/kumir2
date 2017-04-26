@@ -38,6 +38,7 @@ struct PluginManagerImpl {
     std::list<QString> unnamedProgramArguments;
 
     QFont initialApplicationFont;
+    QStringList additionalPluginPrefixes;
 };
 
 } // namespace ExtensionSystem

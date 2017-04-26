@@ -62,6 +62,7 @@ install(
         WORLD_EXECUTE WORLD_READ
 )
 install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
+install(FILES src/app/kumir2-launcher.cpp DESTINATION ${KUMIR2_SDK_SRC_DIR})
 
 # Generate and install CMake file describing current build configuration
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
@@ -76,23 +77,14 @@ install(
     DESTINATION "${KUMIR2_SDK_CMAKE_DIR}/kumir2"
 )
 
-
-# Platform-specific global resources handling
-if(WIN32)
-    # Do nothing
-elseif(APPLE)
-    # TODO Make package-related stuff
-else()
-    # Create XDG-compliant filesystem structure for applciations and icons
-
-    # Application icons
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}")
-    file(GLOB_RECURSE icons RELATIVE ${CMAKE_SOURCE_DIR}/app_icons/linux ${CMAKE_SOURCE_DIR}/app_icons/linux/*)
+# XDG mime types handling
+if(NOT WIN32 AND NOT APPLE)
+    set(ICONS_DIR "${CMAKE_SOURCE_DIR}/app_icons/linux/hicolor")
+    message(STATUS "icons dir : ${ICONS_DIR}")
+    file(GLOB_RECURSE icons RELATIVE ${ICONS_DIR} "${ICONS_DIR}/*/mimetypes/*.*")
     foreach(icon IN ITEMS ${icons})
         get_filename_component(subdir ${icon} PATH)
-        file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
-        file(COPY "${CMAKE_SOURCE_DIR}/app_icons/linux/${icon}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${subdir}")
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${KUMIR2_XDG_ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
+        install(FILES "${ICONS_DIR}/${icon}" DESTINATION "${KUMIR2_XDG_ICONS_DIR}/${subdir}")
     endforeach(icon)
-endif()
-
+    install(FILES "${CMAKE_SOURCE_DIR}/share/mime/packages/kumir2-mimetypes.xml" DESTINATION ${KUMIR2_XDG_MIME_PACKAGES_DIR})
+endif(NOT WIN32 AND NOT APPLE)

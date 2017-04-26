@@ -178,6 +178,7 @@ public /*constants*/:
 private:
     explicit PluginManager();
     QScopedPointer<struct PluginManagerImpl> pImpl_;
+    void setupAdditionalPluginPaths();
 
 };
 

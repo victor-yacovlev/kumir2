@@ -5,6 +5,13 @@ find_package(Kumir2 REQUIRED)
 
 kumir2_add_launcher(
     NAME            kumir2-teacher
-    SPLASHSCREEN    "coregui/splashscreens/teacher.png"
-    CONFIGURATION   "CourseManager,Editor\(teacher\),Actor*,KumirAnalizer\(teacher\),KumirCodeGenerator,KumirCodeRun,!CoreGUI\(icon=teacher\)"
+    SPLASHSCREEN    "splashscreen-teacher.png"
+    WINDOW_ICON     "window-icon-teacher.png"
+    APP_ICON_NAME   "kumir2-teacher"
+    X_ICONS_DIR     "../../../app_icons/linux/hicolor"
+    WIN_ICONS_DIR   "../../../app_icons/win32"
+    X_NAME          "Kumir Teacher Edition"
+    X_NAME_ru       "Кумир для учителей"
+    X_CATEGORIES    "Education,X-KDE-Edu-Misc"
+    CONFIGURATION   "CourseManager,Editor\(teacher\),Actor*,KumirAnalizer\(teacher\),KumirCodeGenerator,KumirCodeRun,!CoreGUI"
 )

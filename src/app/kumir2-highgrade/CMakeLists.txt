@@ -5,6 +5,13 @@ find_package(Kumir2 REQUIRED)
 
 kumir2_add_launcher(
     NAME            kumir2-highgrade
-    SPLASHSCREEN    "coregui/splashscreens/highgrade.png"
-    CONFIGURATION   "CourseManager,Editor,Actor*,KumirAnalizer\(preload=Files,preload=Strings,preload=Keyboard\),*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,icon=highgrade,nostartpage,nosessions\)"
+    SPLASHSCREEN    "splashscreen-highgrade.png"
+    WINDOW_ICON     "window-icon-highgrade.png"
+    APP_ICON_NAME   "kumir2-highgrade"
+    X_ICONS_DIR     "../../../app_icons/linux/hicolor"
+    WIN_ICONS_DIR   "../../../app_icons/win32"
+    X_NAME          "Kumir High Grade School Edition"
+    X_NAME_ru       "Кумир для старших классов"
+    X_CATEGORIES    "Education,X-KDE-Edu-Misc"
+    CONFIGURATION   "CourseManager,Editor,Actor*,KumirAnalizer\(preload=Files,preload=Strings,preload=Keyboard\),*CodeGenerator,KumirCodeRun,!CoreGUI\(notabs,nostartpage,nosessions\)"
 )

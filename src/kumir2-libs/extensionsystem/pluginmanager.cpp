@@ -48,6 +48,26 @@ PluginManager::PluginManager()
 #endif
 }
 
+#if QT_VERSION >= 0x050000
+#include <QStandardPaths>
+#else
+#include <QDesktopServices>
+#endif
+
+void PluginManager::setupAdditionalPluginPaths()
+{
+    QString homeLocation;
+#if QT_VERSION >= 0x050000
+    homeLocation = QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first();
+#else
+    homeLocation = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#endif
+    pImpl_->additionalPluginPrefixes = QStringList()
+            << "/usr/local/"
+            << homeLocation + "/.local/"
+               ;
+}
+
 PluginManager::~PluginManager()
 {
 
@@ -97,6 +117,9 @@ void PluginManager::switchToWorkspace(const QString &path, bool workDirOnly)
 void PluginManager::setPluginPath(const QString &path)
 {
     pImpl_->path = path;
+#ifdef Q_OS_LINUX
+    setupAdditionalPluginPaths();
+#endif
 }
 
 void PluginManager::setSharePath(const QString &path)

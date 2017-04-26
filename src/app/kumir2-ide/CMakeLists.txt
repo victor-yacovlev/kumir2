@@ -5,7 +5,14 @@ find_package(Kumir2 REQUIRED)
 
 kumir2_add_launcher(
     NAME            kumir2-ide
-    SPLASHSCREEN    "coregui/splashscreens/professional.png"
+    SPLASHSCREEN    "splashscreen-ide.png"
+    WINDOW_ICON     "window-icon-ide.png"
+    APP_ICON_NAME   "kumir2-ide"
+    X_ICONS_DIR     "../../../app_icons/linux/hicolor"
+    WIN_ICONS_DIR   "../../../app_icons/win32"
+    X_NAME          "Kumir Professional Edition"
+    X_NAME_ru       "Кумир-Про"
+    X_CATEGORIES    "Education,X-KDE-Edu-Misc"
     CONFIGURATION   "CourseManager,Editor,Actor*,KumirAnalizer,*CodeGenerator,KumirCodeRun,!CoreGUI"
 )
 

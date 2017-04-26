@@ -71,26 +71,57 @@ SettingsPtr KPlugin::mySettings() const
 
 QDir KPlugin::myResourcesDir() const
 {
-    QString thisModulePath;
-    if (PluginManager::instance()->sharePath().isEmpty()) {
-        thisModulePath = _resourcesDir;
+#ifdef Q_OS_UNIX
+    // Something overrided by environment variable
+    const QByteArray envName =
+            QByteArray("KUMIR2_") +
+            _pluginSpec.name.toUpper() +
+            QByteArray("_RESOURCES_DIR");
+    const char * envVal = ::getenv(envName.constData());
+    if (envVal) {
+        const QString path = QDir::cleanPath(QString::fromUtf8(envVal));
+        const QDir result = QDir(path);
+        if (result.exists()) {
+            return result;
+        }
     }
-    else {
-        const QString sharePath = PluginManager::instance()->sharePath();
+#endif
+
+    // Non-standard plugin location
+    if (_pluginSpec.nonStandardPluginDir.length() > 0) {
+        const QString pluginDirName = QString::fromLatin1(_pluginSpec.name).toLower();
+        const QStringList candidates = QStringList()
+                << _pluginSpec.nonStandardPluginDir + "/../../share/" + pluginDirName
+                << _pluginSpec.nonStandardPluginDir + "/" + pluginDirName
+                << _pluginSpec.nonStandardPluginDir + "/resources"
+                << _pluginSpec.nonStandardPluginDir + "/data"
+                << _pluginSpec.nonStandardPluginDir + "/" + pluginDirName + "/resources"
+                << _pluginSpec.nonStandardPluginDir + "/" + pluginDirName + "/data"
+                   ;
+        Q_FOREACH(const QString & dirName, candidates) {
+            const QString path = QDir::cleanPath(dirName);
+            const QDir result = QDir(path);
+            if (result.exists()) {
+                return result;
+            }
+        }
+    }
+
+    // Standard distribution
+    const QString sharePath = PluginManager::instance()->sharePath();
+    if(!sharePath.isEmpty()) {
         QString relPath = QString::fromLatin1(pluginName()).toLower();
         if (relPath.startsWith("actor")) {
             relPath = "actors/" + relPath.mid(5);
         }
-        thisModulePath = QDir::cleanPath(sharePath + "/" + relPath);
+        const QString path = QDir::cleanPath(sharePath + "/" + relPath);
+        const QDir result = QDir(path);
+        if (result.exists()) {
+            return result;
+        }
     }
-    Q_ASSERT(! thisModulePath.isEmpty());
-    QDir result = QDir(thisModulePath);
-    QString message = QString::fromLatin1("The directory not exists or not readable: %1")
-            .arg(thisModulePath);
-//    Q_ASSERT_X(result.exists() && result.isReadable(), "KPlugin::myResourcesDir",
-//               message.toLocal8Bit().constData()
-//               );
-    return result;
+    qDebug() << "Resources dir not found for plugin: " << _pluginSpec.name;
+    return QDir::current();  // some fallback value
 }
 
 KPlugin::~KPlugin()

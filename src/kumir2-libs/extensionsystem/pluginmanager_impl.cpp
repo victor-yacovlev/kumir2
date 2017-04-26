@@ -141,14 +141,40 @@ QString PluginManagerImpl::loadPlugin(PluginSpec spec, const QList<PluginSpec> &
         loadPlugin(specToLoad, allSpecs);
     }
 
+    QStringList librarySearchPaths = QStringList() << path;
+#ifdef Q_OS_UNIX
+    const char * extraPluginSearchPath = ::getenv("KUMIR2_PLUGIN_PATH");
+    if (extraPluginSearchPath) {
+        librarySearchPaths.append(QString::fromUtf8(extraPluginSearchPath).split(":"));
+    }
+#endif
+    Q_FOREACH(const QString & prefix, additionalPluginPrefixes) {
+        librarySearchPaths.append(prefix+"/lib64/kumir2/plugins");
+    }
+    Q_FOREACH(const QString & prefix, additionalPluginPrefixes) {
+        librarySearchPaths.append(prefix+"/lib/kumir2/plugins");
+    }
 
-    spec.libraryFileName = (
-                path +
+    QString libraryPath;
+    QString nonStandardPathToUse;
+    for (int i=0; i<librarySearchPaths.size(); ++i) {
+        const QString & dirName = librarySearchPaths.at(i);
+        const QString candidate = dirName +
                 QString("/") +
                 QString(LIB_PREFIX) +
                 spec.name +
-                QString(LIB_SUFFIX)
-                ).toUtf8();
+                QString(LIB_SUFFIX);
+        const QFileInfo fi(candidate);
+        if (fi.exists()) {
+            libraryPath = candidate;
+            if (i > 0) {
+                nonStandardPathToUse = dirName;
+            }
+            break;
+        }
+    }
+
+    spec.libraryFileName = libraryPath.toUtf8();
 
     QPluginLoader loader(spec.libraryFileName);
     if (!loader.load()) {
@@ -164,6 +190,7 @@ QString PluginManagerImpl::loadPlugin(PluginSpec spec, const QList<PluginSpec> &
     plugin->createPluginSpec();
     plugin->_pluginSpec.arguments = spec.arguments;
     plugin->_pluginSpec.main = spec.main;
+    plugin->_pluginSpec.nonStandardPluginDir = nonStandardPathToUse;
     plugin->_state = KPlugin::Loaded;
     plugin->_settings = SettingsPtr(new Settings(QString::fromLatin1(spec.name)));
     objects.append(plugin);
