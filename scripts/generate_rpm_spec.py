@@ -132,6 +132,7 @@ $unstableNotice
 %files $kumirToolsPackageFullName
 $toolsFilesPrefs
 $binDir/kumir2-run
+$binDir/kumir2-checkcourse
 $binDir/kumir2-xrun
 $binDir/kumir2-bc
 $binDir/docbook2latex
