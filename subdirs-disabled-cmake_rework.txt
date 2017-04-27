@@ -1,5 +1,0 @@
-# Disable components for Python, which are
-# in separate branch
-kumir2-python
-kumir2-python-teacher
-python3language
