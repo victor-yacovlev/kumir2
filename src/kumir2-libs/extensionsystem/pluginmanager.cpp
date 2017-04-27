@@ -63,6 +63,9 @@ void PluginManager::setupAdditionalPluginPaths()
     homeLocation = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
 #endif
     pImpl_->additionalPluginPrefixes = QStringList()
+            << "/usr/"
+            << "/opt/kumir2/"
+            << "/opt/kumir/"
             << "/usr/local/"
             << homeLocation + "/.local/"
                ;
