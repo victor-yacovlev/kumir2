@@ -5556,6 +5556,8 @@ void	RobotView::wheelEvent ( QWheelEvent * event )
  void RobotView::setWindowSize(const QSize newGeometry)
     {
         QSize oldSize=this->size();
+        if(oldSize.width()==0)oldSize.setWidth(1);
+        if(oldSize.height()==0)oldSize.setHeight(1);
         
        if(inDock)
        {
