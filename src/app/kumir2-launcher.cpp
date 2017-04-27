@@ -91,6 +91,40 @@ QString getLanguage()
     return "ru"; // TODO implement sometime in future...
 }
 
+static
+QList<QDir> translationsDirs()
+{
+    QList<QDir> result;
+
+    // Translations dir from base distribution
+    const QString sharePath = resolvePath(KUMIR2_RESOURCES_DIR);
+    QDir baseTranslationsDir(sharePath+"/translations");
+    if (baseTranslationsDir.exists()) {
+        result.append(baseTranslationsDir);
+    }
+
+#ifdef Q_OS_LINUX
+    // Search additional paths
+    const QString homePath = QString::fromLocal8Bit(::getenv("HOME"));
+    const QStringList extraPaths = QStringList()
+            << "/usr/share/kumir2/translations"
+            << "/usr/local/share/kumir2/translations"
+            << "/opt/kumir2/share/translations"
+            << "/opt/kumir/share/translations"
+            << homePath + "/.local/share/kumir2/translations"
+            << QDir::currentPath()+"/translations"
+               ;
+
+    Q_FOREACH(const QString & path, extraPaths) {
+        QDir candidate(path);
+        if (candidate.exists()) {
+            result.append(candidate);
+        }
+    }
+#endif
+
+    return result;
+}
 
 class Application : QObject
 {
@@ -139,17 +173,19 @@ public:
 #ifdef Q_OS_LINUX
         gui = gui && getenv("DISPLAY")!=0;
 #endif
-        const QString sharePath = resolvePath(KUMIR2_RESOURCES_DIR);
-        QDir translationsDir(sharePath+"/translations");
-        QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
-        foreach (QString tsname, ts_files) {
-            tsname = tsname.mid(0, tsname.length()-3);
-            QTranslator * tr = new QTranslator(_qApp);
-            if (tr->load(tsname, sharePath+"/translations")) {
-                _qApp->installTranslator(tr);
+        const QList<QDir> tsDirs = translationsDirs();
+        Q_FOREACH(const QDir & translationsDir, tsDirs) {
+            QStringList ts_files = translationsDir.entryList(QStringList() << "*_"+getLanguage()+".qm");
+            foreach (QString tsname, ts_files) {
+                tsname = tsname.mid(0, tsname.length()-3);
+                QTranslator * tr = new QTranslator(_qApp);
+                if (tr->load(tsname, translationsDir.absolutePath())) {
+                    _qApp->installTranslator(tr);
+                }
             }
         }
-        qDebug() << "Loaded translator files";
+
+        const QString sharePath = resolvePath(KUMIR2_RESOURCES_DIR);
         _qApp->setProperty("sharePath", sharePath);
 
         QSettings::setDefaultFormat(QSettings::IniFormat);
