@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<macros>
+    <macro title="использовать Рисователь" key="3" last="true">
+	<command name="InsertImport" text="Рисователь" />
+
+
+</macros>

@@ -1,0 +1,3 @@
+These icons are taken from Qt Creator project
+http://qt-project.org
+

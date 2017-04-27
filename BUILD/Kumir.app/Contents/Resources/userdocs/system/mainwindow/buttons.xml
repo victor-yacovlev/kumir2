@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<section>
+    <title>Кнопки главного окна</title>
+    <para>
+        Сверху от редактора находится панель кнопок, которые дублируют часто используемые действия
+        главного меню. При наведении курсора мыши на одну из этих кнопок, отображается всплывающая подсказка,
+		содержащая название действия, и, при наличии -- комбинацию клавиш, которая вызывает данное действие. 
+		Внешний вид этих кнопок -- плоский, но кнопка <guibutton>Сохранить</guibutton> изменяет свой внешний 
+		вид в том случае, если редактируемая программа была изменена, но еще не сохранена.
+    </para>
+	<para>
+		Опишем функции этих кнопок.
+	</para>
+	<orderedlist>
+		<listitem>
+			<para>
+				Кнопки <guibutton>Новая программа</guibutton>, <guibutton>Загрузить</guibutton> и <guibutton>Сохранить</guibutton> 
+				дублируют соответствующие пункты меню <guimenu>Программа</guimenu>. 
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+				Кнопки <guibutton>Вырезать</guibutton>, <guibutton>Скопировать</guibutton> и <guibutton>Вставить</guibutton>, а также 
+				<guibutton>Отменить последнее действие</guibutton> и <guibutton>Повторить отменённое действие</guibutton> дублируют 
+				соответствующие пункты меню <guimenu>Редактирование</guimenu>.
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+				 Кнопки <guibutton>Без показа на полях</guibutton>, <guibutton>Обычное выполнение</guibutton>, <guibutton>Остановить 
+				 выполнение</guibutton>, а также <guibutton>ШАГ</guibutton>, <guibutton>шаг</guibutton> и <guibutton>До конца 
+				 алгоритма</guibutton> дублируют соответствующие пункты меню <guimenu>Выполнение</guimenu>. Кнопки 
+				 <guibutton>Остановить выполнение</guibutton> и <guibutton>До конца алгоритма</guibutton> активны только во время 
+				 выполнения программы.
+			</para>
+		</listitem>
+		<listitem>
+			<para>
+				 Кнопки <guibutton>Практикум</guibutton>, <guibutton>Водолей</guibutton>, <guibutton>Водолей – Пульт</guibutton>, 
+				 <guibutton>Черепашка</guibutton>, <guibutton>Черепашка – Пульт</guibutton>, <guibutton>Робот</guibutton>, 
+				 <guibutton>Робот – Пульт</guibutton>, <guibutton>Рисователь</guibutton>, <guibutton>Вертун</guibutton>, 
+				 <guibutton>Кузнечик</guibutton> и <guibutton>Кузнечик – Пульт</guibutton> дублируют соответствующие пункты 
+				 меню <guimenu>Окна</guimenu>.
+			</para>
+		</listitem>
+	</orderedlist>
+	<para>
+		При клике правой кнопкой мыши по строке кнопок открывается окно, в котором можно выбрать, какие кнопки 
+		показывать в строке, а какие – скрыть.
+	</para>
+	<para>В низу главного окна, в левой части строки состояния находятся следующие кнопки (слева направо):
+        <orderedlist>
+            <listitem><para>
+                <guimenuitem>Отображать нижнюю часть окна</guimenuitem>
+                -- дубрирует соответствующий пункт меню <guimenu>Окна</guimenu>
+            </para></listitem>
+            <listitem><para>
+                <guimenuitem>Сохранить вывод</guimenuitem>
+                -- отображает всплывающее меню сохранения содержимого окна ввода-вывода
+            </para></listitem>
+            <listitem><para>
+                <guimenuitem>Скопировать вывод в буфер обмена</guimenuitem>
+                -- отображает всплывающее меню копирования содержимого окна ввода-вывода в буфер обмена
+            </para></listitem>
+            <listitem><para>
+                <guimenuitem>Очистить область ввода-вывода</guimenuitem>
+                -- эта кнопка становится доступной только при наличии текста в области ввода-вывода;
+                ее нажатие приводит к очистке данной области.
+            </para></listitem>
+        </orderedlist>
+    </para>
+</section>

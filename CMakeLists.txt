@@ -89,6 +89,9 @@ install(
         GROUP_EXECUTE GROUP_READ
         WORLD_EXECUTE WORLD_READ
 )
+if(NOT DEFINED KUMIR2_SDK_SRC_DIR)
+    set(KUMIR2_SDK_SRC_DIR "${KUMIR2_RESOURCES_DIR}/src")
+endif(NOT DEFINED KUMIR2_SDK_SRC_DIR)  # sources required to build some components (launchers, etc.)
 install(DIRECTORY cmake/ DESTINATION "${KUMIR2_SDK_CMAKE_DIR}")
 install(FILES src/app/kumir2-launcher.cpp DESTINATION ${KUMIR2_SDK_SRC_DIR})
 

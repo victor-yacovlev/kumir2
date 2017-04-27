@@ -1,0 +1,2 @@
+name    = ActorIsometricRobot
+gui     = true

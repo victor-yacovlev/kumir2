@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<macros>
+    <macro title="алг-нач-кон" key="А">
+        <command name="InsertText" text="алг\nнач\n\nкон" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToEndOfLine" />
+        <command name="InsertText" text=" " />
+    </macro>
+    <macro title="если-то-все" key="Е">
+        <command name="InsertText" text="если\nто\n\nвсе" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToEndOfLine" />
+        <command name="InsertText" text=" " />
+    </macro>
+    <macro title="выбор-при-все" key="В">
+        <command name="InsertText" text="выбор\nпри\n\nвсе" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToEndOfLine" />
+        <command name="InsertText" text=" :" />
+        <command name="MoveToPreviousChar" />
+    </macro>
+    <macro title="иначе" key="И">
+        <command name="InsertText" text="иначе\n" />
+    </macro>
+    <macro title="нц-раз-кц" key="Р">
+        <command name="InsertText" text="нц раз\n\nкц" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToStartOfLine" />
+        <command name="MoveToNextChar" />
+        <command name="MoveToNextChar" />
+        <command name="InsertText" text=" " />
+    </macro>
+    <macro title="нц-для-кц" key="Д">
+        <command name="InsertText" text="нц для\n\nкц" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToEndOfLine" />
+        <command name="InsertText" text=" " />
+    </macro>
+    <macro title="нц-пока-кц" key="П">
+        <command name="InsertText" text="нц пока\n\nкц" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToEndOfLine" />
+        <command name="InsertText" text=" " />
+    </macro>
+    <macro title="нц-кц" key="Ц">
+        <command name="InsertText" text="нц\n\nкц" />
+        <command name="MoveToPreviousLine" />
+        <command name="MoveToStartOfLine" />
+    </macro>
+</macros>

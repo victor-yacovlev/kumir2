@@ -101,6 +101,7 @@ namespace ActorTurtle {
     class TurtleView
     : public QGraphicsView
     {
+        Q_OBJECT
     public:
         TurtleView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
@@ -148,6 +149,7 @@ namespace ActorTurtle {
     class TurtleScene
     : public QGraphicsScene
     {
+        Q_OBJECT
     public:
         TurtleScene ( QObject * parent = 0 ){};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);

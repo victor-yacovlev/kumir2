@@ -1,0 +1,59 @@
+﻿|@protected
+алг цел сумма(цел N,цел таб массив[1:N])|@protected
+дано |  Массив случайных чисел от -100 до 100, количество элементов массива|@protected
+надо |  Сумма элементов массива|@protected
+|    | |@protected
+нач|@protected
+цел сумм|@protected
+
+
+знач:=сумм|@protected
+кон|@protected
+|@protected
+|@protected
+|@protected
+|@hidden
+|#%%|@hidden
+|@hidden
+алг @заполнить(цел Н,рез цел таб А[1:Н])|@hidden
+нач|@hidden
+цел а|@hidden
+нц для а от 1 до Н|@hidden
+А[а]:=int(rand(-100,100))|@hidden
+кц|@hidden
+кон|@hidden
+алг цел @проверка(цел Н, цел таб А[1:Н])|@hidden
+нач|@hidden
+знач:=0|@hidden
+цел у|@hidden
+нц для у  от 1 до Н|@hidden
+знач:=знач+А[у]|@hidden
+кц|@hidden
+кон|@hidden
+|@hidden
+алг цел @тестирование|@hidden
+нач|@hidden
+цел таб А1[1:10],А2[1:20]|@hidden
+@заполнить(10,А1)|@hidden
+@заполнить(20,А2)|@hidden
+|@hidden
+если сумма(10,А1) = @проверка(10,А1) то|@hidden
+знач:=10|@hidden
+иначе|@hidden
+вывод "Ошибка:сумма наеденна не верно!",нс|@hidden
+знач:=2|@hidden
+выход|@hidden
+все|@hidden
+если сумма(20,А2) = @проверка(20,А2) то|@hidden
+знач:=10|@hidden
+иначе|@hidden
+вывод "Ошибка: сумма наеденна не верно!",нс|@hidden
+знач:=2|@hidden
+выход|@hidden
+все|@hidden
+|@hidden
+если знач>8 то |@hidden
+вывод "Задание выполнено правильно!",нс|@hidden
+все |@hidden
+кон|@hidden
+|@hidden

@@ -1,0 +1,2 @@
+name    = ActorRobot
+gui     = true

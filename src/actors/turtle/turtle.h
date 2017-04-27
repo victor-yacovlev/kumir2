@@ -40,15 +40,15 @@ public:
       turtle(QDir mresd);
       ~turtle();
 	QGraphicsScene *scene;
-      QGraphicsView *view;
+    QGraphicsView *view;
  double   step;
  qreal grad;	
  pultLogger* logger;
  TurtlePult* Tpult;
  QDir myresdir;
  void AutoClose(){autoClose=true;close();};
- void showTurtle(){setVisible(true); t1->show();};
- void hideTurtle(){setVisible(false); t1->hide();};
+    void showTurtle(){setVisible(true); t1->show();Repaint();};
+    void hideTurtle(){setVisible(false); t1->hide();Repaint();};
 
 protected:
  void mousePressEvent(QMouseEvent *event);
