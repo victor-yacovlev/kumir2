@@ -158,13 +158,18 @@ void SecondaryWindowGenericImplementation::setupWidgetsAppearance()
     static const QString iconPrefix = "black_";
 #endif
     static const QString pixmapsPrefix =
-            ExtensionSystem::PluginManager::instance()->sharePath()+"/widgets/secondarywindow/" +
-            iconPrefix;
+            ExtensionSystem::PluginManager::instance()
+            ->findSystemResourcesDir("/widgets/secondarywindow")
+            .absolutePath()+"/widgets/secondarywindow/"+iconPrefix;
 
     QIcon minimizeIcon, dockIcon, closeIcon;
-    minimizeIcon.addFile(pixmapsPrefix+"minimize.png");
-    dockIcon.addFile(pixmapsPrefix+"dock.png");
-    closeIcon.addFile(pixmapsPrefix+"close.png");
+    QString minimizeFileName = pixmapsPrefix + "minimize.png";
+    QPixmap minimizePixmap(minimizeFileName);
+    minimizeIcon.addPixmap(minimizePixmap);
+    QPixmap dockPixmap(pixmapsPrefix+"dock.png");
+    dockIcon.addPixmap(dockPixmap);
+    QPixmap closePixmap(pixmapsPrefix+"close.png");
+    closeIcon.addPixmap(closePixmap);
     stayOnTopNotToggled_.addFile(pixmapsPrefix+"stayontop.png");
     stayOnTopToggled_.addFile(pixmapsPrefix+"stayontop_toggled.png");
 

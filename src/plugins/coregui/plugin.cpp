@@ -188,16 +188,19 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
 
     static const int StatusBarIconSize = 16;
 
-    static const QString mdiIconsPath =
-            ExtensionSystem::PluginManager::instance()->sharePath()
-            + QString::fromLatin1("/icons/iconset/%1x%2/")
+    static const QString MdiIconsSubdir =
+            QString::fromLatin1("/icons/iconset/%1x%2/")
             .arg(StatusBarIconSize).arg(StatusBarIconSize);
 
-    static const QString showConsoleIconPath = mdiIconsPath + "statusbar-terminal.png";
-    static const QString saveConsoleIconPath = mdiIconsPath + "statusbar-save.png";
-    static const QString copyConsoleIconPath = mdiIconsPath + "statusbar-copy.png";
-    static const QString clearConsoleIconPath = mdiIconsPath + "statusbar-clear.png";
-    static const QString editConsoleIconPath = mdiIconsPath + "statusbar-edit.png";
+    static const QString mdiIconsPath =
+            ExtensionSystem::PluginManager::instance()
+            ->findSystemResourcesDir(MdiIconsSubdir).absolutePath() + MdiIconsSubdir;
+
+    static const QString showConsoleIconPath = mdiIconsPath + "/statusbar-terminal.png";
+    static const QString saveConsoleIconPath = mdiIconsPath + "/statusbar-save.png";
+    static const QString copyConsoleIconPath = mdiIconsPath + "/statusbar-copy.png";
+    static const QString clearConsoleIconPath = mdiIconsPath + "/statusbar-clear.png";
+    static const QString editConsoleIconPath = mdiIconsPath + "/statusbar-edit.png";
 
     const QIcon showConsoleIcon = Widgets::IconProvider::iconFromPath(showConsoleIconPath, 0.75);
     const QIcon saveConsoleIcon = Widgets::IconProvider::iconFromPath(saveConsoleIconPath, 0.75);

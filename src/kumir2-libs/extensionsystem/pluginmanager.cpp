@@ -384,6 +384,33 @@ QFont PluginManager::initialApplicationFont() const
     return pImpl_->initialApplicationFont;
 }
 
+QDir PluginManager::findSystemResourcesDir(const QString &subdirShouldExists) const
+{
+    QDir result = QDir(sharePath());
+#ifdef Q_OS_LINUX
+    const QString homePath = QString::fromLocal8Bit(::getenv("HOME"));
+    const QStringList extraPaths = QStringList()
+            << "/usr/share/kumir2/"
+            << "/usr/local/share/kumir2/"
+            << "/opt/kumir2/share/"
+            << "/opt/kumir/share/"
+            << homePath + "/.local/share/kumir2/"
+            << QDir::currentPath() + "/resources/"
+            << QDir::currentPath() + "/data/"
+            ;
+
+    Q_FOREACH(const QString & path, extraPaths) {
+        QDir candidate(path + subdirShouldExists);
+        if (candidate.exists()) {
+            return QDir(path);
+        }
+    }
+#else
+    Q_UNUSED(subdirShouldExists);
+#endif
+    return result;
+}
+
 
 QList<const KPlugin*> PluginManager::loadedConstPlugins(const QByteArray &pattern) const
 {

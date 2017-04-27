@@ -115,8 +115,9 @@ void DockWindowPlaceContainer::setupWidgetsAppearance()
 
     static const QString iconPrefix = "black_";
     static const QString pixmapsPrefix =
-            ExtensionSystem::PluginManager::instance()->sharePath()+"/widgets/secondarywindow/" +
-            iconPrefix;
+            ExtensionSystem::PluginManager::instance()
+            ->findSystemResourcesDir("/widgets/secondarywindow")
+            .absolutePath()+"/widgets/secondarywindow/"+iconPrefix;
 
     QIcon dockIcon, closeIcon;
     dockIcon = createIconMathcingColorTheme(pixmapsPrefix+"dock.png");

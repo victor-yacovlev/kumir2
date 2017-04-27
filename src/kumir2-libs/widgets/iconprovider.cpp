@@ -3,9 +3,17 @@
 #include <QApplication>
 #include <QVariant>
 #include <QFile>
+#include <QDir>
 #include <QPalette>
 #include <QColor>
 #include <QPainter>
+#include <QSet>
+
+#ifdef Q_OS_LINUX
+extern "C" {
+#include <unistd.h>
+}
+#endif
 
 namespace Widgets {
 
@@ -31,6 +39,40 @@ QIcon IconProvider::iconFromPath(const QString &path, qreal intensivity, const Q
     return result;
 }
 
+static
+QList<QDir> iconsDirs()
+{
+    QList<QDir> result;
+
+    // Translations dir from base distribution
+    const QString sharePath = QApplication::instance()->property("sharePath").toString();
+    QDir baseTranslationsDir(sharePath+"/icons/iconset");
+    if (baseTranslationsDir.exists()) {
+        result.append(baseTranslationsDir);
+    }
+
+#ifdef Q_OS_LINUX
+    // Search additional paths
+    const QString homePath = QString::fromLocal8Bit(::getenv("HOME"));
+    const QStringList extraPaths = QStringList()
+            << "/usr/share/kumir2/icons/iconset"
+            << "/usr/local/share/kumir2//icons/iconset"
+            << "/opt/kumir2/share/icons/iconset"
+            << "/opt/kumir/share/icons/iconset"
+            << homePath + "/.local/share/kumir2/icons/iconset"
+               ;
+
+    Q_FOREACH(const QString & path, extraPaths) {
+        QDir candidate(path);
+        if (candidate.exists()) {
+            result.append(candidate);
+        }
+    }
+#endif
+
+    return result;
+}
+
 void IconProvider::loadToCache(const QString &name) const
 {
     QIcon icon;
@@ -38,19 +80,21 @@ void IconProvider::loadToCache(const QString &name) const
     static const QList<QSize> Sizes = QList<QSize>()
             << QSize(16, 16) << QSize(22, 22) << QSize(24, 24) << QSize(32, 32);
 
-    static const QString BaseDir =
-            QApplication::instance()->property("sharePath").toString()
-            + "/icons/iconset/";
+    static const QList<QDir> SearchDirs = iconsDirs();
+    QSet<int> loadedSizes;
 
-    foreach (const QSize &size, Sizes) {
-        const QString fileName = QString::fromLatin1("%1/%2x%3/%4.png")
-                .arg(BaseDir)
+    Q_FOREACH (const QSize &size, Sizes) {
+        const QString fileName = QString::fromLatin1("%1x%2/%3.png")
                 .arg(size.width())
                 .arg(size.height())
                 .arg(name);
-        if (QFile::exists(fileName)) {
-            QImage iconImage = centerizeToSize(loadAndPreprocess(fileName), size);
-            icon.addPixmap(QPixmap::fromImage(iconImage));
+        Q_FOREACH(const QDir & dir, SearchDirs) {
+            const QString absPath = dir.absoluteFilePath(fileName);
+            if (QFile::exists(absPath) && !loadedSizes.contains(size.width())) {
+                QImage iconImage = centerizeToSize(loadAndPreprocess(absPath), size);
+                icon.addPixmap(QPixmap::fromImage(iconImage));
+                loadedSizes.insert(size.width());
+            }
         }
     }
     cache_[name] = icon;

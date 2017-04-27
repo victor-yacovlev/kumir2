@@ -89,6 +89,8 @@ public:
 
     QFont initialApplicationFont() const;
 
+    QDir findSystemResourcesDir(const QString &subdirShouldExists) const;
+
     template <class PluginInterface>
     PluginInterface* findPlugin() {
         QList<KPlugin*> plugins = loadedPlugins("");
