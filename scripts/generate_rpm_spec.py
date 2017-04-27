@@ -37,6 +37,7 @@ $cmakeCommand \
     -DKUMIR2_DISABLED_SUBDIRS="$disabledSubdirs" \
     -DKUMIR2_SDK_CMAKE_DIR=$cmakeFilesLocation \
     -DKUMIR2_SDK_SCRIPTS_DIR=$develScriptsLocation \
+    -DKUMIR2_SDK_SRC_DIR=$develSrcLocation \
     -DPROVIDED_VERSION_INFO:BOOL=ON \
     -DGIT_TAG="$gitTag" \
     -DGIT_BRANCH="$gitBranch" \
@@ -268,6 +269,7 @@ def generate_rpm_spec_contents(dist: str, release: int, packager: str):
     subst["buildRequiresAsRequiresList"] = "\n".join(["Requires:\t" + entry for entry in conventions["buildRequires"]])
     subst["cmakeFilesLocation"] = conventions["develPackage"]["cmakeFilesLocation"]
     subst["develScriptsLocation"] = conventions["develPackage"]["develScriptsLocation"]
+    subst["develSrcLocation"] = conventions["develPackage"]["develSrcLocation"]
 
     data = TEMPLATE
     for i in range(0, 3):

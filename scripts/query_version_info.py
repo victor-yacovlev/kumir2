@@ -186,6 +186,21 @@ def cmake_version_info():
     return output
 
 
+def cmake_version_info_tbht():
+    version_name = get_version_information(os.getcwd())
+    assert isinstance(version_name, dict)
+    timestamp = get_timestamp(os.getcwd())
+    output_values = []
+    if version_name["taggedRelease"]:
+        output_values += to_str(version_name["version"])
+        output_values += ["unknown"] * 2
+    else:
+        output_values += ["unknown"]
+        output_values += [to_str(version_name["branch"])]
+        output_values += [to_str(version_name["hash"])]
+    output_values += [to_str(timestamp)]
+    return ";".join(output_values)
+
 def source_file_name(prefix: str, suffix: str):
     version_info = get_version_information(os.getcwd())
     if version_info["taggedRelease"]:

@@ -1,38 +1,6 @@
 find_package(Kumir2 REQUIRED)
 # find_package(Llvm)
 
-# Query for version info and pass it as compile definitions
-if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
-    include(${CMAKE_SOURCE_DIR}/version_info.cmake)
-
-    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
-    add_definitions(-DGIT_TIMESTAMP=\"${GIT_TIMESTAMP}\")
-    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
-    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
-    message(STATUS "File-provided version info: HASH=${GIT_HASH}")
-    message(STATUS "File-provided version info: TIMESTAMP=${GIT_TIMESTAMP}")
-    message(STATUS "File-provided version info: TAG=${GIT_TAG}")
-    message(STATUS "File-provided version info: BRANCH=${GIT_BRANCH}")
-elseif(PROVIDED_VERSION_INFO)
-    add_definitions(-DGIT_HASH=\"${GIT_HASH}\")
-    add_definitions(-DGIT_TIMESTAMP=\"${GIT_TIMESTAMP}\")
-    add_definitions(-DGIT_TAG=\"${GIT_TAG}\")
-    add_definitions(-DGIT_BRANCH=\"${GIT_BRANCH}\")
-    message(STATUS "Variable-provided version info: HASH=${GIT_HASH}")
-    message(STATUS "Variable-provided version info: TIMESTAMP=${GIT_TIMESTAMP}")
-    message(STATUS "Variable-provided version info: TAG=${GIT_TAG}")
-    message(STATUS "Variable-provided version info: BRANCH=${GIT_BRANCH}")
-else()
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        OUTPUT_VARIABLE VERSION_DEFINITIONS
-    )
-    add_definitions(${VERSION_DEFINITIONS})
-    message(STATUS "Queried version info from git: ${VERSION_DEFINITIONS}")
-endif()
-
-
 # Various GUI configurations
 
 add_opt_subdirectory(kumir2-classic)

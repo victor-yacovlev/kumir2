@@ -1,6 +1,34 @@
 project(Kumir2)
 cmake_minimum_required(VERSION 3.0)
 
+# Query for version info and pass it as compile definitions
+if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
+    include(${CMAKE_SOURCE_DIR}/version_info.cmake)
+    message(STATUS "File-provided version info: HASH=${GIT_HASH}")
+    message(STATUS "File-provided version info: TIMESTAMP=${GIT_TIMESTAMP}")
+    message(STATUS "File-provided version info: TAG=${GIT_TAG}")
+    message(STATUS "File-provided version info: BRANCH=${GIT_BRANCH}")
+elseif(PROVIDED_VERSION_INFO)
+    message(STATUS "Variable-provided version info: HASH=${GIT_HASH}")
+    message(STATUS "Variable-provided version info: TIMESTAMP=${GIT_TIMESTAMP}")
+    message(STATUS "Variable-provided version info: TAG=${GIT_TAG}")
+    message(STATUS "Variable-provided version info: BRANCH=${GIT_BRANCH}")
+else()
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info_tbht"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE VERSION_DEFINITIONS
+    )
+    list(GET VERSION_DEFINITIONS 0 GIT_TAG)
+    list(GET VERSION_DEFINITIONS 1 GIT_BRANCH)
+    list(GET VERSION_DEFINITIONS 2 GIT_HASH)
+    list(GET VERSION_DEFINITIONS 3 GIT_TIMESTAMP)
+    message(STATUS "Queried version info: HASH=${GIT_HASH}")
+    message(STATUS "Queried version info: TIMESTAMP=${GIT_TIMESTAMP}")
+    message(STATUS "Queried version info: TAG=${GIT_TAG}")
+    message(STATUS "Queried version info: BRANCH=${GIT_BRANCH}")
+endif()
+
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/custom_variables.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/custom_variables.cmake")
 endif()
@@ -68,9 +96,14 @@ install(FILES src/app/kumir2-launcher.cpp DESTINATION ${KUMIR2_SDK_SRC_DIR})
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake" "# Installed build configuration\n")
 file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"
     "set(USE_QT ${USE_QT})\n"
-    "set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\n"
+#    "set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE})\n"
     "set(KUMIR2_ROOT ${CMAKE_INSTALL_PREFIX})\n"
     "set(KUMIR2_SDK_SCRIPTS_DIR ${KUMIR2_SDK_SCRIPTS_DIR})\n"
+    "set(KUMIR2_SDK_SRC_DIR ${KUMIR2_SDK_SRC_DIR})\n"
+    "set(GIT_HASH ${GIT_HASH})\n"
+    "set(GIT_TAG ${GIT_TAG})\n"
+    "set(GIT_BRANCH ${GIT_BRANCH})\n"
+    "set(GIT_TIMESTAMP ${GIT_TIMESTAMP})\n"
 )
 install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/distribution_build_config.cmake"

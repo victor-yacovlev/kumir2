@@ -56,6 +56,7 @@
       "suffix": "-devel"
     },
     "cmakeFilesLocation": "%_libdir/cmake/Kumir2",
-    "develScriptsLocation": "%python3_sitelib"
+    "develScriptsLocation": "%python3_sitelib",
+    "develSrcLocation": "%_datadir/kumir2/src"
   }
 }
