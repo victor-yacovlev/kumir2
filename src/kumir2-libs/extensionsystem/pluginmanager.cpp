@@ -2,6 +2,12 @@
 #include "pluginmanager_impl.h"
 #include "kplugin.h"
 
+#if QT_VERSION >= 0x050000
+#include <QStandardPaths>
+#else
+#include <QDesktopServices>
+#endif
+
 namespace ExtensionSystem {
 
 const QString PluginManager::WorkspacesListKey = "WorkspacesList";
@@ -48,11 +54,6 @@ PluginManager::PluginManager()
 #endif
 }
 
-#if QT_VERSION >= 0x050000
-#include <QStandardPaths>
-#else
-#include <QDesktopServices>
-#endif
 
 void PluginManager::setupAdditionalPluginPaths()
 {
