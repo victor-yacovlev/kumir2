@@ -53,7 +53,7 @@ set(KUMIR2_CXXFLAGS_Debug "-g -O0 -Werror -Wreorder -Wreturn-type -Wno-error=unu
 if(KUMIR2_ROOT)
     set(KUMIR2_LIBRARY_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--no-undefined -Wl,--enable-new-dtags")
     set(KUMIR2_PLUGIN_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--no-undefined -Wl,--enable-new-dtags")
-    set(KUMIR2_LAUNCHER_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--enable-new-dtags")
+    set(KUMIR2_LAUNCHER_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--enable-new-dtags -Wl,-rpath,'${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR}'")
     set(KUMIR2_TOOL_LINKER_FLAGS "-L${KUMIR2_ROOT}/${KUMIR2_LIBS_DIR} -Wl,--enable-new-dtags")
 else()
     set(KUMIR2_LIBRARY_LINKER_FLAGS "-Wl,--no-undefined -Wl,--enable-new-dtags -Wl,-rpath,'\$ORIGIN'")
