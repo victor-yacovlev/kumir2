@@ -15,6 +15,10 @@ if(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
     set(KUMIR2_SDK_CMAKE_DIR "include")            # cmake files to use from others
 endif(NOT DEFINED KUMIR2_SDK_CMAKE_DIR)
 
+if(NOT DEFINED KUMIR2_SDK_SRC_DIR)
+    set(KUMIR2_SDK_SRC_DIR "src")
+endif(NOT DEFINED KUMIR2_SDK_SRC_DIR)  # sources required to build some components (launchers, etc.)
+
 # Compile flags
 set(KUMIR2_CXXFLAGS " -Zm300 -EHsc -GR -Y- -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS")
 set(KUMIR2_CXXFLAGS_Release "-DNDEBUG -DQT_NO_DEBUG -MD")
