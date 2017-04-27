@@ -1,2 +1,0 @@
-name    = ActorIsometricRobot
-gui     = true

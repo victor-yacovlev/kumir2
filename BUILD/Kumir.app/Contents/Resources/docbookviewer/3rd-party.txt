@@ -1,7 +1,0 @@
-Droid Serif and Droid Sans Mono fonts by Ascender Corporation
-    http://www.droidfonts.com/droidfonts/
-    licensed under Apache License, Version 2.0
-
-OpenGost fonts by Nikita Volchenkov and Valek Filippov
-    https://bitbucket.org/fat_angel/opengostfont
-    licensed under SIL Open Font License

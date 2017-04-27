@@ -1,2 +1,0 @@
-name    = ActorGrasshopper
-gui     = true
