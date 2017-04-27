@@ -35,6 +35,7 @@ namespace ActorDraw {
     class DrawView
     : public QGraphicsView
     {
+        Q_OBJECT
     public:
         DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
@@ -82,6 +83,7 @@ namespace ActorDraw {
     class DrawScene
     : public QGraphicsScene
     {
+        Q_OBJECT
     public:
         DrawScene ( QObject * parent = 0 ){installEventFilter(this);};
         void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);

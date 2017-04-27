@@ -1,0 +1,2 @@
+name    = KumirAnalizer
+provides= Analizer

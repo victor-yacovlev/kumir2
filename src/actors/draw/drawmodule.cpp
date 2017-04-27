@@ -633,14 +633,10 @@ int DrawScene::saveToFile(const QString& p_FileName)
     };
 void DrawView::paintEvent(QPaintEvent *event)
     {
-        if(!dr_mutex->tryLock())
-        {
-            return;
-        }else
-        {
+   dr_mutex->lock();
             QGraphicsView::paintEvent(event);
             dr_mutex->unlock();
-        }
+     
     }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {

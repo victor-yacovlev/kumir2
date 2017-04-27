@@ -1,0 +1,2 @@
+name    = ActorKeyboard
+gui     = true

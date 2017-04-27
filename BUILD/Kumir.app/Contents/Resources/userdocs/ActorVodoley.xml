@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE book
+    PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+    "docbookV4.5/docbookx.dtd"
+    []
+>
+<article>
+    <title>Исполнитель "Водолей"</title>
+    <titleabbrev>Водолей</titleabbrev>
+	<section id="общие сведения">
+		<title>Использование исполнителя</title>
+		<para>Исполнитель "Водолей" входит в Вашу поставку Кумир, но его функции не являются частью языка 
+		программирования. Для его использования необходимо в программе явно указать использование данного исполнителя: 
+		<programlisting role="кумир"><![CDATA[
+использовать Водолей
+| теперь функции водолея доступны
+| для использования в программе
+]]>
+        </programlisting>
+		</para>
+	</section>
+	<section id="команды действий">
+		<title>Команды действий
+		</title>
+		<section>
+			<title>наполни A</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>наполни A</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Наполняет колбу А.</para>
+		</section>
+		<section>
+			<title>наполни В</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>наполни В</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Наполняет колбу В.</para>
+		</section>
+		<section>
+			<title>наполни С</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>наполни С</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Наполняет колбу С.</para>
+		</section>
+		<section>
+			<title>вылей A</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>вылей A</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Выливает всю жидкость из колбы А.</para>
+		</section>
+		<section>
+			<title>вылей В</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>вылей В</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Выливает всю жидкость из колбы В.</para>
+		</section>
+		<section>
+			<title>вылей С</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>вылей С</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Выливает всю жидкость из колбы С.</para>
+		</section>
+		<section>
+			<title>перелей из A в B</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из A в B</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы А в колбу В до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе А закончилась,</listitem>
+				<listitem>колба В заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>перелей из A в C</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из A в C</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы А в колбу C до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе А закончилась,</listitem>
+				<listitem>колба C заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>перелей из B в A</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из B в A</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы B в колбу A до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе B закончилась,</listitem>
+				<listitem>колба A заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>перелей из B в C</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из B в C</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы B в колбу C до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе B закончилась,</listitem>
+				<listitem>колба C заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>перелей из C в A</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из C в A</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы C в колбу A до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе C закончилась,</listitem>
+				<listitem>колба A заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+		<section>
+			<title>перелей из C в B</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <function>перелей из C в B</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Переливает жидкость из колбы C в колбу В до тех пор, пока не случится одно 
+			из событий (или оба одновременно):</para>
+			<itemizedlist>
+				<listitem>жидкость в колбе C закончилась,</listitem>
+				<listitem>колба В заполнилась.</listitem>
+			</itemizedlist>
+		</section>
+	</section>
+	<section id="алгоритмы контроля обстановки">
+		<title>Алгоритмы контроля обстановки</title>
+	<section>
+			<title>размер A</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>размер A</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает объём колбы А.</para>
+		</section>
+		<section>
+			<title>размер B</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>размер B</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает объём колбы B.</para>
+		</section>
+		<section>
+			<title>размер C</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>размер C</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает объём колбы C.</para>
+		</section>
+		<section>
+			<title>в сосуде А</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде А</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде А.</para>
+		</section>
+		<section>
+			<title>в сосуде B</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде B</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде B.</para>
+		</section>
+		<section>
+			<title>в сосуде C</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>цел</type><function>в сосуде C</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает количество жидкости в сосуде C.</para>
+		</section>
+		
+		<section configuration="teacher">
+			<title>@решено</title>
+			<funcsynopsis role="кумир">
+				<funcsynopsisinfo><package>Водолей</package></funcsynopsisinfo>
+				<funcprototype>
+					<funcdef>алг <type>лог</type><function>@решено</function></funcdef>
+				</funcprototype>
+			</funcsynopsis>
+			<para>Возвращает <code role="кумир">да</code>, если хотя бы в одной колбе имеется 
+			ровно столько жидкости, сколько требуется в данной обстановке.</para>
+		</section>
+	</section>
+</article>

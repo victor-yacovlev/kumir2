@@ -1,0 +1,24 @@
+dependencies: \
+  /Users/denis/kumir2Master/src/plugins/editor/suggestionswindow.cpp \
+  /Users/denis/kumir2Master/src/plugins/editor/suggestionswindow.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/settings.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/docbookviewer/docbookview.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/docbookviewer/document.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/docbookviewer/modeltype.h \
+  /Users/denis/kumir2Master/include/kumir2/analizerinterface.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variabletype.h \
+  /Users/denis/kumir2Master/include/kumir2/actorinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/analizer_instanceinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/analizer_compilerinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/analizer_helperinterface.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/lexem.h \
+  /Users/denis/kumir2Master/include/kumir2/lexemtype.h \
+  /Users/denis/kumir2Master/include/kumir2/analizer_sourcefileinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/editorinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/editor_instanceinterface.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.h \
+  /Users/denis/kumir2Master/BUILD/src/plugins/editor/ui_suggestionswindow.h \
+  /Users/denis/kumir2Master/src/plugins/editor/settingspage.h

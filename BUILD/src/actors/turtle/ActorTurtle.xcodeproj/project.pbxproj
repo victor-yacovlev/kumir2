@@ -1,0 +1,966 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		2D02B3F9DF00410CBB192F7E /* install */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 264BDF9D9149491E989FAFB6 /* Build configuration list for PBXAggregateTarget "install" */;
+			buildPhases = (
+				C978DF682E5A4D2D8211DB30 /* CMake PostBuild Rules */,
+			);
+			dependencies = (
+				47CFCD049AEF446A8860EAD9 /* PBXTargetDependency */,
+			);
+			name = install;
+			productName = install;
+		};
+		B9D632FC4F5041F1BE10842D /* ALL_BUILD */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D65548476F184B63A47D4080 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildPhases = (
+				19C1AB4A37534D639F1C46F3 /* CMake Rules */,
+			);
+			dependencies = (
+				3B124E23837F4225B20D1AE8 /* PBXTargetDependency */,
+				6A776F72BFD74339B90D713B /* PBXTargetDependency */,
+			);
+			name = ALL_BUILD;
+			productName = ALL_BUILD;
+		};
+		CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 3C6573B6926B4D899543DF54 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildPhases = (
+				0648B39FF8E64700A130158E /* CMake Rules */,
+			);
+			dependencies = (
+			);
+			name = ZERO_CHECK;
+			productName = ZERO_CHECK;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		2249360F17DF49E9990E4481 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp */ = {isa = PBXBuildFile; fileRef = E164C409C2084825973BF017 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp */; };
+		229B5EDFBF334D5595F137B1 /* /Users/denis/kumir2Master/src/actors/turtle/pult.ui */ = {isa = PBXBuildFile; fileRef = 77A8EF18EFD04181AF08E446 /* /Users/denis/kumir2Master/src/actors/turtle/pult.ui */; };
+		2CFC5F7BBBE64301B5CBF2EE /* /Users/denis/kumir2Master/src/actors/turtle/turtle.cpp */ = {isa = PBXBuildFile; fileRef = 1323D3F38C3C4C8A8909AB95 /* /Users/denis/kumir2Master/src/actors/turtle/turtle.cpp */; };
+		365590390C5C4AB883DCDAB0 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = B0314DEE482245C08CFFCB1C /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp */; };
+		4479249649684BB798E725BE /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = E43581AF4B06469EB468306F /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp */; };
+		4D92B20B861B4ADBABA59490 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = A5815F45ABAD4A9F89C12844 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp.rule */; };
+		4EF5B31B38FB4E71A7625FCC /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = 62EC3F71FC58444CB9634C35 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp */; };
+		4F21BA97E6EE429E84420E3E /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 4CDB3B302F344C4A8808E99E /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp.rule */; };
+		78C67800B1E443C8B280DA35 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = 723DAE1DAD6E4603A1C196C5 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp */; };
+		7A66E32D944E498B903116D0 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 4079251802E24DD08AE85567 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */; };
+		9246FE54BD964D09B1F93D1E /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = C68CEA6CBF6344528C1960B1 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp.rule */; };
+		D45345D6E3BE47138E54EE12 /* /Users/denis/kumir2Master/src/actors/turtle/pult.cpp */ = {isa = PBXBuildFile; fileRef = C61D0671ACA14FABB76A8D14 /* /Users/denis/kumir2Master/src/actors/turtle/pult.cpp */; };
+		D9558A744E2C4D5BA275B7C5 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 5A185808209845A4AF0B9F67 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp.rule */; };
+		DC1F45DE5ACC457B8E14AF3F /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp.rule */ = {isa = PBXBuildFile; fileRef = FF7AE0133F584A35A60B6E63 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp.rule */; };
+		DF277DF9E6A14DD499ED8394 /* /Users/denis/kumir2Master/src/actors/turtle/turtlemodule.cpp */ = {isa = PBXBuildFile; fileRef = 32D5DA0F51434F01B2066402 /* /Users/denis/kumir2Master/src/actors/turtle/turtlemodule.cpp */; };
+		F1B55ED57BA549C8966AD520 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/ui_pult.h */ = {isa = PBXBuildFile; fileRef = 40EE87D474C342D78C4683EA /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/ui_pult.h */; };
+		F63593B636164797828373A7 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.cpp */ = {isa = PBXBuildFile; fileRef = B5588BCEE6D74439B378E952 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.cpp */; };
+		FAF5E60F69464673BE154014 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = A2F60F31BF7943A296353ED4 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp */; };
+		FB363D7AD4944C73A4ADBE61 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = E819C6006F004B85A097C0E7 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp.rule */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		0120269FC8884A399EADF516 /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		50CC47179C524AD3B1B3DF65 /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
+		A4D6E872B26A4094B7DBC51F /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Release;
+		};
+		D813D3BBF84A4E1983AAE344 = {
+			isa = PBXBuildStyle;
+		};
+		E045D2BC557D4CC99D80AC2B /* MinSizeRel */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = MinSizeRel;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXContainerItemProxy section */
+		06F9D73AEE95415A9AD140A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B513FBD98ECD4138B30E79AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+		437E1DF68DC4431BADD0CB8E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B513FBD98ECD4138B30E79AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+		5112987749AF4DA98E3FE166 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B513FBD98ECD4138B30E79AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9D632FC4F5041F1BE10842D;
+			remoteInfo = ALL_BUILD;
+		};
+		F3189BD599DE49DA95F72F0C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B513FBD98ECD4138B30E79AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FBC55846675B4BB4B2B80217;
+			remoteInfo = ActorTurtle;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		1323D3F38C3C4C8A8909AB95 /* /Users/denis/kumir2Master/src/actors/turtle/turtle.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtle.cpp; path = turtle.cpp; sourceTree = SOURCE_ROOT; };
+		32D5DA0F51434F01B2066402 /* /Users/denis/kumir2Master/src/actors/turtle/turtlemodule.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtlemodule.cpp; path = turtlemodule.cpp; sourceTree = SOURCE_ROOT; };
+		4079251802E24DD08AE85567 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		40EE87D474C342D78C4683EA /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/ui_pult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ui_pult.h; path = ../../../BUILD/src/actors/turtle/ui_pult.h; sourceTree = SOURCE_ROOT; };
+		4CDB3B302F344C4A8808E99E /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = turtlemodule.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		5A185808209845A4AF0B9F67 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = turtle.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/turtle/turtle.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		5D079E775E5440C7B5BAE749 /* ActorTurtle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libActorTurtle.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		62EC3F71FC58444CB9634C35 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtleplugin.h_qt_moc.cpp; path = ../../../BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		723DAE1DAD6E4603A1C196C5 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtle.h_qt_moc.cpp; path = ../../../BUILD/src/actors/turtle/turtle.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		77A8EF18EFD04181AF08E446 /* /Users/denis/kumir2Master/src/actors/turtle/pult.ui */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = pult.ui; path = pult.ui; sourceTree = SOURCE_ROOT; };
+		81BCBBBF05254FEDBAD99057 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		A2F60F31BF7943A296353ED4 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtlemodule.h_qt_moc.cpp; path = ../../../BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		A5815F45ABAD4A9F89C12844 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = pult.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/turtle/pult.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		B0314DEE482245C08CFFCB1C /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = pult.h_qt_moc.cpp; path = ../../../BUILD/src/actors/turtle/pult.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		B5588BCEE6D74439B378E952 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtlemodulebase.cpp; path = ../../../BUILD/src/actors/turtle/turtlemodulebase.cpp; sourceTree = SOURCE_ROOT; };
+		C5C63CA4FAAE4614B814090D /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		C61D0671ACA14FABB76A8D14 /* /Users/denis/kumir2Master/src/actors/turtle/pult.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = pult.cpp; path = pult.cpp; sourceTree = SOURCE_ROOT; };
+		C68CEA6CBF6344528C1960B1 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = turtlemodulebase.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		E164C409C2084825973BF017 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtleplugin.cpp; path = ../../../BUILD/src/actors/turtle/turtleplugin.cpp; sourceTree = SOURCE_ROOT; };
+		E43581AF4B06469EB468306F /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = turtlemodulebase.h_qt_moc.cpp; path = ../../../BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		E819C6006F004B85A097C0E7 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = turtleplugin.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		FF7AE0133F584A35A60B6E63 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = turtleplugin.cpp.rule; path = ../../../BUILD/src/actors/turtle/turtleplugin.cpp.rule; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0425FFC165B94A8AA14E9120 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				E4E28BCEC0174CAB8D4673B1 /* ActorTurtle */,
+				382212B656794B609E602C05 /* ALL_BUILD */,
+				3190B857E0DB481CBAA0CA5C /* ZERO_CHECK */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		0C4E79661105403B93488A2E /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		3190B857E0DB481CBAA0CA5C /* ZERO_CHECK */ = {
+			isa = PBXGroup;
+			children = (
+				763B189676C64C56A69A14F2 /* CMake Rules */,
+				C5C63CA4FAAE4614B814090D /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */,
+			);
+			name = ZERO_CHECK;
+			sourceTree = "<group>";
+		};
+		382212B656794B609E602C05 /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				0C4E79661105403B93488A2E /* CMake Rules */,
+				81BCBBBF05254FEDBAD99057 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		452AD95493564612880A74D6 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				B0314DEE482245C08CFFCB1C /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp */,
+				723DAE1DAD6E4603A1C196C5 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp */,
+				A2F60F31BF7943A296353ED4 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp */,
+				B5588BCEE6D74439B378E952 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.cpp */,
+				E43581AF4B06469EB468306F /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp */,
+				E164C409C2084825973BF017 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp */,
+				62EC3F71FC58444CB9634C35 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp */,
+				C61D0671ACA14FABB76A8D14 /* /Users/denis/kumir2Master/src/actors/turtle/pult.cpp */,
+				1323D3F38C3C4C8A8909AB95 /* /Users/denis/kumir2Master/src/actors/turtle/turtle.cpp */,
+				32D5DA0F51434F01B2066402 /* /Users/denis/kumir2Master/src/actors/turtle/turtlemodule.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		763B189676C64C56A69A14F2 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		8669169F1C754C25AF6F7BBC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		8BB8615437C241999B06009D /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+				A5815F45ABAD4A9F89C12844 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp.rule */,
+				5A185808209845A4AF0B9F67 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp.rule */,
+				4CDB3B302F344C4A8808E99E /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp.rule */,
+				C68CEA6CBF6344528C1960B1 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp.rule */,
+				FF7AE0133F584A35A60B6E63 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp.rule */,
+				E819C6006F004B85A097C0E7 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp.rule */,
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		9D940D8E864A4C6F9B76AA59 /* Header Files */ = {
+			isa = PBXGroup;
+			children = (
+				40EE87D474C342D78C4683EA /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/ui_pult.h */,
+			);
+			name = "Header Files";
+			sourceTree = "<group>";
+		};
+		E4E28BCEC0174CAB8D4673B1 /* ActorTurtle */ = {
+			isa = PBXGroup;
+			children = (
+				452AD95493564612880A74D6 /* Source Files */,
+				9D940D8E864A4C6F9B76AA59 /* Header Files */,
+				8BB8615437C241999B06009D /* CMake Rules */,
+				4079251802E24DD08AE85567 /* /Users/denis/kumir2Master/src/actors/turtle/CMakeLists.txt */,
+				77A8EF18EFD04181AF08E446 /* /Users/denis/kumir2Master/src/actors/turtle/pult.ui */,
+			);
+			name = ActorTurtle;
+			sourceTree = "<group>";
+		};
+		F2A9601F27BC4DBAA7C2384B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5D079E775E5440C7B5BAE749 /* ActorTurtle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F5AFBB6F52114680B7BF2F99 = {
+			isa = PBXGroup;
+			children = (
+				0425FFC165B94A8AA14E9120 /* Sources */,
+				8669169F1C754C25AF6F7BBC /* Resources */,
+				F2A9601F27BC4DBAA7C2384B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FBC55846675B4BB4B2B80217 /* ActorTurtle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7962B199ACC4BFB95E4CB54 /* Build configuration list for PBXNativeTarget "ActorTurtle" */;
+			buildPhases = (
+				C45A9DB7DA4A488AA00430AB /* CMake Rules */,
+				9B0A9AB3C55340C283672035 /* Sources */,
+				8557353D5EA744BFB70E12DC /* CMake PostBuild Rules */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				28578596B1B34D298E1E4C09 /* PBXTargetDependency */,
+			);
+			name = ActorTurtle;
+			productName = ActorTurtle;
+			productReference = 5D079E775E5440C7B5BAE749 /* ActorTurtle */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B513FBD98ECD4138B30E79AC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 0720;
+			};
+			buildConfigurationList = ECE51CAB4A1249379FBE66F2 /* Build configuration list for PBXProject "ActorTurtle" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				0120269FC8884A399EADF516 /* Debug */,
+				A4D6E872B26A4094B7DBC51F /* Release */,
+				E045D2BC557D4CC99D80AC2B /* MinSizeRel */,
+				50CC47179C524AD3B1B3DF65 /* RelWithDebInfo */,
+			);
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 0;
+			mainGroup = F5AFBB6F52114680B7BF2F99;
+			projectDirPath = ../../../../src/actors/turtle;
+			projectRoot = "";
+			targets = (
+				B9D632FC4F5041F1BE10842D /* ALL_BUILD */,
+				FBC55846675B4BB4B2B80217 /* ActorTurtle */,
+				CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */,
+				2D02B3F9DF00410CBB192F7E /* install */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0648B39FF8E64700A130158E /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/turtle -f /Users/denis/kumir2Master/BUILD/src/actors/turtle/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		19C1AB4A37534D639F1C46F3 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/turtle -f /Users/denis/kumir2Master/BUILD/src/actors/turtle/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		2F7E15F3BF2A49F581026A0D = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		4AB8244452E0448A889DBDC3 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		56812063106D44DCB8C4475E = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		8557353D5EA744BFB70E12DC /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/turtle -f /Users/denis/kumir2Master/BUILD/src/actors/turtle/CMakeScripts/ActorTurtle_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		C45A9DB7DA4A488AA00430AB /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/turtle -f /Users/denis/kumir2Master/BUILD/src/actors/turtle/CMakeScripts/ActorTurtle_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		C978DF682E5A4D2D8211DB30 /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/turtle -f /Users/denis/kumir2Master/BUILD/src/actors/turtle/CMakeScripts/install_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9B0A9AB3C55340C283672035 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				365590390C5C4AB883DCDAB0 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/pult.h_qt_moc.cpp */,
+				78C67800B1E443C8B280DA35 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtle.h_qt_moc.cpp */,
+				FAF5E60F69464673BE154014 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodule.h_qt_moc.cpp */,
+				F63593B636164797828373A7 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.cpp */,
+				4479249649684BB798E725BE /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtlemodulebase.h_qt_moc.cpp */,
+				2249360F17DF49E9990E4481 /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.cpp */,
+				4EF5B31B38FB4E71A7625FCC /* /Users/denis/kumir2Master/BUILD/src/actors/turtle/turtleplugin.h_qt_moc.cpp */,
+				D45345D6E3BE47138E54EE12 /* /Users/denis/kumir2Master/src/actors/turtle/pult.cpp */,
+				2CFC5F7BBBE64301B5CBF2EE /* /Users/denis/kumir2Master/src/actors/turtle/turtle.cpp */,
+				DF277DF9E6A14DD499ED8394 /* /Users/denis/kumir2Master/src/actors/turtle/turtlemodule.cpp */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		28578596B1B34D298E1E4C09 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = 06F9D73AEE95415A9AD140A9 /* PBXContainerItemProxy */;
+		};
+		3B124E23837F4225B20D1AE8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = 437E1DF68DC4431BADD0CB8E /* PBXContainerItemProxy */;
+		};
+		47CFCD049AEF446A8860EAD9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9D632FC4F5041F1BE10842D /* ALL_BUILD */;
+			targetProxy = 5112987749AF4DA98E3FE166 /* PBXContainerItemProxy */;
+		};
+		6A776F72BFD74339B90D713B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FBC55846675B4BB4B2B80217 /* ActorTurtle */;
+			targetProxy = F3189BD599DE49DA95F72F0C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0497AF8D43204AF5A35505F6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		0A2AFE3CD93B4F4DB1D1DD93 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle/build;
+			};
+			name = Debug;
+		};
+		2449301F27E74E42A9C328A6 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle/build;
+			};
+			name = RelWithDebInfo;
+		};
+		31C37432A1AA465CAA239626 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorTurtle_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB,QT_SVG_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/turtle -I/Users/denis/kumir2Master/src/actors/turtle -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/QtSvg /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorTurtle;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		4249FE794D0348A89B7E168E /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		6004E8DB71834BE687D54EF3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		835D5C5BCB1345F584B0033F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		8982E10F54204B26A5167637 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorTurtle_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB,QT_SVG_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/turtle -I/Users/denis/kumir2Master/src/actors/turtle -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/QtSvg /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorTurtle;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		969CE7771E4140DCA432EF8D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorTurtle_EXPORTS,QT_CORE_LIB,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB,QT_SVG_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "   -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/turtle -I/Users/denis/kumir2Master/src/actors/turtle -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/QtSvg /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorTurtle;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		9CAE0B6D440C4A67837A2CAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		9DE9D702FFE1493ABEBC8B5D /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		A0C3EC067C2A489A83351ADF /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		A16EBEBEA511486D9195891D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		ABD4F5A7E1444F3291E7A1EE /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		CD285E0A49A04C6EB0C5A95E /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		D2AED9464EA7495F9B610A33 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle/build;
+			};
+			name = Release;
+		};
+		D31CA0F3CF444850A6D58546 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle/build;
+			};
+			name = MinSizeRel;
+		};
+		E191E9110B1A42D2BA660821 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		E87669DF978B462C84BECFEC /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorTurtle_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB,QT_SVG_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/turtle -I/Users/denis/kumir2Master/src/actors/turtle -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/QtSvg /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorTurtle;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		FDE03F7B78B141C4B5C2907B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/turtle,/Users/denis/kumir2Master/src/actors/turtle,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtSvg.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/turtle;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		264BDF9D9149491E989FAFB6 /* Build configuration list for PBXAggregateTarget "install" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0497AF8D43204AF5A35505F6 /* Debug */,
+				9CAE0B6D440C4A67837A2CAB /* Release */,
+				E191E9110B1A42D2BA660821 /* MinSizeRel */,
+				A0C3EC067C2A489A83351ADF /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3C6573B6926B4D899543DF54 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A16EBEBEA511486D9195891D /* Debug */,
+				6004E8DB71834BE687D54EF3 /* Release */,
+				ABD4F5A7E1444F3291E7A1EE /* MinSizeRel */,
+				CD285E0A49A04C6EB0C5A95E /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A7962B199ACC4BFB95E4CB54 /* Build configuration list for PBXNativeTarget "ActorTurtle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				969CE7771E4140DCA432EF8D /* Debug */,
+				31C37432A1AA465CAA239626 /* Release */,
+				E87669DF978B462C84BECFEC /* MinSizeRel */,
+				8982E10F54204B26A5167637 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D65548476F184B63A47D4080 /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FDE03F7B78B141C4B5C2907B /* Debug */,
+				835D5C5BCB1345F584B0033F /* Release */,
+				4249FE794D0348A89B7E168E /* MinSizeRel */,
+				9DE9D702FFE1493ABEBC8B5D /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		ECE51CAB4A1249379FBE66F2 /* Build configuration list for PBXProject "ActorTurtle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0A2AFE3CD93B4F4DB1D1DD93 /* Debug */,
+				D2AED9464EA7495F9B610A33 /* Release */,
+				D31CA0F3CF444850A6D58546 /* MinSizeRel */,
+				2449301F27E74E42A9C328A6 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B513FBD98ECD4138B30E79AC /* Project object */;
+}

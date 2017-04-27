@@ -1,0 +1,3 @@
+name    = CourseManager
+gui     = false
+

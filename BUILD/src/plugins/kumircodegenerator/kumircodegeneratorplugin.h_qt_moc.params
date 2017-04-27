@@ -1,0 +1,14 @@
+-I/Users/denis/kumir2Master/BUILD
+-I/Users/denis/kumir2Master
+-I/Users/denis/kumir2Master/include
+-I/Users/denis/kumir2Master/src
+-I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include
+-I/Users/denis/kumir2Master/BUILD/src/plugins/kumircodegenerator
+-I/Users/denis/kumir2Master/src/plugins/kumircodegenerator
+-I/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework
+-I/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers
+-I/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang
+-F/Users/denis/Qt56/5.6/clang_64/lib/cmake/Qt5/../../
+-o
+/Users/denis/kumir2Master/BUILD/src/plugins/kumircodegenerator/kumircodegeneratorplugin.h_qt_moc.cpp
+/Users/denis/kumir2Master/src/plugins/kumircodegenerator/kumircodegeneratorplugin.h

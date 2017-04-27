@@ -1,0 +1,24 @@
+dependencies: \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/coursemanager_window.cpp \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/coursemanager_window.h \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/../course_model.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/pluginmanager.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/kplugin.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/pluginspec.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/settings.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/extensionsystem/commandlineparameter.h \
+  /Users/denis/kumir2Master/include/kumir2/plugininterface.h \
+  /Users/denis/kumir2Master/include/kumir2/coursesinterface.h \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/../coursemanager_plugin.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/widgets/declarativesettingspage.h \
+  /Users/denis/kumir2Master/include/kumir2/guiinterface.h \
+  /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.h \
+  /Users/denis/kumir2Master/include/kumir2/analizer_sourcefileinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/actorinterface.h \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/editdialog.h \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/kumfiledialog.h \
+  /Users/denis/kumir2Master/src/plugins/coursemanager/task/newkursdialog.h \
+  /Users/denis/kumir2Master/BUILD/src/plugins/coursemanager/ui_coursemanager_window.h \
+  /Users/denis/kumir2Master/include/kumir2/browserinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/browser_instanceinterface.h \
+  /Users/denis/kumir2Master/include/kumir2/startpage_widget_interface.h

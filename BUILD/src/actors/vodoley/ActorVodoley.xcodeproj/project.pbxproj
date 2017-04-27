@@ -1,0 +1,983 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		2D02B3F9DF00410CBB192F7E /* install */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 3377760B0C294D3CA1AA1DB6 /* Build configuration list for PBXAggregateTarget "install" */;
+			buildPhases = (
+				F4B48E414F5146139E7DF5C4 /* CMake PostBuild Rules */,
+			);
+			dependencies = (
+				05CE60F0E67348828ACFF2FB /* PBXTargetDependency */,
+			);
+			name = install;
+			productName = install;
+		};
+		B9D632FC4F5041F1BE10842D /* ALL_BUILD */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 93C2B6A1B2FE450FBBDCFC8A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildPhases = (
+				EC011AEEB03B49DF8359F1B8 /* CMake Rules */,
+			);
+			dependencies = (
+				CFCE427084D24FFA98AA7023 /* PBXTargetDependency */,
+				1911C622CF8E4E7FA6274B3F /* PBXTargetDependency */,
+			);
+			name = ALL_BUILD;
+			productName = ALL_BUILD;
+		};
+		CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 644A57DABAFB44948C64A062 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildPhases = (
+				2419BD7756A84BB9958BF688 /* CMake Rules */,
+			);
+			dependencies = (
+			);
+			name = ZERO_CHECK;
+			productName = ZERO_CHECK;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		10BC72A5ABF541A4897A5A14 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_pult.h */ = {isa = PBXBuildFile; fileRef = 9FBB64AE6056422A99053246 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_pult.h */; };
+		14A15F9EDF8A41C181E07B48 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.ui */ = {isa = PBXBuildFile; fileRef = B1D7471AC8894D40ABA1C2D5 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.ui */; };
+		22F3D3D8B47C4F428DE7A353 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 208FE22AF8524CF38AB22170 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp.rule */; };
+		2637A6938F304B93BAFC5AF6 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = DB109B8343744C20BF2CC9A3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp */; };
+		26E63DF03EBC45BF898E0D97 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = 074297611ADB44FBB7F588EB /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp */; };
+		2D11D81AF3454237B10E8163 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_dialog.h */ = {isa = PBXBuildFile; fileRef = 757BFBE773DE42B68C91ACA7 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_dialog.h */; };
+		2FC6AFE054264EE48610F43A /* /Users/denis/kumir2Master/src/actors/vodoley/vodoley.cpp */ = {isa = PBXBuildFile; fileRef = 6BE7D87D46C548DD897E289E /* /Users/denis/kumir2Master/src/actors/vodoley/vodoley.cpp */; };
+		319DD8CF86514474A3418C6F /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 651145145EC74516BABFE733 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp.rule */; };
+		4C1150544C1640CBB40566EC /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = A7E69C41846346B3A8D46BBD /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp.rule */; };
+		4E5E7D43315243FB8DFB113C /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = 316C2F44C2144684964635C8 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */; };
+		63D2C09435C94CE5802208CD /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.cpp */ = {isa = PBXBuildFile; fileRef = C5067731456A4EF3BF65E2F2 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.cpp */; };
+		641904FC9A034704AAE65C56 /* /Users/denis/kumir2Master/src/actors/vodoley/pult.cpp */ = {isa = PBXBuildFile; fileRef = 6DBE4F3D1AA84305825E0F84 /* /Users/denis/kumir2Master/src/actors/vodoley/pult.cpp */; };
+		6C2CFF935A634F55836F3290 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = AEB319F77E06493C8BA3F20D /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp */; };
+		75CD66D4E0624C79A51204F3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 44B328EA6488422C9F893DA6 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp.rule */; };
+		788DBAD19EE94C3DB2F8AE25 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp */ = {isa = PBXBuildFile; fileRef = DF08DBF553904258874C8F93 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp */; };
+		7E113CA0B1354A5F8375DAAF /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = 0F1B339AC0684017990AD085 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp */; };
+		A4BD085F459C466099014129 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = FBC79B1BB1C54D93AACB04B3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp */; };
+		A7C2DBEF50CE4EBC894A2395 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp */ = {isa = PBXBuildFile; fileRef = 02A445B4D4A74D2E9467314A /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp */; };
+		AE93AD4D05774C61BBC6B824 /* /Users/denis/kumir2Master/src/actors/vodoley/vodoleymodule.cpp */ = {isa = PBXBuildFile; fileRef = 57C65F3B78F44BD1ABC298CB /* /Users/denis/kumir2Master/src/actors/vodoley/vodoleymodule.cpp */; };
+		C1CFF6FC93EF47189786EF22 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.cpp */ = {isa = PBXBuildFile; fileRef = 6CB41FC44A0C4B16BB3C26A0 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.cpp */; };
+		C881D78515D8471E8B18A06A /* /Users/denis/kumir2Master/src/actors/vodoley/pult.ui */ = {isa = PBXBuildFile; fileRef = 4E3ECF65323E4A328FB406FF /* /Users/denis/kumir2Master/src/actors/vodoley/pult.ui */; };
+		E43D014F902640F1865E8668 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp.rule */ = {isa = PBXBuildFile; fileRef = CC24A0F494EC4FAFADCAA1C4 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp.rule */; };
+		E63DA51B53E7461FAF902680 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 284A7C286F3047B6B3562C15 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp.rule */; };
+		FC3CF1FB3E5043AA9436D8CF /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp.rule */ = {isa = PBXBuildFile; fileRef = 1E3E627FA63E4B42A04C4638 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp.rule */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		162BF8ABAB17473EB511DABB /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Release;
+		};
+		2ADB6B005F0541229682902C = {
+			isa = PBXBuildStyle;
+		};
+		7A50758988344E8AB7563449 /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
+		BE07F88A58004DE3B11D02BD /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		E4FEE0E3B23B42ECB0AE55BA /* MinSizeRel */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = MinSizeRel;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXContainerItemProxy section */
+		0F130FE7306F4E4681425686 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F6903CE1274ECC81009558 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+		3443FC9D985242EFBFF2F07F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F6903CE1274ECC81009558 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+		9C1B4269FC174EB7AA254769 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F6903CE1274ECC81009558 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CAF1D382551145F9A42EB1EA;
+			remoteInfo = ActorVodoley;
+		};
+		DB8D75852D984984BF6F2E14 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F6903CE1274ECC81009558 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9D632FC4F5041F1BE10842D;
+			remoteInfo = ALL_BUILD;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		02A445B4D4A74D2E9467314A /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleyplugin.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		074297611ADB44FBB7F588EB /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleymodule.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		0F1B339AC0684017990AD085 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = pult.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/pult.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		1C2EF01284DD41D2A0A7E195 /* ActorVodoley */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libActorVodoley.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		1E3E627FA63E4B42A04C4638 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = pult.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/pult.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		208FE22AF8524CF38AB22170 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = vodoleyplugin.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		284A7C286F3047B6B3562C15 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = vodoley.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		316C2F44C2144684964635C8 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		44B328EA6488422C9F893DA6 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = vodoleymodulebase.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		4E3ECF65323E4A328FB406FF /* /Users/denis/kumir2Master/src/actors/vodoley/pult.ui */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = pult.ui; path = pult.ui; sourceTree = SOURCE_ROOT; };
+		57C65F3B78F44BD1ABC298CB /* /Users/denis/kumir2Master/src/actors/vodoley/vodoleymodule.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleymodule.cpp; path = vodoleymodule.cpp; sourceTree = SOURCE_ROOT; };
+		651145145EC74516BABFE733 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = dialog.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		6BE7D87D46C548DD897E289E /* /Users/denis/kumir2Master/src/actors/vodoley/vodoley.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoley.cpp; path = vodoley.cpp; sourceTree = SOURCE_ROOT; };
+		6CB41FC44A0C4B16BB3C26A0 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleymodulebase.cpp; path = ../../../BUILD/src/actors/vodoley/vodoleymodulebase.cpp; sourceTree = SOURCE_ROOT; };
+		6DBE4F3D1AA84305825E0F84 /* /Users/denis/kumir2Master/src/actors/vodoley/pult.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = pult.cpp; path = pult.cpp; sourceTree = SOURCE_ROOT; };
+		757BFBE773DE42B68C91ACA7 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_dialog.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ui_dialog.h; path = ../../../BUILD/src/actors/vodoley/ui_dialog.h; sourceTree = SOURCE_ROOT; };
+		9FBB64AE6056422A99053246 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_pult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = ui_pult.h; path = ../../../BUILD/src/actors/vodoley/ui_pult.h; sourceTree = SOURCE_ROOT; };
+		A7E69C41846346B3A8D46BBD /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = vodoleymodule.h_qt_moc.cpp.rule; path = ../../../BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp.rule; sourceTree = SOURCE_ROOT; };
+		AEB319F77E06493C8BA3F20D /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleymodulebase.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		B1D7471AC8894D40ABA1C2D5 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.ui */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = dialog.ui; path = dialog.ui; sourceTree = SOURCE_ROOT; };
+		B93F283BDEA34CA79A4CF517 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		C5067731456A4EF3BF65E2F2 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = dialog.cpp; path = dialog.cpp; sourceTree = SOURCE_ROOT; };
+		CC24A0F494EC4FAFADCAA1C4 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp.rule */ = {isa = PBXFileReference; explicitFileType = sourcecode; fileEncoding = 4; name = vodoleyplugin.cpp.rule; path = ../../../BUILD/src/actors/vodoley/vodoleyplugin.cpp.rule; sourceTree = SOURCE_ROOT; };
+		DB109B8343744C20BF2CC9A3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = dialog.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+		DF08DBF553904258874C8F93 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoleyplugin.cpp; path = ../../../BUILD/src/actors/vodoley/vodoleyplugin.cpp; sourceTree = SOURCE_ROOT; };
+		E9DF13D3E6A14A999AE1ACB1 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		FBC79B1BB1C54D93AACB04B3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = vodoley.h_qt_moc.cpp; path = ../../../BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1AA4BC9DD3974091A384B301 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+				651145145EC74516BABFE733 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp.rule */,
+				1E3E627FA63E4B42A04C4638 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp.rule */,
+				284A7C286F3047B6B3562C15 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp.rule */,
+				A7E69C41846346B3A8D46BBD /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp.rule */,
+				44B328EA6488422C9F893DA6 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp.rule */,
+				CC24A0F494EC4FAFADCAA1C4 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp.rule */,
+				208FE22AF8524CF38AB22170 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp.rule */,
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		3E197BF54EDA42AEB3CC3289 /* ZERO_CHECK */ = {
+			isa = PBXGroup;
+			children = (
+				5189D107FF00497CBA3130AD /* CMake Rules */,
+				E9DF13D3E6A14A999AE1ACB1 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */,
+			);
+			name = ZERO_CHECK;
+			sourceTree = "<group>";
+		};
+		4F752FDD8753437191F8249D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				92262D023ABC4E4283B510BC /* ActorVodoley */,
+				FC9BD7CDE7624080865DC10C /* ALL_BUILD */,
+				3E197BF54EDA42AEB3CC3289 /* ZERO_CHECK */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		5189D107FF00497CBA3130AD /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		5921DA1623284516BE801ADB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1C2EF01284DD41D2A0A7E195 /* ActorVodoley */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5AAB7B07FB734676ADFE6DB9 = {
+			isa = PBXGroup;
+			children = (
+				4F752FDD8753437191F8249D /* Sources */,
+				98E43673FA9B410B805606F6 /* Resources */,
+				5921DA1623284516BE801ADB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8A757699ED2A4A1092194FA8 /* Header Files */ = {
+			isa = PBXGroup;
+			children = (
+				757BFBE773DE42B68C91ACA7 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_dialog.h */,
+				9FBB64AE6056422A99053246 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/ui_pult.h */,
+			);
+			name = "Header Files";
+			sourceTree = "<group>";
+		};
+		92262D023ABC4E4283B510BC /* ActorVodoley */ = {
+			isa = PBXGroup;
+			children = (
+				C0AA3E565A5647C5A6F27EC3 /* Source Files */,
+				8A757699ED2A4A1092194FA8 /* Header Files */,
+				1AA4BC9DD3974091A384B301 /* CMake Rules */,
+				316C2F44C2144684964635C8 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */,
+				B1D7471AC8894D40ABA1C2D5 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.ui */,
+				4E3ECF65323E4A328FB406FF /* /Users/denis/kumir2Master/src/actors/vodoley/pult.ui */,
+			);
+			name = ActorVodoley;
+			sourceTree = "<group>";
+		};
+		98E43673FA9B410B805606F6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		C0AA3E565A5647C5A6F27EC3 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				DB109B8343744C20BF2CC9A3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp */,
+				0F1B339AC0684017990AD085 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp */,
+				FBC79B1BB1C54D93AACB04B3 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp */,
+				074297611ADB44FBB7F588EB /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp */,
+				6CB41FC44A0C4B16BB3C26A0 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.cpp */,
+				AEB319F77E06493C8BA3F20D /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp */,
+				DF08DBF553904258874C8F93 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp */,
+				02A445B4D4A74D2E9467314A /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp */,
+				C5067731456A4EF3BF65E2F2 /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.cpp */,
+				6DBE4F3D1AA84305825E0F84 /* /Users/denis/kumir2Master/src/actors/vodoley/pult.cpp */,
+				6BE7D87D46C548DD897E289E /* /Users/denis/kumir2Master/src/actors/vodoley/vodoley.cpp */,
+				57C65F3B78F44BD1ABC298CB /* /Users/denis/kumir2Master/src/actors/vodoley/vodoleymodule.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		FC9BD7CDE7624080865DC10C /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				FEE1F4F8769E41959C5383A4 /* CMake Rules */,
+				B93F283BDEA34CA79A4CF517 /* /Users/denis/kumir2Master/src/actors/vodoley/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		FEE1F4F8769E41959C5383A4 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CAF1D382551145F9A42EB1EA /* ActorVodoley */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8FB11D566D0046DB8F205B43 /* Build configuration list for PBXNativeTarget "ActorVodoley" */;
+			buildPhases = (
+				6781CC9AA8DC4E33B0755439 /* CMake Rules */,
+				9BA96E2BF98940AB8D5E386B /* Sources */,
+				7505CE450D014A03B3A8968E /* CMake PostBuild Rules */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5958F1FE0682422FB0675D96 /* PBXTargetDependency */,
+			);
+			name = ActorVodoley;
+			productName = ActorVodoley;
+			productReference = 1C2EF01284DD41D2A0A7E195 /* ActorVodoley */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92F6903CE1274ECC81009558 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 0720;
+			};
+			buildConfigurationList = 4A1B7B5CC65C405B973881B1 /* Build configuration list for PBXProject "ActorVodoley" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				BE07F88A58004DE3B11D02BD /* Debug */,
+				162BF8ABAB17473EB511DABB /* Release */,
+				E4FEE0E3B23B42ECB0AE55BA /* MinSizeRel */,
+				7A50758988344E8AB7563449 /* RelWithDebInfo */,
+			);
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 0;
+			mainGroup = 5AAB7B07FB734676ADFE6DB9;
+			projectDirPath = ../../../../src/actors/vodoley;
+			projectRoot = "";
+			targets = (
+				B9D632FC4F5041F1BE10842D /* ALL_BUILD */,
+				CAF1D382551145F9A42EB1EA /* ActorVodoley */,
+				CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */,
+				2D02B3F9DF00410CBB192F7E /* install */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2419BD7756A84BB9958BF688 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/vodoley -f /Users/denis/kumir2Master/BUILD/src/actors/vodoley/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		2E1B7150ECFC4359A3C2DB04 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		6781CC9AA8DC4E33B0755439 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/vodoley -f /Users/denis/kumir2Master/BUILD/src/actors/vodoley/CMakeScripts/ActorVodoley_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		7505CE450D014A03B3A8968E /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/vodoley -f /Users/denis/kumir2Master/BUILD/src/actors/vodoley/CMakeScripts/ActorVodoley_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		7FF9E51028924276B15A71D6 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		E805D4B68A7E4B6E836F97F8 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		EC011AEEB03B49DF8359F1B8 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/vodoley -f /Users/denis/kumir2Master/BUILD/src/actors/vodoley/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		F4B48E414F5146139E7DF5C4 /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/actors/vodoley -f /Users/denis/kumir2Master/BUILD/src/actors/vodoley/CMakeScripts/install_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9BA96E2BF98940AB8D5E386B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2637A6938F304B93BAFC5AF6 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/dialog.h_qt_moc.cpp */,
+				7E113CA0B1354A5F8375DAAF /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/pult.h_qt_moc.cpp */,
+				A4BD085F459C466099014129 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoley.h_qt_moc.cpp */,
+				26E63DF03EBC45BF898E0D97 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodule.h_qt_moc.cpp */,
+				C1CFF6FC93EF47189786EF22 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.cpp */,
+				6C2CFF935A634F55836F3290 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleymodulebase.h_qt_moc.cpp */,
+				788DBAD19EE94C3DB2F8AE25 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.cpp */,
+				A7C2DBEF50CE4EBC894A2395 /* /Users/denis/kumir2Master/BUILD/src/actors/vodoley/vodoleyplugin.h_qt_moc.cpp */,
+				63D2C09435C94CE5802208CD /* /Users/denis/kumir2Master/src/actors/vodoley/dialog.cpp */,
+				641904FC9A034704AAE65C56 /* /Users/denis/kumir2Master/src/actors/vodoley/pult.cpp */,
+				2FC6AFE054264EE48610F43A /* /Users/denis/kumir2Master/src/actors/vodoley/vodoley.cpp */,
+				AE93AD4D05774C61BBC6B824 /* /Users/denis/kumir2Master/src/actors/vodoley/vodoleymodule.cpp */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		05CE60F0E67348828ACFF2FB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9D632FC4F5041F1BE10842D /* ALL_BUILD */;
+			targetProxy = DB8D75852D984984BF6F2E14 /* PBXContainerItemProxy */;
+		};
+		1911C622CF8E4E7FA6274B3F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CAF1D382551145F9A42EB1EA /* ActorVodoley */;
+			targetProxy = 9C1B4269FC174EB7AA254769 /* PBXContainerItemProxy */;
+		};
+		5958F1FE0682422FB0675D96 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = 0F130FE7306F4E4681425686 /* PBXContainerItemProxy */;
+		};
+		CFCE427084D24FFA98AA7023 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = 3443FC9D985242EFBFF2F07F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		062FB0D921984B9B901F6522 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		38C2C202BFB244758A73FA6C /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		48C63CB34702487F9BBE59E9 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorVodoley_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/vodoley -I/Users/denis/kumir2Master/src/actors/vodoley -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorVodoley;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		493ECCEA4C3945789AE3C5CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		49C1A3E2EB594E64AD54AF6B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		70E7691C661C4EC6A9873ECB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		76A5A1392A1E4DA3834157CB /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley/build;
+			};
+			name = RelWithDebInfo;
+		};
+		7FAC9CA9C03542AA878F7568 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorVodoley_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/vodoley -I/Users/denis/kumir2Master/src/actors/vodoley -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorVodoley;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		88B806A64A584B89872C7D64 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorVodoley_EXPORTS,QT_CORE_LIB,QT_NO_DEBUG,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/vodoley -I/Users/denis/kumir2Master/src/actors/vodoley -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorVodoley;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		98D9D9FB855748499027766E /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		9C1B49F0D0534F13B41CAB94 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		9CF9B57C78AF49028CB88832 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		9F26B2F9A28C4CA28DBE218B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley/build;
+			};
+			name = Release;
+		};
+		A93A293F92FE4FAFA6008C91 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		AF7AD40727B64853A0E23C2D /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		B28B51E5A7C8417A9BA699D8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		B8E4F08F6709401393A103A2 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley/build;
+			};
+			name = MinSizeRel;
+		};
+		BC0948CB51884C12BE9C6929 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		E919C7709EDF43AF9E8DDFB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",ActorVodoley_EXPORTS,QT_CORE_LIB,QT_GUI_LIB,QT_WIDGETS_LIB,QT_PRINTSUPPORT_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include",/Users/denis/kumir2Master/BUILD/src/actors/vodoley,/Users/denis/kumir2Master/src/actors/vodoley,/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang",/Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers,/Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers);
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "   -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/actors/vodoley -I/Users/denis/kumir2Master/src/actors/vodoley -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/Headers -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks/OpenGL.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/Headers   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'../PlugIns' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libWidgets.dylib /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/libExtensionSystem.dylib /Users/denis/Qt56/5.6/clang_64/lib/QtPrintSupport.framework/QtPrintSupport /Users/denis/Qt56/5.6/clang_64/lib/QtWidgets.framework/QtWidgets /Users/denis/Qt56/5.6/clang_64/lib/QtGui.framework/QtGui /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ActorVodoley;
+				SECTORDER_FLAGS = "";
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		EE01B135203B43D993E38335 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = /Users/denis/kumir2Master/BUILD/src/actors/vodoley/build;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3377760B0C294D3CA1AA1DB6 /* Build configuration list for PBXAggregateTarget "install" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				062FB0D921984B9B901F6522 /* Debug */,
+				A93A293F92FE4FAFA6008C91 /* Release */,
+				38C2C202BFB244758A73FA6C /* MinSizeRel */,
+				98D9D9FB855748499027766E /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4A1B7B5CC65C405B973881B1 /* Build configuration list for PBXProject "ActorVodoley" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE01B135203B43D993E38335 /* Debug */,
+				9F26B2F9A28C4CA28DBE218B /* Release */,
+				B8E4F08F6709401393A103A2 /* MinSizeRel */,
+				76A5A1392A1E4DA3834157CB /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		644A57DABAFB44948C64A062 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				70E7691C661C4EC6A9873ECB /* Debug */,
+				493ECCEA4C3945789AE3C5CD /* Release */,
+				BC0948CB51884C12BE9C6929 /* MinSizeRel */,
+				9CF9B57C78AF49028CB88832 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8FB11D566D0046DB8F205B43 /* Build configuration list for PBXNativeTarget "ActorVodoley" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E919C7709EDF43AF9E8DDFB8 /* Debug */,
+				7FAC9CA9C03542AA878F7568 /* Release */,
+				88B806A64A584B89872C7D64 /* MinSizeRel */,
+				48C63CB34702487F9BBE59E9 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		93C2B6A1B2FE450FBBDCFC8A /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49C1A3E2EB594E64AD54AF6B /* Debug */,
+				B28B51E5A7C8417A9BA699D8 /* Release */,
+				AF7AD40727B64853A0E23C2D /* MinSizeRel */,
+				9C1B49F0D0534F13B41CAB94 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 92F6903CE1274ECC81009558 /* Project object */;
+}

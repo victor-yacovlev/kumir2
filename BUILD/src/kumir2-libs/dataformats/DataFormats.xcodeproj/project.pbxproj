@@ -1,0 +1,906 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		2D02B3F9DF00410CBB192F7E /* install */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 9E62719B1E924A6DAE4EC4D7 /* Build configuration list for PBXAggregateTarget "install" */;
+			buildPhases = (
+				2D080A583E6345909F271559 /* CMake PostBuild Rules */,
+			);
+			dependencies = (
+				3724F2D13B934FAE84517DDD /* PBXTargetDependency */,
+			);
+			name = install;
+			productName = install;
+		};
+		B9D632FC4F5041F1BE10842D /* ALL_BUILD */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 9999742DB6194E2BB3908B6C /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */;
+			buildPhases = (
+				570B7A02637E4CE8B3DCA8A0 /* CMake Rules */,
+			);
+			dependencies = (
+				E28A3085842A4AF6AF72E581 /* PBXTargetDependency */,
+				C0A04E5864884CBBBEBA1A71 /* PBXTargetDependency */,
+			);
+			name = ALL_BUILD;
+			productName = ALL_BUILD;
+		};
+		CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D6945B0B435F4E3CBD5A9DD3 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */;
+			buildPhases = (
+				52820B254F314BF8B8FF8053 /* CMake Rules */,
+			);
+			dependencies = (
+			);
+			name = ZERO_CHECK;
+			productName = ZERO_CHECK;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		3182900B2E524A4B9A1F69FE /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.cpp */ = {isa = PBXBuildFile; fileRef = 60F75A7E2EE3487FAC891A65 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.cpp */; };
+		36F4E9C12DDF4310AB2DFCAA /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_algorhitm.cpp */ = {isa = PBXBuildFile; fileRef = 3F02B4813E74446DBEEF83C2 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_algorhitm.cpp */; };
+		5D7A464141CC441881881660 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.cpp */ = {isa = PBXBuildFile; fileRef = 2BAE14BDFA884E4AAF406A35 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.cpp */; };
+		78B80DACEDFE40FBBB385C9B /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.cpp */ = {isa = PBXBuildFile; fileRef = 8662E2BC430B4B92A6833B32 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.cpp */; };
+		79D49203908247A182932CBD /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_expression.cpp */ = {isa = PBXBuildFile; fileRef = 64812B8D8014439EBA6E0E97 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_expression.cpp */; };
+		7FEBCDBEA4BC4D088734A3BA /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_statement.cpp */ = {isa = PBXBuildFile; fileRef = E0AD5D282D344C5DA649057C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_statement.cpp */; };
+		8805203B133D4D10AE4050DE /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.cpp */ = {isa = PBXBuildFile; fileRef = 01EDAD90EF8B4FD7A33C6598 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.cpp */; };
+		90266A6CA41246B895687A9F /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */ = {isa = PBXBuildFile; fileRef = AB6284BEBC8D4A598F296C24 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */; };
+		B91DF3DEBA6F48B3A76619B8 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variable.cpp */ = {isa = PBXBuildFile; fileRef = 837A5A242B93473D9575434C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variable.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		1E6F6FC0C3F14DCBBA6F29A9 /* RelWithDebInfo */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = RelWithDebInfo;
+		};
+		2C2A632BA8E3448695EE7202 /* MinSizeRel */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = MinSizeRel;
+		};
+		3852A0144A404AC0B2A55819 /* Debug */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		9F45F81A898640998E3DDA02 = {
+			isa = PBXBuildStyle;
+		};
+		FE94828876B84B678368CB0D /* Release */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Release;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXContainerItemProxy section */
+		2DA3EE2B9418490E96B7C580 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C8E7AA8AF941B0991E975F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+		688DA12DC66D4B1CBB3E916F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C8E7AA8AF941B0991E975F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 26D0B5A5B003403C9ACB30BD;
+			remoteInfo = DataFormats;
+		};
+		E0968ADEE41F4F22AED95682 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C8E7AA8AF941B0991E975F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B9D632FC4F5041F1BE10842D;
+			remoteInfo = ALL_BUILD;
+		};
+		F056C7D0E9614929881092D8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94C8E7AA8AF941B0991E975F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CC3BADCAF4794A669D1013F9;
+			remoteInfo = ZERO_CHECK;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		01EDAD90EF8B4FD7A33C6598 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast.cpp; path = ast.cpp; sourceTree = SOURCE_ROOT; };
+		2BAE14BDFA884E4AAF406A35 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = kumfile.cpp; path = kumfile.cpp; sourceTree = SOURCE_ROOT; };
+		3F02B4813E74446DBEEF83C2 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_algorhitm.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_algorhitm.cpp; path = ast_algorhitm.cpp; sourceTree = SOURCE_ROOT; };
+		60F75A7E2EE3487FAC891A65 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_type.cpp; path = ast_type.cpp; sourceTree = SOURCE_ROOT; };
+		64812B8D8014439EBA6E0E97 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_expression.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_expression.cpp; path = ast_expression.cpp; sourceTree = SOURCE_ROOT; };
+		703E0E6651CC4AD48140C84F /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		7A292300EAFD416891EDC7FF /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		837A5A242B93473D9575434C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variable.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_variable.cpp; path = ast_variable.cpp; sourceTree = SOURCE_ROOT; };
+		8662E2BC430B4B92A6833B32 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_module.cpp; path = ast_module.cpp; sourceTree = SOURCE_ROOT; };
+		AB6284BEBC8D4A598F296C24 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; name = CMakeLists.txt; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
+		B8C78DF418C24D579D7EB173 /* DataFormats */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; path = libDataFormats.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0AD5D282D344C5DA649057C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_statement.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ast_statement.cpp; path = ast_statement.cpp; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		4225A73E302945899E961351 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		55628858BFCB4F3EB07E99E9 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				6B82CA1CC5BA4E73920A9666 /* DataFormats */,
+				73D1B1DD8B5242B8800F9D41 /* ALL_BUILD */,
+				DC37C9A212624DB5835F8861 /* ZERO_CHECK */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		6B82CA1CC5BA4E73920A9666 /* DataFormats */ = {
+			isa = PBXGroup;
+			children = (
+				97A0A75D4C3844B8B8FD0F63 /* Source Files */,
+				AB6284BEBC8D4A598F296C24 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */,
+			);
+			name = DataFormats;
+			sourceTree = "<group>";
+		};
+		73D1B1DD8B5242B8800F9D41 /* ALL_BUILD */ = {
+			isa = PBXGroup;
+			children = (
+				D36F8FEDB55945E985BDC466 /* CMake Rules */,
+				7A292300EAFD416891EDC7FF /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */,
+			);
+			name = ALL_BUILD;
+			sourceTree = "<group>";
+		};
+		8324470AD366498498D24EDC = {
+			isa = PBXGroup;
+			children = (
+				55628858BFCB4F3EB07E99E9 /* Sources */,
+				8830C07D95A044899555A299 /* Resources */,
+				BE48290222F64C14A5A0E626 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8830C07D95A044899555A299 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		97A0A75D4C3844B8B8FD0F63 /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				01EDAD90EF8B4FD7A33C6598 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.cpp */,
+				3F02B4813E74446DBEEF83C2 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_algorhitm.cpp */,
+				64812B8D8014439EBA6E0E97 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_expression.cpp */,
+				8662E2BC430B4B92A6833B32 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.cpp */,
+				E0AD5D282D344C5DA649057C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_statement.cpp */,
+				60F75A7E2EE3487FAC891A65 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.cpp */,
+				837A5A242B93473D9575434C /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variable.cpp */,
+				2BAE14BDFA884E4AAF406A35 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		BE48290222F64C14A5A0E626 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B8C78DF418C24D579D7EB173 /* DataFormats */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D36F8FEDB55945E985BDC466 /* CMake Rules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "CMake Rules";
+			sourceTree = "<group>";
+		};
+		DC37C9A212624DB5835F8861 /* ZERO_CHECK */ = {
+			isa = PBXGroup;
+			children = (
+				4225A73E302945899E961351 /* CMake Rules */,
+				703E0E6651CC4AD48140C84F /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/CMakeLists.txt */,
+			);
+			name = ZERO_CHECK;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		26D0B5A5B003403C9ACB30BD /* DataFormats */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 74CAD76CD38D49F1A2ABBE96 /* Build configuration list for PBXNativeTarget "DataFormats" */;
+			buildPhases = (
+				634300EA0877486E81BF83E5 /* Sources */,
+				79286809DFDC476AAB26BE71 /* CMake PostBuild Rules */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C13891851C934524BAE19DE4 /* PBXTargetDependency */,
+			);
+			name = DataFormats;
+			productName = DataFormats;
+			productReference = B8C78DF418C24D579D7EB173 /* DataFormats */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		94C8E7AA8AF941B0991E975F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 0720;
+			};
+			buildConfigurationList = CE8BD4723CDD4AEEB3748EC5 /* Build configuration list for PBXProject "DataFormats" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				3852A0144A404AC0B2A55819 /* Debug */,
+				FE94828876B84B678368CB0D /* Release */,
+				2C2A632BA8E3448695EE7202 /* MinSizeRel */,
+				1E6F6FC0C3F14DCBBA6F29A9 /* RelWithDebInfo */,
+			);
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 0;
+			mainGroup = 8324470AD366498498D24EDC;
+			projectDirPath = "../../../../src/kumir2-libs/dataformats";
+			projectRoot = "";
+			targets = (
+				B9D632FC4F5041F1BE10842D /* ALL_BUILD */,
+				26D0B5A5B003403C9ACB30BD /* DataFormats */,
+				CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */,
+				2D02B3F9DF00410CBB192F7E /* install */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		14CDB3F092D045428C6689B3 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		18C4414CD5754F30B64A5A37 = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		2D080A583E6345909F271559 /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -f /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/CMakeScripts/install_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		52820B254F314BF8B8FF8053 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -f /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/CMakeScripts/ZERO_CHECK_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		570B7A02637E4CE8B3DCA8A0 /* CMake Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -f /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/CMakeScripts/ALL_BUILD_cmakeRulesBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+		6351F218D0984B91837CE9FE = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here
+exit 0";
+			showEnvVarsInLog = 0;
+		};
+		79286809DFDC476AAB26BE71 /* CMake PostBuild Rules */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			name = "CMake PostBuild Rules";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make -C /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -f /Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/CMakeScripts/DataFormats_postBuildPhase.make$CONFIGURATION all";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		634300EA0877486E81BF83E5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8805203B133D4D10AE4050DE /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast.cpp */,
+				36F4E9C12DDF4310AB2DFCAA /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_algorhitm.cpp */,
+				79D49203908247A182932CBD /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_expression.cpp */,
+				78B80DACEDFE40FBBB385C9B /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_module.cpp */,
+				7FEBCDBEA4BC4D088734A3BA /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_statement.cpp */,
+				3182900B2E524A4B9A1F69FE /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_type.cpp */,
+				B91DF3DEBA6F48B3A76619B8 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/ast_variable.cpp */,
+				5D7A464141CC441881881660 /* /Users/denis/kumir2Master/src/kumir2-libs/dataformats/kumfile.cpp */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3724F2D13B934FAE84517DDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B9D632FC4F5041F1BE10842D /* ALL_BUILD */;
+			targetProxy = E0968ADEE41F4F22AED95682 /* PBXContainerItemProxy */;
+		};
+		C0A04E5864884CBBBEBA1A71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = F056C7D0E9614929881092D8 /* PBXContainerItemProxy */;
+		};
+		C13891851C934524BAE19DE4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CC3BADCAF4794A669D1013F9 /* ZERO_CHECK */;
+			targetProxy = 2DA3EE2B9418490E96B7C580 /* PBXContainerItemProxy */;
+		};
+		E28A3085842A4AF6AF72E581 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 26D0B5A5B003403C9ACB30BD /* DataFormats */;
+			targetProxy = 688DA12DC66D4B1CBB3E916F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0C7B0C508EA24AD2A559392B /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		0D54D11B427D47C6AF82611F /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/build";
+			};
+			name = MinSizeRel;
+		};
+		199524A517A34BB78C461B9E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",DataFormats_EXPORTS,DATAFORMATS_LIBRARY,QT_CORE_LIB);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "   -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -I/Users/denis/kumir2Master/src/kumir2-libs/dataformats -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'/' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = DataFormats;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		22A9179E615347DCBF1800C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/build";
+			};
+			name = Release;
+		};
+		2A13F7DCE1F24B3A9720B7EA /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		4425D608CA02453380840D9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		4CA65CBACA244C4286C57CD6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		57716973952F4BA594BB39E5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		687F544DF5624B758B3F2F05 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		7B1881882B2C4DE5A1C13E8B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/build";
+			};
+			name = Debug;
+		};
+		A284E0B2B8214AC1AAC5DF55 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		B06A70982CF44285B3C55AF6 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/MinSizeRel;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",DataFormats_EXPORTS,DATAFORMATS_LIBRARY,QT_CORE_LIB,QT_NO_DEBUG);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -I/Users/denis/kumir2Master/src/kumir2-libs/dataformats -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'/' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = DataFormats;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		B3CCF812D32F4E5A800161B0 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk;
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats/build";
+			};
+			name = RelWithDebInfo;
+		};
+		BB8E1C0067DB47A98D7A6FCA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = install;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		BBB0C0928ED848A198AAF210 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Debug;
+		};
+		C96585FEF1A54BDFB79D2083 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns/RelWithDebInfo;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",DataFormats_EXPORTS,DATAFORMATS_LIBRARY,QT_CORE_LIB,QT_NO_DEBUG);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "       -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -I/Users/denis/kumir2Master/src/kumir2-libs/dataformats -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'/' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = DataFormats;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+		D1157EEC3207445394DDDBBD /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = MinSizeRel;
+		};
+		D72E1AB3FAD0433AB967205E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Users/denis/kumir2Master/BUILD/Kumir.app/Contents/PlugIns;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .dylib;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",DataFormats_EXPORTS,DATAFORMATS_LIBRARY,QT_CORE_LIB,QT_NO_DEBUG);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "@rpath";
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
+				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_STYLE = DYNAMIC;
+				OTHER_CPLUSPLUSFLAGS = "    -DNDEBUG -fPIC -fno-exceptions -std=c++0x -fPIC -DAPPLE  -fPIC -I/Users/denis/kumir2Master/BUILD -I/Users/denis/kumir2Master -I/Users/denis/kumir2Master/include -I/Users/denis/kumir2Master/src -I/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include -I/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats -I/Users/denis/kumir2Master/src/kumir2-libs/dataformats -iframework /Users/denis/Qt56/5.6/clang_64/lib -isystem /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers -isystem /Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang   ";
+				OTHER_LDFLAGS = " -Wl,-rpath,'/' -dynamiclib -Wl,-headerpad_max_install_names  /Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/QtCore";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = DataFormats;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		E93E5DEE20E2438ABB09C5D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ALL_BUILD;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = Release;
+		};
+		EDA6365A46A2454EB233A0CE /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (/Users/denis/Qt56/5.6/clang_64/lib);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = ("'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'");
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (/Users/denis/kumir2Master/BUILD,/Users/denis/kumir2Master,/Users/denis/kumir2Master/include,/Users/denis/kumir2Master/src,"/Users/denis/kumir2Master/src/3rdparty/boost-1.54.0/include","/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats","/Users/denis/kumir2Master/src/kumir2-libs/dataformats",/Users/denis/Qt56/5.6/clang_64/lib/QtCore.framework/Headers,"/Users/denis/Qt56/5.6/clang_64/./mkspecs/macx-clang");
+				INSTALL_PATH = "";
+				OTHER_LDFLAGS = " ";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = ZERO_CHECK;
+				SECTORDER_FLAGS = "";
+				SYMROOT = "/Users/denis/kumir2Master/BUILD/src/kumir2-libs/dataformats";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = ("-Wmost","-Wno-four-char-constants","-Wno-unknown-pragmas","$(inherited)");
+			};
+			name = RelWithDebInfo;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		74CAD76CD38D49F1A2ABBE96 /* Build configuration list for PBXNativeTarget "DataFormats" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				199524A517A34BB78C461B9E /* Debug */,
+				D72E1AB3FAD0433AB967205E /* Release */,
+				B06A70982CF44285B3C55AF6 /* MinSizeRel */,
+				C96585FEF1A54BDFB79D2083 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9999742DB6194E2BB3908B6C /* Build configuration list for PBXAggregateTarget "ALL_BUILD" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57716973952F4BA594BB39E5 /* Debug */,
+				E93E5DEE20E2438ABB09C5D5 /* Release */,
+				0C7B0C508EA24AD2A559392B /* MinSizeRel */,
+				687F544DF5624B758B3F2F05 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9E62719B1E924A6DAE4EC4D7 /* Build configuration list for PBXAggregateTarget "install" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB8E1C0067DB47A98D7A6FCA /* Debug */,
+				4CA65CBACA244C4286C57CD6 /* Release */,
+				2A13F7DCE1F24B3A9720B7EA /* MinSizeRel */,
+				A284E0B2B8214AC1AAC5DF55 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CE8BD4723CDD4AEEB3748EC5 /* Build configuration list for PBXProject "DataFormats" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B1881882B2C4DE5A1C13E8B /* Debug */,
+				22A9179E615347DCBF1800C4 /* Release */,
+				0D54D11B427D47C6AF82611F /* MinSizeRel */,
+				B3CCF812D32F4E5A800161B0 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D6945B0B435F4E3CBD5A9DD3 /* Build configuration list for PBXAggregateTarget "ZERO_CHECK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBB0C0928ED848A198AAF210 /* Debug */,
+				4425D608CA02453380840D9B /* Release */,
+				D1157EEC3207445394DDDBBD /* MinSizeRel */,
+				EDA6365A46A2454EB233A0CE /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 94C8E7AA8AF941B0991E975F /* Project object */;
+}
