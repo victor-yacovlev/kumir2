@@ -91,7 +91,7 @@ QDir KPlugin::myResourcesDir() const
     if (_pluginSpec.nonStandardPluginDir.length() > 0) {
         const QString pluginDirName = QString::fromLatin1(_pluginSpec.name).toLower();
         const QStringList candidates = QStringList()
-                << _pluginSpec.nonStandardPluginDir + "/../../share/" + pluginDirName
+                << _pluginSpec.nonStandardPluginDir + "/../../../share/kumir2/" + pluginDirName
                 << _pluginSpec.nonStandardPluginDir + "/" + pluginDirName
                 << _pluginSpec.nonStandardPluginDir + "/resources"
                 << _pluginSpec.nonStandardPluginDir + "/data"
