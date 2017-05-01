@@ -291,22 +291,22 @@ namespace ActorDraw {
 		}
     }
     
-bool DrawScene::event(QEvent * event)
-    {
+//bool DrawScene::event(QEvent * event)
+  //  {
       //  qDebug()<<"ET"<<event->type();
         
         
-        dr_mutex->lock();
-        QGraphicsScene::event(event);
-        dr_mutex->unlock();
-        return true;
+   //     dr_mutex->lock();
+   //     QGraphicsScene::event(event);
+   //     dr_mutex->unlock();
+  //      return true;
      
-    }
-    bool DrawScene::eventFilter(QObject *object, QEvent *event)
-    {
+  //  }
+  //  bool DrawScene::eventFilter(QObject *object, QEvent *event)
+  //  {
          
-        return true;
-    }
+    //    return true;
+   // }
     int   DrawScene::loadFromFile(const QString& p_FileName)
     {
         QFileInfo fi(p_FileName);
@@ -631,13 +631,12 @@ int DrawScene::saveToFile(const QString& p_FileName)
         
         
     };
-void DrawView::paintEvent(QPaintEvent *event)
-    {
-   dr_mutex->lock();
-            QGraphicsView::paintEvent(event);
-            dr_mutex->unlock();
-     
-    }
+//void DrawView::paintEvent(QPaintEvent *event)
+ // dr_mutex->lock();
+ //           QGraphicsView::paintEvent(event);
+ //           dr_mutex->unlock();
+ ////
+ //   }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
@@ -832,6 +831,7 @@ void DrawModule::createGui()
     netColor=QColor("#669966");
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
+    CurView->setScene(CurScene);
     navigator=new DrawNavigator(CurView);
     showToolsBut=new QToolButton(CurView);
     showToolsBut->move(20,20);
@@ -865,7 +865,7 @@ void DrawModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
+   // CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);//For better perfomance; Manual Update;
     drawNet();
     CreatePen();
     CurView->setZoom(50);
@@ -976,12 +976,8 @@ void DrawModule::showNavigator(bool state)
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
   
-    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
-    CurView->forceRedraw();
-    CurScene->update(CurScene->sceneRect());
-    CurView->repaint();
-    CurView->viewport()->update();
-    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+    redraw();
+  
     if(current==GlobalState::GS_Running)
     {
         redrawTimer->start(500);

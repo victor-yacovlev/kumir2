@@ -37,7 +37,7 @@ namespace ActorDraw {
     {
         Q_OBJECT
     public:
-        DrawView( QWidget * parent = 0 ){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
+        DrawView( QWidget * parent = 0 ) : QGraphicsView(parent){c_scale=1;pressed=false;press_pos=QPoint();firstResize=true;
             net=true;smallNetLabel=new QLabel(this);smallNetLabel->hide(); smallNetLabel->setText(trUtf8("Слишком мелкая сетка"));};
         void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
         double zoom()const
@@ -53,7 +53,10 @@ namespace ActorDraw {
         {
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
             horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
-            
+            qDebug()<<"ForceREDDR";
+            QGraphicsView::resetCachedContent();
+            QGraphicsView::update();
+     
            // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
           //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
            
@@ -66,7 +69,7 @@ namespace ActorDraw {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-        void paintEvent(QPaintEvent *event);
+      //  void paintEvent(QPaintEvent *event);
 
     private:
        DrawModule* DRAW;
@@ -85,7 +88,9 @@ namespace ActorDraw {
     {
         Q_OBJECT
     public:
-        DrawScene ( QObject * parent = 0 ){installEventFilter(this);};
+        DrawScene ( QObject * parent = 0 ): QGraphicsScene(parent){
+          ///  installEventFilter(this);
+        };
         void drawNet(double startx,double endx,double starty,double endy,QColor color,const double step,const double stepY,bool net,qreal nw,qreal aw);
         void setDraw(DrawModule* draw,QMutex* mutex){DRAW=draw;dr_mutex=mutex;};
         
@@ -100,6 +105,10 @@ namespace ActorDraw {
             texts.clear();
             
         }
+        void upd()
+        {
+            QGraphicsScene::update();
+        }
         void DestroyNet();
         void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
         bool isLineAt(const QPointF &pos,qreal radius);
@@ -109,8 +118,8 @@ namespace ActorDraw {
         int loadFromFile(const QString& p_FileName);
     protected:
        // void resizeEvent ( QResizeEvent * event );
-        bool eventFilter(QObject *object, QEvent *event);
-        bool event(QEvent * event);
+      //  bool eventFilter(QObject *object, QEvent *event);
+       // bool event(QEvent * event);
     private:
         bool isUserLine(QGraphicsItem*);//Return true if item is user item;
         QList<QGraphicsLineItem*> lines;
@@ -165,7 +174,7 @@ public /* methods */:
         return CurView->zoom();
     }
     
-    QGraphicsPolygonItem* Pen()
+    QGraphicsPolygonItem* Pen() const
     {
         return mPen;
     }
@@ -176,24 +185,27 @@ public /* methods */:
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
         mutex.unlock();
     }
-    DrawView * getCurView()
+    DrawView * getCurView() const
     {
         return CurView;
     }
     static ExtensionSystem::SettingsPtr DrawSettings();
-    QColor axisColor()
+    QColor axisColor() const
     {
         return QColor(DrawSettings()->value("AxisColor","#999900").toString());
     }
     void redrawPicture()
     {
-     
-            CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+     CurScene->upd();
+           // CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
             CurView->forceRedraw();
+        
             CurScene->update(CurScene->sceneRect());
-           // CurView->repaint();
-            CurView->viewport()->update();
-            CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+        
+        CurView->viewport()->update();
+        CurView->setZoom(CurView->zoom()*2);
+        CurView->setZoom(CurView->zoom()*0.5);
+          //  CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
        
     }
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
