@@ -831,7 +831,7 @@ void DrawModule::createGui()
     netColor=QColor("#669966");
     penIsDrawing=false;
     CurScene=new DrawScene(CurView);
-    CurView->setScene(CurScene);
+
     navigator=new DrawNavigator(CurView);
     showToolsBut=new QToolButton(CurView);
     showToolsBut->move(20,20);
@@ -1187,9 +1187,9 @@ void DrawModule::drawNet()
     {
        
    
-        CurView->setZoom(50);
+        CurView->setZoom(KUM_MULTI);
       
-        mPen->setScale(0.05);
+        mPen->setScale(0.03);
         CurView->centerOn(3,-3);
         if(isAutoNet())
         {
