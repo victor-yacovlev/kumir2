@@ -621,17 +621,20 @@ static const qreal MAX_ZOOM = 1000000;
         
         
     };
-void TurtleView::paintEvent(QPaintEvent *event)
-    {
-        if(!dr_mutex->tryLock())
-        {
-            return;
-        }else
-        {
-            QGraphicsView::paintEvent(event);
-            dr_mutex->unlock();
-        }
-    }
+//void TurtleView::paintEvent(QPaintEvent *event)
+//    {
+//        if(!dr_mutex->tryLock())
+//        {
+//            QGraphicsView::paintEvent(event);
+//            event->accept();
+//            return;
+//        }else
+//        {
+//            QGraphicsView::paintEvent(event);
+//             event->accept();
+//            dr_mutex->unlock();
+//        }
+//    }
  void TurtleView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
@@ -1157,11 +1160,17 @@ mutex.unlock();
         mPen->setTurtleVis(state);
         //mPen->setVisible(state);
         mPen->update();
+        mPen->hide();
+        mPen->show();
+       // mPen->moveBy(-1,-1);
+       
         CurScene->update();
-     
+        CurView->resetCachedContent();
         CurView->update();
         CurView->forceRedraw();
         CurView->repaint();
+        qApp->processEvents();
+        
     }
     void TurtleModule::netStepChange(double value)
     {
@@ -1205,7 +1214,7 @@ mutex.unlock();
         QPainterPath myPath;
         myPath.cubicTo(QPointF(-10*2,13*2),QPointF(19,17),QPointF(0,-1) );
         
-        mPen = new TurtlePen(NULL,myResourcesDir().absoluteFilePath("Trtl1.svg"));
+        mPen = new TurtlePen(Q_NULLPTR,myResourcesDir().absoluteFilePath("Trtl1.svg"));
 
         
 
