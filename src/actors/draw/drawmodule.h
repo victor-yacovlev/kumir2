@@ -51,8 +51,8 @@ namespace ActorDraw {
         }
         void forceRedraw()
         {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+           // horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
+          //  horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
             qDebug()<<"ForceREDDR";
             QGraphicsView::resetCachedContent();
             QGraphicsView::update();
