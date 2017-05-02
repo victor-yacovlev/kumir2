@@ -632,11 +632,14 @@ int DrawScene::saveToFile(const QString& p_FileName)
         
     };
 //void DrawView::paintEvent(QPaintEvent *event)
- // dr_mutex->lock();
- //           QGraphicsView::paintEvent(event);
- //           dr_mutex->unlock();
- ////
- //   }
+//    {
+//     dr_mutex->lock();
+//           QGraphicsView::paintEvent(event);
+//        event->accept();
+//        qDebug()<<"DRAW EVENT";
+//            dr_mutex->unlock();
+// 
+//    }
 void DrawView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
@@ -1319,9 +1322,12 @@ void DrawModule::redraw()
     {
          mutex.lock();
         redrawPicture();
+        
         msleep(5);
        // qApp->processEvents();
          mutex.unlock();
+        drawNet();
+        qApp->processEvents();
         
     }
 } // namespace ActorDraw
