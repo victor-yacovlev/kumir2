@@ -4,24 +4,16 @@ import os
 import os.path
 import sys
 import time
-
-if 3 == sys.version_info.major:
-    from urllib.parse import unquote
+from urllib.parse import unquote
 
 
-    def to_str(x):
-        assert isinstance(x, str) or isinstance(x, bytes)
-        if isinstance(x, str):
-            return x
-        else:
-            return x.decode("utf-8")
-else:
-    from urllib import unquote
+def to_str(x):
+    assert isinstance(x, str) or isinstance(x, bytes)
+    if isinstance(x, str):
+        return x
+    else:
+        return x.decode("utf-8")
 
-
-    def to_str(x):
-        assert isinstance(x, str) or isinstance(x, unicode)
-        return unicode(x)
 
 OUT_FILE = sys.stdout
 
@@ -64,7 +56,7 @@ for path_variant in GIT_PATH_SEARCH:
 
 
 def get_version_information(top_level_dir):
-    assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
+    assert isinstance(top_level_dir, str)
     result = {
         "taggedRelease": True,
         "version": None,
@@ -113,7 +105,7 @@ def get_date(top_level_dir):
 
 
 def get_timestamp(top_level_dir):
-    assert isinstance(top_level_dir, str) or isinstance(top_level_dir, unicode)
+    assert isinstance(top_level_dir, str)
     if os.path.exists(top_level_dir + os.path.sep + ".git"):
         return to_str(subprocess.check_output(
             "git --no-pager log -1 --pretty=format:%ct",
@@ -201,6 +193,7 @@ def cmake_version_info_tbht():
     output_values += [to_str(timestamp)]
     return ";".join(output_values)
 
+
 def source_file_name(prefix: str, suffix: str):
     version_info = get_version_information(os.getcwd())
     if version_info["taggedRelease"]:
@@ -245,6 +238,30 @@ def nsis_include_file():
         data += "InstallDir \"$PROGRAMFILES\\Kumir2x-" + version_info["branch"] + "\"\r\n"
         data += "!define VERSION_SUFFIX \"" + version_info["branch"] + "\"\r\n"
     return data
+
+
+class ChangelogEntry:
+    def __init__(self, timestamp: int, author: str, description: str):
+        self.timestamp = timestamp
+        self.author = author
+        self.description = description
+
+
+def get_changelog(max_count=1000, after=(2015, 5, 1)):
+    if os.path.exists(".git"):
+        result = []
+        command = "git --no-pager log --max-count={} --after={}/{}/{} --no-merges --pretty=format:'%ct;;;%an <%ae>;;;%s'"
+        command = command.format(max_count, after[0], after[1], after[2])
+        lines = to_str(subprocess.check_output(
+            "git describe --abbrev=0 --tags --exact-match",
+            shell=True,
+            stderr=subprocess.PIPE
+        ).strip()).splitlines()
+        for line in lines:
+            tokens = line.split(";;;")
+            entry = ChangelogEntry(int(tokens[0]), tokens[1].strip(), tokens[2].strip())
+            result += [entry]
+        return result
 
 
 def main():
