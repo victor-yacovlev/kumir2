@@ -134,7 +134,7 @@ namespace ActorTurtle {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-      //  void paintEvent(QPaintEvent *event);
+        void paintEvent(QPaintEvent *event);
 
     private:
         TurtleModule* DRAW;

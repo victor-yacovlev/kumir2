@@ -621,20 +621,15 @@ static const qreal MAX_ZOOM = 1000000;
         
         
     };
-//void TurtleView::paintEvent(QPaintEvent *event)
-//    {
-//        if(!dr_mutex->tryLock())
-//        {
-//            QGraphicsView::paintEvent(event);
-//            event->accept();
-//            return;
-//        }else
-//        {
-//            QGraphicsView::paintEvent(event);
-//             event->accept();
-//            dr_mutex->unlock();
-//        }
-//    }
+void TurtleView::paintEvent(QPaintEvent *event)
+    {
+        dr_mutex->lock();
+     
+            QGraphicsView::paintEvent(event);
+            event->accept();
+            dr_mutex->unlock();
+
+    }
  void TurtleView::resizeEvent ( QResizeEvent * event )
     {
         if(firstResize)
@@ -938,7 +933,8 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
     CurView->viewport()->update();
-    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+    drawNet();
+ 
     if(current==GlobalState::GS_Running)
     {
         redrawTimer->start(500);
