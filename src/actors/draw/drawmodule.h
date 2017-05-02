@@ -56,6 +56,8 @@ namespace ActorDraw {
             qDebug()<<"ForceREDDR";
             QGraphicsView::resetCachedContent();
             QGraphicsView::update();
+            QGraphicsView::repaint();
+            
      
            // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
           //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
@@ -69,7 +71,7 @@ namespace ActorDraw {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-      //  void paintEvent(QPaintEvent *event);
+   //    void paintEvent(QPaintEvent *event);
 
     private:
        DrawModule* DRAW;
@@ -196,8 +198,10 @@ public /* methods */:
     }
     void redrawPicture()
     {
-     CurScene->upd();
-           // CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+       // CurScene->resetCashedContent();
+        CurScene->upd();
+    
+          CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
             CurView->forceRedraw();
         
             CurScene->update(CurScene->sceneRect());

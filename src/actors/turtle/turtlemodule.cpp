@@ -1214,7 +1214,7 @@ mutex.unlock();
         QPainterPath myPath;
         myPath.cubicTo(QPointF(-10*2,13*2),QPointF(19,17),QPointF(0,-1) );
         
-        mPen = new TurtlePen(Q_NULLPTR,myResourcesDir().absoluteFilePath("Trtl1.svg"));
+        mPen = new TurtlePen(nullptr,myResourcesDir().absoluteFilePath("Trtl1.svg"));
 
         
 

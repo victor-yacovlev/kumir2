@@ -32,6 +32,7 @@ namespace ActorTurtle {
   
     class TurtlePen: public QGraphicsItem
     {
+        
     public:
         TurtlePen(QGraphicsItem *parent, const QString svgFileName): QGraphicsItem(parent)
         {
@@ -85,6 +86,7 @@ namespace ActorTurtle {
             if(!tailup){
                 painter->setBrush(tailColor);
                 painter->drawPath(tail);
+                qDebug()<<"TPE";
             }
             if(turtle->isVisible())turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
         
@@ -117,8 +119,8 @@ namespace ActorTurtle {
         }
         void forceRedraw()
         {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +1);
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-1);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +10);
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-10);
             
            // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
           //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
@@ -132,7 +134,7 @@ namespace ActorTurtle {
         void mousePressEvent ( QMouseEvent * event );
         void mouseReleaseEvent ( QMouseEvent * event );
         void mouseMoveEvent ( QMouseEvent * event );
-        void paintEvent(QPaintEvent *event);
+      //  void paintEvent(QPaintEvent *event);
 
     private:
         TurtleModule* DRAW;
