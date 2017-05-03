@@ -891,6 +891,10 @@ void Plugin::start()
 {
     bool showDialogOnStartup = ! ExtensionSystem::PluginManager::instance()->globalSettings()
             ->value(ExtensionSystem::PluginManager::SkipChooseWorkspaceKey, false).toBool();
+    if (showDialogOnStartup) {
+        // Prevent quit between choose dialog closed and main window shown
+        qApp->setQuitOnLastWindowClosed(false);
+    }
     if (!sessionsDisableFlag_ && showDialogOnStartup) {
         if (!showWorkspaceChooseDialog()) {
             ExtensionSystem::PluginManager::instance()->shutdown();
