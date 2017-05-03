@@ -12,16 +12,21 @@ namespace ExtensionSystem {
 Settings::Settings(const QString & pluginName)
     : pluginName_(pluginName)
     , mutex_(new QMutex)
-#ifdef Q_OS_WIN32
-    #if QT_VERSION >= 0x050000
-    , qsettings_(new QSettings(QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0)+"/"+defaultSettingsScope()+"/"+pluginName+".conf", QSettings::IniFormat))
-    #else
-    , qsettings_(new QSettings(QDesktopServices::storageLocation(QDesktopServices::DataLocation)+"/"+defaultSettingsScope()+"/"+pluginName+".conf", QSettings::IniFormat))
-    #endif
-#else
-    , qsettings_(new QSettings(defaultSettingsScope(), pluginName))
-#endif
+
 {    
+#if QT_VERSION >= 0x050000
+    static const QString DataLocation = QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0);
+#else
+    static const QString DataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+#endif
+    const QString scope = defaultSettingsScope();
+    const QString fileName = pluginName + ".conf";
+#ifdef Q_OS_WIN32
+    QSettings * sett = new QSettings(DataLocation+"/"+fileName, QSettings::IniFormat);
+#else
+    QSettings * sett = new QSettings(scope, pluginName);
+#endif
+    qsettings_.reset(sett);
     qsettings_->setIniCodec("UTF-8");
     settingsFile_ = qsettings_->fileName();
 }
