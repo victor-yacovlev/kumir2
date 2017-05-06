@@ -1873,6 +1873,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
 //    saveSettings();
 //    m_plugin->saveSession();
+    qApp->setQuitOnLastWindowClosed(true);
     if (m_plugin->sessionsDisableFlag_ && tabsDisabledFlag_) {
         TabWidgetElement * twe = qobject_cast<TabWidgetElement*>(tabWidget_->currentWidget());
         if (twe->editor()) {
