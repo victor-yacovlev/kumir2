@@ -4334,7 +4334,9 @@ void RobotModule::reset()
             m_actionRobotNewEnvironment->setEnabled(true);
             view->FindRobot();
         }
-
+        field->destroyNet();
+        field->drawNet();
+        qApp->processEvents();//Redraw event fix
     };    
     
 void RobotModule::reloadSettings(ExtensionSystem::SettingsPtr settings, const QStringList & keys)
@@ -5642,7 +5644,7 @@ void RobotView::changeEditMode(bool state)
         setViewportUpdateMode ( QGraphicsView::FullViewportUpdate);
             setViewportUpdateMode (mod);
             qDebug()<<"UPDATE VIEW";
-            scale(0.99,0.99);
+            scale(0.99,0.99);//repaint bugfix
             scale(1.01,1.01);
         
     };
