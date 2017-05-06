@@ -48,6 +48,7 @@ int courseModel::loadCourse(QString file,bool cmode)
     int eline,ecol;
     QString taskData;
     QTextStream ts(&f);
+    ts.setCodec("UTF-8");
     taskData.append(ts.readAll());
     qDebug()<<"Cource len in symbols:",taskData.length();
     if(!courceXml.setContent(taskData,true,&error,&eline,&ecol)){
