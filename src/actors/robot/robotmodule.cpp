@@ -4336,6 +4336,11 @@ void RobotModule::reset()
         }
         field->destroyNet();
         field->drawNet();
+        view->update();
+        field->update();
+        msleep(2*AnimTime);
+        view->update();
+        field->update();
         qApp->processEvents();//Redraw event fix
     };    
     
