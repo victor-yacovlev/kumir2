@@ -4044,7 +4044,7 @@ namespace ActorRobot {
     
     
     //+++++++Simple Robot
-    SimpleRobot::SimpleRobot(QGraphicsItem *parent )
+    SimpleRobot::SimpleRobot(QGraphicsItem *parent ): QGraphicsObject(parent)
     {
         Q_UNUSED(parent);
         setAcceptDrops(true);
@@ -4459,6 +4459,7 @@ void RobotModule::runGoUp()
 //     }
 if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
     if(animation)msleep(AnimTime);
+    view->update();
 	return;
 }
 
@@ -4483,10 +4484,10 @@ void RobotModule::runGoDown()
 //         emit sendToPultLog(status);
 //     }
   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
-    if(animation){
+   // if(animation){
         view->update();
      msleep(AnimTime);
-    }
+  //  }
 	return;
 }
 
@@ -4512,11 +4513,11 @@ void RobotModule::runGoLeft()
 //        emit sendToPultLog(status);
 //    }
       if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(trUtf8("влево"),QString::fromUtf8("влево     "),status);
-    if(animation)
-    {
+   // if(animation)
+  //  {
         view->update();
         msleep(AnimTime);
-    }
+  //  }
 	return;
 }
 
@@ -4537,11 +4538,11 @@ void RobotModule::runGoRight()
         setError(trUtf8("Робот разбился: справа стена!"));}
 
    if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
-     if(animation)
-     {
+   //  if(animation)
+   //  {
          view->update();
      msleep(AnimTime);
-     }
+  //   }
 	return;
 }
 
@@ -4561,11 +4562,11 @@ void RobotModule::runDoPaint()
 //        emit sendToPultLog(status);
 //    }
    if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("закрасить"),trUtf8("закрасить"), "OK");
-    if(animation)
-    {
+  //  if(animation)
+ //   {
         view->update();
         msleep(AnimTime);
-    }
+  //  }
 	return;
 }
 
