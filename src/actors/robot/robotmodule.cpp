@@ -5646,12 +5646,9 @@ void RobotView::changeEditMode(bool state)
             repaint();
             update();
         };
-        ViewportUpdateMode mod=viewportUpdateMode ();
+       
         setViewportUpdateMode ( QGraphicsView::FullViewportUpdate);
-            setViewportUpdateMode (mod);
-            qDebug()<<"UPDATE VIEW";
-            scale(0.99,0.99);//repaint bugfix
-            scale(1.01,1.01);
+        
         
     };
 } // $namespace

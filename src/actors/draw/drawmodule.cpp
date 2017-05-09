@@ -1327,7 +1327,7 @@ void DrawModule::redraw()
        // qApp->processEvents();
          mutex.unlock();
         drawNet();
-        qApp->processEvents();
+        //qApp->processEvents();
         
     }
 } // namespace ActorDraw

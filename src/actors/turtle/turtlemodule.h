@@ -119,8 +119,8 @@ namespace ActorTurtle {
         }
         void forceRedraw()
         {
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() +10);
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value()-10);
+           // horizontalScrollBar()->setValue(horizontalScrollBar()->value() +10);
+           // horizontalScrollBar()->setValue(horizontalScrollBar()->value()-10);
             
            // verticalScrollBar()->setValue(horizontalScrollBar()->value() +1);
           //  verticalScrollBar()->setValue(horizontalScrollBar()->value()-1);
