@@ -198,13 +198,14 @@ static const qreal MAX_ZOOM = 1000000;
     void TurtleScene::DestroyNet()
     {
       //  qDebug()<<Netlines.count();
+        dr_mutex->lock();
         for ( int i = 0; i < Netlines.count(); i++)
         {
        
            delete Netlines[i];
         }
         Netlines.clear();
-        
+        dr_mutex->unlock();
     }
     void TurtleScene::drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw)
     {
@@ -233,24 +234,26 @@ static const qreal MAX_ZOOM = 1000000;
         lp.setWidthF(nw);
         lp.setCosmetic(true);
         
-        DestroyNet();
+        DestroyNet();//MUTEXED
         if(!net)
         {
             drawOnlyAxis(startx,endx,starty,endy,aw);
             return;
         }
         int lines=qRound(startx/step);
-        startx=lines*step;
-        double fx1=startx-NetReserve*step,fx2,fy1,fy2;
+        
         
         // return;
+         dr_mutex->lock();
+        startx=lines*step;
+        double fx1=startx-NetReserve*step,fx2,fy1,fy2;
         while (fx1 < endx+NetReserve*step)
 		{
 			fx1 = fx1 + step;
 			fx2 = fx1;
 			fy1 = starty-NetReserve*step;
 			fy2 = endy+NetReserve*step;
-            
+           
 			Netlines.append(addLine(fx1, fy1 , fx2, fy2 ));
 			Netlines.last()->setZValue(0.5);
 			Netlines.last()->setPen(lp);
@@ -295,6 +298,7 @@ static const qreal MAX_ZOOM = 1000000;
             }
             
 		}
+         dr_mutex->unlock();
     }
     
     int   TurtleScene::loadFromFile(const QString& p_FileName)
@@ -736,7 +740,7 @@ void TurtleView::paintEvent(QPaintEvent *event)
         
                 DRAW->setNetStepX(stepX);
                 DRAW->setNetStepY(stepY);
-                DRAW->drawNet();
+               // DRAW->drawNet();
              
                 
             }
@@ -744,7 +748,7 @@ void TurtleView::paintEvent(QPaintEvent *event)
             DRAW->setNetStepY(stepY);
             lastStep=stepX;
             qDebug()<<"c_scale"<<c_scale<<"NetStep"<<DRAW->NetStepX()<<"PPC"<<pixel_per_cell;
-            update();
+           // update();
         }
         else
         {
@@ -777,6 +781,7 @@ void TurtleView::paintEvent(QPaintEvent *event)
     
     void	TurtleView::wheelEvent ( QWheelEvent * event )
     {
+        dr_mutex->lock();
         float numDegrees = event->delta() / 8;
         qDebug()<<"whell:"<<numDegrees;
         //        c_scale=c_scale*0.8;
@@ -790,19 +795,23 @@ void TurtleView::paintEvent(QPaintEvent *event)
             
             setZoom(zoom()*1.189207);
             setNet();
+            
             DRAW->scalePen(DRAW->Pen()->scale()*(1/1.189207));
-            DRAW->drawNet();
+          
+          
         }
         else
         {
             if(c_scale<3e-05)return;
             setZoom(zoom()*(1/1.189207));
             setNet();
+          
             DRAW->scalePen(DRAW->Pen()->scale()*((1.189207)));
-            DRAW->drawNet();
+            
             
         }
-        
+          dr_mutex->unlock();
+        DRAW->drawNet();
     }
     
     
@@ -897,8 +906,10 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 {
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
+        currentState=Shared::PluginInterface::GS_Unlocked;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
+        redrawTimer->start(500);
     }
     return "";
 }
@@ -927,7 +938,8 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
-  
+    usleep(10);
+    currentState=current;
     CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
@@ -935,11 +947,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     CurView->viewport()->update();
     drawNet();
  
-    if(current==GlobalState::GS_Running)
-    {
-        redrawTimer->start(500);
-    }else
-        redrawTimer->stop();
+
 }
 
 /* public slot */ void TurtleModule::loadActorData(QIODevice * source)
@@ -1051,8 +1059,9 @@ mutex.unlock();
     
     
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
+    // CurScene->update();
     mutex.unlock();
-     CurScene->update();
+    
 }
 
 /* public slot */ void TurtleModule::runBack(const qreal dist)
@@ -1124,8 +1133,12 @@ mutex.unlock();
     };
     void TurtleModule::zoomOut()
     {
+        mutex.lock();
         CurView->setZoom(CurView->zoom()*0.5);
         scalePen(Pen()->scale()*(2));
+        
+        
+        mutex.unlock();
         CurView->setNet();
         drawNet();
     };
@@ -1183,23 +1196,24 @@ mutex.unlock();
     }
     void TurtleModule::drawNet()
     {
-        mutex.lock();
-        
+      //  mutex.lock();
+         mutex.lock();
         QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
 
-        
+       
         CurView->setSceneRect(QRectF(QPointF(start_d.x()-(CurView->geometry().width())*(1/zoom()),start_d.y()-(CurView->geometry().height()*2)*(1/zoom())),
                                      QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
+        mutex.unlock();
         QPointF start=CurView->sceneRect().topLeft();
         QPointF end=CurView->sceneRect().bottomRight();
         CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet(),mySettings()->value("NetWidth",1).toFloat(),mySettings()->value("AxisWidth",2).toFloat());
         
      
-        mutex.unlock();
+      //  mutex.unlock();
         qDebug()<<"NETSEPX"<<NetStepX();
         navigator->reDraw(zoom(),netStepY,NetStepX());
-        CurView->update();
+       // CurView->update();
         
     };
 
@@ -1299,6 +1313,15 @@ mutex.unlock();
         CurView->update();
         CurView->forceRedraw();
     };
-    
+    void TurtleModule::redraw()
+    {
+       
+        if (currentState!=Shared::PluginInterface::GS_Running)return;
+    //   mutex.lock();
+       // CurScene->update();
+        CurView->update();
+      //  mutex.unlock();
+        drawNet();
+    }
     
 } // namespace ActorTurtle

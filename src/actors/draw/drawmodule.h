@@ -257,7 +257,7 @@ private:
     bool penIsDrawing;
     bool firstShow;
     Color penColor;
-  
+    ExtensionSystem::GlobalState currentState;
     DrawNavigator* navigator;
     QToolButton *showToolsBut;
     QDir curDir;

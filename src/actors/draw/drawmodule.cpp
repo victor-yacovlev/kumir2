@@ -898,6 +898,7 @@ QString DrawModule::initialize(const QStringList &configurationParameters, const
         animate=false;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
+        redrawTimer->start(500);
     }
     return "";
 }
@@ -981,11 +982,11 @@ void DrawModule::showNavigator(bool state)
   
     redraw();
   
-    if(current==GlobalState::GS_Running)
-    {
-        redrawTimer->start(500);
-    }else
-        redrawTimer->stop();
+   // if(current==GlobalState::GS_Running)
+   // {
+      //  redrawTimer->start(500);
+   // }else
+    //    redrawTimer->stop();
 }
 
 /* public slot */ void DrawModule::loadActorData(QIODevice * source)
@@ -1320,6 +1321,7 @@ void DrawModule::drawNet()
     }
 void DrawModule::redraw()
     {
+        if(currentState!=ExtensionSystem::GlobalState::GS_Running)return;
          mutex.lock();
         redrawPicture();
         

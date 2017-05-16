@@ -206,11 +206,11 @@ public /* methods */:
     QString initialize(const QStringList &configurationParameters, const ExtensionSystem::CommandLine &runtimeParameters);
     void scalePen(double factor)
     {
-        mutex.lock();
+       // mutex.lock();
         mPen->setScale(factor);
       //  mTurt->setScale(factor);
         qDebug()<<"PenScale"<<factor<<"mPen->scale"<<mPen->scale();
-        mutex.unlock();
+      //  mutex.unlock();
     }
     bool isAutoNet() const
     {
@@ -280,6 +280,7 @@ public /* methods */:
     void showNavigator(bool state);
     
     void showTurtleSlt(bool state);
+    void redraw();
     /* ========= CLASS PRIVATE ========= */
 
 private:
@@ -300,7 +301,7 @@ private:
     bool autoNet;
     bool penIsDrawing;
     Color penColor;
-
+    ExtensionSystem::GlobalState currentState;
     DrawNavigator* navigator;
     QToolButton *showToolsBut,*showTurtleBut;
     QDir curDir;

@@ -6,7 +6,7 @@
 		{ "name": {"ascii": "tailDown", "ru_RU": "опустить хвост" } },
 		{ 
 		"name": {"ascii": "forward", "ru_RU": "вперед" },
-         "async": true,
+         "async": false,
 		"arguments": [
                      { "name": "dist", "baseType": "double" }
                        ]
@@ -15,7 +15,7 @@
 		},
 		{ 
 		"name": {"ascii": "back", "ru_RU": "назад" },
-            "async": true,
+            "async": false,
 		"arguments": [
                      { "name": "dist", "baseType": "double" }
                        ]
@@ -24,7 +24,7 @@
 		},
 		{ 
 		"name": {"ascii": "left", "ru_RU": "влево" },
-            "async": true,
+            "async": false,
 		"arguments": [
                      { "name": "angle", "baseType": "double" }
                        ]
@@ -41,7 +41,7 @@
 		
 		{ 
 		"name": {"ascii": "right", "ru_RU": "вправо" },
-         "async": true,
+         "async": false,
 		"arguments": [
                      { "name": "angle", "baseType": "double" }
                        ]
