@@ -311,34 +311,34 @@ public:
         // Check for integer overflow
         // CLang completely removes the standard check technique due to optimization.
         // Use another method: cast to 64 bit
-        const int64_t l = lhs;
-        const int64_t r = rhs;
-        const int64_t sum = l + r;
+        volatile const int64_t l = lhs;
+        volatile const int64_t r = rhs;
+        volatile const int64_t sum = l + r;
         static const int64_t Right = 2147483647LL;
         static const int64_t Left = -2147483648LL;
-        bool result = sum >= Left && sum <= Right;
+        volatile bool result = sum >= Left && sum <= Right;
         return result;
     }
 
     inline static bool checkDiff(int32_t lhs, int32_t rhs) {
-        const int64_t l = lhs;
-        const int64_t r = rhs;
-        const int64_t diff = l - r;
+        volatile const int64_t l = lhs;
+        volatile const int64_t r = rhs;
+        volatile const int64_t diff = l - r;
         static const int64_t Right = 2147483647LL;
         static const int64_t Left = -2147483648LL;
-        bool result = diff >= Left && diff <= Right;
+        volatile bool result = diff >= Left && diff <= Right;
         return result;
     }
 
     inline static bool checkProd(int32_t lhs, int32_t rhs) {
         // Check for integer overflow
-        int64_t prod = int64_t(lhs) * int64_t(rhs);
+        volatile int64_t prod = int64_t(lhs) * int64_t(rhs);
         return (prod >> 32)==(prod >> 31);
     }
 
     inline static bool isCorrectDouble(double val) {
         // !!!!!!!!!!! WARNING !!!!!!!!!!
-        // this works ONLY for x86/x86_64 platform!
+        // this works ONLY for IEEE754-compatible representation!
         double * pval = &val;
         uint64_t * pbits = reinterpret_cast<uint64_t*>(pval);
         uint64_t bits = *pbits;
