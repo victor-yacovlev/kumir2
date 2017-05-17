@@ -577,7 +577,12 @@ void ToggleCommentCommand::redo()
     else {
         for (int i=fromLineInclusive; i<=toLineInclusive; i++) {
             int dummy;
+            bool was_selection = doc->at(i).text.length() > 0 && doc->at(i).selected.first();
             doc->insertText("| ", analizer, i, 0, dummy, dummy);
+            if (was_selection) {
+                doc->at(i).selected[0] = true;
+                doc->at(i).selected[1] = true;
+            }
             commentedLines.insert(i);
         }
     }

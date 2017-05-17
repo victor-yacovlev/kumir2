@@ -56,7 +56,7 @@ void TextDocument::insertText(const QString &text, const Shared::Analizer::Insta
         // Insert text fragment into line
         data_[line].text.insert(pos, lines[0]);
         while (data_[line].selected.size() < data_[line].text.length())
-            data_[line].selected << false;
+            data_[line].selected.insert(pos, false);
         while (data_[line].highlight.size() < data_[line].text.length())
             data_[line].highlight << Shared::LxTypeEmpty;
         if (analizer && AnalizerInterface::IndependentLinesHighlight==_syntaxHighlightBehaviour)
