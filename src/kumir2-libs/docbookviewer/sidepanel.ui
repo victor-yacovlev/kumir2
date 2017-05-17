@@ -193,7 +193,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Filter:</string>
+            <string>Fi&amp;lter:</string>
            </property>
            <property name="buddy">
             <cstring>searchAlgorithms</cstring>
@@ -249,7 +249,7 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Filter:</string>
+            <string>Fi&amp;lter:</string>
            </property>
            <property name="buddy">
             <cstring>searchExamples</cstring>
@@ -305,7 +305,7 @@
          <item>
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Filter:</string>
+            <string>Fi&amp;lter:</string>
            </property>
            <property name="buddy">
             <cstring>searchTables</cstring>

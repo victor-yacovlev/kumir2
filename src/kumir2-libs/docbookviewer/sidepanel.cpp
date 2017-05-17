@@ -14,6 +14,12 @@ SidePanel::SidePanel(QWidget *parent) :
     ui(new Ui::SidePanel)
 {
     ui->setupUi(this);
+    // Fix Qt translator bug: not all UI elements translated
+    ui->label->setText(tr("Filter:"));
+    ui->label_2->setText(tr("Filter:"));
+    ui->label_3->setText(tr("Filter:"));
+    ui->label_4->setText(tr("Filter:"));
+
     static const QList<QPushButton*> buttons = QList<QPushButton*>()
             << ui->contents << ui->algorithms << ui->examples /* << ui->tables*/;
 
