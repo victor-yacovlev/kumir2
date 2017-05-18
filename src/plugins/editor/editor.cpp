@@ -271,6 +271,14 @@ void EditorInstance::timerEvent(QTimerEvent *e)
             }
         }
     }
+    else if (e->timerId()==clipboardCheckTimerId_) {
+        e->accept();
+        bool isLocked = ! cursor_->isEnabled();
+        if (!isLocked) {
+            bool hasContents = Clipboard::instance()->hasContent();
+            paste_->setEnabled(hasContents);
+        }
+    }
 }
 
 void EditorInstance::handleAutoScrollChange(char a)
@@ -641,6 +649,7 @@ EditorInstance::EditorInstance(
 
     timerId_ = startTimer(50);
     autoScrollTimerId_ = startTimer(100);   
+    clipboardCheckTimerId_ = startTimer(250);
 
     updateSettings(QStringList());
     updatePosition(cursor_->row(), cursor_->column());

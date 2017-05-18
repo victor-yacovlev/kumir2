@@ -200,6 +200,7 @@ private /* fields */:
 
     int timerId_;
     int autoScrollTimerId_;
+    int clipboardCheckTimerId_;
     char autoScrollStateX_;
     char autoScrollStateY_;
 

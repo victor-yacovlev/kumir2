@@ -77,6 +77,10 @@ bool Clipboard::hasContent() const
         const QMimeData * data = cl->mimeData();
         bool text = data->hasText();
         bool block = data->hasFormat(BlockMimeType);
+        if (text) {
+            const QString textData = data->text();
+            text = textData.length() > 0;
+        }
         return text || block;
     }
     else {
