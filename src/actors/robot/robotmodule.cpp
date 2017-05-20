@@ -798,6 +798,7 @@ namespace ActorRobot {
         tempSpinBox->setRange(-273, 233);
         tempSpinBox->setValue(77);
         radSpinBox->setValue(55);
+       
         btnAddRow=new QToolButton();btnAddCol=new QToolButton();btnRemCol=new QToolButton();btnRemRow=new QToolButton();
     };
   void RoboField::showButtons(bool yes)
@@ -3025,7 +3026,7 @@ namespace ActorRobot {
         update();
         QGraphicsScene::update();
         views().first()->update();
-        
+       
         wasEdit=true;
 //        if(wasEdit)emit was_edit();
     };
@@ -4176,6 +4177,7 @@ void RobotModule::createGui()
     field->setRoboPos(0,0);
       field->createRobot();
     view=new RobotView(field);
+    view-> setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
     m_mainWidget = view;
     const QUrl rcUrl = QUrl::fromLocalFile(
