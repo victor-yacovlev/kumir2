@@ -2889,8 +2889,8 @@ namespace ActorRobot {
             //QPoint clickViewPos=view->mapFromScene(mouseEvent->scenePos().x(), mouseEvent->scenePos().y());
            // qDebug()<<"ROW:"<<rowClicked<<"COL:"<<colClicked;
             //radSpinBox->setValue(getFieldItem(rowClicked,colClicked)->radiation);//set radiation
-            view->repaint();
             update();
+            view->repaint();
             return;
         }
         if(mode==TEMP_MODE)
@@ -3022,6 +3022,10 @@ namespace ActorRobot {
                 old_cell=QPair<int,int>(rowClicked, colClicked); 
             };
         };
+        update();
+        QGraphicsScene::update();
+        views().first()->update();
+        
         wasEdit=true;
 //        if(wasEdit)emit was_edit();
     };
@@ -5467,6 +5471,7 @@ void RobotModule::setWindowSize()
            QGraphicsView::mousePressEvent(event);
             update();
             repaint();
+            qApp->processEvents();
             return;
         }
         if(robotField->sceneRect().height()*c_scale> this->height()  || robotField->sceneRect().width()*c_scale> this->width())//field > view
