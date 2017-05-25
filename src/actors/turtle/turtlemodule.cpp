@@ -171,8 +171,9 @@ static const qreal MAX_ZOOM = 1000000;
         fontMetric=QFontMetricsF(font);
         qDebug()<<"Char Size:"<<fontMetric.boundingRect("OOOXX").width()/5000;
         
-        
-        texts.append(addSimpleText(Text,font));
+        QGraphicsSimpleTextItem* tItem=new QGraphicsSimpleTextItem(Text);
+        tItem->setFont(font);
+        texts.append(tItem);
 //        texts.last()->scale(0.001,0.001);
         texts.last()->setScale(psizeF);
         texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
@@ -183,7 +184,8 @@ static const qreal MAX_ZOOM = 1000000;
     void TurtleScene::addDrawLine(QLineF lineF,QColor color,qreal width)
     {
         if(lineF.length()==0)return;
-        QGraphicsLineItem* line=addLine(lineF);
+        QGraphicsLineItem* line=new QGraphicsLineItem(lineF);
+        //addLine(lineF);
         QPen mp=QPen(QColor(color));
         mp.setWidthF(width);
         mp.setCapStyle(Qt::RoundCap);
@@ -191,8 +193,9 @@ static const qreal MAX_ZOOM = 1000000;
         line->setPen(mp);
         line->setZValue(90);
         lines.append(line);
+        itemsBuffer.append(line);
         
-        
+        //getfromB
         
     }
     void TurtleScene::DestroyNet()
@@ -993,6 +996,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 
 /* public slot */ void TurtleModule::reset()
 {
+    CurScene->clearBuffer();
     mPen->tailUp();
     penIsDrawing=false;
     mPen->setPos(0,0);
@@ -1011,6 +1015,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     CurView->forceRedraw();
     CurView->setZoom(CurView->zoom()*2);
     CurView->setZoom(CurView->zoom()*0.5);
+    
 }
 
 /* public slot */ void TurtleModule::setAnimationEnabled(bool enabled)
@@ -1318,7 +1323,8 @@ mutex.unlock();
        
         if (currentState!=Shared::PluginInterface::GS_Running)return;
     //   mutex.lock();
-       // CurScene->update();
+        CurScene->fromBufferToScene();
+        CurScene->update();
         CurView->update();
       //  mutex.unlock();
         drawNet();
