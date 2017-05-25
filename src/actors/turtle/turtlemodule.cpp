@@ -16,9 +16,9 @@ You should change it corresponding to functionality.
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-const int maxBuff=1000;
-namespace ActorTurtle {
 
+namespace ActorTurtle {
+const int maxBuff=1000;
 
 
 
