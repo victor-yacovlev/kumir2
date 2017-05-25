@@ -25,6 +25,23 @@ AboutDialog::AboutDialog(QWidget *parent) :
         ui->lastModified->setText(timeStamp.toString());
     }
 
+    QString dialogTitle = tr("About Kumir");
+    if (qApp->property("customAppName").isValid()) {
+        dialogTitle = tr("About %1").arg(qApp->property("customAppName").toString());
+    }
+    setWindowTitle(dialogTitle);
+
+
+    if (qApp->property("customAppVersion").isValid()) {
+        ui->customVersion->setText(qApp->property("customAppVersion").toString());
+        ui->kumirPlatformVersion->setText(ui->version->text());
+        ui->versionInfoStack->setCurrentWidget(ui->pageCustomApp);
+    }
+    else {
+        ui->versionInfoStack->setCurrentWidget(ui->pageKumirApp);
+    }
+    ui->tabWidget->setCurrentWidget(ui->tabAbout);
+
     connect(ui->btnCopyEnvironmentAndVersion,
             SIGNAL(clicked()), this, SLOT(copySystemInformationToClipboard()));
 
@@ -33,14 +50,26 @@ AboutDialog::AboutDialog(QWidget *parent) :
     KPlugin * guiPlugin = PluginManager::instance()->loadedPlugin("CoreGUI");
 //    const QString lang = QLocale::languageToString(QLocale::system().language()).left(2).toLower();
     const QString lang = "ru";
-    AnalizerInterface * analizerPlugin =
-            PluginManager::instance()->findPlugin<AnalizerInterface>();
-    QString fileBase = lang;
-    if (analizerPlugin)
-        fileBase = analizerPlugin->defaultDocumentFileNameSuffix() + "_" + lang;
-    const QString indexHtml =
-            guiPlugin->myResourcesDir().absoluteFilePath("about/" + fileBase + ".html");
-    ui->aboutTextBrowser->setSource(QUrl::fromLocalFile(indexHtml));
+
+    if (! qApp->property("customAppAbout").isValid() ) {
+        AnalizerInterface * analizerPlugin =
+                PluginManager::instance()->findPlugin<AnalizerInterface>();
+        QString fileBase = lang;
+        if (analizerPlugin)
+            fileBase = analizerPlugin->defaultDocumentFileNameSuffix() + "_" + lang;
+        const QString indexHtml =
+                guiPlugin->myResourcesDir().absoluteFilePath("about/" + fileBase + ".html");
+        ui->aboutTextBrowser->setSource(QUrl::fromLocalFile(indexHtml));
+    }
+    else {
+        const QString aboutFile = qApp->property("customAppAbout").toString();
+        ui->aboutTextBrowser->setSource(QUrl::fromLocalFile(aboutFile));
+    }
+
+    if (qApp->property("customAppLicense").isValid()) {
+        const QString licFile = qApp->property("customAppLicense").toString();
+        ui->licenseTextBrowser->setSource(QUrl::fromLocalFile(licFile));
+    }
 
 }
 

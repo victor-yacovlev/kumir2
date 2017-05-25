@@ -316,6 +316,63 @@ private:
 
 };
 
+
+bool
+setup_custom_vendor_information(QCoreApplication * app)
+{
+    QString appName;
+    QString appVendor;
+    QString appVersion;
+    QString appLicenseFileName;
+    QString appAboutFileName;
+    bool result = false;
+#ifdef APP_NAME
+    appName = QString::fromLatin1(APP_NAME);
+    result = true;
+#endif
+#ifdef APP_NAME_ru
+    appName = QString::fromUtf8(APP_NAME_ru);
+    result = true;
+#endif
+#ifdef APP_VENDOR
+    appVendor = QString::fromLatin1(APP_VENDOR);
+#endif
+#ifdef APP_VENDOR_RU
+    appVendor = QString::fromUtf8(APP_VENDOR_ru);
+#endif
+#ifdef APP_VERSION
+    appVersion = QString::fromLatin1(APP_VERSION);
+#endif
+#ifdef APP_LICENSE
+    appLicenseFileName = ":/kumir2-launcher/" + QString::fromLatin1(APP_LICENSE);
+#endif
+#ifdef APP_LICENSE_ru
+    appLicenseFileName = ":/kumir2-launcher/" + QString::fromLatin1(APP_LICENSE_ru);
+#endif
+#ifdef APP_ABOUT
+    appAboutFileName = ":/kumir2-launcher/" + QString::fromLatin1(APP_ABOUT);
+#endif
+#ifdef APP_ABOUT_ru
+    appAboutFileName = ":/kumir2-launcher/" + QString::fromLatin1(APP_ABOUT_ru);
+#endif
+    if (appName.length() > 0) {
+        app->setProperty("customAppName", appName);
+    }
+    if (appVendor.length() > 0) {
+        app->setProperty("customAppVendor", appVendor);
+    }
+    if (appVersion.length() > 0) {
+        app->setProperty("customAppVersion", appVersion);
+    }
+    if (appLicenseFileName.length() > 0) {
+        app->setProperty("customAppLicense", appLicenseFileName);
+    }
+    if (appAboutFileName.length() > 0) {
+        app->setProperty("customAppAbout", appAboutFileName);
+    }
+    return result;
+}
+
 int main(int argc, char **argv)
 { 
 #if QT_VERSION < 0x050000
@@ -373,6 +430,9 @@ int main(int argc, char **argv)
         }
     }
 
+    const bool customAppAndVendorInformation = setup_custom_vendor_information(qobject_cast<QCoreApplication*>(qApp));
+    Q_UNUSED(customAppAndVendorInformation);
+
 #ifdef SPLASHSCREEN
     if (gui && !mustShowHelpAndExit && !mustShowVersionAndExit) {
         QString imgPath = ":/kumir2-launcher/" + QString::fromLatin1(SPLASHSCREEN);
@@ -385,12 +445,21 @@ int main(int argc, char **argv)
 
         f.setPixelSize(12);
         p.setFont(f);
-        QString v = qApp->applicationVersion();
+
+        QString v;
+        if (customAppAndVendorInformation) {
+            v = qApp->property("customAppVersion").toString() + " ";
+            v += "[based on Kumir ";
+        }
+        v = qApp->applicationVersion();
         if (qApp->property("gitHash").isValid()) {
             v += " (GIT "+qApp->property("gitHash").toString()+")";
         }
+        if (customAppAndVendorInformation) {
+            v += "]";
+        }
         int tw = QFontMetrics(f).width(v);
-        int th = QFontMetrics(f).height();
+        int th = QFontMetrics(f).height() * 5;
         int x = img.width() - tw - 8;
         int y = 8;
         p.drawText(x, y, tw, th, 0, v);
@@ -401,7 +470,7 @@ int main(int argc, char **argv)
         qApp->processEvents();
         app->setSplashScreen(splashScreen);
     }
-#endif
+#endif    
     int ret = app->main();
     ExtensionSystem::PluginManager::destroy();
     delete app;

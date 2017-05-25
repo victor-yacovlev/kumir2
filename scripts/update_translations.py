@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 TS_MODULES = {
-        "ExtensionSystem": "src/shared/extensionsystem",
-        "DocBookViewer": "src/shared/docbookviewer",
-        "KumirStdLib": "src/shared/stdlib",
-        "Widgets": "src/shared/widgets",
+        "ExtensionSystem": "src/kumir2-libs/extensionsystem",
+        "DocBookViewer": "src/kumir2-libs/docbookviewer",
+        "KumirStdLib": "src/kumir2-libs/stdlib",
+        "Widgets": "src/kumir2-libs/widgets",
         "ActorPainter": "src/actors/painter",
         "ActorRobot": "src/actors/robot",
         "ActorIsometricRobot": "src/actors/isometricrobot",
-        "Browser": "src/plugins/browser",
+#        "Browser": "src/plugins/browser",
         "CoreGUI": "src/plugins/coregui",
         "Editor": "src/plugins/editor",
         "KumirAnalizer": "src/plugins/kumiranalizer",
