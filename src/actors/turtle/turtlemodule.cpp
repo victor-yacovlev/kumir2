@@ -16,7 +16,7 @@ You should change it corresponding to functionality.
 // Qt includes
 #include <QtCore>
 #include <QtGui>
-
+const int maxBuff=1000;
 namespace ActorTurtle {
 
 
@@ -883,7 +883,7 @@ void TurtleModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
     drawNet();
     CreatePen();
     CurView->setZoom(50);
@@ -912,7 +912,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
         currentState=Shared::PluginInterface::GS_Unlocked;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
-        redrawTimer->start(500);
+        redrawTimer->start(10);
     }
     return "";
 }
@@ -1066,6 +1066,13 @@ mutex.unlock();
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     // CurScene->update();
     mutex.unlock();
+    int bsize=maxBuff;
+    while(bsize>maxBuff-1)
+    {
+        mutex.lock();
+        bsize=CurScene->buffSize();
+        mutex.unlock();
+    }
     
 }
 
@@ -1088,8 +1095,15 @@ mutex.unlock();
     
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
-     CurScene->update();
-    
+   //  CurScene->update();
+    int bsize=maxBuff;
+    while(bsize>maxBuff-1)
+    {
+        mutex.lock();
+        bsize=CurScene->buffSize();
+        mutex.unlock();
+    }
+
 }
 
 /* public slot */ void TurtleModule::runLeft(const qreal angle)
@@ -1326,8 +1340,12 @@ mutex.unlock();
         CurScene->fromBufferToScene();
         CurScene->update();
         CurView->update();
+       
         mutex.unlock();
-        drawNet();
+      //  drawNet();
+        
+        
+       // usleep(10);
     }
     
 } // namespace ActorTurtle
