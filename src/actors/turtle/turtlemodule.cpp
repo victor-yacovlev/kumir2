@@ -942,12 +942,14 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
     usleep(10);
+    CurScene->fromBufferToScene();
     currentState=current;
     CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
     CurView->viewport()->update();
+    
     drawNet();
  
 
