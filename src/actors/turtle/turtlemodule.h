@@ -173,12 +173,18 @@ namespace ActorTurtle {
             
         }
         void fromBufferToScene()
-        {
-            while(!itemsBuffer.isEmpty())addItem(itemsBuffer.takeFirst());
+        {   QGraphicsItemGroup *buff=createItemGroup(itemsBuffer);
+            buff->setZValue(90);
+            addItem(buff);
+            clearBuffer();
         }
         void clearBuffer()
         {
             itemsBuffer.clear();
+        }
+        int buffSize() 
+        {
+            return itemsBuffer.count();
         }
         void DestroyNet();
         void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
