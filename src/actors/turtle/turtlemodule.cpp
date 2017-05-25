@@ -630,11 +630,11 @@ static const qreal MAX_ZOOM = 1000000;
     };
 void TurtleView::paintEvent(QPaintEvent *event)
     {
-        dr_mutex->lock();
+        //dr_mutex->lock();
      
             QGraphicsView::paintEvent(event);
             event->accept();
-            dr_mutex->unlock();
+         //   dr_mutex->unlock();
 
     }
  void TurtleView::resizeEvent ( QResizeEvent * event )
@@ -1322,11 +1322,11 @@ mutex.unlock();
     {
        
         if (currentState!=Shared::PluginInterface::GS_Running)return;
-    //   mutex.lock();
+        mutex.lock();
         CurScene->fromBufferToScene();
         CurScene->update();
         CurView->update();
-      //  mutex.unlock();
+        mutex.unlock();
         drawNet();
     }
     
