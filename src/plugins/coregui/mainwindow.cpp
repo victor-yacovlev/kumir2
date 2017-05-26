@@ -854,6 +854,9 @@ void MainWindow::handleTabTitleChanged()
 
 QString MainWindow::applicationTitle() const
 {
+    if (qApp->property("customAppName").isValid()) {
+        return qApp->property("customAppName").toString();
+    }
     QString appName = tr("Kumir");
     using namespace Shared;
     using namespace ExtensionSystem;
