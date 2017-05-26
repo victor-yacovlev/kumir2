@@ -56,7 +56,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &configurationArgument
 {
     QLocale::Language language = QLocale::Russian;
 
-    Analizer::setModuleAlwaysAvailable(QString::fromUtf8("Стандартные функции"));
+//    Analizer::setModuleAlwaysAvailable(QString::fromUtf8("Стандартные функции"));
 
     Q_FOREACH (const QString &arg, configurationArguments) {
         if (arg.startsWith("language=")) {
@@ -68,7 +68,7 @@ QString KumirAnalizerPlugin::initialize(const QStringList &configurationArgument
             }
         }
         else if (arg.startsWith("preload=")) {
-            const QString modname = arg.mid(8);
+            const QByteArray modname = arg.mid(8).toLatin1();
             Analizer::setModuleAlwaysAvailable(modname);
         }
     }

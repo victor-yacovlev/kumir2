@@ -4,6 +4,8 @@
 #include "pdautomata.h"
 #include "syntaxanalizer.h"
 #include <kumir2-libs/errormessages/errormessages.h>
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/actorinterface.h>
 #include "kumiranalizerplugin.h"
 #include "stdlibmodules.h"
 
@@ -23,14 +25,22 @@ void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Lang
     Analizer::_NativeLanguage = language;
 }
 
-void Analizer::setModuleAlwaysAvailable(const QString &moduleName)
+void Analizer::setModuleAlwaysAvailable(const QByteArray &moduleName)
 {
-    if (moduleName==QString::fromLatin1("Files"))
+    if (moduleName=="Files")
         Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Файлы"));
-    if (moduleName==QString::fromLatin1("Strings"))
+    else if (moduleName=="Strings")
         Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Строки"));
-    if (moduleName==QString::fromLatin1("Keyboard"))
+    else if (moduleName=="Keyboard")
         Analizer::_AlwaysAvailableModulesName.append(QString::fromUtf8("Клавиатура"));
+    else {
+        QList<ActorInterface*> actors = ExtensionSystem::PluginManager::instance()->findPlugins<ActorInterface>();
+        Q_FOREACH(ActorInterface *actor, actors) {
+            if(moduleName==actor->asciiModuleName()) {
+                Analizer::_AlwaysAvailableModulesName.append(actor->localizedModuleName(QLocale::Russian));
+            }
+        }
+    }
 }
 
 Analizer::Analizer(KumirAnalizerPlugin * plugin, bool teacherMode)
