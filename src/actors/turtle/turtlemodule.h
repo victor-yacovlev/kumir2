@@ -182,7 +182,7 @@ namespace ActorTurtle {
         {
             itemsBuffer.clear();
         }
-        int buffSize() 
+        int buffSize()
         {
             return itemsBuffer.count();
         }
