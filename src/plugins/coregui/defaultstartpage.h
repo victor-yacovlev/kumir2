@@ -54,6 +54,7 @@ protected Q_SLOTS:
 protected /*fields*/:
     Plugin* _plugin;
     MainWindow* _mainWindow;
+    bool _coursesAvailable;
 
     Ui::DefaultStartPage * ui;
 

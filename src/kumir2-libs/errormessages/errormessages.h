@@ -42,14 +42,14 @@ inline QString _(const char * x, const QString &a, const QString &b, const QStri
 
 class EM_EXPORT ErrorMessages {
 public:
-    static bool loadMessages(const QString &plugin);
+    static bool loadMessages(const QByteArray &pluginName);
 
-    static QString message(const QString &plugin
+    static QString message(const QByteArray &pluginName
                            , const QLocale::Language &language
                            , const QString &key);
 private:
     static QStringList readCSVRow(const QString &line);
-    typedef QPair<QString,QLocale::Language> Context;
+    typedef QPair<QByteArray,QLocale::Language> Context;
     typedef QHash<QString,QString> Database;
     static QMap<Context, Database> database;
 };

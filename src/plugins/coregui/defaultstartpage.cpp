@@ -2,6 +2,8 @@
 #include "plugin.h"
 #include "mainwindow.h"
 #include "ui_defaultstartpage.h"
+#include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2/coursesinterface.h>
 
 #include <QtCore>
 #if QT_VERSION >= 0x050000
@@ -19,6 +21,12 @@ CoreGUI::DefaultStartPage::DefaultStartPage(Plugin* plugin, MainWindow* mw, QWid
 {
     this->setObjectName("startPageRoot");
     ui->setupUi(this);
+
+    CoursesInterface *cs =
+            ExtensionSystem::PluginManager::instance()->findPlugin<CoursesInterface>();
+    _coursesAvailable = 0 != cs;
+
+    ui->coursesBox->setVisible(_coursesAvailable);
 
     relayoutBlocks(this->width());
 
@@ -76,32 +84,45 @@ void CoreGUI::DefaultStartPage::relayoutBlocks(const int width)
     static const int OneCol = 400;
     static const int TwoCol = 780;
 
-    int columns = 3;
-    if (width < OneCol)
-        columns = 1;
-    else if (width < TwoCol)
-        columns = 2;
-
+    int columns;
     int programsRow, programsColumn, coursesRow, coursesColumn, helpRow, helpColumn;
 
-    if (3 == columns) {
-        programsRow = coursesRow = helpRow = 0;
-        programsColumn = 0;
-        coursesColumn = 1;
-        helpColumn = 2;
+    if (_coursesAvailable) {
+        columns = 3;
+        if (width < OneCol)            columns = 1;
+        else if (width < TwoCol)       columns = 2;
+        if (3 == columns) {
+            programsRow = coursesRow = helpRow = 0;
+            programsColumn = 0;
+            coursesColumn = 1;
+            helpColumn = 2;
+        }
+        else if (2 == columns) {
+            programsRow = coursesRow = 0;
+            helpRow = 1;
+            programsColumn = 0;
+            coursesColumn = 1;
+            helpColumn = 0;
+        }
+        else if (1 == columns) {
+            programsColumn = coursesColumn = helpColumn = 0;
+            programsRow = 0;
+            coursesRow = 1;
+            helpRow = 2;
+        }
     }
-    else if (2 == columns) {
-        programsRow = coursesRow = 0;
-        helpRow = 1;
-        programsColumn = 0;
-        coursesColumn = 1;
-        helpColumn = 0;
-    }
-    else if (1 == columns) {
-        programsColumn = coursesColumn = helpColumn = 0;
-        programsRow = 0;
-        coursesRow = 1;
-        helpRow = 2;
+    else {
+        columns = width < OneCol ? 1 : 2;
+        if (2 == columns) {
+            programsRow = helpRow = 0;
+            programsColumn = 0;
+            helpColumn = 1;
+        }
+        else {
+            programsRow = 0;
+            helpRow = 1;
+            programsColumn = helpColumn = 0;
+        }
     }
 
     ui->centralViewLayout->removeWidget(ui->programsBox);
@@ -109,7 +130,9 @@ void CoreGUI::DefaultStartPage::relayoutBlocks(const int width)
     ui->centralViewLayout->removeWidget(ui->headerBox);
 
     ui->centralViewLayout->addWidget(ui->programsBox, programsRow, programsColumn, 1, 1);
-    ui->centralViewLayout->addWidget(ui->coursesBox, coursesRow, coursesColumn, 1, 1);
+    if (_coursesAvailable) {
+        ui->centralViewLayout->addWidget(ui->coursesBox, coursesRow, coursesColumn, 1, 1);
+    }
     ui->centralViewLayout->addWidget(ui->helpBox, helpRow, helpColumn, 1, 1);
 
     updateContents();
@@ -117,8 +140,10 @@ void CoreGUI::DefaultStartPage::relayoutBlocks(const int width)
 
 void CoreGUI::DefaultStartPage::updateContents()
 {
-    updateRecentFiles();
-    updateRecentCourses();
+    updateRecentFiles();    
+    if (_coursesAvailable) {
+        updateRecentCourses();
+    }
     updateHelp();
 }
 
