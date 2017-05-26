@@ -112,6 +112,7 @@ namespace ActorTurtle {
         {return c_scale;};
         void setZoom(double zoom);
         void setNet();//RESIZE NET
+
         bool isNet() const
         {
             return net;
@@ -148,6 +149,9 @@ namespace ActorTurtle {
         QLabel* smallNetLabel;
         
     };
+    
+    
+    
     class TurtleScene
     : public QGraphicsScene
     {
@@ -168,6 +172,20 @@ namespace ActorTurtle {
             texts.clear();
             
         }
+        void fromBufferToScene()
+        {   QGraphicsItemGroup *buff=createItemGroup(itemsBuffer);
+            buff->setZValue(90);
+            addItem(buff);
+            clearBuffer();
+        }
+        void clearBuffer()
+        {
+            itemsBuffer.clear();
+        }
+        int buffSize() 
+        {
+            return itemsBuffer.count();
+        }
         void DestroyNet();
         void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
         
@@ -185,7 +203,8 @@ namespace ActorTurtle {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         TurtleModule* DRAW;
-	QMutex* dr_mutex;
+        QMutex* dr_mutex;
+        QList<QGraphicsItem*> itemsBuffer;
         
         
         

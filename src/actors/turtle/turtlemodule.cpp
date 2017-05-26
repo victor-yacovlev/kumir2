@@ -18,7 +18,7 @@ You should change it corresponding to functionality.
 #include <QtGui>
 
 namespace ActorTurtle {
-
+const int maxBuff=1000;
 
 
 
@@ -171,8 +171,9 @@ static const qreal MAX_ZOOM = 1000000;
         fontMetric=QFontMetricsF(font);
         qDebug()<<"Char Size:"<<fontMetric.boundingRect("OOOXX").width()/5000;
         
-        
-        texts.append(addSimpleText(Text,font));
+        QGraphicsSimpleTextItem* tItem=new QGraphicsSimpleTextItem(Text);
+        tItem->setFont(font);
+        texts.append(tItem);
 //        texts.last()->scale(0.001,0.001);
         texts.last()->setScale(psizeF);
         texts.last()->setPos(from.x(), from.y()-(fontMetric.boundingRect(Text).height()*psizeF));
@@ -183,7 +184,8 @@ static const qreal MAX_ZOOM = 1000000;
     void TurtleScene::addDrawLine(QLineF lineF,QColor color,qreal width)
     {
         if(lineF.length()==0)return;
-        QGraphicsLineItem* line=addLine(lineF);
+        QGraphicsLineItem* line=new QGraphicsLineItem(lineF);
+        //addLine(lineF);
         QPen mp=QPen(QColor(color));
         mp.setWidthF(width);
         mp.setCapStyle(Qt::RoundCap);
@@ -191,8 +193,9 @@ static const qreal MAX_ZOOM = 1000000;
         line->setPen(mp);
         line->setZValue(90);
         lines.append(line);
+        itemsBuffer.append(line);
         
-        
+        //getfromB
         
     }
     void TurtleScene::DestroyNet()
@@ -627,11 +630,11 @@ static const qreal MAX_ZOOM = 1000000;
     };
 void TurtleView::paintEvent(QPaintEvent *event)
     {
-        dr_mutex->lock();
+        //dr_mutex->lock();
      
             QGraphicsView::paintEvent(event);
             event->accept();
-            dr_mutex->unlock();
+         //   dr_mutex->unlock();
 
     }
  void TurtleView::resizeEvent ( QResizeEvent * event )
@@ -880,7 +883,7 @@ void TurtleModule::createGui()
     penColor.a = 255;
     CurView->setDraw(this,&mutex);
     CurView->centerOn(5,-5);
-    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+    CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
     drawNet();
     CreatePen();
     CurView->setZoom(50);
@@ -909,7 +912,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
         currentState=Shared::PluginInterface::GS_Unlocked;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
-        redrawTimer->start(500);
+        redrawTimer->start(10);
     }
     return "";
 }
@@ -939,12 +942,14 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
     usleep(10);
+    CurScene->fromBufferToScene();
     currentState=current;
     CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
     CurView->viewport()->update();
+    
     drawNet();
  
 
@@ -993,6 +998,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
 
 /* public slot */ void TurtleModule::reset()
 {
+    CurScene->clearBuffer();
     mPen->tailUp();
     penIsDrawing=false;
     mPen->setPos(0,0);
@@ -1011,6 +1017,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     CurView->forceRedraw();
     CurView->setZoom(CurView->zoom()*2);
     CurView->setZoom(CurView->zoom()*0.5);
+    
 }
 
 /* public slot */ void TurtleModule::setAnimationEnabled(bool enabled)
@@ -1061,6 +1068,13 @@ mutex.unlock();
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     // CurScene->update();
     mutex.unlock();
+    int bsize=maxBuff;
+    while(bsize>maxBuff-1)
+    {
+        mutex.lock();
+        bsize=CurScene->buffSize();
+        mutex.unlock();
+    }
     
 }
 
@@ -1083,8 +1097,15 @@ mutex.unlock();
     
     if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
-     CurScene->update();
-    
+   //  CurScene->update();
+    int bsize=maxBuff;
+    while(bsize>maxBuff-1)
+    {
+        mutex.lock();
+        bsize=CurScene->buffSize();
+        mutex.unlock();
+    }
+
 }
 
 /* public slot */ void TurtleModule::runLeft(const qreal angle)
@@ -1317,11 +1338,16 @@ mutex.unlock();
     {
        
         if (currentState!=Shared::PluginInterface::GS_Running)return;
-    //   mutex.lock();
-       // CurScene->update();
+        mutex.lock();
+        CurScene->fromBufferToScene();
+        CurScene->update();
         CurView->update();
-      //  mutex.unlock();
-        drawNet();
+       
+        mutex.unlock();
+      //  drawNet();
+        
+        
+       // usleep(10);
     }
     
 } // namespace ActorTurtle
