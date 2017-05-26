@@ -1361,6 +1361,7 @@ namespace ActorRobot {
                                                                    upLeftCorner(row,col).x()+fieldSize,
                                                                    upLeftCorner(row,col).y()),StLine);
         }
+        update();
         wasEdit=true;
     }
     
@@ -1380,6 +1381,7 @@ namespace ActorRobot {
                                                                      upLeftCorner(row,col).x()+fieldSize,
                                                                      upLeftCorner(row,col).y()+fieldSize),StLine);
         }
+        update();
         wasEdit=true;
     }
     
@@ -3026,9 +3028,9 @@ namespace ActorRobot {
         update();
         QGraphicsScene::update();
         views().first()->update();
-       
+        views().first()->viewport()->update();
         wasEdit=true;
-//        if(wasEdit)emit was_edit();
+        
     };
     void RoboField::mouseReleaseEvent ( QGraphicsSceneMouseEvent * mouseEvent )
     {
