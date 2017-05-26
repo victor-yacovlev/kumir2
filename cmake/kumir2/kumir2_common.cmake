@@ -256,8 +256,10 @@ function(kumir2_add_actor)
     set(PLUGIN_NAME "Actor${PARSED_ARGS_NAME}")
     if(EXISTS "${CMAKE_SOURCE_DIR}/scripts/gen_actor_source.py")
         set(GEN_ACTOR_SOURCE_SCRIPT "${CMAKE_SOURCE_DIR}/scripts/gen_actor_source.py")
+        set(PLUGIN_NAME_PREFIX "Actor")
     else()
         set(GEN_ACTOR_SOURCE_SCRIPT "${KUMIR2_SDK_SCRIPTS_DIR}/gen_actor_source.py")
+        set(PLUGIN_NAME_PREFIX "AddonActor")
     endif()
     set(MOC_PARAMS)
     if(${USE_QT} GREATER 4)
@@ -286,7 +288,7 @@ function(kumir2_add_actor)
     list(APPEND MOC_SOURCES_GENERATED ${QT_MOC_OUT_FILE_NAME})
 
     kumir2_add_plugin(
-        NAME        "Actor${PARSED_ARGS_NAME}"
+        NAME        "${PLUGIN_NAME_PREFIX}${PARSED_ARGS_NAME}"
         SOURCES     ${PARSED_ARGS_SOURCES}
                     ${SOURCES_GENERATED}
                     ${MOC_SOURCES_GENERATED}
