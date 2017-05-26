@@ -1,5 +1,6 @@
 #include "errormessages.h"
 #include <kumir2-libs/extensionsystem/pluginmanager.h>
+#include <kumir2-libs/extensionsystem/kplugin.h>
 
 #include <QtCore>
 
@@ -44,10 +45,12 @@ QStringList ErrorMessages::readCSVRow(const QString &line)
     return result;
 }
 
-bool ErrorMessages::loadMessages(const QString &plugin)
+bool ErrorMessages::loadMessages(const QByteArray &pluginName)
 {
-    const QString fileName = ExtensionSystem::PluginManager::instance()->sharePath() +
-            + "/" + plugin.toLower() + "/messages.csv";
+    ExtensionSystem::KPlugin* kPlugin = ExtensionSystem::PluginManager::instance()->loadedPlugin(pluginName);
+    const QString fileName = kPlugin->myResourcesDir().absoluteFilePath("messages.csv");
+//    const QString fileName = ExtensionSystem::PluginManager::instance()->sharePath() +
+//            + "/" + pluginName.toLower() + "/messages.csv";
     QFile f(fileName);
 
     if (f.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -58,7 +61,7 @@ bool ErrorMessages::loadMessages(const QString &plugin)
         QList<Context> contexts;
         for (int i=0; i<languages.size(); i++) {
             QLocale loc(languages[i]);
-            contexts << Context(plugin,loc.language());
+            contexts << Context(pluginName,loc.language());
         }
         if (contexts.isEmpty()) {
             qWarning() << fileName+": file data is empty or not valid CSV-file";
@@ -88,11 +91,11 @@ bool ErrorMessages::loadMessages(const QString &plugin)
     return true;
 }
 
-QString ErrorMessages::message(const QString &plugin
+QString ErrorMessages::message(const QByteArray &pluginName
                        , const QLocale::Language &language
                        , const QString &key)
 {
-    Context context(plugin, language);
+    Context context(pluginName, language);
     static QRegExp arg1("\\\\1=\\{(\\S*)\\}");
     arg1.setMinimal(true);
     static QRegExp arg2("\\\\2=\\{(\\S*)\\}");
