@@ -3613,7 +3613,7 @@ def create_cmakelists_txt(module, json_file_name, target_dir=""):
     substitutions = {
         "projectName": module.get_module_cpp_namespace(),
         "moduleFileName": module.get_module_cpp_class_name().lower(),
-        "actorName": module.name
+        "actorName": module.name.data["ascii"]
     }
     data = _render_template(r"""
 project($projectName)
@@ -3632,8 +3632,6 @@ set(MOC_HEADERS
 )
 
 kumir2_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
-
-handleTranslation($specFileName)
 
 kumir2_add_actor(
     NAME        $actorName
