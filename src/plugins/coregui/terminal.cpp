@@ -466,6 +466,11 @@ void Term::editLast()
 void Term::setTerminalFont(const QFont &font)
 {
     plane_->setFont(font);
+    Q_FOREACH(OneSession * s, sessions_) {
+        s->setFont(font);
+        s->relayout(plane_->width(), 0, true);
+    }
+    plane_->update();
 }
 
 } // namespace Terminal

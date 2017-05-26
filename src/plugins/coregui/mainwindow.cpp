@@ -1207,6 +1207,13 @@ void MainWindow::enterPresentationMode()
                                                          Plugin::PresentationModeMainFontSizeDefaultValue).toInt();
         m_plugin->updateAppFontSize(mainFontSize);
     }
+    if (m_plugin->terminal_ && m_plugin->plugin_editor) {
+        QFont fnt = m_plugin->plugin_editor->defaultEditorFont();
+        int editorFontSize = m_plugin->mySettings()->value(Plugin::PresentationModeEditorFontSizeKey,
+                                                           Plugin::PresentationModeEditorFontSizeDefaultValue).toInt();
+        fnt.setPointSize(editorFontSize);
+        m_plugin->terminal_->setTerminalFont(fnt);
+    }
 }
 
 void MainWindow::leavePresentationMode()
