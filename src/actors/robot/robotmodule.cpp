@@ -4448,6 +4448,7 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     }
     if (runtimeParameters.value('f').isValid())qDebug()<<"LOAD FIELD ERR CODE:"<<field->loadFromFile(runtimeParameters.value('f').toString());
     field->setColorFromSett();
+    reloadSettings(robotSettings(), QStringList());
     return "";
 }
 
