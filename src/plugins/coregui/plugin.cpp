@@ -451,9 +451,13 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
         if (!actor->localizedModuleName(QLocale::Russian).startsWith("_") && QFile(actorHelpFile).exists()) {
             actorHelpFiles.append(QUrl::fromLocalFile(actorHelpFile));
         }
+        QList<QMenu*> actorMenus = actor->moduleMenus();
+        foreach (QMenu* menu, actorMenus) {
+            menu->setObjectName("menu-Actor" + QString::fromLatin1(Shared::actorCanonicalName(actor->asciiModuleName())));
+            mainWindow_->addMenuBeforeHelp(menu);
+        }
         if (actor->mainWidget()) {
             QWidget * actorWidget = actor->mainWidget();
-            QList<QMenu*> actorMenus = actor->moduleMenus();
             const QString iconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->mainIconName()+".png";
             const QString smallIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->mainIconName()+"_22x22.png";
             QIcon mainIcon = QIcon(iconFileName);
@@ -512,66 +516,58 @@ QString Plugin::initialize(const QStringList & parameters, const ExtensionSystem
                 showActorProxy->setText(tr("Show actor window"));
                 actorMainMenu->addSeparator();
                 actorMainMenu->addAction(showActorProxy);
-            }
-
-            foreach (QMenu* menu, actorMenus) {
-                menu->setObjectName("menu-Actor" + QString::fromLatin1(Shared::actorCanonicalName(actor->asciiModuleName())));
-                mainWindow_->addMenuBeforeHelp(menu);
-            }
-
-            if (actor->pultWidget()) {
-                const QString iconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+".png";
-                const QString smallIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
-                QIcon pultIcon = QIcon(iconFileName);
-                if (QFile::exists(smallIconFileName))
-                    pultIcon.addFile(smallIconFileName, QSize(22,22));
-                QIcon themeProvidedIcon = Widgets::IconProvider::self()->iconForName(
-                            QString::fromLatin1("window-")+
-                            QString::fromLatin1(actor->asciiModuleName().toLower())+
-                            QString::fromLatin1("-control")
-                            );
-
-                if (!themeProvidedIcon.isNull()) {
-                    pultIcon = themeProvidedIcon;
-                }
-
-                Widgets::SecondaryWindow * pultWindow =
-                        Widgets::SecondaryWindow::createSecondaryWindow(
-                            actor->pultWidget(),
-                            actorName + " - " + tr("Remote Control"),
-                            pultIcon,
-                            mainWindow_,
-                            nullptr,
-                            o->pluginSpec().name + "Pult",
-                            false
-                            );
-                secondaryWindows_ << pultWindow;
-
-                QAction * showPult =
-                        mainWindow_->ui->menuWindow->addAction(
-                            actorName + " - " + tr("Remote Control"),
-                            pultWindow,
-                            SLOT(activate())
-                            );
-                showPult->setObjectName("window-control-" + actorObjectName);
-
-                mainWindow_->gr_otherActions->addAction(showPult);
-
-                if (!actor->pultIconName().isEmpty()) {
-                    showPult->setIcon(pultIcon);
-                }
-
-                if (actor->moduleMenus().size() > 0) {
-                    QMenu * actorMainMenu = actor->moduleMenus().first();
-                    Widgets::ActionProxy *showRCProxy =
-                            new Widgets::ActionProxy(showPult, actorMainMenu);
-                    showRCProxy->setText(tr("Show actor control"));
-                    actorMainMenu->addAction(showRCProxy);
-                }
-            }
-
+            }            
         }
+        if (actor->pultWidget()) {
+            const QString iconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+".png";
+            const QString smallIconFileName = ExtensionSystem::PluginManager::instance()->sharePath()+"/icons/actors/"+actor->pultIconName()+"_22x22.png";
+            QIcon pultIcon = QIcon(iconFileName);
+            if (QFile::exists(smallIconFileName))
+                pultIcon.addFile(smallIconFileName, QSize(22,22));
+            QIcon themeProvidedIcon = Widgets::IconProvider::self()->iconForName(
+                        QString::fromLatin1("window-")+
+                        QString::fromLatin1(actor->asciiModuleName().toLower())+
+                        QString::fromLatin1("-control")
+                        );
 
+            if (!themeProvidedIcon.isNull()) {
+                pultIcon = themeProvidedIcon;
+            }
+
+            Widgets::SecondaryWindow * pultWindow =
+                    Widgets::SecondaryWindow::createSecondaryWindow(
+                        actor->pultWidget(),
+                        actorName + " - " + tr("Remote Control"),
+                        pultIcon,
+                        mainWindow_,
+                        nullptr,
+                        o->pluginSpec().name + "Pult",
+                        false
+                        );
+            secondaryWindows_ << pultWindow;
+
+            QAction * showPult =
+                    mainWindow_->ui->menuWindow->addAction(
+                        actorName + " - " + tr("Remote Control"),
+                        pultWindow,
+                        SLOT(activate())
+                        );
+            showPult->setObjectName("window-control-" + actorObjectName);
+
+            mainWindow_->gr_otherActions->addAction(showPult);
+
+            if (!actor->pultIconName().isEmpty()) {
+                showPult->setIcon(pultIcon);
+            }
+
+            if (actor->moduleMenus().size() > 0) {
+                QMenu * actorMainMenu = actor->moduleMenus().first();
+                Widgets::ActionProxy *showRCProxy =
+                        new Widgets::ActionProxy(showPult, actorMainMenu);
+                showRCProxy->setText(tr("Show actor control"));
+                actorMainMenu->addAction(showRCProxy);
+            }
+        }
     }
     helpViewer_->addDocuments(tr("Actor's References"), actorHelpFiles);
 
