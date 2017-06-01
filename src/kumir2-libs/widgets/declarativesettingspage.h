@@ -24,7 +24,7 @@ class WIDGETS_EXPORT DeclarativeSettingsPage
     friend class DeclarativeSettingsPageImpl;
     Q_OBJECT
 public:
-    enum Type { Integer, Double, String, Char, Bool, Color, Font };
+    enum Type { Integer, Double, String, Char, Bool, Color, Font, Choice };
 
     struct Entry {
         Type type;
@@ -32,6 +32,7 @@ public:
         QVariant defaultValue;
         QVariant minimumValue;
         QVariant maximumValue;
+        QStringList items;
         qreal displayOrder;
         QString key;
 

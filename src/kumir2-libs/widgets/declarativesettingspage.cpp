@@ -37,6 +37,9 @@ DeclarativeSettingsPage::DeclarativeSettingsPage(
         else if (entry.type==String) {
             pImpl_->addStringField(key, entry);
         }
+        else if (entry.type==Choice) {
+            pImpl_->addChoiceField(key, entry);
+        }
         else {
             qFatal("Not implemented");
         }

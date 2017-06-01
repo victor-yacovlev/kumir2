@@ -194,7 +194,8 @@ SETTINGS_TYPES = {
     "char": "Char",
     "bool": "Bool",
     "color": "Color",
-    "font": "Font"
+    "font": "Font",
+    "choice": "Choice",
 }
 
 
@@ -1099,6 +1100,10 @@ class SettingsEntry:
             self._order = json_entry["order"]
         else:
             self._order = 99999999
+        if "items" in json_entry:
+            self._items = json_entry["items"]
+        else:
+            self._items = None
 
     def get_entry_cpp_implementation(self, map_to_add):
         """
@@ -1128,6 +1133,10 @@ class SettingsEntry:
             maximum = "QVariant::Invalid"
         else:
             maximum = unicode(self._maximum)
+        items = "QStringList()";
+        if self._items:
+            for item in self._items:
+                items += " << QString::fromUtf8(\"" + item + "\")"
         return """
 {
     Widgets::DeclarativeSettingsPage::Entry entry;
@@ -1136,10 +1145,11 @@ class SettingsEntry:
     entry.defaultValue = %s;
     entry.minimumValue = %s;
     entry.maximumValue = %s;
+    entry.items = %s;
     entry.displayOrder = %s;
     %s["%s"] = entry;
 }
-        """ % (title, typee, default, minimum, maximum, self._order, map_to_add, self._key)
+        """ % (title, typee, default, minimum, maximum, items, self._order, map_to_add, self._key)
 
 
 class Settings:

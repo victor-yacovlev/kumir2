@@ -1,5 +1,11 @@
 #include "declarativesettingspage_impl.h"
 
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QLineEdit>
+#include <QSpinBox>
+
 namespace Widgets {
 
 DeclarativeSettingsPageImpl::DeclarativeSettingsPageImpl(DeclarativeSettingsPage * parent)
@@ -53,6 +59,17 @@ void DeclarativeSettingsPageImpl::init()
             if (control)
                 control->setChecked(value);
         }
+        else if (entry.type==DeclarativeSettingsPage::Choice) {
+            QComboBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QComboBox") {
+                control = qobject_cast<QComboBox*>(widgets_[key]);
+            }
+            if (control) {
+                const QString defaultText = control->itemText(entry.defaultValue.toInt());
+                const QString value = settings_->value(key, defaultText).toString();
+                control->setCurrentText(value);
+            }
+        }
         else {
             qFatal("Not implemented");
         }
@@ -103,6 +120,15 @@ void DeclarativeSettingsPageImpl::resetToDefaults()
             if (control)
                 control->setChecked(value);
         }
+        else if (entry.type==DeclarativeSettingsPage::Choice) {
+            QComboBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QComboBox") {
+                control = qobject_cast<QComboBox*>(widgets_[key]);
+            }
+            if (control) {
+                control->setCurrentIndex(entry.defaultValue.toInt());
+            }
+        }
         else {
             qFatal("Not implemented");
         }
@@ -149,6 +175,14 @@ void DeclarativeSettingsPageImpl::accept()
             if (control)
                 settings_->setValue(key, control->isChecked());
         }
+        else if (entry.type==DeclarativeSettingsPage::Choice) {
+            QComboBox * control = 0;
+            if (widgets_.contains(key) && QString(widgets_[key]->metaObject()->className())=="QComboBox") {
+                control = qobject_cast<QComboBox*>(widgets_[key]);
+            }
+            if (control)
+                settings_->setValue(key, control->currentText());
+        }
         else {
             qFatal("Not implemented");
         }
@@ -188,6 +222,16 @@ void DeclarativeSettingsPageImpl::addStringField(const QString &key, const Decla
     QLineEdit * control = new QLineEdit(pClass_);
     if (entry.defaultValue.isValid())
         control->setText(entry.defaultValue.toString());
+    widgets_[key] = control;
+    addField(entry.title, control);
+}
+
+void DeclarativeSettingsPageImpl::addChoiceField(const QString &key, const DeclarativeSettingsPage::Entry &entry)
+{
+    QComboBox * control = new QComboBox(pClass_);
+    control->addItems(entry.items);
+    if (entry.defaultValue.isValid())
+        control->setCurrentIndex(entry.defaultValue.toInt());
     widgets_[key] = control;
     addField(entry.title, control);
 }

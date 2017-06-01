@@ -28,6 +28,7 @@ private /*methods*/:
     void addRealField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addBoolField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addStringField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
+    void addChoiceField(const QString & key, const DeclarativeSettingsPage::Entry & entry);
     void addField(const QString & labelText, QWidget * controlWidget);
        
 private slots:
