@@ -67,7 +67,10 @@ void DeclarativeSettingsPageImpl::init()
             if (control) {
                 const QString defaultText = control->itemText(entry.defaultValue.toInt());
                 const QString value = settings_->value(key, defaultText).toString();
-                control->setCurrentText(value);
+                int index = control->findText(value);
+                if (-1!=index) {
+                    control->setCurrentIndex(index);
+                }
             }
         }
         else {
