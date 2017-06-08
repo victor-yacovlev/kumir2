@@ -36,7 +36,7 @@ namespace ActorTurtle {
     public:
         TurtlePen(QGraphicsItem *parent, const QString svgFileName): QGraphicsItem(parent)
         {
-            turtle=new QGraphicsSvgItem(svgFileName);
+            turtle=new QGraphicsSvgItem(svgFileName,parent);
 //            turtle->scale(0.01,0.01);
 
             // See Qt documentation!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -50,7 +50,12 @@ namespace ActorTurtle {
             tailColor=QColor(Qt::black);
             tail=mat.map(tail);
             mX=30;mY=30;
+            mPosX=0;
+            mPosY=0;
             tailup=false;
+            turtleImage=new QImage(55,60,QImage::Format_ARGB32);
+            QPainter p(turtleImage);
+            turtle->renderer()->render(&p,boundingRect());
         }
         void setTailColor(const QColor  color)
         {
@@ -76,7 +81,6 @@ namespace ActorTurtle {
         {
             turtle->setVisible(vis);
             turtle->update();
-            turtle->renderer();
            
         }
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -88,16 +92,36 @@ namespace ActorTurtle {
                 painter->drawPath(tail);
                 qDebug()<<"TPE";
             }
-            if(turtle->isVisible())turtle->renderer()->render(painter,QRectF(-15,-30,30,30));
+            
+           //painter->drawImage( boundingRect(),turtleImage->copy());
+        if(turtle->isVisible())turtle->renderer()->render(painter,boundingRect());
+            if(! turtle->renderer()->isValid() ) qDebug()<<"BAD SVG RENDERER!!";
         
         }
         
+        void resetPen()
+        {
+            mPosX = 0;
+            mPosY = 0;
+        };
+        
+        void movePen(qreal dx,qreal dy)
+        {
+            mPosX +=dx;
+            mPosY += dy;
+        };
+        QPointF penPos()
+        {
+            return QPointF(mPosX,mPosY);
+        }
     private:
         qreal mX,mY;
         QGraphicsSvgItem* turtle;
+        QImage* turtleImage;
         QPainterPath tail;
         QColor tailColor;
         bool tailup;
+        qreal mPosX,mPosY;
     };
     
     class TurtleView
@@ -273,6 +297,7 @@ public /* methods */:
     {
         return CurView;
     }
+    void updateTurtle();
     public slots:
     void changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current);
     void loadActorData(QIODevice * source);

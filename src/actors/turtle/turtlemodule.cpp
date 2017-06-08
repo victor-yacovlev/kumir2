@@ -943,8 +943,12 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     Q_UNUSED(current);  // Remove this line on implementation
     usleep(10);
     CurScene->fromBufferToScene();
+    CurScene->fromBufferToScene();
+    mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
+    mPen->setPos(mPen->penPos());
+    mPen->show();
     currentState=current;
-    CurView->setViewportUpdateMode (QGraphicsView::FullViewportUpdate);
+    CurView->setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
     CurView->forceRedraw();
     CurScene->update(CurScene->sceneRect());
     CurView->repaint();
@@ -1002,6 +1006,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
     mPen->tailUp();
     penIsDrawing=false;
     mPen->setPos(0,0);
+    mPen->resetPen();
     mPen->setRotation(0);
     curAngle=0;
     mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
@@ -1051,29 +1056,32 @@ mutex.unlock();
 {
    // if(animation)msleep(50);
      mutex.lock();
-    qreal oldX=mPen->pos().x();
-    qreal oldY=mPen->pos().y();
+    qreal oldX=mPen->penPos().x();
+    qreal oldY=mPen->penPos().y();
     qreal moveX=dist*sin(curAngle*(Pi/180));
     qreal moveY=-dist*cos(curAngle*(Pi/180));
     
     qreal curX,curY;
-    curX=mPen->pos().x()+dist*sin(curAngle*(Pi/180));
-    curY=mPen->pos().y()-dist*cos(curAngle*(Pi/180));
+    curX=mPen->penPos().x()+dist*sin(curAngle*(Pi/180));
+    curY=mPen->penPos().y()-dist*cos(curAngle*(Pi/180));
     
-    mPen->moveBy(moveX,moveY);
+   // mPen->moveBy(moveX,moveY);
+    mPen->movePen(moveX, moveY);
     //t2->moveBy(moveX,moveY);
     //t3->moveBy(moveX,moveY);
     
     
-    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
+    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->penPos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     // CurScene->update();
     mutex.unlock();
     int bsize=maxBuff;
     while(bsize>maxBuff-1)
     {
+        usleep(1);
         mutex.lock();
         bsize=CurScene->buffSize();
         mutex.unlock();
+        
     }
     
 }
@@ -1081,29 +1089,30 @@ mutex.unlock();
 /* public slot */ void TurtleModule::runBack(const qreal dist)
 {
     mutex.lock();
-    qreal oldX=mPen->pos().x();
-    qreal oldY=mPen->pos().y();
+    qreal oldX=mPen->penPos().x();
+    qreal oldY=mPen->penPos().y();
     qreal moveX=-dist*sin(curAngle*(Pi/180));
     qreal moveY=dist*cos(curAngle*(Pi/180));
     
     qreal curX,curY;
-    curX=mPen->pos().x()-dist*sin(curAngle*(Pi/180));
-    curY=mPen->pos().y()+dist*cos(curAngle*(Pi/180));
+    curX=mPen->penPos().x()-dist*sin(curAngle*(Pi/180));
+    curY=mPen->penPos().y()+dist*cos(curAngle*(Pi/180));
     
-    mPen->moveBy(moveX,moveY);
+    mPen->movePen(moveX,moveY);
     //t2->moveBy(moveX,moveY);
     //t3->moveBy(moveX,moveY);
     
     
-    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->pos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
+    if(!mPen->isTailUp()) CurScene->addDrawLine(QLineF(QPointF(oldX,oldY),mPen->penPos()), QColor(penColor.r, penColor.g, penColor.b, penColor.a),mySettings()->value("LineWidth",4).toFloat());
     mutex.unlock();
    //  CurScene->update();
     int bsize=maxBuff;
     while(bsize>maxBuff-1)
-    {
+    {   usleep(1);
         mutex.lock();
         bsize=CurScene->buffSize();
         mutex.unlock();
+        
     }
 
 }
@@ -1115,11 +1124,11 @@ mutex.unlock();
    curAngle=curAngle-angle;
     if(curAngle<0)curAngle=360+curAngle;
     if(curAngle>360)curAngle=curAngle-360;
-    mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
+
     
    // Turtle->rotate();
     mutex.unlock();
-    CurScene->update();
+   // CurScene->update();
     
 }
 
@@ -1130,11 +1139,11 @@ mutex.unlock();
     curAngle=curAngle+angle;
     if(curAngle<0)curAngle=360+curAngle;
     if(curAngle>360)curAngle=curAngle-360;
-    mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
+    //mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
     
     // Turtle->rotate();
     mutex.unlock();
-    CurScene->update();
+    //CurScene->update();
     
 }
     /* public slot */ void TurtleModule::runSetPenColor(const Color& color)
@@ -1334,15 +1343,22 @@ mutex.unlock();
         CurView->update();
         CurView->forceRedraw();
     };
+    void TurtleModule::updateTurtle()
+    {
+        CurScene->fromBufferToScene();
+        mPen->setTransform(QTransform().translate(AncX*CurView->zoom(), AncY*CurView->zoom()).rotate(curAngle).translate(-AncX*CurView->zoom(), -AncY*CurView->zoom()));
+        mPen->setPos(mPen->penPos());
+        mPen->show();
+        CurScene->update();
+        CurView->update();
+    }
     void TurtleModule::redraw()
     {
        
         if (currentState!=Shared::PluginInterface::GS_Running)return;
         mutex.lock();
-        CurScene->fromBufferToScene();
-        CurScene->update();
-        CurView->update();
-       
+  
+        updateTurtle();
         mutex.unlock();
       //  drawNet();
         

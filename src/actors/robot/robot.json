@@ -220,7 +220,7 @@
 		"WallColor": {
             "order": 4,
 			"type": "color",
-			"default": "#C8C800",
+			"default": "#C8C810",
 			"title": {"ascii": "Wall color", "ru_RU": "Цвет стен"}
 		},
 		"NormalColor": {

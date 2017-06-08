@@ -336,7 +336,7 @@ void TurtlePult::Up()
 
     turtleObj->runForward(stepVal->value ());
     Logger->appendText(QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("вперед(")+QString::number(stepVal->value ())+")","OK");
-    turtleObj->getCurView()->forceRedraw();
+    turtleObj->updateTurtle();
 
 
 };
@@ -347,14 +347,14 @@ void TurtlePult::Down()
     turtleObj->runBack(stepVal->value ());
 
     Logger->appendText(QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")\n",QString::fromUtf8("назад(")+QString::number(stepVal->value ())+")","OK");
-    turtleObj->getCurView()->forceRedraw();
+    turtleObj->updateTurtle();
 
 };
 void TurtlePult::Left()
 {
  turtleObj->runLeft(gradVal->value ());
  Logger->appendText(QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("влево(")+QString::number(gradVal->value ())+")","OK");
-turtleObj->getCurView()->forceRedraw();
+turtleObj->updateTurtle();
 
 };
 void TurtlePult::Right()
@@ -363,7 +363,7 @@ void TurtlePult::Right()
      turtleObj->runRight(gradVal->value ());
      Logger->appendText(QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")\n",QString::fromUtf8("вправо(")+QString::number(gradVal->value ())+")","OK");
   
-    turtleObj->getCurView()->forceRedraw();
+    turtleObj->updateTurtle();
 };
 
 void TurtlePult::SwStena()

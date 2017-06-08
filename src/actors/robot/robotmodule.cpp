@@ -5047,7 +5047,9 @@ void RobotModule::editEnv()
         field->setMode(NEDIT_MODE);
         startField->setModeFlag(NORMAL_MODE);
         
-        setWindowSize(); 
+        setWindowSize();
+        reloadSettings(robotSettings(), QStringList());
+        field->update();
     };  
 void RobotModule::createEmptyField(int rows,int cols)
     {
