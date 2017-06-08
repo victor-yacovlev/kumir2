@@ -105,7 +105,7 @@ namespace ActorDraw {
             for(int i=0;i<texts.count();i++)
                 removeItem(texts.at(i));
             texts.clear();
-            
+            clearBuffer();
         }
         void upd()
         {
@@ -118,6 +118,20 @@ namespace ActorDraw {
         QRectF getRect();
         int saveToFile(const QString& p_FileName);
         int loadFromFile(const QString& p_FileName);
+        void fromBufferToScene()
+        {   QGraphicsItemGroup *buff=createItemGroup(itemsBuffer);
+            buff->setZValue(90);
+            addItem(buff);
+            clearBuffer();
+        }
+        void clearBuffer()
+        {
+            itemsBuffer.clear();
+        }
+        int buffSize()
+        {
+            return itemsBuffer.count();
+        }
     protected:
        // void resizeEvent ( QResizeEvent * event );
       //  bool eventFilter(QObject *object, QEvent *event);
@@ -129,7 +143,8 @@ namespace ActorDraw {
         QList<QGraphicsLineItem*> linesDubl;//Базовый чертеж
         QList<QGraphicsSimpleTextItem*> texts;
         DrawModule* DRAW;
-	QMutex* dr_mutex;
+        QList<QGraphicsItem*> itemsBuffer;
+        QMutex* dr_mutex;
         
         
        
@@ -241,7 +256,7 @@ public slots:
     void openFile();
     void saveFile();
     void redraw();
-
+    void updateDraw();
 
     /* ========= CLASS PRIVATE ========= */
 private:
@@ -265,6 +280,8 @@ private:
     QTimer *redrawTimer;
     qreal curAngle;
     qreal AncX,AncY;
+    QPointF curPos;
+    
   
 
 };

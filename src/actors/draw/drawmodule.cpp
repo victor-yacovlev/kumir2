@@ -21,6 +21,7 @@ You should change it corresponding to functionality.
 
 
 namespace ActorDraw {
+    const int maxBuff=1500;
 #define NET_RESERVE 15
 #define KUM_MULTI 50
 
@@ -178,14 +179,14 @@ namespace ActorDraw {
     void DrawScene::addDrawLine(QLineF lineF,QColor color,qreal width)
     {
         if(lineF.length()==0)return;
-        QGraphicsLineItem* line=addLine(lineF);
+        QGraphicsLineItem* line=new QGraphicsLineItem(lineF);
         QPen mp=QPen(QColor(color));
         mp.setWidthF(width);
         mp.setCosmetic(true);
         line->setPen(mp);
         line->setZValue(90);
         lines.append(line);
-        
+        itemsBuffer.append(line);
         
         
     }
@@ -820,6 +821,7 @@ DrawModule::DrawModule(ExtensionSystem::KPlugin * parent)
 {         
     CurView = 0;
     firstShow=true;
+    curPos=QPointF(0,0);
 }
  void DrawModule::handleGuiReady()
     {
@@ -898,7 +900,7 @@ QString DrawModule::initialize(const QStringList &configurationParameters, const
         animate=false;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
-        redrawTimer->start(500);
+        redrawTimer->start(250);
     }
     return "";
 }
@@ -979,9 +981,10 @@ void DrawModule::showNavigator(bool state)
     using namespace ExtensionSystem;  // not to write "ExtensionSystem::" each time in this method scope
     Q_UNUSED(old);  // Remove this line on implementation
     Q_UNUSED(current);  // Remove this line on implementation
-  
+    updateDraw();
     redraw();
-  
+    currentState=current;
+    CurView->setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
    // if(current==GlobalState::GS_Running)
    // {
       //  redrawTimer->start(500);
@@ -1042,6 +1045,8 @@ void DrawModule::showNavigator(bool state)
     CurView->forceRedraw();
     CurView->setZoom(CurView->zoom()*2);
     CurView->setZoom(CurView->zoom()*0.5);
+    curPos=QPointF(0,0);
+    
 }
 
 /* public slot */ void DrawModule::setAnimationEnabled(bool enabled)
@@ -1093,6 +1098,7 @@ void DrawModule::showNavigator(bool state)
 
 /* public slot */ void DrawModule::runMoveTo(const qreal x, const qreal y)
 {
+    int curBuffSize=0;
     mutex.lock();
     QPointF start=mPen->pos();
     mPen->setPos(x, -y);
@@ -1103,8 +1109,16 @@ void DrawModule::showNavigator(bool state)
     //CurView->resetCachedContent();
     //CurView->update();
    // if(animate)redrawPicture();
-    
-    mutex.unlock();
+    curBuffSize=CurScene->buffSize();
+   mutex.unlock();
+    if(curBuffSize>maxBuff-1)
+    {
+        msleep(3);
+        mutex.lock();
+        curBuffSize=CurScene->buffSize();
+        mutex.unlock();
+        
+    }
 // msleep(10);
 }
 
@@ -1112,6 +1126,7 @@ void DrawModule::showNavigator(bool state)
 {
     /* алг сместиться на вектор(вещ dX, вещ dY) */
     // TODO implement me
+    int curBuffSize=0;
     mutex.lock();
     QPointF start=mPen->pos();
     mPen->moveBy(dX, -dY);
@@ -1121,9 +1136,16 @@ void DrawModule::showNavigator(bool state)
         }
     //CurView->update();
      //if(animate)redrawPicture();
-    
+    curBuffSize=CurScene->buffSize();
     mutex.unlock();
-    msleep(1);
+    if(curBuffSize>maxBuff-1)
+    {
+        msleep(3);
+        mutex.lock();
+        curBuffSize=CurScene->buffSize();
+        mutex.unlock();
+        
+    }
     
 }
 
@@ -1319,16 +1341,27 @@ void DrawModule::drawNet()
             drawNet();
         }
     }
+void DrawModule::updateDraw()
+    {
+        CurView->setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
+        mutex.lock();
+        
+        CurScene->fromBufferToScene();
+        
+        redrawPicture();
+       
+        mutex.unlock();
+        
+        drawNet();
+        CurView->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+    }
 void DrawModule::redraw()
     {
         if(currentState!=ExtensionSystem::GlobalState::GS_Running)return;
-         mutex.lock();
-        redrawPicture();
+        updateDraw();
+   
         
-        msleep(5);
-       // qApp->processEvents();
-         mutex.unlock();
-        drawNet();
+      
         //qApp->processEvents();
         
     }
