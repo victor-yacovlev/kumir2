@@ -221,7 +221,7 @@ void PainterModule::runSetBrush(const Color& cs)
     QColor c(cs.r, cs.g, cs.b, cs.a);
     brush.setColor(c);
     brush.setStyle(style);
-    transparent = false;
+    transparent = 0 == cs.a;
 }
 
 
@@ -368,10 +368,7 @@ void PainterModule::runDensity(const int value)
         brush.setStyle(Qt::SolidPattern);
     }
     style = brush.style();
-    if (transparent)
-        brush.setStyle(Qt::NoBrush);
-    else
-        brush.setStyle(style);
+    brush.setStyle(style);
 }
 
 
