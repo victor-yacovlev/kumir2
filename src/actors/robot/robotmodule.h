@@ -580,9 +580,11 @@ namespace ActorRobot {
         void openRecent();
         void setWindowSize();
         void copyFromPult(QString log);
-     
+        void getTimer();
+        
     private:
         void createGui();
+        void updateRobot();
         void createEmptyField(int rows,int cols);
         int LoadFromFile(QString p_FileName);
         int SaveToFile(QString p_FileName);
@@ -607,6 +609,9 @@ namespace ActorRobot {
         bool DISPLAY;
         ExtensionSystem::SettingsPtr curSettings;
         ConsoleField* curConsoleField;
+        QMutex mutex;
+        ExtensionSystem::GlobalState currentState;
+        QTimer *redrawTimer;
         
     signals:
         void sendToPultLog(const QVariant &);

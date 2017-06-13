@@ -354,6 +354,7 @@ private:
     qreal AncX,AncY;
     QTimer *redrawTimer;
     TurtlePult * pult;
+    
 
 };
         

@@ -16,7 +16,7 @@ You should change it corresponding to functionality.
 #include <kumir2-libs/extensionsystem/pluginmanager.h>
  //#include <iostream> 
 
-const int AnimTime = 100;
+const int AnimTime = 70;
 namespace ActorRobot {
 
     
@@ -4321,8 +4321,10 @@ void RobotModule::reset()
     void RobotModule::changeGlobalState(ExtensionSystem::GlobalState old, ExtensionSystem::GlobalState current){
         using Shared::PluginInterface;
     qDebug()<<"RobotModuleBase::changeGlobalState";
+        view->setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
         if(current==PluginInterface::GS_Running)
           {
+              view->setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
               m_actionRobotRevertEnvironment->setEnabled(false);
               m_actionRobotLoadEnvironment->setEnabled(false);
               m_actionRobotLoadRescent->setEnabled(false);
@@ -4421,6 +4423,9 @@ QString RobotModule::initialize(const QStringList &configurationParameters, cons
     DISPLAY=true;
     if (!configurationParameters.contains("tablesOnly")) {
         createGui();
+        redrawTimer=new QTimer();
+        connect(redrawTimer,SIGNAL(timeout()), this, SLOT(getTimer()));
+        redrawTimer->start(30);
         ExtensionSystem::SettingsPtr sett;
         sett=robotSettings();
 
@@ -4460,7 +4465,7 @@ void RobotModule::runGoUp()
         if(!curConsoleField->goUp())setError(trUtf8("Робот разбился: сверху стена!"));
         return;
     }
-    
+    mutex.lock();
     qDebug() << "Robot up";
     QString status = "OK";
      if(!field->stepUp())
@@ -4474,7 +4479,9 @@ void RobotModule::runGoUp()
 //     }
 if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вверх"),QString::fromUtf8("вверх     "),status);
     if(animation)msleep(AnimTime);
-    view->update();
+    msleep(qrand() % 10);
+    mutex.unlock();
+   // view->update();
 	return;
 }
 
@@ -4487,7 +4494,7 @@ void RobotModule::runGoDown()
         if(!curConsoleField->goDown())setError(trUtf8("Робот разбился: снизу стена!"));
         return;
     }
-    
+    mutex.lock();
     qDebug() << "Robot down";
     QString status = "OK";
      if(!field->stepDown())
@@ -4499,10 +4506,9 @@ void RobotModule::runGoDown()
 //         emit sendToPultLog(status);
 //     }
   if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вниз"),QString::fromUtf8("вниз     "),status);
-   // if(animation){
-        view->update();
-     msleep(AnimTime);
-  //  }
+    if(animation)msleep(AnimTime);
+    msleep(qrand() % 10);
+mutex.unlock();
 	return;
 }
 
@@ -4517,7 +4523,7 @@ void RobotModule::runGoLeft()
         if(!curConsoleField->goLeft())setError(trUtf8("Робот разбился: слева стена!"));
         return;
     }
-    
+    mutex.lock();
     QString status = "OK";
     if(!field->stepLeft()){
       field->robot->setCrash(LEFT_CRASH);  
@@ -4528,11 +4534,9 @@ void RobotModule::runGoLeft()
 //        emit sendToPultLog(status);
 //    }
       if (sender()==m_pultWidget)   m_pultWidget->Logger->appendText(trUtf8("влево"),QString::fromUtf8("влево     "),status);
-   // if(animation)
-  //  {
-        view->update();
-        msleep(AnimTime);
-  //  }
+   if(animation)  msleep(AnimTime);
+    msleep(qrand() % 10);
+  mutex.unlock();
 	return;
 }
 
@@ -4544,7 +4548,8 @@ void RobotModule::runGoRight()
         if(!curConsoleField->goRight())setError(trUtf8("Робот разбился: справа стена!"));
         return;
     }
-    qDebug() << "Robot right";
+  //  qDebug() << "Robot right";
+    mutex.lock();
     QString status = "OK";
     if(!field->stepRight()){
         field->robot->setCrash(RIGHT_CRASH);  
@@ -4553,11 +4558,10 @@ void RobotModule::runGoRight()
         setError(trUtf8("Робот разбился: справа стена!"));}
 
    if (sender()==m_pultWidget)  m_pultWidget->Logger->appendText(trUtf8("вправо"),QString::fromUtf8("вправо     "),status);
-   //  if(animation)
-   //  {
-         view->update();
-     msleep(AnimTime);
-  //   }
+   if(animation)msleep(AnimTime);
+    msleep(qrand() % 10);
+      mutex.unlock();
+ 
 	return;
 }
 
@@ -5425,6 +5429,25 @@ void RobotModule::setWindowSize()
         createRescentMenu();
     }
 
+    void RobotModule::updateRobot()
+    {
+        
+    }
+    
+    void RobotModule::getTimer()
+    {
+        mutex.lock();
+        field->update();
+        view->update();
+        qApp->processEvents();
+        mutex.unlock();;
+    }
+    
+    
+    //+++++++++++RobotView
+    
+    
+    
     RobotView::RobotView(RoboField * roboField)
     {
         setScene(roboField);
@@ -5664,4 +5687,7 @@ void RobotView::changeEditMode(bool state)
         
         
     };
+
+    
+    
 } // $namespace
