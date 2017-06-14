@@ -212,7 +212,10 @@ namespace ActorTurtle {
         }
         void DestroyNet();
         void drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw);
-        
+        bool netIsShown()
+        {
+            return Netlines.count()>0;
+        }
         bool isLineAt(const QPointF &pos,qreal radius);
         qreal drawText(const QString &Text, qreal widthChar,QPointF from,QColor color);//Returns offset of pen.
         QRectF getRect();

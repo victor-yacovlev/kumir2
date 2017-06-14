@@ -18,8 +18,8 @@ You should change it corresponding to functionality.
 #include <QtGui>
 
 namespace ActorTurtle {
-const int maxBuff=1000;
-
+const int maxBuff=500;
+const int AnimTime=100;
 
 
 const int KumMulti = 50;
@@ -201,14 +201,14 @@ static const qreal MAX_ZOOM = 1000000;
     void TurtleScene::DestroyNet()
     {
       //  qDebug()<<Netlines.count();
-        dr_mutex->lock();
+      //  dr_mutex->lock();
         for ( int i = 0; i < Netlines.count(); i++)
         {
        
            delete Netlines[i];
         }
         Netlines.clear();
-        dr_mutex->unlock();
+     //   dr_mutex->unlock();
     }
     void TurtleScene::drawOnlyAxis(double startx ,double endx,double starty,double endy,qreal aw)
     {
@@ -247,7 +247,7 @@ static const qreal MAX_ZOOM = 1000000;
         
         
         // return;
-         dr_mutex->lock();
+         if(!dr_mutex->tryLock(20))return;
         startx=lines*step;
         double fx1=startx-NetReserve*step,fx2,fy1,fy2;
         while (fx1 < endx+NetReserve*step)
@@ -672,8 +672,8 @@ void TurtleView::paintEvent(QPaintEvent *event)
     {
         if(pressed)
         {
-            dr_mutex->lock();
-            setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
+          //  dr_mutex->lock();
+         //   setViewportUpdateMode (QGraphicsView::SmartViewportUpdate);
             QPointF delta=mapToScene(press_pos)-mapToScene(event->pos());
 
             
@@ -690,9 +690,9 @@ void TurtleView::paintEvent(QPaintEvent *event)
             qDebug()<<"DELTA"<<delta<<" xd"<<press_pos.x()-event->pos().x()<<" yd"<<mapToScene(press_pos).y()-mapToScene(event->pos()).y();
             press_pos=event->pos();
             qDebug()<<"Ppos"<<press_pos;
-            update();
-            setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
-            dr_mutex->unlock();
+         //   update();
+          //  setViewportUpdateMode (QGraphicsView::NoViewportUpdate);
+           // dr_mutex->unlock();
         }
     };
     void TurtleView::setZoom(double zoom)
@@ -784,7 +784,7 @@ void TurtleView::paintEvent(QPaintEvent *event)
     
     void	TurtleView::wheelEvent ( QWheelEvent * event )
     {
-        dr_mutex->lock();
+        if(!dr_mutex->tryLock(20))return;
         float numDegrees = event->delta() / 8;
         qDebug()<<"whell:"<<numDegrees;
         //        c_scale=c_scale*0.8;
@@ -912,7 +912,7 @@ QString TurtleModule::initialize(const QStringList &configurationParameters, con
         currentState=Shared::PluginInterface::GS_Unlocked;
         redrawTimer = new QTimer(this);
         connect(redrawTimer,SIGNAL(timeout()), this, SLOT(redraw()));
-        redrawTimer->start(10);
+        redrawTimer->start(AnimTime);
     }
     return "";
 }
@@ -1227,14 +1227,14 @@ mutex.unlock();
     void TurtleModule::drawNet()
     {
       //  mutex.lock();
-         mutex.lock();
+       //  mutex.lock();
         QPointF start_d=CurView->mapToScene(CurView->geometry().topLeft());
         QPointF end_d=CurView->mapToScene(CurView->geometry().bottomRight());
 
        
         CurView->setSceneRect(QRectF(QPointF(start_d.x()-(CurView->geometry().width())*(1/zoom()),start_d.y()-(CurView->geometry().height()*2)*(1/zoom())),
                                      QPointF(end_d.x()+2000*(1/zoom()),end_d.y()+2000*(1/zoom()))));
-        mutex.unlock();
+       // mutex.unlock();
         QPointF start=CurView->sceneRect().topLeft();
         QPointF end=CurView->sceneRect().bottomRight();
         CurScene->drawNet(start.x(),end.x(),start.y(),end.y(), netColor,netStepX,NetStepY(),CurView->isNet(),mySettings()->value("NetWidth",1).toFloat(),mySettings()->value("AxisWidth",2).toFloat());
@@ -1356,12 +1356,14 @@ mutex.unlock();
     {
        
         if (currentState!=Shared::PluginInterface::GS_Running)return;
+        redrawTimer->stop();
         mutex.lock();
   
         updateTurtle();
+        qApp->processEvents();
         mutex.unlock();
-      //  drawNet();
-        
+       if(!CurScene->netIsShown()) drawNet();
+        redrawTimer->start(AnimTime);
         
        // usleep(10);
     }
