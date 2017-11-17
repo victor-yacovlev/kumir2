@@ -26,6 +26,7 @@ configure:win32:
 build:win32:
   stage: build
   script:
+    - cd build
     - set QMAKESPEC=win32-msvc2016
     - set INCLUDE=
     - set LIB=
