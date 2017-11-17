@@ -19,6 +19,7 @@ configure:win32:
   tags:
     - windows
   cache:
+    key: $CI_PIPELINE_ID
     untracked: true
     paths:
       - build/
@@ -37,6 +38,7 @@ build:win32:
   tags:
     - windows
   cache:
+    key: $CI_PIPELINE_ID
     untracked: true
     paths:
       - build/
@@ -88,6 +90,7 @@ dist:win32:
   tags:
     - windows
   cache:
+    key: $CI_PIPELINE_ID
     untracked: true
     paths:
       - build/
