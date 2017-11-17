@@ -8,7 +8,6 @@ configure:win32:
   stage: configure
   script:
     - md build
-    - set QTDIR=%QTDIR%
     - set QMAKESPEC=win32-msvc2015
     - set INCLUDE=
     - set LIB=
@@ -16,14 +15,19 @@ configure:win32:
     - call vsvars32.bat
     - call vcvars32.bat
     - cd build
-    - cmake -Wno-dev -DCMAKE_PREFIX_PATH=%QTDIR%\lib\cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
+    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
   tags:
     - windows
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
 
 build:win32:
   stage: build
   script:
-    - set QTDIR=%QTDIR%
+    - cd build
     - set QMAKESPEC=win32-msvc2016
     - set INCLUDE=
     - set LIB=
@@ -33,10 +37,16 @@ build:win32:
     - nmake
   tags:
     - windows
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
 
 dist:win32:
   stage: dist
   script:
+    - cd build
     - md kumir2-master-%CI_PIPELINE_ID%\
     - md kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  -R build\Release kumir2-master-%CI_PIPELINE_ID%
@@ -79,10 +89,16 @@ dist:win32:
     - copy /Y  kumir2.nsi kumir2-master-%CI_PIPELINE_ID%\
   tags:
     - windows
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
 
 pack:win32:
   stage: pack
   script:
+    - cd build
     - cd kumir2-master-%CI_PIPELINE_ID%
     - call %NSIS_EXECUTABLE% kumir2.nsi
     - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\
