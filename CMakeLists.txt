@@ -1,6 +1,7 @@
 project(Kumir2)
 cmake_minimum_required(VERSION 3.0)
 find_package(PythonInterp 3.2.0 REQUIRED)
+set(USE_QT 5)   # No more Qt4 support!!!
 
 # Query for version info and pass it as compile definitions
 if(EXISTS "${CMAKE_SOURCE_DIR}/version_info.cmake")
