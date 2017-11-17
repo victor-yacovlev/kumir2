@@ -15,7 +15,7 @@ configure:win32:
     - call vsvars32.bat
     - call vcvars32.bat
     - cd build
-    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
+    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
   tags:
     - windows
 
