@@ -18,6 +18,10 @@ configure:win32:
     - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
   tags:
     - windows
+  cache:
+    key: "$CI_PIPELINE_ID"
+    paths:
+      - build
 
 build:win32:
   stage: build
@@ -35,6 +39,7 @@ build:win32:
 dist:win32:
   stage: dist
   script:
+    - cd build
     - md kumir2-master-%CI_PIPELINE_ID%\
     - md kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  -R build\Release kumir2-master-%CI_PIPELINE_ID%
@@ -77,6 +82,10 @@ dist:win32:
     - copy /Y  kumir2.nsi kumir2-master-%CI_PIPELINE_ID%\
   tags:
     - windows
+  cache:
+    key: "$CI_PIPELINE_ID"
+    paths:
+      - build
 
 pack:win32:
   stage: pack
