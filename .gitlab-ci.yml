@@ -1,0 +1,101 @@
+stages:
+  - configure
+  - build
+  - dist
+  - pack
+
+configure:win32:
+  stage: configure
+  script:
+    - mkdir build
+    - set QTDIR=C:\Qt\Qt5.6.0\5.6\msvc2015
+    - set QMAKESPEC=win32-msvc2015
+    - set INCLUDE=
+    - set LIB=
+    - set LIBPATH=
+    - set PATH=E:\Python36-32;C:\Git\bin;C:\CMake\bin;C:\7z;C:\Windows\System32;F:\MSVC2015\VC\bin;F:\MSVC2015\Common7\Tools
+    - call vsvars32.bat
+    - call vcvars32.bat
+    - cd build
+    - cmake -Wno-dev -DCMAKE_PREFIX_PATH=C:\Qt\Qt5.6.0\5.6\msvc2015\lib\cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=E:\Python36-32\python.exe -G "NMake Makefiles" ..
+  tags:
+    - windows
+
+build:win32:
+  stage: build
+  script:
+    - set QTDIR=C:\Qt\Qt5.6.0\5.6\msvc2015
+    - set QMAKESPEC=win32-msvc2016
+    - set INCLUDE=
+    - set LIB=
+    - set LIBPATH=
+    - set PATH=E:\Python36-32;C:\Git\bin;C:\CMake\bin;C:\7z;C:\Windows\System32;F:\MSVC2015\VC\bin;F:\MSVC2015\Common7\Tools
+    - call vsvars32.bat
+    - call vcvars32.bat
+    - nmake
+  tags:
+    - windows
+
+dist:win32:
+  stage: dist
+  script:
+    - rm -rf kumir2-master-*
+    - cp -R build/Release kumir2-master-$CI_PIPELINE_ID
+    - cp LICENSE_RU.rtf kumir2-master-$CI_PIPELINE_ID/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/icudt54.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/icuin54.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/icuuc54.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Core.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Declarative.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Gui.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Multimedia.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5MultimediaWidgets.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Network.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5OpenGL.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Positioning.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5PrintSupport.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Qml.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Quick.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Script.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Sensors.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Sql.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Svg.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Widgets.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5Xml.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/bin/Qt5XmlPatterns.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - md kumir2-master-$CI_PIPELINE_ID\bin\platforms
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/plugins/platforms/qminimal.dll kumir2-master-$CI_PIPELINE_ID/bin/platforms/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/plugins/platforms/qwindows.dll kumir2-master-$CI_PIPELINE_ID/bin/platforms/
+    - cp C:/Qt/Qt5.6.0/5.6/msvc2015/plugins/platforms/qoffscreen.dll kumir2-master-$CI_PIPELINE_ID/bin/platforms/
+    - cp F:/MSVC2015/VC/redist/x86/Microsoft.VC140.CRT/*.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - cp C:/SDK_redist/*.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/bin/*.lib
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/bin/*.exp
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/bin/*.dll.manifest
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/bin/*.exe.manifest
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/lib/kumir2/plugins/*.lib
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/lib/kumir2/plugins/*.exp
+    - rm -rf kumir2-master-$CI_PIPELINE_ID/lib/kumir2/plugins/*.dll.manifest
+    - upx -9 kumir2-master-$CI_PIPELINE_ID/bin/*.exe
+    - upx -9 kumir2-master-$CI_PIPELINE_ID/bin/*.dll
+    - cp E:/Python36-32/python36.dll kumir2-master-$CI_PIPELINE_ID/bin/
+    - md kumir2-master-$CI_PIPELINE_ID\src
+    - E:\Python36-32\python.exe scripts/get_bundle_name.py --prefix=git@20archive@20--out=kumir2-master-$CI_PIPELINE_ID/src/kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
+    - cp kumir2.nsi kumir2-master-$CI_PIPELINE_ID/
+    - cp kumir2.nsi kumir2-master-$CI_PIPELINE_ID/src/
+    - E:\Python36-32\python.exe scripts/query_version_info.py --mode=nsis_include_file --out=kumir2-master-$CI_PIPELINE_ID\nsis_version_info.nsh
+    - cp kumir2-master-$CI_PIPELINE_ID/outfilename.nsh kumir2-master-$CI_PIPELINE_ID/src/
+    - run_git_archive.cmd
+    - 7z a -mx=9 kumir2-master-$CI_PIPELINE_ID.7z kumir2-master-$CI_PIPELINE_ID
+    - cp kumir2.nsi kumir2-master-$CI_PIPELINE_ID/
+  tags:
+    - windows
+
+pack:win32:
+  stage: pack
+  script:
+    - cd kumir2-python-$CI_PIPELINE_ID
+    - C:\NSIS\makensis kumir2.nsi
+    - mv kumir2-python-$CI_PIPELINE_ID-install.exe ../
+  tags:
+    - windows
