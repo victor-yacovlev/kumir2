@@ -8,7 +8,6 @@ configure:win32:
   stage: configure
   script:
     - md build
-    - set QTDIR=%QTDIR%
     - set QMAKESPEC=win32-msvc2015
     - set INCLUDE=
     - set LIB=
@@ -16,14 +15,13 @@ configure:win32:
     - call vsvars32.bat
     - call vcvars32.bat
     - cd build
-    - cmake -Wno-dev -DCMAKE_PREFIX_PATH=%QTDIR%\lib\cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
+    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
   tags:
     - windows
 
 build:win32:
   stage: build
   script:
-    - set QTDIR=%QTDIR%
     - set QMAKESPEC=win32-msvc2016
     - set INCLUDE=
     - set LIB=
