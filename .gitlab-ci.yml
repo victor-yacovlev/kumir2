@@ -19,9 +19,9 @@ configure:win32:
   tags:
     - windows
   cache:
-    key: "$CI_PIPELINE_ID"
+    untracked: true
     paths:
-      - build
+      - build/
 
 build:win32:
   stage: build
@@ -35,6 +35,10 @@ build:win32:
     - nmake
   tags:
     - windows
+  cache:
+    untracked: true
+    paths:
+      - build/
 
 dist:win32:
   stage: dist
@@ -83,13 +87,14 @@ dist:win32:
   tags:
     - windows
   cache:
-    key: "$CI_PIPELINE_ID"
+    untracked: true
     paths:
-      - build
+      - build/
 
 pack:win32:
   stage: pack
   script:
+    - cd build
     - cd kumir2-master-%CI_PIPELINE_ID%
     - call %NSIS_EXECUTABLE% kumir2.nsi
     - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\
