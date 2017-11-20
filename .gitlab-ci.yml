@@ -87,7 +87,7 @@ dist:win32:
     - copy /Y  kumir2.nsi build\kumir2-master-%CI_PIPELINE_ID%\
     - copy /Y  kumir2.nsi build\kumir2-master-%CI_PIPELINE_ID%\src\
     - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=build\kumir2-master-%CI_PIPELINE_ID%\nsis_version_info.nsh
-    - copy /Y  kumir2-master-%CI_PIPELINE_ID%\outfilename.nsh build\kumir2-master-%CI_PIPELINE_ID%\src\
+    - copy /Y  build\kumir2-master-%CI_PIPELINE_ID%\nsis_version_info.nsh build\kumir2-master-%CI_PIPELINE_ID%\src\
     - run_git_archive.cmd
   tags:
     - windows
