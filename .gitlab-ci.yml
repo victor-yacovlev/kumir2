@@ -102,7 +102,7 @@ pack:win32:
   script:
     - cd build
     - cd kumir2-master-%CI_PIPELINE_ID%
-    - call %NSIS_EXECUTABLE% kumir2.nsi
+    - call "%NSIS_EXECUTABLE%" kumir2.nsi
     - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\..\
   cache:
     key: $CI_PIPELINE_ID
