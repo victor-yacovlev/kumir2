@@ -55,11 +55,7 @@ dist:win32:
     - xcopy /Y /S /E lib kumir2-master-%CI_PIPELINE_ID%\lib
     - xcopy /Y /S /E share kumir2-master-%CI_PIPELINE_ID%\share
     - copy /Y  ..\LICENSE_RU.rtf kumir2-master-%CI_PIPELINE_ID%\
-    - copy /Y  %QTDIR%\bin\icudt54.dll kumir2-master-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\icuin54.dll kumir2-master-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\icuuc54.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  %QTDIR%\bin\Qt5Core.dll kumir2-master-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Declarative.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  %QTDIR%\bin\Qt5Gui.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  %QTDIR%\bin\Qt5Multimedia.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  %QTDIR%\bin\Qt5MultimediaWidgets.dll kumir2-master-%CI_PIPELINE_ID%\bin\
@@ -79,6 +75,7 @@ dist:win32:
     - md kumir2-master-%CI_PIPELINE_ID%\bin\platforms
     - copy /Y  %QTDIR%\plugins\platforms\qminimal.dll kumir2-master-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %QTDIR%\plugins\platforms\qwindows.dll kumir2-master-%CI_PIPELINE_ID%\bin\platforms\
+    - copy /Y  %QTDIR%\plugins\platforms\qdirect2d.dll kumir2-master-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %QTDIR%\plugins\platforms\qoffscreen.dll kumir2-master-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %VC_REDIST_DIR%\x86\Microsoft.VC140.CRT\*.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - upx -9 kumir2-master-%CI_PIPELINE_ID%\bin\*.exe
