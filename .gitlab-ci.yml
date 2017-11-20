@@ -51,9 +51,9 @@ dist:win32:
     - md kumir2-master-%CI_PIPELINE_ID%\bin\
     - md kumir2-master-%CI_PIPELINE_ID%\lib\
     - md kumir2-master-%CI_PIPELINE_ID%\share\
-    - copy /Y  -R bin kumir2-master-%CI_PIPELINE_ID%\bin
-    - copy /Y  -R lib kumir2-master-%CI_PIPELINE_ID%\lib
-    - copy /Y  -R share kumir2-master-%CI_PIPELINE_ID%\share
+    - xcopy /Y /S /E bin kumir2-master-%CI_PIPELINE_ID%\bin
+    - xcopy /Y /S /E lib kumir2-master-%CI_PIPELINE_ID%\lib
+    - xcopy /Y /S /E share kumir2-master-%CI_PIPELINE_ID%\share
     - copy /Y  ..\LICENSE_RU.rtf kumir2-master-%CI_PIPELINE_ID%\
     - copy /Y  %QTDIR%\bin\icudt54.dll kumir2-master-%CI_PIPELINE_ID%\bin\
     - copy /Y  %QTDIR%\bin\icuin54.dll kumir2-master-%CI_PIPELINE_ID%\bin\
