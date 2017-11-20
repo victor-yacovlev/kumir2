@@ -104,5 +104,10 @@ pack:win32:
     - cd kumir2-master-%CI_PIPELINE_ID%
     - call %NSIS_EXECUTABLE% kumir2.nsi
     - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\..\
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
   tags:
     - windows
