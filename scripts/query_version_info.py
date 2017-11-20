@@ -94,6 +94,8 @@ def get_version_information(top_level_dir):
         else:
             result["taggedRelease"] = False
             result["date"] = get_date(top_level_dir)
+    if not result["taggedRelease"] and result["branch"]=="HEAD":
+        result["branch"] = "master"  # fix GitLab naming bug
     return result
 
 
