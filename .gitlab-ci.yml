@@ -34,6 +34,7 @@ build:win32:
     - set LIBPATH=
     - call vsvars32.bat
     - call vcvars32.bat
+    - set CL=/MP
     - nmake
   tags:
     - windows
@@ -81,13 +82,13 @@ dist:win32:
     - upx -9 kumir2-master-%CI_PIPELINE_ID%\bin\*.exe
     - upx -9 kumir2-master-%CI_PIPELINE_ID%\bin\*.dll
     - md kumir2-master-%CI_PIPELINE_ID%\src
-    - call %PYTHON_EXECUTABLE% scripts\get_bundle_name.py --prefix=git@20archive@20--out=kumir2-master-%CI_PIPELINE_ID%\src\kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
-    - copy /Y  kumir2.nsi kumir2-master-%CI_PIPELINE_ID%\
-    - copy /Y  kumir2.nsi kumir2-master-%CI_PIPELINE_ID%\src\
-    - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=kumir2-master-%CI_PIPELINE_ID%\nsis_version_info.nsh
-    - copy /Y  kumir2-master-%CI_PIPELINE_ID%\outfilename.nsh kumir2-master-%CI_PIPELINE_ID%\src\
+    - cd ..
+    - call %PYTHON_EXECUTABLE% scripts\get_bundle_name.py --prefix=git@20archive@20--out=build\kumir2-master-%CI_PIPELINE_ID%\src\kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
+    - copy /Y  kumir2.nsi build\kumir2-master-%CI_PIPELINE_ID%\
+    - copy /Y  kumir2.nsi build\kumir2-master-%CI_PIPELINE_ID%\src\
+    - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=build\kumir2-master-%CI_PIPELINE_ID%\nsis_version_info.nsh
+    - copy /Y  kumir2-master-%CI_PIPELINE_ID%\outfilename.nsh build\kumir2-master-%CI_PIPELINE_ID%\src\
     - run_git_archive.cmd
-    - copy /Y  kumir2.nsi kumir2-master-%CI_PIPELINE_ID%\
   tags:
     - windows
   cache:
@@ -102,6 +103,6 @@ pack:win32:
     - cd build
     - cd kumir2-master-%CI_PIPELINE_ID%
     - call %NSIS_EXECUTABLE% kumir2.nsi
-    - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\
+    - move /Y kumir2-master-%CI_PIPELINE_ID%-install.exe ..\..\
   tags:
     - windows
