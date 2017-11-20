@@ -109,5 +109,8 @@ pack:win32:
     untracked: true
     paths:
       - build/
+  artifacts:
+    paths:
+      - kumir2-*-install.exe
   tags:
     - windows
