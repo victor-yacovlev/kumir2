@@ -76,7 +76,6 @@ dist:win32:
     - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms
     - copy /Y  %QTDIR%\plugins\platforms\qminimal.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %QTDIR%\plugins\platforms\qwindows.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
-    - copy /Y  %QTDIR%\plugins\platforms\qdirect2d.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %QTDIR%\plugins\platforms\qoffscreen.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
     - xcopy /Y /S /E  "%VC_REDIST_DIR%\x86\Microsoft.VC140.CRT\*.dll" kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
     - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src
