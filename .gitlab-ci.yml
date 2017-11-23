@@ -79,8 +79,6 @@ dist:win32:
     - copy /Y  %QTDIR%\plugins\platforms\qdirect2d.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
     - copy /Y  %QTDIR%\plugins\platforms\qoffscreen.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
     - xcopy /Y /S /E  "%VC_REDIST_DIR%\x86\Microsoft.VC140.CRT\*.dll" kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - upx -9 kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\*.exe
-    - upx -9 kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\*.dll
     - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src
     - cd ..
     - call %PYTHON_EXECUTABLE% scripts\get_bundle_name.py --prefix=git@20archive@20--out=build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src\kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
