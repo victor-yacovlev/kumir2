@@ -135,7 +135,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     escPressFlag_ = false;
-    typeTextFlag_ = false;
+
     emit message(QString());
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
@@ -266,7 +266,10 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
                 textX += 1;
             const uint textY = realY / lineHeight();
 
-
+            if (typeTextFlag_) {
+                tryCorrectKeyboardLayoutForLastLexem();
+                typeTextFlag_ = false;
+            }
 
             // Move text cursor into clicked position
             editor_->cursor()->moveTo(textY, textX);
@@ -306,6 +309,7 @@ void EditorPlane::mousePressEvent(QMouseEvent *e)
     // Set repaint flag due to something may be changed and accept event
     update();
     e->accept();
+    typeTextFlag_ = false;
 }
 
 /** Handles mouse button release event
@@ -1389,6 +1393,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     emit message(QString());
 
     if (MoveToNextChar) {
+        if (typeTextFlag_)
+            tryCorrectKeyboardLayoutForLastLexem();
         editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextChar);
     }
     else if (SelectNextChar) {
@@ -1404,6 +1410,8 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         editor_->cursor()->evaluateCommand(KeyCommand::SelectNextColumn);
     }
     else if (MoveToPreviousChar) {
+        if (typeTextFlag_)
+            tryCorrectKeyboardLayoutForLastLexem();
         editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousChar);
     }
     else if (SelectPreviousChar) {
@@ -3097,7 +3105,7 @@ void EditorPlane::tryCorrectKeyboardLayoutForLastLexem()
         QString replacement = tryCorrectKeyboardLayout(lexem);
         if (lexem!=replacement) {
             for (int i=0; i<lexem.length(); ++i) {
-                editor_->cursor_->evaluateCommand(KeyCommand::Backspace);
+                editor_->cursor_->evaluateCommand(KeyCommand::SelectPreviousChar);
             }
             editor_->cursor_->evaluateCommand(replacement);
             break;
