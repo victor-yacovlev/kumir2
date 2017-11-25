@@ -50,6 +50,7 @@ EditorPlane::EditorPlane(EditorInstance * editor)
     , highlightedTextColumnEndNumber_(0u)
     , marginHintBox_(new QLabel(this, Qt::ToolTip))
     , escPressFlag_(false)
+    , typeTextFlag_(false)
 {
     if (editor->analizer()) {
         caseInsensitive_ = editor->analizer()->plugin()->caseInsensitiveGrammatic();
@@ -134,6 +135,7 @@ void EditorPlane::contextMenuEvent(QContextMenuEvent *e)
 void EditorPlane::mousePressEvent(QMouseEvent *e)
 {
     escPressFlag_ = false;
+    typeTextFlag_ = false;
     emit message(QString());
     // Ensure auto scrolling by timer is stopped
     emit requestAutoScroll(0);
@@ -1372,303 +1374,283 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
     bool ignoreTextEvent = e->key()==Qt::Key_Escape ||
             e->key()==Qt::Key_Backspace ||
             ( (e->key()==Qt::Key_Enter||e->key()==Qt::Key_Return) && e->modifiers()!=0 );
-#ifdef Q_WS_X11
-    // VIM-style navigation using Super key :
-    //   {h,j,k,l} -> {left, down, up, right }
-    if (e->modifiers().testFlag(Qt::MetaModifier)) {
-        MoveToNextChar = e->key()==Qt::Key_L
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        SelectNextChar = e->key()==Qt::Key_L
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        MoveToNextWord = e->key()==Qt::Key_L
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && e->modifiers().testFlag(Qt::ControlModifier);
-        SelectNextWord = e->key()==Qt::Key_L
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && e->modifiers().testFlag(Qt::ControlModifier);
 
-        MoveToPreviousChar = e->key()==Qt::Key_H
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        SelectPreviousChar = e->key()==Qt::Key_H
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        MoveToPreviousWord = e->key()==Qt::Key_H
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && e->modifiers().testFlag(Qt::ControlModifier);
-        SelectPreviousWord = e->key()==Qt::Key_H
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && e->modifiers().testFlag(Qt::ControlModifier);
-
-        MoveToNextLine = e->key()==Qt::Key_J
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        SelectNextLine = e->key()==Qt::Key_J
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-
-        MoveToPreviousLine = e->key()==Qt::Key_K
-                && !e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-        SelectPreviousLine = e->key()==Qt::Key_K
-                && e->modifiers().testFlag(Qt::ShiftModifier)
-                && !e->modifiers().testFlag(Qt::ControlModifier);
-    }
-
-#endif
-    if (editor_->cursor()->isEnabled() && hasFocus()) {
-        emit message(QString());
-        if (MoveToNextChar) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextChar);
-        }
-        else if (SelectNextChar) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextChar);
-        }
-        else if (MoveToNextWord) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLexem);
-        }
-        else if (SelectNextWord) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLexem);
-        }
-        else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextColumn);
-        }
-        else if (MoveToPreviousChar) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousChar);
-        }
-        else if (SelectPreviousChar) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousChar);
-        }
-        else if (MoveToPreviousWord) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLexem);
-        }
-        else if (SelectPreviousWord) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLexem);
-        }
-        else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousColumn);
-        }
-        else if (MoveToNextLine) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
-        }
-        else if (SelectNextLine) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLine);
-        }
-        else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextRow);
-        }
-        else if (MoveToPreviousLine) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLine);
-        }
-        else if (SelectPreviousLine) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLine);
-        }
-        else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousRow);
-        }
-        else if (e->matches(QKeySequence::MoveToStartOfLine)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
-        }
-        else if (e->matches(QKeySequence::SelectStartOfLine)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfLine);
-        }
-        else if (e->matches(QKeySequence::MoveToEndOfLine)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfLine);
-        }
-        else if (e->matches(QKeySequence::SelectEndOfLine)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfLine);
-        }
-        else if (e->matches(QKeySequence::MoveToPreviousPage)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousPage);
-        }
-        else if (e->matches(QKeySequence::SelectPreviousPage)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousPage);
-        }
-        else if (e->matches(QKeySequence::MoveToNextPage)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextPage);
-        }
-        else if (e->matches(QKeySequence::SelectNextPage)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectNextPage);
-        }
-        else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfDocument);
-        }
-        else if (e->matches(QKeySequence::SelectStartOfDocument)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfDocument);
-        }
-        else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfDocument);
-        }
-        else if (e->matches(QKeySequence::SelectEndOfDocument)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfDocument);
-        }
-        else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
-            const bool protecteed = editor_->cursor()->modifiesProtectedLiines();
-            if (!protecteed) {
-                bool addIndent = editor_->analizerPlugin_ &&
-                        Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
-                if (!addIndent) {
-                    editor_->cursor()->evaluateCommand("\n");
-                }
-                else {
-                    const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
-                            ? editor_->document()->at(editor_->cursor()->row()).text : QString();
-
-                    int indentSpaces = 0;
-                    bool hasTextAfterCursor = false;
-                    for (int i=0; i<curText.length(); i++) {
-                        if (curText.at(i) == ' ') {
-                            indentSpaces += 1;
-                        }
-                        else {
-                            hasTextAfterCursor = i < (curText.length() - 1);
-                            break;
-                        }
-                    }
-                    bool moveToEnd = false;
-                    for (int i=editor_->cursor()->column(); i<(int)curText.length(); i++) {
-                        if (curText.at(i) == ' ') {
-                            moveToEnd = true;
-                        }
-                        else {
-                            moveToEnd = false;
-                            break;
-                        }
-                    }
-                    if (moveToEnd)
-                        editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
-                    QString indent;
-                    int proposedIndent = 4 * editor_->document()->indentAt(editor_->cursor()->row()+1);
-
-                    if (!hasTextAfterCursor &&
-                            Shared::AnalizerInterface::PythonIndents ==
-                            editor_->analizerPlugin_->indentsBehaviour())
-                    {
-                        indentSpaces = qMax(indentSpaces, proposedIndent);
-                    }
-                    indent.fill(' ', indentSpaces);
-                    editor_->cursor()->evaluateCommand("\n" + indent);
-                }
-            }
-            else {
-                editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
-                editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
-            }
-        }
-        else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
-            bool checkForIndent = !editor_->cursor()->hasSelection() &&
-                    editor_->analizerPlugin_ &&
-                    Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
-            if (!checkForIndent) {
-                editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
-            }
-            else {
-                const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
-                        ? editor_->document()->at(editor_->cursor()->row()).text : QString();
-                bool onlySpacesBefore = curText.left(editor_->cursor()->column()).trimmed().isEmpty();
-                uint bsCount = 1u;
-                if (onlySpacesBefore && editor_->cursor()->column() > 0) {
-                    bsCount = qMin(4u, editor_->cursor()->column());
-                }
-                for (uint i=0u; i<bsCount; i++) {
-                    editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
-                }
-            }
-        }
-        else if (e->matches(QKeySequence::Paste)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::Paste);
-        }
-        else if (e->matches(QKeySequence::Copy)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::Copy);
-        }
-        else if (e->matches(QKeySequence::Cut)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::Cut);
-        }
-        else if (e->matches(QKeySequence::SelectAll)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::SelectAll);
-        }
-        else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::RemoveLine);
-        }
-        else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::RemoveTail);
-        }
-        else if (e->matches(QKeySequence::Delete)) {
-            editor_->cursor()->evaluateCommand(KeyCommand::Delete);
-        }
-        else if (e->matches(QKeySequence::Undo)) {
-            editor_->cursor()->undo();
-        }
-        else if (e->matches(QKeySequence::Redo)) {
-            editor_->cursor()->redo();
-        }
-        else if (e->key()==Qt::Key_F && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->find_->trigger();
-        }
-        else if (e->key()==Qt::Key_H && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->replace_->trigger();
-        }
-        else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->cursor()->toggleComment();
-        }
-        else if (e->key()==Qt::Key_M && e->modifiers().testFlag(Qt::ControlModifier)) {
-            editor_->recordMacro_->trigger();
-        }
-        else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
-            if (editor_->analizerInstance_)
-                doAutocomplete();
-        }
-        else if (e->key()==Qt::Key_B && e->modifiers().testFlag(Qt::ControlModifier)) {
-            if (editor_->hasBreakpointSupport())
-                editor_->toggleBreakpoint();
-        }
-        else if (e->key()==Qt::Key_L && e->modifiers().testFlag(Qt::ControlModifier)) {
-            if (editor_->plugin_->teacherMode_)
-                editor_->cursor()->toggleLock();
-        }
-        else if (e->key()==Qt::Key_Tab) {
-            if (editor_->analizerPlugin_ &&
-                    Shared::AnalizerInterface::HardIndents!=editor_->analizerPlugin_->indentsBehaviour()) {
-                editor_->cursor()->evaluateCommand("    ");
-            }
-            else if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()) {
-                doAutocomplete();
-            }
-        }
-        else if (!e->text().isEmpty() &&
-                 !e->modifiers().testFlag(Qt::ControlModifier) &&
-                 !ignoreTextEvent
-                 ) {
-
-            editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
-                                                       , e->text()
-                                                       , e->modifiers().testFlag(Qt::ShiftModifier)
-                                                       , editor_->isTeacherMode() && editor_->analizer()
-                                                      ));
-
-        }
-
-        Qt::Key tempSwichLayoutKey = Qt::Key(
-                    editor_->mySettings()->value(
-                        SettingsPage::KeyTempSwitchLayoutButton
-                        , SettingsPage::DefaultTempSwitchLayoutButton)
-                    .toUInt()
-                    );
-        if (e->key()==tempSwichLayoutKey) {
-            Utils::altKeyPressed = true;
-        }
-        if (e->key()==Qt::Key_Shift) {
-            Utils::shiftKeyPressed = true;
-        }
-        findCursor();
-    }
     escPressFlag_ = false;
     if (e->key()>=Qt::Key_F1 && e->key()<=Qt::Key_F35)
         e->ignore();
     else
         e->accept();
+
+    if ( ! editor_->cursor()->isEnabled() || !hasFocus() ) {
+        typeTextFlag_ = false;
+        return;
+    }
+
+    emit message(QString());
+
+    if (MoveToNextChar) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextChar);
+    }
+    else if (SelectNextChar) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextChar);
+    }
+    else if (MoveToNextWord) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLexem);
+    }
+    else if (SelectNextWord) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLexem);
+    }
+    else if (e->key()==Qt::Key_Right && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextColumn);
+    }
+    else if (MoveToPreviousChar) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousChar);
+    }
+    else if (SelectPreviousChar) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousChar);
+    }
+    else if (MoveToPreviousWord) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLexem);
+    }
+    else if (SelectPreviousWord) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLexem);
+    }
+    else if (e->key()==Qt::Key_Left && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousColumn);
+    }
+    else if (MoveToNextLine) {
+        if (typeTextFlag_)
+            tryCorrectKeyboardLayoutForLastLexem();
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
+    }
+    else if (SelectNextLine) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextLine);
+    }
+    else if (e->key()==Qt::Key_Down && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextRow);
+    }
+    else if (MoveToPreviousLine) {
+        if (typeTextFlag_)
+            tryCorrectKeyboardLayoutForLastLexem();
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousLine);
+    }
+    else if (SelectPreviousLine) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousLine);
+    }
+    else if (e->key()==Qt::Key_Up && e->modifiers().testFlag(RECT_SELECTION_MODIFIER) && editor_->analizerInstance_==0) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousRow);
+    }
+    else if (e->matches(QKeySequence::MoveToStartOfLine)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
+    }
+    else if (e->matches(QKeySequence::SelectStartOfLine)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfLine);
+    }
+    else if (e->matches(QKeySequence::MoveToEndOfLine)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfLine);
+    }
+    else if (e->matches(QKeySequence::SelectEndOfLine)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfLine);
+    }
+    else if (e->matches(QKeySequence::MoveToPreviousPage)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToPreviousPage);
+    }
+    else if (e->matches(QKeySequence::SelectPreviousPage)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectPreviousPage);
+    }
+    else if (e->matches(QKeySequence::MoveToNextPage)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextPage);
+    }
+    else if (e->matches(QKeySequence::SelectNextPage)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectNextPage);
+    }
+    else if (e->matches(QKeySequence::MoveToStartOfDocument)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfDocument);
+    }
+    else if (e->matches(QKeySequence::SelectStartOfDocument)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectStartOfDocument);
+    }
+    else if (e->matches(QKeySequence::MoveToEndOfDocument)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::MoveToEndOfDocument);
+    }
+    else if (e->matches(QKeySequence::SelectEndOfDocument)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectEndOfDocument);
+    }
+    else if (e->matches(QKeySequence::InsertParagraphSeparator)) {
+        const bool protecteed = editor_->cursor()->modifiesProtectedLiines();
+        if (!protecteed) {
+            tryCorrectKeyboardLayoutForLastLexem();
+            bool addIndent = editor_->analizerPlugin_ &&
+                    Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
+            if (!addIndent) {
+                editor_->cursor()->evaluateCommand("\n");
+            }
+            else {
+                const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
+                        ? editor_->document()->at(editor_->cursor()->row()).text : QString();
+
+                int indentSpaces = 0;
+                bool hasTextAfterCursor = false;
+                for (int i=0; i<curText.length(); i++) {
+                    if (curText.at(i) == ' ') {
+                        indentSpaces += 1;
+                    }
+                    else {
+                        hasTextAfterCursor = i < (curText.length() - 1);
+                        break;
+                    }
+                }
+                bool moveToEnd = false;
+                for (int i=editor_->cursor()->column(); i<(int)curText.length(); i++) {
+                    if (curText.at(i) == ' ') {
+                        moveToEnd = true;
+                    }
+                    else {
+                        moveToEnd = false;
+                        break;
+                    }
+                }
+                if (moveToEnd)
+                    editor_->cursor()->moveTo(editor_->cursor()->row(), curText.length());
+                QString indent;
+                int proposedIndent = 4 * editor_->document()->indentAt(editor_->cursor()->row()+1);
+
+                if (!hasTextAfterCursor &&
+                        Shared::AnalizerInterface::PythonIndents ==
+                        editor_->analizerPlugin_->indentsBehaviour())
+                {
+                    indentSpaces = qMax(indentSpaces, proposedIndent);
+                }
+                indent.fill(' ', indentSpaces);
+                editor_->cursor()->evaluateCommand("\n" + indent);
+            }
+        }
+        else {
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToNextLine);
+            editor_->cursor()->evaluateCommand(KeyCommand::MoveToStartOfLine);
+        }
+    }
+    else if (e->key()==Qt::Key_Backspace && e->modifiers()==0) {
+        bool checkForIndent = !editor_->cursor()->hasSelection() &&
+                editor_->analizerPlugin_ &&
+                Shared::AnalizerInterface::HardIndents != editor_->analizerPlugin_->indentsBehaviour();
+        if (!checkForIndent) {
+            editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
+        }
+        else {
+            const QString & curText = editor_->cursor()->row() < editor_->document()->linesCount()
+                    ? editor_->document()->at(editor_->cursor()->row()).text : QString();
+            bool onlySpacesBefore = curText.left(editor_->cursor()->column()).trimmed().isEmpty();
+            uint bsCount = 1u;
+            if (onlySpacesBefore && editor_->cursor()->column() > 0) {
+                bsCount = qMin(4u, editor_->cursor()->column());
+            }
+            for (uint i=0u; i<bsCount; i++) {
+                editor_->cursor()->evaluateCommand(KeyCommand::Backspace);
+            }
+        }
+    }
+    else if (e->matches(QKeySequence::Paste)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::Paste);
+    }
+    else if (e->matches(QKeySequence::Copy)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::Copy);
+    }
+    else if (e->matches(QKeySequence::Cut)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::Cut);
+    }
+    else if (e->matches(QKeySequence::SelectAll)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::SelectAll);
+    }
+    else if (e->key()==Qt::Key_Y && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::RemoveLine);
+    }
+    else if (e->key()==Qt::Key_K && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::RemoveTail);
+    }
+    else if (e->matches(QKeySequence::Delete)) {
+        editor_->cursor()->evaluateCommand(KeyCommand::Delete);
+    }
+    else if (e->matches(QKeySequence::Undo)) {
+        editor_->cursor()->undo();
+    }
+    else if (e->matches(QKeySequence::Redo)) {
+        editor_->cursor()->redo();
+    }
+    else if (e->key()==Qt::Key_F && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->find_->trigger();
+    }
+    else if (e->key()==Qt::Key_H && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->replace_->trigger();
+    }
+    else if (e->key()==Qt::Key_Slash && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->cursor()->toggleComment();
+    }
+    else if (e->key()==Qt::Key_M && e->modifiers().testFlag(Qt::ControlModifier)) {
+        editor_->recordMacro_->trigger();
+    }
+    else if (e->key()==Qt::Key_Space && e->modifiers().testFlag(Qt::ControlModifier)) {
+        if (editor_->analizerInstance_)
+            doAutocomplete();
+    }
+    else if (e->key()==Qt::Key_B && e->modifiers().testFlag(Qt::ControlModifier)) {
+        if (editor_->hasBreakpointSupport())
+            editor_->toggleBreakpoint();
+    }
+    else if (e->key()==Qt::Key_L && e->modifiers().testFlag(Qt::ControlModifier)) {
+        if (editor_->plugin_->teacherMode_)
+            editor_->cursor()->toggleLock();
+    }
+    else if (e->key()==Qt::Key_Tab) {
+        if (editor_->analizerPlugin_ &&
+                Shared::AnalizerInterface::HardIndents!=editor_->analizerPlugin_->indentsBehaviour()) {
+            editor_->cursor()->evaluateCommand("    ");
+        }
+        else if (editor_->analizerInstance_ && editor_->analizerInstance_->helper()) {
+            doAutocomplete();
+        }
+    }
+    else if (!e->text().isEmpty() &&
+             !e->modifiers().testFlag(Qt::ControlModifier) &&
+             !ignoreTextEvent
+             ) {
+
+        if (e->text().length()==1 && e->text().at(0)==' ') {
+            tryCorrectKeyboardLayoutForLastLexem();
+        }
+
+        editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
+                                                   , e->text()
+                                                   , e->modifiers().testFlag(Qt::ShiftModifier)
+                                                   , editor_->isTeacherMode() && editor_->analizer()
+                                                  ));
+    }
+
+    Qt::Key tempSwichLayoutKey = Qt::Key(
+                editor_->mySettings()->value(
+                    SettingsPage::KeyTempSwitchLayoutButton
+                    , SettingsPage::DefaultTempSwitchLayoutButton)
+                .toUInt()
+                );
+    if (e->key()==tempSwichLayoutKey) {
+        Utils::altKeyPressed = true;
+    }
+    if (e->key()==Qt::Key_Shift) {
+        Utils::shiftKeyPressed = true;
+    }
+    findCursor();
+
+    if (!e->text().isEmpty() &&
+                 !e->modifiers().testFlag(Qt::ControlModifier) &&
+                 !ignoreTextEvent &&
+            e->text().at(0) !=' '
+                 )
+    {
+        typeTextFlag_ = true;
+    }
+    else {
+        typeTextFlag_ = false;
+    }
 }
 
 void EditorPlane::doAutocomplete()
@@ -3060,6 +3042,74 @@ void EditorPlane::setProperFormat(
     }
 
     p->setPen(c);
+}
+
+QString EditorPlane::tryCorrectKeyboardLayout(const QString &source) const
+{    
+    int lineNo = editor_->cursor_->row();
+    int colNo = editor_->cursor_->column();
+    if (editor_->analizerPlugin_->indentsBehaviour()==Shared::AnalizerInterface::HardIndents) {
+        colNo -= editor_->document()->indentAt(lineNo) * 2;
+    }
+    QString context = editor_->document()->textAt(lineNo);
+    QString invertedLayoutText;
+    invertedLayoutText.reserve(source.length());
+    for (int i=0; i<source.length(); ++i) {
+        invertedLayoutText[i] = Utils::cyrillicKey(source.at(i));
+        if (source.at(i).isUpper()) {
+            invertedLayoutText[i] = invertedLayoutText[i].toUpper();
+        }
+    }
+    if ( analizerHelper_->isKnownLexem(invertedLayoutText, lineNo, colNo, context) ) {
+        return invertedLayoutText;
+    }
+    else {
+        return source;
+    }
+}
+
+void EditorPlane::tryCorrectKeyboardLayoutForLastLexem()
+{
+    if (Utils::isRussianLayout()) {
+        return; // nothing to correct: already russian keyboard layout
+    }
+    if ( ! editor_->analizerPlugin_ || ! analizerHelper_) {
+        return; // has no information how to do it
+    }
+    if ( editor_->analizerPlugin_->primaryAlphabetIsLatin() ) {
+        return; // primary alphabet is latin, so do not correct
+    }
+    int lineNo = editor_->currentLineNumber();
+    const QString line = editor_->document()->textAt(lineNo);
+    int startPos = 0;
+    for (int i=line.length()-1; i>=0; --i) {
+        QChar ch = line.at(i);
+        if (ch.unicode() > 127) {
+            startPos = i+1;
+            break;
+        }
+    }
+    while (startPos<line.length() && line[startPos]==' ') {
+        ++startPos;
+    }
+    QString lexem = line.mid(startPos);
+    while (lexem.length() > 0) {
+        QString replacement = tryCorrectKeyboardLayout(lexem);
+        if (lexem!=replacement) {
+            for (int i=0; i<lexem.length(); ++i) {
+                editor_->cursor_->evaluateCommand(KeyCommand::Backspace);
+            }
+            editor_->cursor_->evaluateCommand(replacement);
+            break;
+        }
+        int spacePos = lexem.indexOf(' ');
+        if (-1==spacePos) {
+            break;
+        }
+        else {
+            lexem = lexem.mid(spacePos+1);
+        }
+    }
 }
 
 /** Width of editable area

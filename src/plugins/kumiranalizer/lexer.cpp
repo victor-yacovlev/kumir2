@@ -1542,6 +1542,17 @@ void Lexer::setSourceDirName(const QString &dir)
     _sourceDirName = dir;
 }
 
+bool Lexer::isLanguageReservedName(const QString &lexem) const
+{
+    if (_RxKeyWords.exactMatch(lexem) || _KeyWords.contains(lexem))
+        return true;
+    if (_RxTypes.exactMatch(lexem))
+        return true;
+    if (_RxConst.exactMatch(lexem))
+        return true;
+    return false;
+}
+
 QString Lexer::testingAlgorhitmName()
 {
     QString name = tr("@testing");
