@@ -37,6 +37,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/custom_variables.cmake")
 endif()
 
 set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(KUMIR2_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 find_package(Kumir2 REQUIRED)
 
 include_directories("${CMAKE_SOURCE_DIR}/include")
