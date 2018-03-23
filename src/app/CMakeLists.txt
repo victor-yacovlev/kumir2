@@ -1,15 +1,17 @@
 find_package(Kumir2 REQUIRED)
 # find_package(Llvm)
 
-# Various GUI configurations
+if (NOT APPLE)
+   # Various GUI configurations
+   add_opt_subdirectory(kumir2-classic)
+   add_opt_subdirectory(kumir2-highgrade)
+   add_opt_subdirectory(kumir2-ide)
+   add_opt_subdirectory(kumir2-teacher)
+else()
+   add_subdirectory(kumir2-macx)
+endif(NOT APPLE)
 
-add_opt_subdirectory(kumir2-classic)
-add_opt_subdirectory(kumir2-highgrade)
-add_opt_subdirectory(kumir2-ide)
-add_opt_subdirectory(kumir2-teacher)
 add_opt_subdirectory(kumir2-checkcourse)
-
-
 add_opt_subdirectory(kumir2-bc)
 add_opt_subdirectory(kumir2-xrun)
 

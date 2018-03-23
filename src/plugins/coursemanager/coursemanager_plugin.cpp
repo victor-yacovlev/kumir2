@@ -627,7 +627,7 @@ QString Plugin::initialize(const QStringList &configurationArguments,
                 qDebug()<<"Stream status"<<resultStream.status();
             }else {
                 resultStream.setStatus(QTextStream::WriteFailed);
-                std::cout <<"Cant open output file:" << runtimeArguments.value('o').toString().toLocal8Bit().data()<<endl;
+		//                std::cout <<"Cant open output file:" << runtimeArguments.value('o').toString().toLocal8Bit().data()<<endl;
             }
         }
         return "";

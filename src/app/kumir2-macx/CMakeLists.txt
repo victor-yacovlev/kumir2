@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Kumir2 REQUIRED)
 
 kumir2_add_launcher(
-    NAME            kumir2-teacher
-    SPLASHSCREEN    "coregui/splashscreens/professional.png"
+    NAME            Kumir
+    SPLASHSCREEN    "splashscreen-macx.png"
+    WINDOW_ICON	    "window-icon-macx.png"
     CONFIGURATION   "CourseManager,Editor,Actor*,KumirAnalizer,KumirCodeGenerator,KumirCodeRun,!CoreGUI"
 )
