@@ -4,7 +4,7 @@ stages:
   - dist
   - pack
   
-configure:unixlike:
+configure:mac:
   stage: configure
   script:
     - mkdir build
@@ -12,7 +12,6 @@ configure:unixlike:
     - cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release ..
   tags:
     - mac
-    - linux
   cache:
     key: $CI_PIPELINE_ID
     untracked: true
@@ -59,14 +58,13 @@ build:win32:
     paths:
       - build/
       
-build:unixlike:
+build:mac:
   stage: build
   script:
     - cd build
     - make
   tags:
     - mac
-    - linux
   cache:
     key: $CI_PIPELINE_ID
     untracked: true
