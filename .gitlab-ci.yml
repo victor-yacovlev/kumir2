@@ -9,6 +9,7 @@ configure:mac:
   script:
     - mkdir build
     - cd build
+    - export PATH=$QTDIR/bin:$PATH
     - cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release ..
   tags:
     - mac
@@ -62,6 +63,7 @@ build:mac:
   stage: build
   script:
     - cd build
+    - export PATH=$QTDIR/bin:$PATH
     - make
   tags:
     - mac
@@ -127,6 +129,7 @@ dist:mac:
     - mac
   script:
     - cd build
+    - export PATH=$QTDIR/bin:$PATH
     - macdeployqt Kumir.app
   cache:
     key: $CI_PIPELINE_ID
@@ -156,6 +159,7 @@ pack:mac:
   stage: pack
   script:
     - cd build
+    - export PATH=$QTDIR/bin:$PATH
     - macdeployqt Kumir.app -dmg
     - mv Kumir.dmg Kumir-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%.dmg
   cache:
