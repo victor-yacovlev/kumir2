@@ -3,6 +3,21 @@ stages:
   - build
   - dist
   - pack
+  
+configure:unixlike:
+  stage: configure
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release ..
+  tags:
+    - mac
+    - linux
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/  
 
 configure:win32:
   stage: configure
@@ -38,6 +53,20 @@ build:win32:
     - nmake
   tags:
     - windows
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
+      
+build:unixlike:
+  stage: build
+  script:
+    - cd build
+    - make
+  tags:
+    - mac
+    - linux
   cache:
     key: $CI_PIPELINE_ID
     untracked: true
@@ -93,6 +122,19 @@ dist:win32:
     untracked: true
     paths:
       - build/
+      
+dist:mac:
+  stage: dist
+  tags:
+    - mac
+  script:
+    - cd build
+    - macdeployqt Kumir.app
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
 
 pack:win32:
   stage: pack
@@ -111,3 +153,21 @@ pack:win32:
       - kumir2-*-install.exe
   tags:
     - windows
+    
+pack:mac:
+  stage: pack
+  script:
+    - cd build
+    - macdeployqt Kumir.app -dmg
+    - mv Kumir.dmg Kumir-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%.dmg
+  cache:
+    key: $CI_PIPELINE_ID
+    untracked: true
+    paths:
+      - build/
+  artifacts:
+    paths:
+      - Kumir-*.dmg
+  tags:
+    - mac
+  
