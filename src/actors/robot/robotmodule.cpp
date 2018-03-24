@@ -240,6 +240,8 @@ namespace ActorRobot {
         upWallLine->setPen(pen);
         Scene->addItem(upWallLine);
         upWallLine->setZValue(1);
+        Scene->update();
+        update();
     }
     
     void FieldItm::showCharMark(qreal upLeftCornerX, qreal upLeftCornerY, int size)
@@ -414,6 +416,8 @@ namespace ActorRobot {
         downWallLine->setPen(pen);
         Scene->addItem(downWallLine);
         downWallLine->setZValue(1);
+        Scene->update();
+        update();
     }
     
     void FieldItm::setLeftLine(QGraphicsLineItem *Line, QPen pen)
@@ -422,6 +426,8 @@ namespace ActorRobot {
         leftWallLine->setPen(pen);
         Scene->addItem(leftWallLine);
         leftWallLine->setZValue(1);
+        Scene->update();
+        update();
     }
     
     void FieldItm::setRightLine(QGraphicsLineItem *Line, QPen pen)
@@ -431,6 +437,8 @@ namespace ActorRobot {
         Scene->addItem(rightWallLine);
         
         rightWallLine->setZValue(1);
+        Scene->update();
+        update();
     }
     
     bool FieldItm::hasUpWall()

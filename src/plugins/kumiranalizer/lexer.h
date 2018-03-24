@@ -29,6 +29,8 @@ public:
     inline QString outputLexemName() const{ return QString::fromUtf8("вывод"); }
     void setSourceDirName(const QString &dir);
 
+    bool isLanguageReservedName(const QString &lexem) const;
+
 public slots:
     int splitIntoStatements(const QStringList &lines
                              , int baseLineNo

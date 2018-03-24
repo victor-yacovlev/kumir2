@@ -636,6 +636,20 @@ struct Chunk {
     QByteArray data;
 };
 
+static QString screenCharacter(const QChar &ch)
+{
+    switch (ch.unicode()) {
+    case '{':
+        return "\\u123 ";
+    case '}':
+        return "\\u125 ";
+    case '\\':
+        return "\\u92 ";
+    default:
+        return ch;
+    }
+}
+
 static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
                                         const TextLine & textLine,
                                         const bool primaryAlphabetIsLatin
@@ -658,7 +672,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
             chunk.bold = chunk.error = false;
             chunk.italic = latin && !primaryAlphabetIsLatin;
             chunk.format = highlight[i];
-            chunk.text += text[i];
+            chunk.text += screenCharacter(text[i]);
             result.push_back(chunk);
         }
         else if (result.last().format==highlight[i] &&
@@ -666,7 +680,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
         {
             // Continue the same format chunk of text
             Chunk & chunk = result.last();
-            chunk.text += text[i];
+            chunk.text += screenCharacter(text[i]);
         }
         else
         {
@@ -675,7 +689,7 @@ static QList<Chunk> splitLineIntoChunks(const ExtensionSystem::SettingsPtr s,
             chunk.bold = chunk.error = false;
             chunk.italic = latin && !primaryAlphabetIsLatin;
             chunk.format = highlight[i];
-            chunk.text += text[i];
+            chunk.text += screenCharacter(text[i]);
             result.push_back(chunk);
         }
     }

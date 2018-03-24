@@ -99,6 +99,10 @@ protected:
     void doAutocomplete();
     void keyReleaseEvent(QKeyEvent *);
     void setProperFormat(QPainter * p, Shared::LexemType type, const QChar &c);
+
+    QString tryCorrectKeyboardLayout(const QString &source) const;
+    void tryCorrectKeyboardLayoutForLastLexem();
+
 protected slots:
     void updateCursor();
     void updateText(int fromLine, int toLine);
@@ -131,6 +135,7 @@ private:
 
     QLabel * marginHintBox_;
     bool escPressFlag_;
+    bool typeTextFlag_;
 
 signals:
     void urlsDragAndDropped(const QList<QUrl> &);

@@ -19,6 +19,31 @@ void Analizer::connectSignalImportsChanged(QObject *receiver, const char *slot)
                      receiver, slot);
 }
 
+bool Analizer::isKnownLexem(const QString &lexem, int lineNo, int colNo, const QString &context) const
+{
+    // Check for keyword
+    if (lexem.length()>=2 && _lexer->isLanguageReservedName(lexem)) {
+        return true;
+    }
+
+    // TODO check for russian one-letter keyword 'и'
+
+    // Check for function/variable name
+    if (lexem.length()>=3) {
+        QString before = context.mid(0, colNo-lexem.length());
+        QString after = context.mid(colNo);
+        using Shared::Analizer::Suggestion;
+        QList<Suggestion> suggestions = suggestAutoComplete(lineNo, before, after);
+        Q_FOREACH(Suggestion suggestion, suggestions) {
+            if (suggestion.value.trimmed() == lexem) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void Analizer::setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language &language)
 {
     Lexer::setLanguage(resourcesRoot, language);
