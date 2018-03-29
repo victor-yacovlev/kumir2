@@ -162,7 +162,7 @@ pack:mac:
     - cd build
     - export PATH=$QTDIR_MAC/bin:$PATH
     - macdeployqt Kumir.app -dmg
-    - mv Kumir.dmg ../../Kumir-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%.dmg
+    - mv Kumir.dmg ../Kumir-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%.dmg
   cache:
     key: $CI_PIPELINE_ID
     untracked: true
