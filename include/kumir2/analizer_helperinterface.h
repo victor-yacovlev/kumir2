@@ -50,6 +50,8 @@ public:
      */
     inline virtual QString correctCapitalization(const QString & name, LexemType lxType) const
     { return name; }
+    inline virtual bool isKnownLexem(const QString &lexem, int lineNo, int colNo, const QString &context) const
+    { return false; }
 };
 
 

@@ -1438,14 +1438,13 @@ class PluginCppClass(CppClassBase):
     friend class %s;
     Q_OBJECT
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "kumir2.%s" FILE "%s")
+    Q_PLUGIN_METADATA(IID "kumir2.%s")
 #endif
     Q_INTERFACES(Shared::ActorInterface)
         """ % (
             self._module.get_run_thread_cpp_class_name(),
             self._module.get_base_cpp_class_name(),
-            self._module.get_module_cpp_namespace(),
-            ""  # self._module.json_file_name
+            self._module.get_module_cpp_namespace()
         )
         self.class_declaration_suffix = """
 private:

@@ -48,6 +48,7 @@ public:
     static void setSourceLanguage(const QDir & resourcesRoot, const QLocale::Language & language);
     static void setModuleAlwaysAvailable(const QByteArray & moduleName);
     void connectSignalImportsChanged(QObject *receiver, const char *slot);
+    bool isKnownLexem(const QString &lexem, int lineNo, int colNo, const QString &context) const;
 
 public slots:
 

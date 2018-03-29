@@ -18,7 +18,7 @@ class KumirRunPlugin
 {
     Q_OBJECT
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "kumir2.KumirCodeRun" FILE "")
+    Q_PLUGIN_METADATA(IID "kumir2.KumirCodeRun")
 #endif
     Q_INTERFACES(Shared::RunInterface)
 public:

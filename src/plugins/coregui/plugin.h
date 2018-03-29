@@ -47,7 +47,7 @@ class Plugin
     friend class MainWindow;
     Q_OBJECT
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "kumir2.CoreGUI" FILE "")
+    Q_PLUGIN_METADATA(IID "kumir2.CoreGUI")
 #endif
     Q_INTERFACES(Shared::GuiInterface)
 public:

@@ -38,7 +38,7 @@ Section "Kumir" Kumir
 
     SetOutPath "$INSTDIR"
     File LICENSE_RU.rtf
-    File vcredist_x86.exe
+    #File vcredist_x86.exe
     SetOutPath "$INSTDIR\bin"
     File /r bin\*
     SetOutPath "$INSTDIR\lib"
@@ -57,8 +57,8 @@ Section "Kumir" Kumir
     File /nonfatal /r python\*
 
 
-    ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
-    Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
+    #ExecWait '"$INSTDIR\vcredist_x86.exe" /passive'
+    #Delete /REBOOTOK "$INSTDIR\vcredist_x86.exe"
     
     WriteRegStr HKCR ".kum" "" "ru.niisi.kumir2.program"
     WriteRegStr HKCR "ru.niisi.kumir2.program" "" "Программа Кумир"
