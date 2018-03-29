@@ -2,7 +2,7 @@
 
 # Build filesystem layout, according to LSB
 set(KUMIR2_EXEC_DIR "Kumir.app/Contents/MacOS")             # executable binaries
-set(KUMIR2_LIBS_DIR "Kumir.app/Contents/MacOS")             # shared libraries
+set(KUMIR2_LIBS_DIR "Kumir.app/Contents/Frameworks/")       # shared libraries
 set(KUMIR2_PLUGINS_DIR "Kumir.app/Contents/PlugIns")        # libraries to be load at run time
 set(KUMIR2_RESOURCES_DIR "Kumir.app/Contents/Resources")    # non-executable resources
 set(KUMIR2_LIBEXECS_DIR "Kumir.app/Contents/MacOS")         # executable supplementary binaries
