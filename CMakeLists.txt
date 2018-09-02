@@ -17,7 +17,7 @@ elseif(PROVIDED_VERSION_INFO)
     message(STATUS "Variable-provided version info: BRANCH=${GIT_BRANCH}")
 else()
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info_tbht"
+        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info_tbht" "--toplevel=${CMAKE_SOURCE_DIR}"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE VERSION_DEFINITIONS
     )
