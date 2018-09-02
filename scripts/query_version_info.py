@@ -44,13 +44,18 @@ def _add_path_env(value):
     os.environ['PATH'] = new_path
 
 
+GIT_FOUND = False
+
 for path_variant in GIT_PATH_SEARCH:
     candidate = path_variant + os.path.sep + "git"
     if "nt" == os.name:
         candidate += ".exe"
     if os.path.exists(candidate):
         _add_path_env(path_variant)
+        GIT_FOUND = True
         break
+
+if not GIT_FOUND:
     sys.stderr.write("Git executable not found!\n")
     sys.exit(1)
 
