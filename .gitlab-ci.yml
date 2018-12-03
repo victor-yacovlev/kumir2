@@ -17,7 +17,7 @@ configure:mac:
     key: $CI_PIPELINE_ID
     untracked: true
     paths:
-      - build/  
+      - build/
 
 configure:win32:
   stage: configure
@@ -30,7 +30,7 @@ configure:win32:
     - call vsvars32.bat
     - call vcvars32.bat
     - cd build
-    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "NMake Makefiles" ..
+    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "Ninja" ..
   tags:
     - windows
   cache:
@@ -50,7 +50,7 @@ build:win32:
     - call vsvars32.bat
     - call vcvars32.bat
     - set CL=/MP
-    - nmake
+    - ninja -j8
   tags:
     - windows
   cache:
@@ -64,7 +64,7 @@ build:mac:
   script:
     - cd build
     - export PATH=$QTDIR_MAC/bin:$PATH
-    - make
+    - make -k -j8
   tags:
     - mac
   cache:
