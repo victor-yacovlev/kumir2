@@ -39,6 +39,9 @@ set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(KUMIR2_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 find_package(Kumir2 REQUIRED)
 
+if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+    include_directories("/usr/include/c++/v1")
+endif ()
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
