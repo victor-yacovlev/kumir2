@@ -297,66 +297,71 @@ protected:
 
 class Math {
 public:
-    inline static void init() {}
-    inline static void finalize() {}
+    static void init() {}
+    static void finalize() {}
 
-    inline static bool checkSumm(int32_t lhs, int32_t rhs) {
-        // Check for integer overflow
-        // CLang completely removes the standard check technique due to optimization.
-        // Use another method: cast to 64 bit
-        volatile const int64_t l = lhs;
-        volatile const int64_t r = rhs;
-        volatile const int64_t sum = l + r;
-        static const int64_t Right = 2147483647LL;
-        static const int64_t Left = -2147483648LL;
-        volatile bool result = sum >= Left && sum <= Right;
+    // Check for integer overflow
+    // CLang completely removes the standard check technique due to optimization.
+    // Use another method: cast to 64 bit
+    static bool checkSumm(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l + (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
         return result;
     }
 
-    inline static bool checkDiff(int32_t lhs, int32_t rhs) {
-        volatile const int64_t l = lhs;
-        volatile const int64_t r = rhs;
-        volatile const int64_t diff = l - r;
-        static const int64_t Right = 2147483647LL;
-        static const int64_t Left = -2147483648LL;
-        volatile bool result = diff >= Left && diff <= Right;
+    static bool checkDiff(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l - (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
         return result;
     }
 
-    inline static bool checkProd(int32_t lhs, int32_t rhs) {
-        // Check for integer overflow
-        volatile int64_t prod = int64_t(lhs) * int64_t(rhs);
-        return (prod >> 32)==(prod >> 31);
+    static bool checkProd(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l * (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
+        return result;
     }
 
-    inline static bool isCorrectDouble(double val) {
-        // !!!!!!!!!!! WARNING !!!!!!!!!!
+    static bool isCorrectDouble(double x)
+    {
+        // !!! WARNING !!
         // this works ONLY for IEEE754-compatible representation!
-        double * pval = &val;
-        uint64_t * pbits = reinterpret_cast<uint64_t*>(pval);
-        uint64_t bits = *pbits;
-        uint64_t expMask  = 0x7FF0000000000000;
-        uint64_t fracMask = 0x000FFFFFFFFFFFFF;
-        uint64_t exponent = (bits & expMask) >> 52;
-        uint64_t fraction = bits & fracMask;
-        bool Inf = (exponent==uint64_t(0x7FF)) && (fraction==uint64_t(0));
-        bool NaN = (exponent==uint64_t(0x7FF)) && (fraction>uint64_t(0));
-        return !Inf && !NaN;
+        union DoubleU64 {
+            double d;
+            uint64_t u;
+        } v;
+        v.d = x;
+        uint32_t expMask  = 0x7FF;
+        uint32_t exponent = (v.u >> 52) & expMask;
+        return exponent != expMask;
     }
 
-    inline static bool isCorrectReal(real val) {
+    static bool isCorrectReal(real val)
+    {
         return isCorrectDouble(val);
     }
 
-    inline static real abs(real x) { return ::fabs(x); }
+    static real abs(real x) { return ::fabs(x); }
 
-    inline static int imax(int x, int y) { return x>y? x : y; }
-    inline static int imin(int x, int y) { return x<y? x : y; }
+    static int imax(int x, int y) { return x > y ? x : y; }
+    static int imin(int x, int y) { return x < y ? x : y; }
 
-    inline static real rmax(real x, real y) { return x>y? x : y; }
-    inline static real rmin(real x, real y) { return x<y? x : y; }
+    static real rmax(real x, real y) { return x > y ? x : y; }
+    static real rmin(real x, real y) { return x < y ? x : y; }
 
-    inline static int iabs(int x) { return x>0? x : -x; }
+    static int iabs(int x)
+    {
+        unsigned int y = (unsigned int) x;
+        if (y != 0 && y + y == 0) {
+            Core::abort(Core::fromUtf8("Целочисленное переполнение"));
+            return 0;
+        }
+
+        return x >= 0 ? x : -x;
+    }
+
     inline static int intt(real x) {
         return static_cast<int>(::floor(x));
     }
@@ -437,7 +442,7 @@ public:
         real rresult = ::floor(pow(real(a), real(b)));
         if (Core::error.length()>0) return 0;
         real absval = fabs(rresult);
-        real mxintval = fabs(real(maxint()));
+        real mxintval = real(INT32_MAX);
         if (absval>mxintval)
         {
             Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
@@ -459,12 +464,9 @@ public:
         }
 #endif
     }
-    inline static int maxint() {
-        return int(0x7FFFFFFF);
-    }
-    inline static real maxreal() {
-        return 1.797693e+308;
-    }
+
+    static real maxreal() { return 1.7976931348623157e+308; }
+
     inline static int div(int a, int b) {
         if (b<=0) {
             Core::abort(Core::fromUtf8("Деление на не натуральное число"));
@@ -689,6 +691,11 @@ public:
             }
         }
         assert (base);
+
+        if (l == 0) {
+            error = EmptyWord;
+            return 0;
+        }
 
         unsigned int maxabs = (1U << 31) - (negative ? 0 : 1);
         unsigned int maxabsb = maxabs / base;
