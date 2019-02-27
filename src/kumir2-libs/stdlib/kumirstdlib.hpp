@@ -356,17 +356,24 @@ public:
     {
         unsigned int y = (unsigned int) x;
         if (y != 0 && y + y == 0) {
-            Core::abort(Core::fromUtf8("Целочисленное переполнение"));
+            Core::abort(L"Целочисленное переполнение");
             return 0;
         }
 
         return x >= 0 ? x : -x;
     }
 
-    inline static int intt(real x) {
-        return static_cast<int>(::floor(x));
+    static int intt(real x)
+    {
+        double y = ::floor((double) x);
+        if (!(INT32_MIN <= y && y <= INT32_MAX)) {
+            Core::abort(L"Целочисленное переполнение");
+            return 0;
+        }
+        return (int) y;
     }
-    inline static real arccos(real x) {
+
+    static real arccos(real x) {
         if (x>=-1.0 && x<=1.0) {
             return ::acos(x);
         }
@@ -375,8 +382,8 @@ public:
             return 0.0;
         }
     }
-    inline static real arcctg(real x) { return ::atan(1.0/x);}
-    inline static real arcsin(real x) {
+    static real arcctg(real x) { return ::atan(1.0/x);}
+    static real arcsin(real x) {
         if (x>=-1.0 && x<=1.0) {
             return ::asin(x);
         }
@@ -385,12 +392,12 @@ public:
             return 0.0;
         }
     }
-    inline static real arctg(real x) { return ::atan(x); }
+    static real arctg(real x) { return ::atan(x); }
 
-    inline static real cos(real x) { return ::cos(x); }
-    inline static real sin(real x) { return ::sin(x); }
-    inline static real tg(real x) { return ::tan(x); }
-    inline static real ctg(real x) {
+    static real cos(real x) { return ::cos(x); }
+    static real sin(real x) { return ::sin(x); }
+    static real tg(real x) { return ::tan(x); }
+    static real ctg(real x) {
         if (x==0.0) {
             Core::abort(Core::fromUtf8("Неверный аргумент тригонометрической функции"));
             return 0.0;
@@ -399,7 +406,7 @@ public:
             return 1.0/::tan(x);
         }
     }
-    inline static real lg(real x) {
+    static real lg(real x) {
         if (x>0.0) {
             real num = ::log(x);
             real den = ::log((real)10.0);
@@ -411,7 +418,7 @@ public:
             return 0.0;
         }
     }
-    inline static real ln(real x) {
+    static real ln(real x) {
         if (x>0.0) {
             return ::log(x);
         }
@@ -420,9 +427,9 @@ public:
             return 0.0;
         }
     }
-    inline static real exp(real x) { return ::exp(x); }
+    static real exp(real x) { return ::exp(x); }
 
-    inline static real sqrt(real x) {
+    static real sqrt(real x) {
         if (x>=0.0) {
             return ::sqrt(x);
         }
@@ -431,7 +438,7 @@ public:
             return 0.0;
         }
     }
-    inline static real pow(real a, real b) {
+    static real pow(real a, real b) {
         real result = ::pow(a, b);
         if (!Math::isCorrectReal(result)) {
             Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
@@ -451,19 +458,6 @@ public:
         }
         int iresult = static_cast<int>(rresult);
         return iresult;
-    }
-    template <typename A, typename B> inline static real safediv(A a, B b) {
-#ifdef NO_ZERODIV_CHECK
-        return static_cast<real>(a) / static_cast<real>(b);
-#else
-        if (b!=0) {
-            return static_cast<real>(a)/static_cast<real>(b);
-        }
-        else {
-            Core::abort(Core::fromUtf8("Деление на 0"));
-            return 0.0;
-        }
-#endif
     }
 
     static real maxreal() { return 1.7976931348623157e+308; }
