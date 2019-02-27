@@ -22,6 +22,7 @@
 #include <string>
 
 #include <cmath>
+#include <cfloat>
 
 #if defined(WIN32) || defined(_WIN32)
 #   include <Windows.h>
@@ -907,23 +908,31 @@ public:
         return result;
     }
 
-    static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
-        std::stringstream stream;
-        if (0 > decimals && !expform) {
+    static String sprintfReal(
+        real value, Char dot, bool expform,
+        int width, int decimals, char al
+    ) {
+        int sdecimals = decimals;
+        if (sdecimals < 0) {
             double absVal = fabs(double(value));
-            if (0.0 != value && (absVal < 0.0001 || absVal > 999999.))
-                expform = true;
-        }
-        if (expform) {
-            stream << std::scientific;
-//            stream.precision(2);
-            stream.precision(0>decimals ? 6 : decimals);
-        }
-        else {
-            stream << std::fixed;
-            stream.precision(0>decimals ? 6 : decimals);
+            sdecimals = 13;
+            if (0 < absVal && absVal <= DBL_MAX) {
+                if (absVal < 1e-4 || absVal >= 1e6) {
+                    expform = true;
+                }
+                if (!expform) {
+                    sdecimals -= ::floor(::log(absVal) / ::log(10.0));
+                }
+            }
         }
 
+        std::stringstream stream;
+        if (expform) {
+            stream << std::scientific;
+        } else {
+            stream << std::fixed;
+        }
+        stream.precision(sdecimals < 0 ? 6 : sdecimals);
         stream << value;
 
         std::string rpart = stream.str();
