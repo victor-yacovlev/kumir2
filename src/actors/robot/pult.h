@@ -13,30 +13,14 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-#include <QWidget>
 #ifndef ROBOT_PULT_H
 #define ROBOT_PULT_H
+
 #include "ui_pult.h"
-#include <kumir2-libs/widgets/pultlogger.h>
-#include <QtCore>
-#if QT_VERSION >= 0x050000
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
-#define SCROLL_STEP 10
-#define RESP_PANEL 50
-#define LOGGER_BUTTONS 140
-#define TEXT_STEP 14
-#undef TEXT
-#define UP 1
-#define DOWN 2
-#define LEFT 3
-#define RIGHT 4
-#define TEXT 5
 
-
-
+class pultLogger;
+class linkLight;
+class MainButton;
 
 class RoboPult : public QWidget, public Ui::RoboPult
 {
@@ -47,18 +31,15 @@ public:
 		 * @param parent ссыка на объект-владелец
 		 * @param fl флаги окна
 		 */
-    RoboPult ( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
-	/**
-		 * Деструктор
-		 */
-	//~RoboPult(){};
-    
-    bool Link(){return link;};
-    pultLogger * Logger;
-	pultLogger * pltLogger(){return Logger;};
-	public
-			slots:
-			void noLink();
+	RoboPult(QWidget* parent = 0, Qt::WindowFlags fl = 0);
+	~RoboPult();
+
+	bool Link() { return link; }
+	pultLogger *Logger;
+	pultLogger *pltLogger() { return Logger; }
+
+public slots:
+	void noLink();
 	void LinkOK();
 
 	void Up();
@@ -70,14 +51,14 @@ public:
 	void SwSvobodno();
 	void TempS();
 	void RadS();
-    void switchButt();
+	void switchButt();
 
 	void CenterButton();
-    void clearLog();
+	void clearLog();
 
 signals:
 	void goUp();
-    void robReset();
+	void robReset();
 	void goDown();
 	void goLeft();
 	void goRight();
@@ -104,8 +85,8 @@ signals:
 private:
 	bool link;
 	void paintEvent(QPaintEvent *);
-    linkLight * greenLight;
-	MainButton* buttUp,*buttDown,*buttLeft,*buttRight,*buttCenter;
-	MainButton* askStena,*askFree,*buttRad,*buttTemp;
+	linkLight  *greenLight;
+	MainButton *buttUp, *buttDown, *buttLeft, *buttRight, *buttCenter;
+	MainButton *askStena, *askFree, *buttRad, *buttTemp;
 };
 #endif

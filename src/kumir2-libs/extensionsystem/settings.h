@@ -23,30 +23,30 @@ typedef QWeakPointer<class Settings> SettingsWPtr;
 
 class EXTENSIONSYSTEM_EXPORT Settings
 {
-    friend class PluginManager;
-    friend struct PluginManagerImpl;
-    friend class KPlugin;
+	friend class PluginManager;
+	friend struct PluginManagerImpl;
+	friend class KPlugin;
 public:
 
-    QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;
-    void setValue(const QString & key, const QVariant & value_);
-    QString locationDirectory() const;
-    QString settingsFilePath() const;
-    void flush();
+	QVariant value(const QString & key, const QVariant & default_ = QVariant()) const;
+	void setValue(const QString & key, const QVariant & value_);
+	QString locationDirectory() const;
+	QString settingsFilePath() const;
+	void flush();
 
-    ~Settings();
+	~Settings();
 
 protected:
-    explicit Settings(const QString & pluginName_);
-    void changeWorkingDirectory(const QString & workDirPath);
-    static QString defaultSettingsScope();
+	explicit Settings(const QString & pluginName_);
+	void changeWorkingDirectory(const QString & workDirPath);
+	static QString defaultSettingsScope();
 
 private:
-    QString pluginName_;
-    QString workDirPath_;
-    QScopedPointer<QMutex> mutex_;
-    QScopedPointer<QSettings> qsettings_;
-    QString settingsFile_;
+	QString pluginName_;
+	QString workDirPath_;
+	QScopedPointer<QMutex> mutex_;
+	QScopedPointer<QSettings> qsettings_;
+	QString settingsFile_;
 };
 
 } // namespace ExtensionSystem
