@@ -8,7 +8,7 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/src/3rdparty/boost-1.54.0)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-if(MSVC)
+if(1)
     # Use provided ZLib sources
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib)
     set(3RDPARTY_LIBS )

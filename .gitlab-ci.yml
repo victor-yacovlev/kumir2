@@ -3,174 +3,240 @@ stages:
   - build
   - dist
   - pack
-  
-configure:mac:
+
+
+configure:winxp:
   stage: configure
-  script:
-    - mkdir build
-    - cd build
-    - export PATH=$QTDIR_MAC/bin:$PATH
-    - cmake -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release ..
   tags:
-    - mac
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
+    - winxp
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-winxp-cfg
+    expire_in: 1 hour
+    when: always
     paths:
       - build/
+  script:
+    - if exist build\ rd /s/q build\
+    - md build
+    - cd build
+    - set PATH=%MINGWDIR%\bin;C:\Program Files\CMake\bin
+    - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DUSE_QT=4 -DQT_QMAKE_EXECUTABLE=%QT4DIR%/bin/qmake.exe -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "MinGW Makefiles" ..
+
+
+build:winxp:
+  stage: build
+  tags:
+    - winxp
+  dependencies:
+    - configure:winxp
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-winxp-build
+    expire_in: 1 hour
+    when: always
+    paths:
+      - build/
+  script:
+    - set PATH=%MINGWDIR%\bin;C:\Program Files\CMake\bin
+    - cd build
+    - echo %date% %time%
+    - mingw32-make -j8 -k
+    - echo %date% %time%
+
+
+dist:winxp:
+  stage: dist
+  tags:
+    - winxp
+  dependencies:
+    - build:winxp
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-winxp-dist
+    paths:
+      - kumir2-*-install.exe
+  script:
+    - if exist build\pack\ rd /s/q build\pack\
+    - if exist kumir2-*-install.exe del /f/s/q kumir2-*-install.exe
+    - md build\pack
+    - cd build\pack
+    - copy ..\..\LICENSE_RU.rtf .
+    - xcopy /ise ..\bin bin
+    - xcopy /ise ..\lib lib
+    - xcopy /ise ..\share share
+    - copy %QT4DIR%\bin\QtCore4.dll bin\
+    - copy %QT4DIR%\bin\QtGui4.dll bin\
+    - copy %QT4DIR%\bin\QtMultimedia4.dll bin\
+    - copy %QT4DIR%\bin\QtNetwork4.dll bin\
+    - copy %QT4DIR%\bin\QtOpenGL4.dll bin\
+    - copy %QT4DIR%\bin\QtScript4.dll bin\
+    - copy %QT4DIR%\bin\QtSql4.dll bin\
+    - copy %QT4DIR%\bin\QtSvg4.dll bin\
+    - copy %QT4DIR%\bin\QtXml4.dll bin\
+    - copy %QT4DIR%\bin\QtXmlPatterns4.dll bin\
+    - xcopy "%MINGWDIR%\bin\*.dll" bin\
+    - cd ..\..
+    - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=build\pack\nsis_version_info.nsh
+    - cd build\pack
+    - copy ..\..\kumir2.nsi .
+    - call "%NSIS_EXECUTABLE%" kumir2.nsi
+    - move kumir2-*-install.exe ..\..\
+
 
 configure:win32:
   stage: configure
+  tags:
+    - windows
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-win32-cfg
+    expire_in: 1 hour
+    when: always
+    paths:
+      - build/
   script:
+    - if exist build\ rd /s/q build\
     - md build
+    - cd build
     - set QMAKESPEC=win32-msvc2015
     - set INCLUDE=
     - set LIB=
     - set LIBPATH=
     - call vsvars32.bat
     - call vcvars32.bat
-    - cd build
-    - cmake -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "Ninja" ..
-  tags:
-    - windows
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
+    - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -Wno-dev -DCMAKE_PREFIX_PATH="%QTDIR%\lib\cmake" -DQt5_DIR="%QTDIR%\lib\cmake\Qt5" -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=%PYTHON_EXECUTABLE% -G "Ninja" ..
+
 
 build:win32:
   stage: build
+  tags:
+    - windows
+  dependencies:
+    - configure:win32
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-win32-build
+    expire_in: 1 hour
+    when: always
+    paths:
+      - build/
   script:
     - cd build
-    - set QMAKESPEC=win32-msvc2016
     - set INCLUDE=
     - set LIB=
     - set LIBPATH=
     - call vsvars32.bat
     - call vcvars32.bat
     - set CL=/MP
-    - ninja -j8
-  tags:
-    - windows
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
-      
-build:mac:
-  stage: build
-  script:
-    - cd build
-    - export PATH=$QTDIR_MAC/bin:$PATH
-    - make -k -j8
-  tags:
-    - mac
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
+    - echo %date% %time%
+    - ninja -v -j8
+    - echo %date% %time%
+
 
 dist:win32:
   stage: dist
-  script:
-    - cd build
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\lib\
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\share\
-    - xcopy /Y /S /E bin kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin
-    - xcopy /Y /S /E lib kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\lib
-    - xcopy /Y /S /E share kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\share
-    - copy /Y  ..\LICENSE_RU.rtf kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\
-    - copy /Y  %QTDIR%\bin\Qt5Core.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Gui.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Multimedia.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5MultimediaWidgets.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Network.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5OpenGL.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Positioning.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5PrintSupport.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Qml.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Quick.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Script.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Sensors.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Sql.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Svg.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Widgets.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5Xml.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - copy /Y  %QTDIR%\bin\Qt5XmlPatterns.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms
-    - copy /Y  %QTDIR%\plugins\platforms\qminimal.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
-    - copy /Y  %QTDIR%\plugins\platforms\qwindows.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
-    - copy /Y  %QTDIR%\plugins\platforms\qoffscreen.dll kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\platforms\
-    - xcopy /Y /S /E  "%VC_REDIST_DIR%\x86\Microsoft.VC140.CRT\*.dll" kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\bin\
-    - md kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src
-    - cd ..
-    - call %PYTHON_EXECUTABLE% scripts\get_bundle_name.py --prefix=git@20archive@20--out=build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src\kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
-    - copy /Y  kumir2.nsi build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\
-    - copy /Y  kumir2.nsi build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src\
-    - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\nsis_version_info.nsh
-    - copy /Y  build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\nsis_version_info.nsh build\kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%\src\
-    - run_git_archive.cmd
   tags:
     - windows
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
+  dependencies:
+    - build:win32
+  artifacts:
+    name: arts-%CI_PIPELINE_ID%-win32-dist
+    paths:
+      - kumir2-*-install.exe
+  script:
+    - if exist build\pack\ rd /s/q build\pack\
+    - if exist kumir2-*-install.exe del /f/s/q kumir2-*-install.exe
+    - md build\pack
+    - cd build\pack
+    - copy ..\..\LICENSE_RU.rtf .
+    - xcopy /ise ..\bin bin
+    - xcopy /ise ..\lib lib
+    - xcopy /ise ..\share share
+    - copy %QTDIR%\bin\Qt5Core.dll bin\
+    - copy %QTDIR%\bin\Qt5Gui.dll bin\
+    - copy %QTDIR%\bin\Qt5Multimedia.dll bin\
+    - copy %QTDIR%\bin\Qt5MultimediaWidgets.dll bin\
+    - copy %QTDIR%\bin\Qt5Network.dll bin\
+    - copy %QTDIR%\bin\Qt5OpenGL.dll bin\
+    - copy %QTDIR%\bin\Qt5Positioning.dll bin\
+    - copy %QTDIR%\bin\Qt5PrintSupport.dll bin\
+    - copy %QTDIR%\bin\Qt5Qml.dll bin\
+    - copy %QTDIR%\bin\Qt5Quick.dll bin\
+    - copy %QTDIR%\bin\Qt5Script.dll bin\
+    - copy %QTDIR%\bin\Qt5Sensors.dll bin\
+    - copy %QTDIR%\bin\Qt5Sql.dll bin\
+    - copy %QTDIR%\bin\Qt5Svg.dll bin\
+    - copy %QTDIR%\bin\Qt5Widgets.dll bin\
+    - copy %QTDIR%\bin\Qt5Xml.dll bin\
+    - copy %QTDIR%\bin\Qt5XmlPatterns.dll bin\
+    - md bin\platforms
+    - copy %QTDIR%\plugins\platforms\qminimal.dll bin\platforms\
+    - copy %QTDIR%\plugins\platforms\qwindows.dll bin\platforms\
+    - copy %QTDIR%\plugins\platforms\qoffscreen.dll bin\platforms\
+    - xcopy "%VC_REDIST_DIR%\x86\Microsoft.VC140.CRT\*.dll" bin\
+    - md src
+    - cd ..\..
+    - call %PYTHON_EXECUTABLE% scripts\get_bundle_name.py --prefix=git@20archive@20--out=build\pack\src\kumir2- --suffix=.src.zip@20--format=zip@20-9@20HEAD --out=run_git_archive.cmd
+    - copy kumir2.nsi build\pack\
+    - copy kumir2.nsi build\pack\src\
+    - call %PYTHON_EXECUTABLE% scripts\query_version_info.py --mode=nsis_include_file --out=build\pack\nsis_version_info.nsh
+    - type build\pack\nsis_version_info.nsh
+    - copy build\pack\nsis_version_info.nsh build\pack\src\
+    - type run_git_archive.cmd
+    - call run_git_archive.cmd
+    - cd build\pack
+    - call "%NSIS_EXECUTABLE%" kumir2.nsi
+    - move kumir2-*-install.exe ..\..\
+
+
+configure:mac:
+  stage: configure
+  tags:
+    - mac
+  artifacts:
+    name: arts-$CI_PIPELINE_ID-mac-cfg
+    expire_in: 1 hour
+    when: always
     paths:
       - build/
-      
+  script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - export PATH=$QTDIR_MAC/bin:$PATH
+    - cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DUSE_QT=5 -DCMAKE_BUILD_TYPE=Release ..
+
+build:mac:
+  stage: build
+  tags:
+    - mac
+  dependencies:
+    - configure:mac
+  artifacts:
+    name: arts-$CI_PIPELINE_ID-mac-build
+    expire_in: 1 hour
+    when: always
+    paths:
+      - build/
+  script:
+    - cd build
+    - export PATH=$QTDIR_MAC/bin:$PATH
+    - date
+    - make -k -j8
+    - date
+
+
 dist:mac:
   stage: dist
   tags:
     - mac
+  dependencies:
+    - build:mac
+  artifacts:
+    name: arts-$CI_PIPELINE_ID-mac-dist
+    paths:
+      - Kumir-$CI_COMMIT_REF_NAME-$CI_PIPELINE_ID.dmg
   script:
     - cd build
     - export PATH=$QTDIR_MAC/bin:$PATH
     - macdeployqt Kumir.app
     - echo "Libraries = Frameworks" >> Kumir.app/Contents/Resources/qt.conf
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
-
-pack:win32:
-  stage: pack
-  script:
-    - cd build
-    - cd kumir2-%CI_COMMIT_REF_NAME%-%CI_PIPELINE_ID%
-    - call "%NSIS_EXECUTABLE%" kumir2.nsi
-    - move /Y kumir2-*-install.exe ..\..\
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
-  artifacts:
-    paths:
-      - kumir2-*-install.exe
-  tags:
-    - windows
-    
-pack:mac:
-  stage: pack
-  script:
-    - cd build
-    - export PATH=$QTDIR_MAC/bin:$PATH
     - macdeployqt Kumir.app -dmg
     - mv Kumir.dmg ../Kumir-$CI_COMMIT_REF_NAME-$CI_PIPELINE_ID.dmg
-  cache:
-    key: $CI_PIPELINE_ID
-    untracked: true
-    paths:
-      - build/
-  artifacts:
-    paths:
-      - Kumir-*.dmg
-  tags:
-    - mac
-  
+
