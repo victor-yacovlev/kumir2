@@ -141,30 +141,33 @@ void EditorInstance::loadDocument(const QString &fileName, QString * error)
     }
 }
 
-void EditorInstance::loadDocument(const Shared::Analizer::SourceFileInterface::Data &data, QString * error)
-{
-    Shared::AnalizerInterface * analizerPlugin = nullptr;
-    Shared::Analizer::InstanceInterface * analizerInstance = nullptr;
-
+void EditorInstance::loadDocument(
+    const Shared::Analizer::SourceFileInterface::Data &data,
+    QString * error
+) {
     QList<Shared::AnalizerInterface*> analizers =
             ExtensionSystem::PluginManager::instance()
             ->findPlugins<Shared::AnalizerInterface>();
 
     for (int i=0; i<analizers.size(); i++) {
         if (analizers[i]->defaultDocumentFileNameSuffix() == data.canonicalSourceLanguageName) {
-            analizerPlugin = analizers[i];
-            analizerInstance = analizerPlugin->createInstance();
+            analizerPlugin_ = analizers[i];
+            delete analizerInstance_;
+            analizerInstance_ = 0;
+            analizerInstance_ = analizerPlugin_->createInstance();
             if (data.sourceUrl.isLocalFile()) {
-                const QString localPath = data.sourceUrl.toLocalFile();
-                const QString dirName = QFileInfo(localPath).absoluteDir().path();
-                analizerInstance->setSourceDirName(dirName);
+                QString localPath = data.sourceUrl.toLocalFile();
+                QString dirName = QFileInfo(localPath).absoluteDir().path();
+                analizerInstance_->setSourceDirName(dirName);
             }
             break;
         }
     }
 
-    analizerPlugin_ = analizerPlugin;
-    analizerInstance_ = analizerInstance;
+    if (plane_) {
+        plane_->updateAnalizer();
+    }
+
     if (analizerInstance_) {
         analizerInstance_->connectUpdateRequest(this, SLOT(updateFromAnalizer()));
     }
@@ -648,7 +651,7 @@ EditorInstance::EditorInstance(
     createConnections();
 
     timerId_ = startTimer(50);
-    autoScrollTimerId_ = startTimer(100);   
+    autoScrollTimerId_ = startTimer(100);
     clipboardCheckTimerId_ = startTimer(250);
 
     updateSettings(QStringList());
@@ -660,6 +663,19 @@ EditorInstance::EditorInstance(
         analizerInstance_->connectUpdateRequest(this, SLOT(updateFromAnalizer()));
     }
 }
+
+EditorInstance::~EditorInstance()
+{
+    delete doc_;
+    doc_ = 0;
+    delete analizerInstance_;
+    analizerInstance_ = 0;
+
+    if (plane_)
+        plane_->deleteLater();
+    killTimer(timerId_);
+}
+
 
 void EditorInstance::setupUi()
 {
@@ -1049,14 +1065,6 @@ TextDocument * EditorInstance::document()
 Shared::Analizer::InstanceInterface * EditorInstance::analizer()
 {
     return analizerInstance_;
-}
-
-
-EditorInstance::~EditorInstance()
-{
-    delete doc_;
-    plane_->deleteLater();
-    killTimer(timerId_);
 }
 
 

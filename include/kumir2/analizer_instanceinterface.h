@@ -68,6 +68,7 @@ public:
     }
 
     virtual AnalizerInterface * plugin() = 0;
+    virtual ~InstanceInterface() {};
 
 };
 

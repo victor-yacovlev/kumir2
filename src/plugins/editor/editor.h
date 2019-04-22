@@ -151,8 +151,8 @@ private /* methods */:
 
 
     void focusInEvent(QFocusEvent *e);
-    void loadMacros();    
-    void createActions();    
+    void loadMacros();
+    void createActions();
     void timerEvent(QTimerEvent *e);
 
 private /* fields */:

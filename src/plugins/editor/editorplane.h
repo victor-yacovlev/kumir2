@@ -3,6 +3,7 @@
 
 #include <kumir2-libs/extensionsystem/settings.h>
 #include <kumir2-libs/docbookviewer/docbookview.h>
+#include <kumir2/analizer_instanceinterface.h>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets>
@@ -38,6 +39,7 @@ public:
     void updateScrollBars();
     void findCursor();
     void ensureCursorVisible();
+    void updateAnalizer();
 
 public slots:
     void selectAll();
@@ -112,8 +114,9 @@ protected slots:
 
 private:
     int timerId_;
-    class EditorInstance * editor_;
-    Shared::Analizer::HelperInterface * analizerHelper_;
+    class EditorInstance *editor_;
+    Shared::Analizer::InstanceInterface *analizer_;
+    Shared::Analizer::HelperInterface *helper_;
     bool caseInsensitive_;
 
     QPoint marginMousePressedPoint_;
