@@ -1,11 +1,12 @@
 #ifndef ACTORINTERFACE_H
 #define ACTORINTERFACE_H
 #include <QtCore>
-//Kumir actor interface
+
+class QMenu;
+class QWidget;
 
 namespace Shared
 {
-
 
 /** This MUST be returned by concrete function slot */
 enum EvaluationStatus {
@@ -16,8 +17,6 @@ enum EvaluationStatus {
     ES_RezResult, /* Success, has indirect result */
     ES_StackRezResult /* Success, has both indirect and stack value result */
 };
-
-
 
 class ActorInterface
 {
@@ -58,10 +57,9 @@ public /*types*/:
         QMap<QLocale::Language, QString> localizedNames; /* optional */
         quint8 dimension; /* array dimension (from 1 to 3) or 0 in scalar case */
 
-        inline Argument()
-            : accessType(InArgument), type(Void), dimension(0u) {}
+        Argument() : accessType(InArgument), type(Void), dimension(0u) {}
 
-        inline Argument(const QByteArray & name, const FieldType t)
+        Argument(const QByteArray & name, const FieldType t)
             : accessType(InArgument), type(t), asciiName(name), dimension(0u) {}
     };
 
@@ -96,33 +94,33 @@ public /*methods*/:
     virtual QString localizedModuleName(const QLocale::Language lang) const = 0;
 
     /** List of available functions in programming language independent format */
-    inline virtual FunctionList functionList() const { return FunctionList(); }
+    virtual FunctionList functionList() const { return FunctionList(); }
 
     /** List of custom-provided scalar types */
-    inline virtual TypeList typeList() const { return TypeList(); }
+    virtual TypeList typeList() const { return TypeList(); }
 
     /** Runtime values for function template parameters */
-    inline virtual QVariantList templateParameters() const { return defaultTemplateParameters(); }
+    virtual QVariantList templateParameters() const { return defaultTemplateParameters(); }
 
     /** List of actor dependencies */
-    inline virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
+    virtual QList<ActorInterface*> usesList() const { return QList<ActorInterface*>(); }
 
     /** Default parameters for template names */
-    inline virtual QVariantList defaultTemplateParameters() const { return QVariantList(); }
+    virtual QVariantList defaultTemplateParameters() const { return QVariantList(); }
 
 
     /* === Actor control methods === */
 
     /** Reset actor to initial state before execution starts */
-    inline virtual void reset() {}
+    virtual void reset() {}
 
     /** Set/unset animation enabled flag */
-    inline virtual void setAnimationEnabled(bool on) { Q_UNUSED(on); }
+    virtual void setAnimationEnabled(bool on) { Q_UNUSED(on); }
 
     /** Load actor data from external resource
      * @param source ready-to-read (i.e. in opened state abstract IO device
      */
-    inline virtual void loadActorData(QIODevice * source) { Q_UNUSED(source); }
+    virtual void loadActorData(QIODevice * source) { Q_UNUSED(source); }
 
 
     /* === Actor initialization methods === */
@@ -132,22 +130,22 @@ public /*methods*/:
      * @param receiver  QObject-derived signal receiver
      * @param methid  parameterless Qt slot created by macro SLOT(...)
      */
-    inline virtual void connectSync(QObject * receiver, const char * method) {
+    virtual void connectSync(QObject * receiver, const char * method) {
         Q_UNUSED(receiver); Q_UNUSED(method);
     }
 
-    inline virtual void notifyGuiReady() { }
+    virtual void notifyGuiReady() { }
 
     /* === Actor utilities === */
 
     /** Converts custom-type scalar value to string representation */
-    inline virtual QString customValueToString(
+    virtual QString customValueToString(
             const QByteArray & clazz,
             const QVariant & value /* invalid value of a list of field values */
             ) const { Q_UNUSED(clazz); Q_UNUSED(value); return QString(); }
 
     /** Converts string representation in custom-type value */
-    inline virtual QVariant customValueFromString(
+    virtual QVariant customValueFromString(
             const QByteArray & clazz,
             const QString & stringg
             ) const { Q_UNUSED(clazz); Q_UNUSED(stringg); return QVariant::Invalid; }
@@ -164,16 +162,16 @@ public /*methods*/:
      * @param arguments arguments passed to method
      * @return state of method evaluation (see EvaluationStatus for more details)
      */
-    inline virtual EvaluationStatus evaluate(quint32 id, const QVariantList & arguments) { Q_UNUSED(id); Q_UNUSED(arguments); return ES_Error; }
+    virtual EvaluationStatus evaluate(quint32 id, const QVariantList & arguments) { Q_UNUSED(id); Q_UNUSED(arguments); return ES_Error; }
 
     /** Last evaluated method return-value */
-    inline virtual QVariant result() const { return QVariant::Invalid; }
+    virtual QVariant result() const { return QVariant::Invalid; }
 
     /** Last evaluated method error text, or an empty string in case of success */
-    inline virtual QString errorText() const { return QString(); }
+    virtual QString errorText() const { return QString(); }
 
     /** Out-Argument and InOut-Argument values left from last evaluated method */
-    inline virtual QVariantList algOptResults() const { return QVariantList(); }
+    virtual QVariantList algOptResults() const { return QVariantList(); }
 
     /** Terminate long-running evaluation in case of program interrupt */
     virtual void terminateEvaluation() = 0;
@@ -182,24 +180,24 @@ public /*methods*/:
     /*=== Actor GUI specification === */
 
     /** Main actor's window (if exists) */
-    inline virtual class QWidget * mainWidget() { return 0; }
+    virtual QWidget* mainWidget() { return 0; }
 
     /** Control window (if exists) */
-    inline virtual class QWidget * pultWidget() { return 0; }
+    virtual QWidget * pultWidget() { return 0; }
 
     /** Main window icon file name (without prefix and extension) */
-    inline virtual QString mainIconName() const {return QString(); }
+    virtual QString mainIconName() const {return QString(); }
 
     /** Control window icon file name (without prefix and extension) */
-    inline virtual QString pultIconName() const {return QString(); }
+    virtual QString pultIconName() const {return QString(); }
 
     /** List of toplevel GUI-menus provided by actor */
-    inline virtual QList<class QMenu*> moduleMenus() const { return QList<class QMenu*>(); }
+    virtual QList<QMenu*> moduleMenus() const { return QList<QMenu*>(); }
 
 
     /*=== Generic C++ methods === */
     /** The destructor. Must be declared virtual */
-    inline virtual ~ActorInterface() {}
+    virtual ~ActorInterface() {}
 };
 
 template <class StringType>

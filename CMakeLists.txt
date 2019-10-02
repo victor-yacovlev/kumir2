@@ -1,7 +1,6 @@
 project(Kumir2)
 cmake_minimum_required(VERSION 3.0)
 find_package(PythonInterp 3.2.0 REQUIRED)
-set(USE_QT 5)   # No more Qt4 support!!!
 message(STATUS "Cmake prefix path: ${CMAKE_PREFIX_PATH}")
 
 # Query for version info and pass it as compile definitions
@@ -18,7 +17,7 @@ elseif(PROVIDED_VERSION_INFO)
     message(STATUS "Variable-provided version info: BRANCH=${GIT_BRANCH}")
 else()
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info_tbht"
+        COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_SOURCE_DIR}/scripts/query_version_info.py" "--mode=cmake_version_info_tbht" "--toplevel=${CMAKE_SOURCE_DIR}"
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE VERSION_DEFINITIONS
     )
@@ -40,6 +39,9 @@ set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(KUMIR2_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 find_package(Kumir2 REQUIRED)
 
+if (${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+    include_directories("/usr/include/c++/v1")
+endif ()
 include_directories("${CMAKE_SOURCE_DIR}/include")
 include_directories("${CMAKE_SOURCE_DIR}/src")
 

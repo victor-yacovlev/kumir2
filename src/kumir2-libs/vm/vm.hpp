@@ -1496,7 +1496,7 @@ void KumirVM::do_stdcall(uint16_t alg)
     }
     /* алг цел МАКСЦЕЛ */
     case 0x001c: {
-        int r = Kumir::Math::maxint();
+        int r = INT32_MAX;
         valuesStack_.push(Variable(r));
         break;
     }

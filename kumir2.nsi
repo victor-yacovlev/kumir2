@@ -45,8 +45,9 @@ Section "Kumir" Kumir
     File /r lib\*
     SetOutPath "$INSTDIR\share"
     File /r share\*
+
     SetOutPath "$INSTDIR\src"
-    File /r src\*
+    File /nonfatal /r src\*
     #SetOutPath "$INSTDIR\include"
     #File /r /nonfatal "include\*"
 

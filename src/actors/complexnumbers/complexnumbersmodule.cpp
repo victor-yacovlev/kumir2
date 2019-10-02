@@ -74,7 +74,7 @@ Complex ComplexNumbersModule::runOperatorASTERISK(const Complex& x, const Comple
 {
     Complex result;
     result.re = x.re*y.re - x.im*y.im;
-    result.im = y.im*x.re + x.re*y.im;
+    result.im = x.re*y.im + x.im*y.re;
     return result;
 }
 

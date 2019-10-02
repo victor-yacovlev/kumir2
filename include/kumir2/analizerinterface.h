@@ -34,7 +34,7 @@ public:
     virtual SyntaxHighlightBehaviour syntaxHighlightBehaviour() const = 0;
     virtual QString languageName() const = 0;
     virtual QWidget * languageQuickReferenceWidget() { return 0; }
-    inline virtual QByteArray asciiLanguageIdentifier() const { return languageName().toLower().toLatin1(); }
+    virtual QByteArray asciiLanguageIdentifier() const { return languageName().toLower().toLatin1(); }
     virtual QString defaultDocumentFileNameSuffix() const = 0;
 
     virtual Analizer::InstanceInterface * createInstance() = 0;

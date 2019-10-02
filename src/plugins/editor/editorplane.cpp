@@ -35,7 +35,8 @@ uint EditorPlane::MarginWidthDefault = 15u /*px*/;
 EditorPlane::EditorPlane(EditorInstance * editor)
     : QWidget(editor)
     , editor_(editor)
-    , analizerHelper_(0)
+    , analizer_(editor ? editor->analizer() : 0)
+    , helper_(0)
     , caseInsensitive_(false)
     , marginMousePressedPoint_(QPoint(-1000, -1000))
     , delimeterRuleMousePressedPoint_(QPoint(-1000, -1000))
@@ -52,9 +53,9 @@ EditorPlane::EditorPlane(EditorInstance * editor)
     , escPressFlag_(false)
     , typeTextFlag_(false)
 {
-    if (editor->analizer()) {
-        caseInsensitive_ = editor->analizer()->plugin()->caseInsensitiveGrammatic();
-        analizerHelper_ = editor->analizer()->helper();
+    if (analizer_) {
+        helper_ = analizer_->helper();
+        caseInsensitive_ = analizer_->plugin()->caseInsensitiveGrammatic();
     }
 
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -62,9 +63,15 @@ EditorPlane::EditorPlane(EditorInstance * editor)
 
     setAttribute(Qt::WA_Hover);
     setMouseTracking(true);
-    setAcceptDrops(true);          
+    setAcceptDrops(true);
     initMouseCursor();
 
+}
+
+void EditorPlane::updateAnalizer()
+{
+    analizer_ = editor_ ? editor_->analizer() : 0;
+    helper_ = analizer_ ? analizer_->helper() : 0;
 }
 
 void EditorPlane::updateSettings(const QStringList & keys)
@@ -1005,7 +1012,7 @@ void EditorPlane::paintEvent(QPaintEvent *e)
     paintText(&p, e->rect().translated(-offset()));
 
     // Paint structure marks
-    if (editor_->analizer() && Shared::AnalizerInterface::PythonIndents == editor_->analizer()->plugin()->indentsBehaviour()) {
+    if (analizer_ && Shared::AnalizerInterface::PythonIndents == analizer_->plugin()->indentsBehaviour()) {
         paintProgramStructureLines(&p, e->rect().translated(-offset()));
     }
 
@@ -1630,7 +1637,7 @@ void EditorPlane::keyPressEvent(QKeyEvent *e)
         editor_->cursor()->evaluateCommand(Utils::textByKey(Qt::Key(e->key())
                                                    , e->text()
                                                    , e->modifiers().testFlag(Qt::ShiftModifier)
-                                                   , editor_->isTeacherMode() && editor_->analizer()
+                                                   , editor_->isTeacherMode() && analizer_
                                                   ));
     }
 
@@ -2194,7 +2201,7 @@ void EditorPlane::paintMarginBackground(QPainter *p, const QRect &rect)
     p->drawRect(marginBackgroundRect().intersected(rect));
 
     // Draw margin line
-    unsigned errorsCount = editor_->analizer() ? editor_->analizer()->errors().size() : 0u;
+    unsigned errorsCount = analizer_ ? analizer_->errors().size() : 0u;
     QColor marginLineColor = palette().color(hasFocus()? QPalette::Highlight : QPalette::Mid);
     if (errorsCount) {
         const QColor bgColor = palette().color(QPalette::Base);
@@ -2264,7 +2271,7 @@ void EditorPlane::paintSelection(QPainter *p, const QRect &rect)
     int lh = lineHeight();
     int cw = charWidth();
     bool prevLineSelected = false;
-    bool hardIndent = editor_->analizer() &&
+    bool hardIndent = analizer_ &&
             Shared::AnalizerInterface::HardIndents==editor_->analizerPlugin_->indentsBehaviour();
     for (int i=startLine; i<endLine+1; i++) {
         if (i<(int)editor_->document()->linesCount()) {
@@ -2668,7 +2675,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
     // Draw text lines themselves
     for (uint i=startLine; i<=endLine; i++)
     {
-        bool hardIndents = editor_->analizer() &&
+        bool hardIndents = analizer_ &&
                 Shared::AnalizerInterface::HardIndents==editor_->analizerPlugin_->indentsBehaviour();
 
         // Indent count (in logical levels)
@@ -2771,7 +2778,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                 // Draw a symbol using obtained format
                 QChar ch = text[j];
                 if (curType & LxTypeName || curType == LxTypePrimaryKwd || curType == LxTypeSecondaryKwd) {
-                    if (caseInsensitive_ && analizerHelper_ && text[j].isLetterOrNumber()) {
+                    if (caseInsensitive_ && helper_ && text[j].isLetterOrNumber()) {
                         int wordStart = j;
                         int wordEnd = j;
                         while (text[wordStart].isLetterOrNumber() && wordStart > 0)
@@ -2783,7 +2790,7 @@ void EditorPlane::paintText(QPainter *p, const QRect &rect)
                         int wordLen = wordEnd - wordStart;
                         if (wordLen > 0) {
                             const QString word = text.mid(wordStart, wordLen);
-                            const QString capWord = analizerHelper_->correctCapitalization(word, curType);
+                            const QString capWord = helper_->correctCapitalization(word, curType);
                             ch = capWord[j-wordStart];
                         }
                     }
@@ -3068,7 +3075,7 @@ QString EditorPlane::tryCorrectKeyboardLayout(const QString &source) const
             invertedLayoutText[i] = invertedLayoutText[i].toUpper();
         }
     }
-    if ( analizerHelper_->isKnownLexem(invertedLayoutText, lineNo, colNo, context) ) {
+    if ( helper_->isKnownLexem(invertedLayoutText, lineNo, colNo, context) ) {
         return invertedLayoutText;
     }
     else {
@@ -3081,7 +3088,7 @@ void EditorPlane::tryCorrectKeyboardLayoutForLastLexem()
     if (Utils::isRussianLayout()) {
         return; // nothing to correct: already russian keyboard layout
     }
-    if ( ! editor_->analizerPlugin_ || ! analizerHelper_) {
+    if ( ! editor_->analizerPlugin_ || ! helper_) {
         return; // has no information how to do it
     }
     if ( editor_->analizerPlugin_->primaryAlphabetIsLatin() ) {

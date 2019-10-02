@@ -1,6 +1,7 @@
 #ifndef KUMIRSTDLIB_H
 #define KUMIRSTDLIB_H
 
+#include <assert.h>
 #include <sstream>
 #include <set>
 #include <vector>
@@ -21,6 +22,7 @@
 #include <string>
 
 #include <cmath>
+#include <cfloat>
 
 #if defined(WIN32) || defined(_WIN32)
 #   include <Windows.h>
@@ -32,6 +34,7 @@
 #   include <string.h>
 #   include <errno.h>
 #endif
+#include <stdlib.h>
 
 
 namespace VM { class Variable; }
@@ -40,11 +43,7 @@ namespace Kumir {
 
 typedef wchar_t Char;
 typedef std::wstring String;
-inline String & operator+(String & s, const /*ascii only*/ char c) {
-    Char uc = Char(c);
-    s.push_back(uc);
-    return s;
-}
+
 inline String & operator+(String &s1, const /*utf8*/ char * s2) {
     EncodingError encodingError;
     String us2 = Coder::decode(UTF8, std::string(s2), encodingError);
@@ -53,11 +52,6 @@ inline String & operator+(String &s1, const /*utf8*/ char * s2) {
 }
 
 typedef double real;
-
-inline String & operator+(String & s, const Char c) {
-    s.push_back(c);
-    return s;
-}
 
 struct FileType {
     enum OpenMode { NotOpen, Read, Write, Append };
@@ -304,111 +298,82 @@ protected:
 
 class Math {
 public:
-    inline static void init() {}
-    inline static void finalize() {}
+    static void init() {}
+    static void finalize() {}
 
-    inline static bool checkSumm(int32_t lhs, int32_t rhs) {
-        // Check for integer overflow
-        // CLang completely removes the standard check technique due to optimization.
-        // Use another method: cast to 64 bit
-        volatile const int64_t l = lhs;
-        volatile const int64_t r = rhs;
-        volatile const int64_t sum = l + r;
-        static const int64_t Right = 2147483647LL;
-        static const int64_t Left = -2147483648LL;
-        volatile bool result = sum >= Left && sum <= Right;
+    // Check for integer overflow
+    // CLang completely removes the standard check technique due to optimization.
+    // Use another method: cast to 64 bit
+    static bool checkSumm(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l + (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
         return result;
     }
 
-    inline static bool checkDiff(int32_t lhs, int32_t rhs) {
-        volatile const int64_t l = lhs;
-        volatile const int64_t r = rhs;
-        volatile const int64_t diff = l - r;
-        static const int64_t Right = 2147483647LL;
-        static const int64_t Left = -2147483648LL;
-        volatile bool result = diff >= Left && diff <= Right;
+    static bool checkDiff(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l - (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
         return result;
     }
 
-    inline static bool checkProd(int32_t lhs, int32_t rhs) {
-        // Check for integer overflow
-        volatile int64_t prod = int64_t(lhs) * int64_t(rhs);
-        return (prod >> 32)==(prod >> 31);
+    static bool checkProd(int32_t l, int32_t r)
+    {
+        int64_t res = (int64_t) l * (int64_t) r;
+        bool result = (INT32_MIN <= res && res <= INT32_MAX);
+        return result;
     }
 
-    inline static bool isCorrectDouble(double val) {
-        // !!!!!!!!!!! WARNING !!!!!!!!!!
+    static bool isCorrectDouble(double x)
+    {
+        // !!! WARNING !!
         // this works ONLY for IEEE754-compatible representation!
-        double * pval = &val;
-        uint64_t * pbits = reinterpret_cast<uint64_t*>(pval);
-        uint64_t bits = *pbits;
-        uint64_t expMask  = 0x7FF0000000000000;
-        uint64_t fracMask = 0x000FFFFFFFFFFFFF;
-        uint64_t exponent = (bits & expMask) >> 52;
-        uint64_t fraction = bits & fracMask;
-        bool Inf = (exponent==uint64_t(0x7FF)) && (fraction==uint64_t(0));
-        bool NaN = (exponent==uint64_t(0x7FF)) && (fraction>uint64_t(0));
-        return !Inf && !NaN;
+        union DoubleU64 {
+            double d;
+            uint64_t u;
+        } v;
+        v.d = x;
+        uint32_t expMask  = 0x7FF;
+        uint32_t exponent = (v.u >> 52) & expMask;
+        return exponent != expMask;
     }
 
-
-    inline static bool isCorrectReal(real val) {
+    static bool isCorrectReal(real val)
+    {
         return isCorrectDouble(val);
     }
 
-    inline static bool isCorrectIntegerConstant(const String & value) {
-        size_t start = 0;
-        if (value.length()<=start) return false;
-        bool isNegative = value.at(0)==Char('-');
-        if (isNegative) {
-            start = 1;
+    static real abs(real x) { return ::fabs(x); }
+
+    static int imax(int x, int y) { return x > y ? x : y; }
+    static int imin(int x, int y) { return x < y ? x : y; }
+
+    static real rmax(real x, real y) { return x > y ? x : y; }
+    static real rmin(real x, real y) { return x < y ? x : y; }
+
+    static int iabs(int x)
+    {
+        unsigned int y = (unsigned int) x;
+        if (y != 0 && y + y == 0) {
+            Core::abort(L"Целочисленное переполнение");
+            return 0;
         }
-        if (value.length()<=start) return false;
-        bool isHex = false;
-        if (value.length()-start >= 1) {
-            isHex = value.at(start)==Char('$');
-            if (isHex) start += 1;
-        }
-        if (!isHex && value.length()-start >= 2) {
-            isHex = value.at(start)==Char('0') && value.at(start+1)==Char('x');
-            if (isHex) start += 2;
-        }
-        if (value.length()<=start) return false;
-        while (start<value.length() && value.at(start)==Char('0'))
-            start += 1;
-        const String digits = value.substr(start);
-        static const String maxHex = Core::fromAscii("80000000");
-        static const String maxPositiveDecimal = Core::fromAscii("2147483647");
-        static const String maxNegativeDecimal = Core::fromAscii("2147483648");
-        if (isHex) {
-            if (digits.length()==maxHex.length())
-                return digits < maxHex;
-            else
-                return digits.length()<maxHex.length();
-        }
-        else {
-            const String & maxDecimal =
-                    isNegative ? maxNegativeDecimal : maxPositiveDecimal;
-            if (digits.length()==maxDecimal.length())
-                return digits <= maxDecimal;
-            else
-                return digits.length()<maxDecimal.length();
-        }
+
+        return x >= 0 ? x : -x;
     }
 
-    inline static real abs(real x) { return ::fabs(x); }
-
-    inline static int imax(int x, int y) { return x>y? x : y; }
-    inline static int imin(int x, int y) { return x<y? x : y; }
-
-    inline static real rmax(real x, real y) { return x>y? x : y; }
-    inline static real rmin(real x, real y) { return x<y? x : y; }
-
-    inline static int iabs(int x) { return x>0? x : -x; }
-    inline static int intt(real x) {
-        return static_cast<int>(::floor(x));
+    static int intt(real x)
+    {
+        double y = ::floor((double) x);
+        if (!(INT32_MIN <= y && y <= INT32_MAX)) {
+            Core::abort(L"Целочисленное переполнение");
+            return 0;
+        }
+        return (int) y;
     }
-    inline static real arccos(real x) {
+
+    static real arccos(real x) {
         if (x>=-1.0 && x<=1.0) {
             return ::acos(x);
         }
@@ -417,8 +382,8 @@ public:
             return 0.0;
         }
     }
-    inline static real arcctg(real x) { return ::atan(1.0/x);}
-    inline static real arcsin(real x) {
+    static real arcctg(real x) { return ::atan(1.0/x);}
+    static real arcsin(real x) {
         if (x>=-1.0 && x<=1.0) {
             return ::asin(x);
         }
@@ -427,12 +392,12 @@ public:
             return 0.0;
         }
     }
-    inline static real arctg(real x) { return ::atan(x); }
+    static real arctg(real x) { return ::atan(x); }
 
-    inline static real cos(real x) { return ::cos(x); }
-    inline static real sin(real x) { return ::sin(x); }
-    inline static real tg(real x) { return ::tan(x); }
-    inline static real ctg(real x) {
+    static real cos(real x) { return ::cos(x); }
+    static real sin(real x) { return ::sin(x); }
+    static real tg(real x) { return ::tan(x); }
+    static real ctg(real x) {
         if (x==0.0) {
             Core::abort(Core::fromUtf8("Неверный аргумент тригонометрической функции"));
             return 0.0;
@@ -441,7 +406,7 @@ public:
             return 1.0/::tan(x);
         }
     }
-    inline static real lg(real x) {
+    static real lg(real x) {
         if (x>0.0) {
             real num = ::log(x);
             real den = ::log((real)10.0);
@@ -453,7 +418,7 @@ public:
             return 0.0;
         }
     }
-    inline static real ln(real x) {
+    static real ln(real x) {
         if (x>0.0) {
             return ::log(x);
         }
@@ -462,9 +427,9 @@ public:
             return 0.0;
         }
     }
-    inline static real exp(real x) { return ::exp(x); }
+    static real exp(real x) { return ::exp(x); }
 
-    inline static real sqrt(real x) {
+    static real sqrt(real x) {
         if (x>=0.0) {
             return ::sqrt(x);
         }
@@ -473,7 +438,7 @@ public:
             return 0.0;
         }
     }
-    inline static real pow(real a, real b) {
+    static real pow(real a, real b) {
         real result = ::pow(a, b);
         if (!Math::isCorrectReal(result)) {
             Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
@@ -481,66 +446,98 @@ public:
         }
         return result;
     }
-    inline static int ipow(int a, int b) {
-        real rresult = ::floor(pow(real(a), real(b)));
-        if (Core::error.length()>0) return 0;
-        real absval = fabs(rresult);
-        real mxintval = fabs(real(maxint()));
-        if (absval>mxintval)
-        {
-            Core::abort(Core::fromUtf8("Ошибка возведения в степень: результат - слишком большое число"));
-            return 0;
-        }
-        int iresult = static_cast<int>(rresult);
-        return iresult;
-    }
-    template <typename A, typename B> inline static real safediv(A a, B b) {
-#ifdef NO_ZERODIV_CHECK
-        return static_cast<real>(a) / static_cast<real>(b);
-#else
-        if (b!=0) {
-            return static_cast<real>(a)/static_cast<real>(b);
-        }
-        else {
-            Core::abort(Core::fromUtf8("Деление на 0"));
-            return 0.0;
-        }
-#endif
-    }
-    inline static int maxint() {
-        return int(0x7FFFFFFF);
-    }
-    inline static real maxreal() {
-        return 1.797693e+308;
-    }
-    inline static int div(int a, int b) {
-        if (b<=0) {
-            Core::abort(Core::fromUtf8("Деление на не натуральное число"));
-            return 0;
-        } else {
-            int aa = a;
-            if (aa<0) {
-                unsigned int absolunta = -1*(aa);
-                unsigned int quoti = absolunta / b + 1;
-                aa += quoti * b;
+
+    static int ipow(int a, int b)
+    {
+        static const String e_unwhole = L"Результат - не целое число";
+        static const String e_ovfl = L"Целочисленное переполнение";
+        static const String e_divz = L"Деление на ноль";
+
+        if (b <= 1) {
+            if (b == 1)
+                return a;
+            if (b == 0)
+                return 1;
+            if (a != 1 && a != -1) {
+                Core::abort(a == 0 ? e_divz : e_unwhole);
+                return 0;
             }
-            int m = aa % b;
-            return (a-m)/b;
         }
-    }
-    inline static int mod(int a, int b) {
-        if (b<=0) {
-            Core::abort(Core::fromUtf8("Деление на не натуральное число"));
-            return 0;
-        } else {
-            if (a<0) {
-                unsigned int absolunta = -1*(a);
-                unsigned int quoti = absolunta / b + 1;
-                a += quoti * b;
+
+        if (a == 0 || a == 1)
+            return a;
+
+        if (a == -1)
+            return (b & 1) ? -1 : 1;
+
+        if (a == 2) {
+            if (31 <= b) {
+                Core::abort(e_ovfl);
+                return 0;
             }
-            return a % b;
+            return 1 << b;
         }
+
+        if (a == -2) {
+            if (31 < b) {
+                Core::abort(e_ovfl);
+                return 0;
+            }
+            unsigned int res = 1U << b;
+            return (b & 1) ? -res : res;
+        }
+
+        int64_t y = a, res = 1;
+        bool ok = true;
+        while (0 < b && ok) {
+            if (b & 1) {
+                res *= y;
+                ok = ok && (INT32_MIN <= res && res <= INT32_MAX);
+            }
+            b /= 2;
+            if (b == 0)
+                break;
+            y *= y;
+            ok = ok && (INT32_MIN <= y && y <= INT32_MAX);
+        }
+
+        if (!ok) {
+            Core::abort(e_ovfl);
+            return 0;
+        }
+
+        return (int) res;
     }
+
+    static real maxreal() { return 1.7976931348623157e+308; }
+
+    static int div(int a, int b)
+    {
+        if (b <= 0) {
+            Core::abort(L"Деление на ненатуральное число");
+            return 0;
+        }
+
+        int q = a / b, r = a % b;
+        if (r < 0)
+            q--;
+        return q;
+
+    }
+
+    static int mod(int a, int b)
+    {
+        if (b <= 0) {
+            Core::abort(L"Деление на ненатуральное число");
+            return 0;
+        }
+
+        int r = a % b;
+        if (r < 0)
+            r += b;
+        return r;
+    }
+
     template <typename T> static int sign(T x) {
         if (x>0) return 1;
         else if (x<0) return -1;
@@ -548,7 +545,6 @@ public:
     }
 };
 
-#include <stdlib.h>
 class Random {
 public:
     inline static void init() {
@@ -710,68 +706,82 @@ public:
         return result;
     }
 
-    static int parseInt(String word, char base, ParseError & error) {
-        error = NoError;        
-        if (word.length()==0) {
+    static int parseInt(String word, unsigned int base, ParseError &error)
+    {
+        error = NoError;
+        size_t l = word.length(), pos = 0;
+
+        if (l == 0) {
             error = EmptyWord;
             return 0;
         }
-        size_t pos = 0;
+
         bool negative = false;
-        if (word.at(pos)==Char('-')) {
+
+        if (word.at(pos) == Char('-')) {
             negative = true;
             pos += 1;
-        }
-        else if (word.at(pos)==Char('+'))
+        } else if (word.at(pos) == Char('+')) {
             pos += 1;
-        if (base==0) {
-            // Autodetect format
-            if (word.length()-pos>=1 && word.at(pos)==Char('$')) {
+        }
+
+        if (base == 0) {
+            if (pos < l && word.at(pos) == Char('$')) {
                 base = 16;
                 pos += 1;
-            }
-            else if (word.length()-pos>=2 && word.at(pos)==Char('0') && word.at(pos+1)==Char('x')) {
-                base = 16;
-                pos += 2;
-            }
-            else {
+            } else {
                 base = 10;
             }
         }
-        word = word.substr(pos, word.length()-pos);
-        if (word.length()==0) {
-            error = pos>0 ? EmptyWord : WrongHex;
+        assert (base);
+
+        if (l == 0) {
+            error = EmptyWord;
             return 0;
         }
-        int result = 0;
-        for (size_t i=0; i<word.length(); i++) {
-            int power = Math::ipow(base, word.length()-i-1);
+
+        unsigned int maxabs = (1U << 31) - (negative ? 0 : 1);
+        unsigned int maxabsb = maxabs / base;
+        unsigned int result = 0;
+        bool overflow = false;
+
+        for (size_t i = pos; i < l; i++) {
             Char ch = word.at(i);
-            char digit = 0;
-            bool wrongChar = false;
-            if (ch>='0' && ch<='9')
-                digit = static_cast<char>(ch)-'0';
-            else if (ch>='A' && ch<='Z')
-                digit = 10 + static_cast<char>(ch)-'A';
-            else if (ch>='a' && ch<='z')
-                digit = 10 + static_cast<char>(ch)-'a';
-            else
-                wrongChar = true;
-            if (digit > base)
-                wrongChar = true;
-            if (wrongChar) {
+            unsigned int digit = base;
+
+            if ('0' <= ch && ch <= '9') {
+                digit = (unsigned int)(ch) - '0';
+            } else if ('A' <= ch && ch <= 'Z') {
+                digit = 10 + (unsigned int)(ch) - 'A';
+            } else if ('a' <= ch && ch <= 'z') {
+                digit = 10 + (unsigned int)(ch) - 'a';
+            }
+
+            if (base <= digit) {
                 error = BadSymbol;
                 return 0;
             }
-            result += power * digit;
+
+            overflow = overflow || (maxabsb < result);
+            result = result * base + digit;
+            overflow = overflow || (result < digit);
         }
-        if (negative)
-            result *= -1;
-        if (NoError == error && !Math::isCorrectIntegerConstant(word)) {
+
+        overflow = overflow || (maxabs < result);
+
+        if (overflow) {
             error = Overflow;
             return 0;
         }
-        return result;
+
+        return negative ? -result : result;
+    }
+
+    static bool isCorrectIntegerConstant(const String &v)
+    {
+        ParseError e = NoError;
+        parseInt(v, 0, e);
+        return e == NoError;
     }
 
     static real parseReal(String word, Char dot, ParseError & error) {
@@ -940,23 +950,31 @@ public:
         return result;
     }
 
-    static String sprintfReal(real value, Char dot, bool expform, int width, int decimals, char al) {
-        std::stringstream stream;
-        if (0 > decimals && !expform) {
+    static String sprintfReal(
+        real value, Char dot, bool expform,
+        int width, int decimals, char al
+    ) {
+        int sdecimals = decimals;
+        if (sdecimals < 0) {
             double absVal = fabs(double(value));
-            if (0.0 != value && (absVal < 0.0001 || absVal > 999999.))
-                expform = true;
-        }
-        if (expform) {
-            stream << std::scientific;
-//            stream.precision(2);
-            stream.precision(0>decimals ? 6 : decimals);
-        }
-        else {
-            stream << std::fixed;
-            stream.precision(0>decimals ? 6 : decimals);
+            sdecimals = 13;
+            if (0 < absVal && absVal <= DBL_MAX) {
+                if (absVal < 1e-4 || absVal >= 1e6) {
+                    expform = true;
+                }
+                if (!expform) {
+                    sdecimals -= ::floor(::log(absVal) / ::log(10.0));
+                }
+            }
         }
 
+        std::stringstream stream;
+        if (expform) {
+            stream << std::scientific;
+        } else {
+            stream << std::fixed;
+        }
+        stream.precision(sdecimals < 0 ? 6 : sdecimals);
         stream << value;
 
         std::string rpart = stream.str();
@@ -2262,7 +2280,7 @@ public:
         String word = readWord(is);
         if (is.hasError()) return 0;
         Converter::ParseError error = Converter::NoError;
-        int result = Converter::parseInt(word, 10, error);
+        int result = Converter::parseInt(word, 0, error);
         if (error==Converter::EmptyWord) {
             is.setError(Core::fromUtf8("Ошибка ввода целого числа: текст закончился"));
         }

@@ -2338,8 +2338,8 @@ TabWidgetElement * MainWindow::loadFromUrl(const QUrl & url, bool addToRecentFil
         if (editor) {
             QWidget * vc = editor->widget();
             connect(vc, SIGNAL(message(QString)), this, SLOT(showMessage(QString)));
-            connect(vc, SIGNAL(requestHelpForAlgorithm(QString)),
-                    this, SLOT(showAlgorithmHelp(QString)));
+            connect(vc, SIGNAL(requestHelpForAlgorithm(QString, QString)),
+                    this, SLOT(showAlgorithmHelp(QString, QString)));
             QString fileName = QFileInfo(url.toLocalFile()).fileName();
             if (tabsDisabledFlag_) {
                 while(tabWidget_->count()) tabWidget_->removeTab(0);

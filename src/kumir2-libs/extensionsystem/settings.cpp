@@ -1,121 +1,125 @@
 #include "settings.h"
 
 #include <QDir>
+#include <QDebug>
 #include <QCoreApplication>
-#include <QDesktopServices>
 #if QT_VERSION >= 0x050000
-#   include <QStandardPaths>
+# include <QStandardPaths>
+#else
+#include <QDesktopServices>
 #endif
 
 namespace ExtensionSystem {
 
-Settings::Settings(const QString & pluginName)
-    : pluginName_(pluginName)
-    , mutex_(new QMutex)
-
-{    
+Settings::Settings(const QString & pluginName) :
+	pluginName_(pluginName),
+	mutex_(new QMutex)
+{
 #if QT_VERSION >= 0x050000
-    static const QString DataLocation = QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0);
+	static const QString DataLocation = QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0);
 #else
-    static const QString DataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
+	static const QString DataLocation = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
 #endif
-    const QString scope = defaultSettingsScope();
-    const QString fileName = pluginName + ".conf";
+	const QString scope = defaultSettingsScope();
+	const QString fileName = pluginName + ".conf";
 #ifdef Q_OS_WIN32
-    QSettings * sett = new QSettings(DataLocation+"/"+fileName, QSettings::IniFormat);
+	QSettings * sett = new QSettings(DataLocation+"/"+fileName, QSettings::IniFormat);
 #else
-    QSettings * sett = new QSettings(scope, pluginName);
+	QSettings * sett = new QSettings(scope, pluginName);
 #endif
-    qsettings_.reset(sett);
-    qsettings_->setIniCodec("UTF-8");
-    settingsFile_ = qsettings_->fileName();
+	qsettings_.reset(sett);
+	qsettings_->setIniCodec("UTF-8");
+	settingsFile_ = qsettings_->fileName();
 }
 
 void Settings::setValue(const QString &key, const QVariant &value_)
 {
-    if (!mutex_)
-        return;
-    mutex_->lock();
-    qsettings_->setValue(key, value_);
-    mutex_->unlock();
+	if (!mutex_)
+		return;
+	mutex_->lock();
+	qsettings_->setValue(key, value_);
+	mutex_->unlock();
 }
 
 QVariant Settings::value(const QString &key, const QVariant &default_) const
 {
-    if (!mutex_)
-        return QVariant();
-    QVariant result;
-    mutex_->lock();
-    result = qsettings_->value(key, default_);
-    mutex_->unlock();
-    return result;
+	if (!mutex_)
+		return QVariant();
+	QVariant result;
+	mutex_->lock();
+	result = qsettings_->value(key, default_);
+	mutex_->unlock();
+	return result;
 }
 
 void Settings::flush()
 {
-    mutex_->lock();
-    qsettings_->sync();
-    mutex_->unlock();
+	mutex_->lock();
+	qsettings_->sync();
+	mutex_->unlock();
 }
 
 Settings::~Settings()
 {
-    flush();
+	flush();
 }
 
 void Settings::changeWorkingDirectory(const QString &workDirPath)
 {
-    workDirPath_ = workDirPath;
-    mutex_->lock();
-    qsettings_->sync();
+	workDirPath_ = workDirPath;
+	mutex_->lock();
+	qsettings_->sync();
 
-    QDir workDir(workDirPath);
-    workDir.mkdir(".settings");
+	QDir workDir(workDirPath);
+	workDir.mkdir(".settings");
 
-    const QString settingsFileName =
-            workDirPath + "/.settings/" + pluginName_ + ".conf";
-    QSettings * sett = new QSettings(settingsFileName, QSettings::IniFormat);
-    sett->setIniCodec("UTF-8");
+	const QString settingsFileName =
+			workDirPath + "/.settings/" + pluginName_ + ".conf";
+	QSettings * sett = new QSettings(settingsFileName, QSettings::IniFormat);
+	sett->setIniCodec("UTF-8");
 
-    qsettings_.reset(sett);
-    settingsFile_ = qsettings_->fileName();
+	qsettings_.reset(sett);
+	settingsFile_ = qsettings_->fileName();
 
-    mutex_->unlock();
+	mutex_->unlock();
 }
 
 QString Settings::locationDirectory() const
 {
-    mutex_->lock();
-    const QFileInfo fileInfo(qsettings_->fileName());
-    mutex_->unlock();
-    return fileInfo.absoluteDir().absolutePath();
+	mutex_->lock();
+	const QFileInfo fileInfo(qsettings_->fileName());
+	mutex_->unlock();
+	return fileInfo.absoluteDir().absolutePath();
 }
 
 QString Settings::settingsFilePath() const
 {
-    mutex_->lock();
-    const QString result = settingsFile_;
-    mutex_->unlock();
-    return result;
+	mutex_->lock();
+	const QString result = settingsFile_;
+	mutex_->unlock();
+	return result;
 }
 
 QString Settings::defaultSettingsScope()
 {
 #ifdef Q_OS_MAC
-    static const QString result = "kumir2";
-    return result;
+	static const QString result = "kumir2";
+	return result;
 #else
-    static const QString applicationLanucher = QDir::fromNativeSeparators(qApp->arguments().at(0));
-    static QString applicationName =
-            applicationLanucher.startsWith(qApp->applicationDirPath())
-            ? applicationLanucher.mid(qApp->applicationDirPath().length() + 1)
-            : applicationLanucher;
-#ifdef Q_OS_WIN32
-    if (applicationName.endsWith(".exe")) {
-        applicationName.remove(applicationName.length()-4, 4);
-    }
-#endif
-    return applicationName;
+	const QString appLauncher = QDir::fromNativeSeparators(qApp->arguments().at(0));
+	QString appName = QFileInfo(appLauncher).fileName();
+
+	if (appName.endsWith(".exe")) {
+		appName = appName.left(appName.length() - 4);
+	}
+
+	if (appName.trimmed().isEmpty()) {
+		appName = "kumir2";
+	}
+
+	qDebug() << "AppName: ["  << appName << "]";
+
+	return appName;
 #endif
 }
 
