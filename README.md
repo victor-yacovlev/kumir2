@@ -14,6 +14,11 @@ Branch `python` contains Python-3 language implementation.
 Releases are maked by tags and lists of excluded modules.
 Run `remove-unstable-modules-v.X.X.X.sh` before bundling source package.
 
+Install from deb (Ubuntu)
+--------------------------
+deb files for installation from deb files you can find here:
+http://repos.lpm.org.ru/kumir2/ubuntu/pool/universe/k/kumir2/
+
 Build requirements (Linux)
 --------------------------
 
